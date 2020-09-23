@@ -2,4 +2,4 @@
 
 ./_inject_build_time_vars
 
-ng serve --port 4200 --configuration hmr
+./node_modules/.bin/ng serve --port 4200 --configuration hmr

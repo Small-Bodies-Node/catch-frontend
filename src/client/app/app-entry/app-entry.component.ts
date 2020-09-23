@@ -23,7 +23,9 @@ import {
 } from '../../app/utils/animation-constants';
 import { concatMap, map, distinctUntilChanged, withLatestFrom } from 'rxjs/operators';
 import { timer, of, interval, zip } from 'rxjs';
-import { Router } from '@angular/router';
+import { NavigationEnd, Router } from '@angular/router';
+
+// declare const gtag: any;
 
 @Component({
   selector: 'app-entry-root',
@@ -54,6 +56,13 @@ export class AppEntryComponent {
   }
 
   private _onSiteLoad() {
+    this.router.events.subscribe(event => {
+      if (event instanceof NavigationEnd) {
+        gtag('config', 'UA-178747936-1', {
+          page_path: event.urlAfterRedirects
+        });
+      }
+    });
     // Ensure local storage is setup with default values
     this.localStorageService.verifyAndRepairLocalStorageState();
 

@@ -5,7 +5,7 @@
     "*.html": "html"
   },
 
-  "prettier.htmlWhitespaceSensitivity": "ignore",
+  // "prettier.htmlWhitespaceSensitivity": "ignore",
 
 
   "[html]": {
