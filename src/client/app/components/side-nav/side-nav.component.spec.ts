@@ -8,8 +8,8 @@ import { AppModule } from '../../app.module';
 
 @NgModule({
   imports: [FontAwesomeModule],
-  declarations: [FaIconComponent],
-  entryComponents: [FaIconComponent]
+  declarations: [FaIconComponent]
+  // entryComponents: [FaIconComponent] // deprecated in angular 9/10
 })
 class TestModule {}
 

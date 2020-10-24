@@ -31,7 +31,9 @@ export class NeatDataPlotlyGraphComponent implements OnInit, OnChanges {
 
   @Input()
   inputPlotlyParams: IPlotlyGraphInput;
-  inputPlotlyParam$ = new BehaviorSubject<IPlotlyGraphInput>(this.inputPlotlyParams);
+
+  // inputPlotlyParam$ = new BehaviorSubject<IPlotlyGraphInput>(this.inputPlotlyParams);
+  inputPlotlyParam$: BehaviorSubject<IPlotlyGraphInput>;
 
   public plotlySetting$: Observable<IPlotlySettings>;
 
@@ -39,7 +41,9 @@ export class NeatDataPlotlyGraphComponent implements OnInit, OnChanges {
     this.setPlotlySettings();
   }
 
-  ngOnInit() {}
+  ngOnInit() {
+    this.inputPlotlyParam$ = new BehaviorSubject<IPlotlyGraphInput>(this.inputPlotlyParams);
+  }
 
   ngOnChanges(changes) {
     if (!(changes.inputPlotlyParams && changes.inputPlotlyParams.currentValue)) return;

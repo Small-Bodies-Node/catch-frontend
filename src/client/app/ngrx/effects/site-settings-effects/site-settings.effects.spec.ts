@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideMockActions } from '@ngrx/effects/testing';
 import { Observable } from 'rxjs';
 
+import { initialState as siteSettingsInitialState } from '../../reducers/site-settings-reducer/site-settings.reducer';
 import { SiteSettingsEffects } from './site-settings.effects';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
@@ -14,7 +15,7 @@ describe('SiteSettingsEffects', () => {
 
   let store: MockStore<AppState>;
   const initialState: Partial<AppState> = {
-    siteSettingsSubstate: { siteTheme: 'DARK-THEME', isPageAnimated: true }
+    siteSettingsSubstate: siteSettingsInitialState
   };
 
   beforeEach(() => {
@@ -27,9 +28,9 @@ describe('SiteSettingsEffects', () => {
       ]
     });
     // @ts-ignore:
-    effects = TestBed.get<SiteSettingsEffects>(SiteSettingsEffects);
+    effects = TestBed.inject<SiteSettingsEffects>(SiteSettingsEffects);
     // @ts-ignore:
-    store = TestBed.get<Store<any>>(Store);
+    store = TestBed.inject<Store<any>>(Store);
   });
 
   it('should be created ', () => {

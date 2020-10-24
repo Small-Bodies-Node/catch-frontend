@@ -13,7 +13,7 @@ describe('DataService', () => {
       imports: [HttpClientTestingModule]
     });
     // @ts-ignore:
-    httpTestingController = TestBed.get(HttpTestingController);
+    httpTestingController = TestBed.inject(HttpTestingController);
 
     service = TestBed.inject(TestDataService);
   });

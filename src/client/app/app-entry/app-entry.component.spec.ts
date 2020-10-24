@@ -21,7 +21,7 @@ describe('AppEntryComponent', () => {
       providers: [provideMockStore({ initialState })]
     }).compileComponents();
     // @ts-ignore:
-    store = TestBed.get<Store<any>>(Store);
+    store = TestBed.inject<Store<any>>(Store);
   }));
 
   it('should create the app', () => {

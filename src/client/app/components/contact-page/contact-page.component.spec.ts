@@ -18,7 +18,7 @@ describe('ContactPageComponent', () => {
       declarations: [ContactPageComponent]
     }).compileComponents();
     // @ts-ignore:
-    httpTestingController = TestBed.get(HttpTestingController);
+    httpTestingController = TestBed.inject(HttpTestingController);
   }));
 
   beforeEach(() => {

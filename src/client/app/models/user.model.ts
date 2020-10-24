@@ -1,4 +1,4 @@
-import { simpleUuid } from '../utils/simple-uuid';
+import { simpleUid } from '../utils/simple-uid';
 
 /**
  * Based around: https://jsonplaceholder.typicode.com/users/1
@@ -51,7 +51,7 @@ export class TestUser implements ITestUser {
   };
 
   constructor(input: Partial<ITestUser>) {
-    this.id = (input.id || simpleUuid()) + '';
+    this.id = (input.id || simpleUid()) + '';
     this.name = input.name || '<NAME>';
     this.username = input.username || '<USERNAME>';
     this.email = input.email || '<EMAIL>';

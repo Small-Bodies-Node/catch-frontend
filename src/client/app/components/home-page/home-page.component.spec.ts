@@ -20,7 +20,7 @@ describe('HomePageComponent', () => {
       providers: [provideMockStore({ initialState })]
     }).compileComponents();
     // @ts-ignore
-    store = TestBed.get<Store<any>>(Store);
+    store = TestBed.inject<Store<any>>(Store);
   }));
 
   beforeEach(() => {

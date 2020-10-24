@@ -22,11 +22,12 @@
   // background-color: red;
 
   &.host-dark-theme {
-    background-image: url('src/client/assets/images/jpgs/dark_sky_v0.jpg');
+    // background-image: url('src/client/assets/images/jpgs/dark_sky_v0.jpg');
+    background-image: url('../../../assets/images/jpgs/dark_sky_v0.jpg');
   }
 
   &.host-light-theme {
-    background-image: url('src/client/assets/images/jpgs/light_sky_v0.jpg');
+    // background-image: url('src/client/assets/images/jpgs/light_sky_v0.jpg');
   }
 }
 
@@ -43,7 +44,8 @@
   bottom: 0px;
   margin: 0;
   padding: 0;
-  background-image: url('src/client/assets/images/pngs/stars_v4.png');
+  // background-image: url('src/client/assets/images/pngs/stars_v4.png');
+  background-image: url('../../../assets/images/pngs/stars_v4.png');
 }
 
 .images-wrapper,

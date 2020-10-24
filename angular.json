@@ -113,11 +113,16 @@
             "karmaConfig": "karma.conf.js",
             "assets": [
               "src/client/favicon.ico",
-              "src/client/assets",
-              "src/client/manifest.webmanifest",
-              "src/client/assets/js9-served"
+              "src/client/assets/icons",
+              "src/client/assets/images",
+              "src/client/assets/videos",
+              "src/client/assets/js9-served",
+              "src/client/manifest.json"
             ],
-            "styles": ["src/client/styles.scss"],
+            "styles": [
+              "src/client/styles/styles.scss",
+              "src/client/styles/styles-app-loading.scss"
+            ],
             "scripts": []
           }
         },
