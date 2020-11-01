@@ -4,7 +4,6 @@ import { Store } from '@ngrx/store';
 import { take } from 'rxjs/operators';
 import { Subscription } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
-import { IPlotlyGraphInput } from '../neat-data-plotly-graph/neat-data-plotly-graph.component';
 
 import {
   TColInitState,
@@ -26,7 +25,6 @@ import { NeatDataPlotlyGraphDialogComponent } from '../neat-data-plotly-graph/ne
 import { NeatObjectQuerySetSelectedResultIndex } from '@client/app/ngrx/actions/neat-object-query.actions';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
-import { NeatDataCheckboxesComponent } from '../neat-data-checkboxes/neat-data-checkboxes.component';
 
 @Component({
   selector: 'app-neat-data-table',
@@ -34,20 +32,21 @@ import { NeatDataCheckboxesComponent } from '../neat-data-checkboxes/neat-data-c
   styleUrls: ['./neat-data-table.component.scss']
 })
 export class NeatDataTableComponent implements OnInit, OnDestroy {
-  //
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~>>>
+
   // Track all subscriptions that will need removal
   subscriptions: Subscription = new Subscription();
 
   selectedIndex = 0;
 
-  deltaData: undefined | number[];
-  raData: undefined | number[];
-  decData: undefined | number[];
-  jdData: undefined | number[];
-  rhData: undefined | number[];
-  phaseData: undefined | number[];
-  tmtpData: undefined | number[];
-  trueanomalyData: undefined | number[];
+  deltaData!: number[];
+  raData!: number[];
+  decData!: number[];
+  jdData!: number[];
+  rhData!: number[];
+  phaseData!: number[];
+  tmtpData!: number[];
+  trueanomalyData!: number[];
 
   // Table Pagination Params
   pageSizeOptions = [25, 50, 100];
@@ -69,13 +68,13 @@ export class NeatDataTableComponent implements OnInit, OnDestroy {
     }
   }
 
-  colState: TColInitState;
-  resultLabels: INeatObjectQueryResultLabels;
-  shownCols: Partial<TColName>[];
+  colState?: TColInitState;
+  resultLabels!: INeatObjectQueryResultLabels;
+  shownCols!: Partial<TColName>[];
 
-  rawResults: INeatObjectQueryResult[];
-  cleanedResults: INeatObjectQueryResult[];
-  tableData: MatTableDataSource<INeatObjectQueryResult> | undefined;
+  rawResults!: INeatObjectQueryResult[];
+  cleanedResults?: INeatObjectQueryResult[];
+  tableData!: MatTableDataSource<INeatObjectQueryResult>;
 
   constructor(private store: Store<AppState>, private dialog: MatDialog) {
     //
@@ -84,14 +83,16 @@ export class NeatDataTableComponent implements OnInit, OnDestroy {
     // todo: At the moment we assume there are results in the store
     // todo: later we need to retrieve results based on objid query param
 
-    this.store
-      .select(selectNeatObjectQueryResults)
-      .pipe(take(1))
-      .subscribe(results => {
-        this.rawResults = results;
-        this.cleanedResults = [...results];
-        this.processRawResults();
-      });
+    this.subscriptions.add(
+      this.store
+        .select(selectNeatObjectQueryResults)
+        .pipe(take(1))
+        .subscribe(results => {
+          this.rawResults = results;
+          this.cleanedResults = results && [...results];
+          this.processRawResults();
+        })
+    );
 
     this.subscriptions.add(
       this.store.select(selectNeatObjectQuerySelectedResultIndex).subscribe(selectedIndex => {
@@ -99,18 +100,18 @@ export class NeatDataTableComponent implements OnInit, OnDestroy {
       })
     );
 
-    // Get resultLabels from server
-    // todo: resultLabels really need to be built into app at build time!
-    this.store
-      .select(selectNeatObjectQueryResultLabels)
-      .pipe(take(1))
-      .subscribe(resultLabels => (this.resultLabels = resultLabels));
+    this.subscriptions.add(
+      this.store
+        .select(selectNeatObjectQueryResultLabels)
+        .pipe(take(1))
+        .subscribe(resultLabels => (this.resultLabels = resultLabels))
+    );
 
     this.subscriptions.add(
       this.store.select(selectNeatObjectQueryColumnState).subscribe(colState => {
         this.colState = colState;
         this.shownCols = Object.keys(this.colState).filter(
-          (key, ind, arr) => this.colState[key]
+          key => this.colState![key as keyof TColInitState]
         ) as TColName[];
       })
     );
@@ -133,21 +134,21 @@ export class NeatDataTableComponent implements OnInit, OnDestroy {
     this.trueanomalyData = this.rawResults.map(el => el.trueanomaly);
 
     // Hacks to fix archive_url:
-    this.cleanedResults.forEach((el, ind) => {
-      this.cleanedResults[ind] = {
+    this.cleanedResults?.forEach((el, ind) => {
+      this.cleanedResults![ind] = {
         ...el,
         archive_url: el.archive_url.replace('fits', 'fit.fz')
       };
     });
 
     // Mutate each result object by adding combined 'raDec' property
-    this.cleanedResults.forEach((el, ind) => {
-      this.cleanedResults[ind] = { ...el, raDec: el.ra + ' / ' + el.dec };
+    this.cleanedResults?.forEach((el, ind) => {
+      this.cleanedResults![ind] = { ...el, raDec: el.ra + ' / ' + el.dec };
     });
 
     // Determine array of page sizes
     const MAX_PAGINATION_VALUE = Math.max.apply(Math, this.pageSizeOptions);
-    if (this.cleanedResults.length > MAX_PAGINATION_VALUE) {
+    if (this.cleanedResults && this.cleanedResults.length > MAX_PAGINATION_VALUE) {
       this.pageSizeOptions.push(this.cleanedResults.length);
     }
 
@@ -165,31 +166,26 @@ export class NeatDataTableComponent implements OnInit, OnDestroy {
     const xDataKey = plot === 'raDec' ? 'ra' : plot;
     const yDataKey = plot === 'raDec' ? 'dec' : undefined;
 
-    this.dialog.open<NeatDataPlotlyGraphDialogComponent, IPlotlyGraphInput>(
-      NeatDataPlotlyGraphDialogComponent,
-      { data: { xDataKey, yDataKey } }
-    );
+    this.dialog.open<NeatDataPlotlyGraphDialogComponent, any>(NeatDataPlotlyGraphDialogComponent, {
+      data: { xDataKey, yDataKey }
+    });
   }
 
   getAllCols() {
+    if (!this.shownCols) return [];
     return ['thumbnail_url', ...this.shownCols];
   }
 
-  formatCellEntry(entry: any, labels: INeatObjectQueryResultLabel) {
+  formatCellEntry(entry: any, labels?: INeatObjectQueryResultLabel) {
     //
-    // console.log('entry', entry);
-    // console.log('labels', labels);
-    //
+    if (typeof entry === 'number') return entry.toFixed(labels!.fractionSize);
 
-    if (typeof entry === 'number') return entry.toFixed(labels.fractionSize);
     // Parse raDec, toFix, reassemble
     if (entry.includes('/')) {
       //
-      // console.log('labels.fractionSize', this.resultLabels);
-      //
       const [ra, dec] = entry
         .split('/')
-        .map((el: string) => parseFloat(el.trim()).toFixed(labels.fractionSize));
+        .map((el: string) => parseFloat(el.trim()).toFixed(labels!.fractionSize));
       return ra + ' / ' + dec;
     }
     return entry;
@@ -201,7 +197,6 @@ export class NeatDataTableComponent implements OnInit, OnDestroy {
 
   openSettingsDialog(e: MouseEvent) {
     e.stopPropagation();
-    console.log('????');
     this.dialog.open<NeatDataTableWrapperComponent>(NeatDataTableWrapperComponent);
   }
 }

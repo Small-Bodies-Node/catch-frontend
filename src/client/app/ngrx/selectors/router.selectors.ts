@@ -4,7 +4,8 @@ import { RouterReducerState, SerializedRouterStateSnapshot } from '@ngrx/router-
 
 /**
  *
- * Elemental Navigation Selectors
+ * Special selector that listens to @ngrx/router-store
+ * and emits new url whenever changed
  *
  */
 

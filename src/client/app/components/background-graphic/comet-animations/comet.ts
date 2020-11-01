@@ -1,7 +1,5 @@
 import { ctx, pxlPerMs } from './constants';
 
-let xxx: any;
-
 class CometShell {
   public numTails: number;
   public tailSeeds: number[];
@@ -24,7 +22,6 @@ class CometShell {
 
   draw() {
     if (!ctx) {
-      console.log('Hmmm');
       return;
     }
 

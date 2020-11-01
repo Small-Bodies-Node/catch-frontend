@@ -104,18 +104,12 @@ mat-sidenav-container {
 
       .footer-animator {
         position: absolute;
-        top: 0px;
+        top: $footer-height;
         bottom: 0px;
         right: 0px;
         left: 0px;
         opacity: 1;
         overflow: hidden;
-        transition: top 0.25s ease-in-out;
-      }
-
-      .footer-animator-hide {
-        top: $footer-height;
-        transition: top 0s ease-in-out;
       }
     }
   }
@@ -125,13 +119,32 @@ mat-sidenav-container {
   0% {
     opacity: 0;
     transform: translateY(-25px);
+    // color: green;
   }
   50% {
     opacity: 1;
-    // transform: translateY(0px);
+    // color: green;
   }
   100% {
     opacity: 1;
     transform: translateY(0px);
+    // color: green;
+  }
+}
+
+@keyframes pageFadeOut {
+  0% {
+    opacity: 1;
+    transform: translateY(0px);
+    // color: pink;
+  }
+  50% {
+    opacity: 1;
+    // color: pink;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-25px);
+    // color: pink;
   }
 }

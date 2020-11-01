@@ -1,4 +1,4 @@
-import { Subscription, Observable, combineLatest } from 'rxjs';
+import { Subscription, combineLatest } from 'rxjs';
 import { Store } from '@ngrx/store';
 import {
   Component,
@@ -12,13 +12,11 @@ import {
   Output,
   EventEmitter
 } from '@angular/core';
-import DmsCoordinates from 'dms-conversion';
 
 import { selectSiteSettingsTheme } from '@client/app/ngrx/selectors/site-settings.selectors';
 import { TPermittedTheme } from '@client/app/models/site-settings.model';
 import { simpleUid } from '@client/app/utils/simple-uid';
 import { AppState } from '@client/app/ngrx/reducers';
-import { sleep } from '@client/app/utils/sleep';
 import {
   selectNeatObjectQueryResults,
   selectNeatObjectQuerySelectedResultIndex
@@ -37,20 +35,22 @@ declare const $: JQueryStatic;
   encapsulation: ViewEncapsulation.None
 })
 export class FitsGraphicComponent implements OnDestroy, OnChanges {
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~>>>
+
   @ViewChild('js9MenubarRef')
-  js9MenubarDiv: ElementRef<HTMLDivElement>;
+  js9MenubarDiv!: ElementRef<HTMLDivElement>;
 
   @ViewChild('js9MainRef')
-  js9MainDiv: ElementRef<HTMLDivElement>;
+  js9MainDiv!: ElementRef<HTMLDivElement>;
 
   @ViewChild('js9ColorbarRef')
-  js9ColorbarDiv: ElementRef<HTMLDivElement>;
+  js9ColorbarDiv!: ElementRef<HTMLDivElement>;
 
   @Input()
-  width: number;
+  width!: number;
 
   @Input()
-  height: number;
+  height!: number;
 
   @Input()
   fitsUrl = '';
@@ -58,11 +58,11 @@ export class FitsGraphicComponent implements OnDestroy, OnChanges {
   @Output()
   isFitsLoaded: EventEmitter<boolean> = new EventEmitter();
 
-  isShown;
+  isShown = true;
   uid: string = simpleUid();
-  siteTheme: TPermittedTheme;
+  siteTheme?: TPermittedTheme;
   subscriptions = new Subscription();
-  selectedResult: INeatObjectQueryResult;
+  selectedResult?: INeatObjectQueryResult;
 
   // Immutable case-sensitive required class names for transforming JS9 elements
   readonly js9MenubarClassName = 'JS9Menubar';
@@ -80,11 +80,9 @@ export class FitsGraphicComponent implements OnDestroy, OnChanges {
         this.store.select(selectNeatObjectQuerySelectedResultIndex)
       ])
         .pipe(
-          map(
-            ([results, selectedResultIndex]): INeatObjectQueryResult => {
-              return results[selectedResultIndex];
-            }
-          )
+          map(([results, selectedResultIndex]): INeatObjectQueryResult | undefined => {
+            return results ? results[selectedResultIndex] : undefined;
+          })
         )
         .subscribe(selectedResult => (this.selectedResult = selectedResult))
     );
@@ -125,7 +123,7 @@ export class FitsGraphicComponent implements OnDestroy, OnChanges {
 
   adjustColorbarColoring() {
     // Logic to invert the color-scale color (for sake of theme color)
-    if (this.siteTheme.includes('DARK')) {
+    if (this.siteTheme?.includes('DARK')) {
       const canvases: HTMLCanvasElement[] = document.getElementsByClassName(
         'JS9ColorbarTextCanvas'
       ) as any;
@@ -204,11 +202,11 @@ export class FitsGraphicComponent implements OnDestroy, OnChanges {
                 JS9.SetScale('zscale');
 
                 // Draw Ellipse
-                const ra = this.selectedResult.ra;
-                const dec = this.selectedResult.dec;
-                const UNC_A = this.selectedResult.unc_a * 1;
-                const UNC_B = this.selectedResult.unc_b * 1;
-                const UNC_THETA = this.selectedResult.unc_theta;
+                const ra = this.selectedResult?.ra;
+                const dec = this.selectedResult?.dec;
+                const UNC_A = this.selectedResult?.unc_a;
+                const UNC_B = this.selectedResult?.unc_b;
+                const UNC_THETA = this.selectedResult?.unc_theta;
 
                 const [ra4, dec4] = degToHms(ra, dec);
                 const js9DrawEllipseCmd =
@@ -222,7 +220,7 @@ export class FitsGraphicComponent implements OnDestroy, OnChanges {
                 resolve();
               }, 0);
             },
-            onerror: err => {
+            onerror: (err: any) => {
               console.log('err: ', err);
             }
           },

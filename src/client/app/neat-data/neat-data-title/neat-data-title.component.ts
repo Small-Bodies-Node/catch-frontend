@@ -15,17 +15,18 @@ import { selectScreenDeviceSubstate } from '../../ngrx/selectors/screen-device.s
   styleUrls: ['./neat-data-title.component.scss']
 })
 export class NeatDataTitleComponent implements OnInit {
-  //
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~>>>
 
   @ViewChild('titleContainer')
+  // @ts-ignore
   titleContainer: ElementRef<HTMLDivElement>;
 
   @Output()
   refresh = new EventEmitter<void>();
 
-  objid: string;
-  toggleValue: IScreenDevice['layout'];
-  device: IScreenDevice['device'];
+  objid?: string;
+  toggleValue?: IScreenDevice['layout'];
+  device?: IScreenDevice['device'];
   latestData$: Observable<any>;
 
   constructor(private route: ActivatedRoute, private store: Store<AppState>) {
@@ -63,7 +64,7 @@ export class NeatDataTitleComponent implements OnInit {
     this.refresh.emit();
   }
 
-  setToggleValue(e) {
+  setToggleValue(e: IScreenDevice['layout']) {
     this.toggleValue = e;
     this.store.dispatch(new ScreenDeviceSetLayout({ layout: this.toggleValue }));
   }

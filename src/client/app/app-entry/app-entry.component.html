@@ -21,7 +21,7 @@
       </div>
 
       <div class="background-graphic-wrapper">
-        <app-background-graphic> </app-background-graphic>
+        <app-background-graphic></app-background-graphic>
       </div>
 
       <div class="routed-content-wrapper" [ngStyle]="getPageAnimateStyle()">
@@ -29,10 +29,7 @@
       </div>
 
       <div class="footer-wrapper">
-        <div
-          class="footer-animator"
-          [ngClass]="{ 'footer-animator-hide': isFooterHidden || !isAppLoaded }"
-        >
+        <div class="footer-animator" [ngStyle]="getFooterAnimateStyle()">
           <app-footer></app-footer>
         </div>
       </div>

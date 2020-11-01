@@ -2,13 +2,10 @@
   #titleContainer
   class="title-container"
   *ngIf="latestData$ | async as data"
-  [ngClass]="{
-    'single-row': data.width > 550,
-    'hide-buttons': device === 'mobile'
-  }"
+  [ngClass]="{ 'single-row': data.width > 550, 'hide-buttons': device === 'mobile' }"
 >
   <div class="title">
-    <h2>{{ 'NEAT DATA: ' + objid }}</h2>
+    <h2>{{ 'NEAT DATA: ' + (objid ? objid : '') }}</h2>
   </div>
 
   <div class="button-group">
@@ -27,9 +24,6 @@
       <mat-button-toggle value="mobile" aria-label="Smartphone">
         <mat-icon>smartphone</mat-icon>
       </mat-button-toggle>
-      <!-- <mat-button-toggle value="tablet" aria-label="Tablet">
-        <mat-icon>tablet</mat-icon>
-      </mat-button-toggle> -->
       <mat-button-toggle value="desktop" aria-label="Tv">
         <mat-icon>tv</mat-icon>
       </mat-button-toggle>

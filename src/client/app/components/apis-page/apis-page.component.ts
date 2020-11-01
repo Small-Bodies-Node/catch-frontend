@@ -37,6 +37,5 @@ function json() {
     2
   );
 
-  console.log('result \n', result);
   return ('\n' + result).replace(`}\n  ],`, `}\n    ...,\n  ],`);
 }

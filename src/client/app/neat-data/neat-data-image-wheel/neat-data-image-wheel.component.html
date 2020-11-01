@@ -10,7 +10,7 @@
   <div
     *ngFor="let imageUrl of getImageUrls(); let i = index"
     (click)="setSelectedIndex(i)"
-    [ngStyle]="getStyleObject(imageUrl, i)"
+    [ngStyle]="getStyleObject(imageUrl)"
     [ngClass]="'mini-image ' + (i === selectedResultIndex ? 'add-border' : '')"
   ></div>
 </div>

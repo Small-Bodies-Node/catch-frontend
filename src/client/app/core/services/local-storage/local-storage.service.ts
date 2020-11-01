@@ -1,8 +1,6 @@
 import { Injectable } from '@angular/core';
 import { OverlayContainer } from '@angular/cdk/overlay';
 import { ILocalStorageState } from 'src/client/app/models/local-storage.model';
-import { permittedThemes, TPermittedTheme } from 'src/client/app/models/site-settings.model';
-import { colorPreferenceDeterminator } from '@client/app/utils/temp';
 
 type LSKey = keyof ILocalStorageState; // Define type for 'LocalStorageKeys'
 
@@ -22,17 +20,7 @@ export class LocalStorageService {
     testKey: 'foo'
   };
 
-  constructor(private overlayContainer: OverlayContainer) {
-    //
-  }
-
-  /**
-   * Call this method early in app loading in order to ...
-   *
-   */
-  // setDefaultTheme(setter: TPermittedTheme) {
-  //   this.defaultPermittedLocalStorageState.siteTheme = setter;
-  // }
+  constructor(private overlayContainer: OverlayContainer) {}
 
   getLocalStorageState(): ILocalStorageState {
     // Use default values for testing

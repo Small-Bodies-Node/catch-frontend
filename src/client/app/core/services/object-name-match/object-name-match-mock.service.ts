@@ -7,9 +7,11 @@ import { IObjectNameMatchResult } from '@client/app/models/object-name-match-res
   providedIn: 'root'
 })
 export class ObjectNameMatchMockService {
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~>>>
+
   constructor() {}
 
-  objectNameMatch(userSubmittedText: string): Observable<IObjectNameMatchResult[]> {
+  objectNameMatch(): Observable<IObjectNameMatchResult[]> {
     return of([
       {
         body_type: 'comet',

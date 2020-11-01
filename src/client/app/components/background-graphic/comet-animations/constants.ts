@@ -15,8 +15,8 @@ while (addNewCometIntervalMs % drawIntervalMs !== 0 && drawIntervalMs < addNewCo
 }
 export const pxlPerMs = pxlPerSec / drawIntervalMs / fps;
 
-export let canvasWidth;
-export let canvasHeight;
+export let canvasWidth: number;
+export let canvasHeight: number;
 
 // Create canvas and context
 export function initContext() {

@@ -20,10 +20,12 @@ import { Subscription } from 'rxjs';
   styleUrls: ['./settings-page.component.scss']
 })
 export class SettingsPageComponent implements OnInit, OnDestroy {
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~>>>
+
   subscriptions: Subscription = new Subscription();
   routeAnimationsElements = '';
-  selectedSiteTheme: TPermittedTheme;
-  permittedThemes: TPermittedTheme[];
+  selectedSiteTheme!: TPermittedTheme;
+  permittedThemes?: TPermittedTheme[];
   isAutoNightMode = false;
 
   constructor(private store: Store<AppState>) {

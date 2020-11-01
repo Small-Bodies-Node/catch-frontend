@@ -32,7 +32,7 @@ export class SiteSettingsEffects {
   @Effect()
   loadSiteSettings$: Observable<any> = this.actions$.pipe(
     ofType(ESiteSettingsActionTypes.SiteSettingsLoadAllFromLocalStorage),
-    map(data => {
+    map(_ => {
       // console.log('Effects pipeline pinged');
       const siteSettings = this.localStorageService.getLocalStorageState();
       return new SiteSettingsSetAll({ siteSettings });

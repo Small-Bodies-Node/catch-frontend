@@ -29,7 +29,7 @@ import { SettingsPageComponent } from './components/settings-page/settings-page.
 import { TestPageComponent } from './components/test-page/test-page.component';
 
 // Ngrx stuff
-import { reducers, metaReducers } from './ngrx/reducers';
+import { reducers } from './ngrx/reducers';
 import { SiteSettingsEffects } from './ngrx/effects/site-settings-effects/site-settings.effects';
 import { NavigationEffects } from './ngrx/effects/navigation-effects/navigation.effects';
 import { ObjectNameMatchEffects } from './ngrx/effects/object-name-match-effects/object-name-match.effects';

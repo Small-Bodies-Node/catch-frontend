@@ -1,5 +1,5 @@
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
-import { NavigationExtras, Router } from '@angular/router';
+import { NavigationExtras } from '@angular/router';
 import { FormGroup, FormControl } from '@angular/forms';
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Subject, Subscription } from 'rxjs';
@@ -15,6 +15,7 @@ import {
   NeatObjectQuerySetStatus
 } from '@client/app/ngrx/actions/neat-object-query.actions';
 import { selectObjectNameMatchResults } from '@client/app/ngrx/selectors/object-name-match.selectors';
+import { DelayedRouterService } from '@client/app/core/services/delayed-router/delayed-router';
 
 @Component({
   selector: 'app-search-field',
@@ -22,7 +23,7 @@ import { selectObjectNameMatchResults } from '@client/app/ngrx/selectors/object-
   styleUrls: ['./search-field.component.scss']
 })
 export class SearchFieldComponent implements OnInit, OnDestroy {
-  //
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~>>>
 
   myForm: FormGroup;
   objectNameMatchResults: IObjectNameMatchResult[] = [];
@@ -36,7 +37,9 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
   subscriptions = new Subscription();
   searchTermChangeSubject: Subject<string> = new Subject<string>();
 
-  constructor(private router: Router, private store: Store<AppState>) {
+  constructor(private store: Store<AppState>, private delayedRouter: DelayedRouterService) {
+    // ----------------------->>>
+
     // Define form group
     this.myForm = new FormGroup({
       objectSearch: new FormControl({
@@ -153,12 +156,14 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
       state: { objid, displayText }
     };
     await sleep(500);
-    this.router.navigate(['neat'], navigationExtras);
+    // this.router.navigate(['neat'], navigationExtras);
+    this.delayedRouter.delayedRouter('neat', navigationExtras);
+    // private delayedRouter: DelayedRouterService
   };
 
   getInputTextColor() {
     const match = this.objectNameMatchResults.find(
-      el => el.display_text === this.myForm.get('objectSearch').value
+      el => el.display_text === this.myForm.get('objectSearch')?.value
     );
 
     if (!!match) return { color: this.successColor };

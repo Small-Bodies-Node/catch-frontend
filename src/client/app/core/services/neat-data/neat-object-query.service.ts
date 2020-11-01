@@ -3,13 +3,13 @@ import { HttpClient } from '@angular/common/http';
 
 // import { ROOT_URL } from '@app/utils/root-url';
 import { Observable, from, of } from 'rxjs';
-import { map, delay, switchMap, catchError } from 'rxjs/operators';
+import { map, switchMap, catchError } from 'rxjs/operators';
 import { INeatObjectQueryResult } from '@client/app/models/neat-object-query-result.model';
 import { INeatObjectQueryResultLabels } from '@client/app/models/neat-object-query-result-labels.model';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { AppState } from '@client/app/ngrx/reducers';
 import { Store } from '@ngrx/store';
 import { NeatObjectQuerySetStatus } from '../../../ngrx/actions/neat-object-query.actions';
+import { neatObjectQueryResultLabels } from '@client/app/utils/neatObjectQueryResultLabels';
 
 interface ICatchObjidProbe {
   job_id: string;
@@ -29,11 +29,7 @@ export const ROOT_URL = 'https://catch.astro.umd.edu/catch-stage/';
   providedIn: 'root'
 })
 export class NeatObjectQueryService {
-  constructor(
-    private httpClient: HttpClient,
-    private snackBar: MatSnackBar,
-    private store: Store<AppState>
-  ) {}
+  constructor(private httpClient: HttpClient, private store: Store<AppState>) {}
 
   /**
    * Runs sequence of API calls to (i) check for cached data or trigger big query,
@@ -131,12 +127,7 @@ export class NeatObjectQueryService {
     });
   }
 
-  getNeatResultLabels() {
-    const url = ROOT_URL + 'caught/labels';
-    return this.httpClient.get<INeatObjectQueryResultLabels>(url).pipe(
-      map((data: INeatObjectQueryResultLabels) => {
-        return data;
-      })
-    );
+  getNeatResultLabels(): Observable<INeatObjectQueryResultLabels> {
+    return of(neatObjectQueryResultLabels);
   }
 }

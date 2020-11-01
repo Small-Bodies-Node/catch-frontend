@@ -12,19 +12,13 @@ import { AppState } from '../../reducers';
 
 @Injectable()
 export class NavigationEffects {
-  //
+  // ~~~~~~~~~~~~~~~~~~~~~~~~>>>
 
   constructor(private actions$: Actions<any>, private store$: Store<AppState>) {}
 
   @Effect()
   collectNavigationRecords$: Observable<Action> = this.actions$.pipe(
-    //
-
-    // Used to check actions being triggered
-    // map(_ => {
-    //   console.log('Action:   ', _);
-    //   return _;
-    // }),
+    // ----------------------------------------------------------->>>
 
     // Allow only actions of type NavigationCollectRouteRecords
     ofType(ENavigationActionTypes.NavigationCollectRouteRecords),
@@ -38,7 +32,8 @@ export class NavigationEffects {
     map(([action, navState]) => {
       return new NavigationSetRouteRecords({
         presentRoute: action.payload.newPresentRoute,
-        previousRoute: navState.presentRoute
+        previousRoute: navState.presentRoute,
+        isNewRouteScheduled: false
       });
     })
   );

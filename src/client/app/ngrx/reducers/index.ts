@@ -29,7 +29,7 @@ export interface AppState {
   router: RouterReducerState;
 }
 
-export const reducers: ActionReducerMap<AppState> = {
+export const reducers: ActionReducerMap<AppState, any> = {
   siteSettingsSubstate: siteSettingsReducer,
   objectNameMatch: ObjectNameMatchReducer,
   neatObjectQuery: NeatObjectQueryReducer,

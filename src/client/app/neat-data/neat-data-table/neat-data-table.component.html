@@ -4,17 +4,7 @@
 >
   <div class="table-wrapper">
     <table mat-table matSort [dataSource]="tableData" class="data-table mat-elevation-z8XXX">
-      <ng-container
-        class="first-thumbnail-column                                "
-        [matColumnDef]="'thumbnail_url'"
-      >
-        <!-- <th mat-header-cell class="table-header-cell" *matHeaderCellDef mat-sort-header>
-          <button mat-button>
-            <mat-icon matTooltip="Choose table columns">
-              view_column
-            </mat-icon>
-          </button>
-        </th> -->
+      <ng-container class="first-thumbnail-column" [matColumnDef]="'thumbnail_url'">
         <th mat-cell class="table-header-cell" *matHeaderCellDef>
           <button mat-button (click)="openSettingsDialog($event)">
             <mat-icon matTooltip="Choose table columns">
@@ -40,7 +30,7 @@
       >
         <th mat-header-cell class="table-header-cell" *matHeaderCellDef mat-sort-header>
           <span style="white-space: nowrap;">
-            {{ resultLabels[col] && resultLabels[col].label }}
+            {{ resultLabels![col] && resultLabels[col]!.label }}
           </span>
 
           <div *ngIf="'raDec' === col" class="wlot" (click)="onClickPlotly($event, 'raDec')">
@@ -81,10 +71,10 @@
         </th>
         <td
           mat-cell
+          (click)="selectRow(jj)"
           class="table-body-cell"
           [ngClass]="{ 'highlighted-cell': jj === selectedIndex }"
           *matCellDef="let element; let jj = index"
-          (click)="selectRow(jj)"
         >
           <div class="cell-content-wrapper">
             <span *ngIf="!!element[col].length && element[col].includes('http'); else notShow">
@@ -93,10 +83,10 @@
             </span>
             <ng-template #notShow>
               <span class="left-align-table-cell-content">
-                {{ formatCellEntry(element[col], resultLabels[col]) }}
+                {{ formatCellEntry(element[col], resultLabels![col]) }}
               </span>
               <span class="invisibly-size-table-cell">
-                {{ formatCellEntry(element[col], resultLabels[col]) }}
+                {{ formatCellEntry(element[col], resultLabels![col]) }}
               </span>
             </ng-template>
           </div>

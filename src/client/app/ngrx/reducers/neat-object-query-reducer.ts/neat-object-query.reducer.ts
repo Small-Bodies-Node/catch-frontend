@@ -12,20 +12,21 @@ import {
   TColInitState,
   initialColumnState
 } from '@client/app/core/services/neat-data/neat-initial-data-columns.service';
+import { neatObjectQueryResultLabels } from '@client/app/utils/neatObjectQueryResultLabels';
 
 export interface INeatObjectQuerySubstate {
   neatObjectSelectedResultIndex: number;
   neatObjectQueryResults: INeatObjectQueryResult[];
-  neatObjectQueryResultLabels: INeatObjectQueryResultLabels | undefined;
-  neatObjectQueryStatus?: INeatObjectQueryStatus;
+  neatObjectQueryResultLabels: INeatObjectQueryResultLabels;
+  neatObjectQueryStatus: INeatObjectQueryStatus;
   neatObjectQueryColumnState: TColInitState;
 }
 
 export const initialState: INeatObjectQuerySubstate = {
   neatObjectSelectedResultIndex: 0,
-  neatObjectQueryResults: undefined,
-  neatObjectQueryResultLabels: undefined,
-  neatObjectQueryStatus: undefined,
+  neatObjectQueryResults: [],
+  neatObjectQueryResultLabels,
+  neatObjectQueryStatus: { code: 'unknown' },
   neatObjectQueryColumnState: { ...initialColumnState }
 };
 

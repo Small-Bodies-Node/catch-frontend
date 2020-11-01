@@ -8,7 +8,31 @@ import { INavigationSubstate } from '../reducers/navigation-reducer/navigation.r
  *
  */
 
-export const selectNavigationRecords = createSelector(
+export const selectNavigationRecordsPresentRoute = createSelector(
   (state: AppState) => state.navigation,
-  (substate: INavigationSubstate) => substate
+  (substate: INavigationSubstate) => substate.presentRoute
+);
+
+export const selectNavigationRecordsPreviousRoute = createSelector(
+  (state: AppState) => state.navigation,
+  (substate: INavigationSubstate) => substate.previousRoute
+);
+
+export const selectIsNewRouteScheduled = createSelector(
+  (state: AppState) => state.navigation,
+  (substate: INavigationSubstate) => substate.isNewRouteScheduled
+);
+
+/**
+ *
+ * Compound Navigation Selectors
+ *
+ */
+
+export const selectNavigationRecords = createSelector(
+  selectNavigationRecordsPresentRoute,
+  selectNavigationRecordsPreviousRoute,
+  (presentRoute?: string, previousRoute?: string) => {
+    return { previousRoute, presentRoute };
+  }
 );

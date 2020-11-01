@@ -20,7 +20,7 @@ export class ContactPageComponent implements OnInit, AfterViewInit, OnDestroy {
 
   subscriptions: Subscription = new Subscription();
   recaptchaToken: string | undefined;
-  theme: TPermittedTheme;
+  theme?: TPermittedTheme;
   // Require user to perform recaptcha for every new message
   isMessageSendable = false;
 
@@ -47,7 +47,7 @@ export class ContactPageComponent implements OnInit, AfterViewInit, OnDestroy {
     setTimeout(() => {
       grecaptcha.render('recaptcha-id', {
         sitekey: environment.recaptchaSiteKey,
-        theme: this.theme.toUpperCase().includes('LIGHT') ? 'light' : 'dark',
+        theme: this.theme!.toUpperCase().includes('LIGHT') ? 'light' : 'dark',
         size: 'normal',
         callback: token => {
           this.recaptchaToken = token;
@@ -73,9 +73,9 @@ export class ContactPageComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.isFormSubmittable()) {
       this.emailer
         .sendEmail(
-          this.form.get('username').value,
-          this.form.get('email').value,
-          this.form.get('message').value,
+          this.form.get('username')?.value || '',
+          this.form.get('email')?.value || '',
+          this.form.get('message')?.value || '',
           this.recaptchaToken + ''
         )
         .subscribe(response => {
@@ -108,11 +108,11 @@ export class ContactPageComponent implements OnInit, AfterViewInit, OnDestroy {
       !!this.form.get('username') &&
       !!this.form.get('email') &&
       !!this.form.get('message') &&
-      !this.form.get('message').hasError('required') &&
-      !this.form.get('message').hasError('minlength') &&
-      !this.form.get('message').hasError('maxlength') &&
-      !this.form.get('email').hasError('required') &&
-      !this.form.get('username').hasError('required');
+      !this.form.get('message')!.hasError('required') &&
+      !this.form.get('message')!.hasError('minlength') &&
+      !this.form.get('message')!.hasError('maxlength') &&
+      !this.form.get('email')!.hasError('required') &&
+      !this.form.get('username')!.hasError('required');
     return isFormValid;
   }
 }

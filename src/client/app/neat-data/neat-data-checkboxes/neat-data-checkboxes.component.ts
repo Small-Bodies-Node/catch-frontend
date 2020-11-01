@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, Input, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import { MatCheckboxChange } from '@angular/material/checkbox';
 import { Subscription, combineLatest, interval, Observable } from 'rxjs';
 import { take, map, distinctUntilChanged, delay } from 'rxjs/operators';
@@ -27,20 +27,18 @@ export class NeatDataCheckboxesComponent implements OnInit, OnDestroy {
   //
 
   @ViewChild('checkboxesContainer')
-  checkboxesContainer: ElementRef<HTMLDivElement>;
+  checkboxesContainer!: ElementRef<HTMLDivElement>;
 
   subscriptions = new Subscription();
   allColNames: TColName[];
-  colState: TColInitState;
-  labels: INeatObjectQueryResultLabels;
+  colState!: TColInitState;
+  labels!: INeatObjectQueryResultLabels;
   latestData$: Observable<{ width: number }>;
 
   constructor(
     private neatInitColsService: NeatInitialDataColumnsService,
     private store: Store<AppState>
   ) {
-    // console.log('Hmmm...');
-
     this.allColNames = this.neatInitColsService.getOrderedColNames();
 
     this.subscriptions.add(
@@ -84,7 +82,7 @@ export class NeatDataCheckboxesComponent implements OnInit, OnDestroy {
 
   selectAll() {
     Object.keys(this.colState).forEach(key => {
-      this.colState[key] = true;
+      this.colState[key as keyof TColInitState] = true;
     });
     this.store.dispatch(new NeatObjectQuerySetColumnState({ newColState: { ...this.colState } }));
   }

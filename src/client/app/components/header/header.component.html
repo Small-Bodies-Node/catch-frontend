@@ -1,17 +1,17 @@
 <mat-toolbar class="main-mat-toolbar" color="primary">
-  <div class="not-showing-side-nav d-none d-md-flex">
+  <div class="not-showing-side-nav">
     <ul class="links-in-header">
-      <li routerLink>
-        <span style="font-size: 30px;"> CATCH </span>
+      <li (click)="_delayedRouting('home')">
+        <span style="font-size: 30px;">CATCH</span>
       </li>
-      <li routerLink="apis">
+      <li (click)="_delayedRouting('apis')">
         APIs
       </li>
 
-      <li routerLink="about">
+      <li (click)="_delayedRouting('about')">
         About
       </li>
-      <li routerLink="contact">
+      <li (click)="_delayedRouting('contact')">
         Contact
       </li>
     </ul>
@@ -20,12 +20,12 @@
       This div will use up in-between space and this text won't be seen
     </div>
 
-    <button mat-icon-button routerLink="settings">
+    <button mat-icon-button (click)="_delayedRouting('settings')">
       <fa-icon icon="cog" [fixedWidth]="true"></fa-icon>
     </button>
   </div>
 
-  <div class="showing-side-nav d-md-none">
+  <div class="showing-side-nav">
     <button matRipple mat-icon-button (click)="_openSidenav()">
       <fa-icon icon="bars" [fixedWidth]="true"></fa-icon>
     </button>
@@ -34,17 +34,15 @@
       This div will use up in-between space and this text won't be seen
     </div>
 
-    <ul style="background-color:rgba(255,0,0,0.0);">
-      <li routerLink>
-        <span style="font-size: 30px;"> CATCH </span>
-      </li>
-    </ul>
+    <div class="title" (click)="_delayedRouting('home')">
+      <span style="font-size: 30px;">CATCH</span>
+    </div>
 
     <div class="spacer">
       This div will use up in-between space and this text won't be seen
     </div>
 
-    <button mat-icon-button routerLink="settings">
+    <button mat-icon-button (click)="_delayedRouting('settings')">
       <fa-icon icon="cog" [fixedWidth]="true"></fa-icon>
     </button>
   </div>

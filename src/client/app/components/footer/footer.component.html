@@ -4,15 +4,15 @@
     *ngIf="!(isHappyWithCookie$ | async) as isNotHappyWithCookie; else isHappyWithCookie"
   >
     <div class="screen-filter"></div>
-
     <div>
       <span>
         This site uses third party services that will in general leave cookies. Click to accept
-        <a routerLink="terms">terms</a>.
+        <a routerLink="terms">terms</a>
+        .
       </span>
     </div>
     <div>
-      <button mat-raised-button (click)="acceptTerms($event)">
+      <button mat-raised-button (click)="acceptTerms()">
         I Accept
       </button>
     </div>

@@ -1,4 +1,4 @@
-import { Component, HostBinding, OnInit, AfterViewInit } from '@angular/core';
+import { Component, OnInit, AfterViewInit } from '@angular/core';
 import { AppState } from '../../ngrx/reducers';
 const startStars = require('./starry-sky.js');
 import { CometAnimation } from './comet-animations';
@@ -12,7 +12,6 @@ import {
   backgroundSwipeDurationMs as durationMs
 } from '@client/app/utils/animation-constants';
 import { selectNavigationRecords } from '@client/app/ngrx/selectors/navigation.selectors';
-// import {} from '../../utils/constants'
 
 @Component({
   selector: 'app-background-graphic',
@@ -20,23 +19,12 @@ import { selectNavigationRecords } from '@client/app/ngrx/selectors/navigation.s
   styleUrls: ['./background-graphic.component.scss']
 })
 export class BackgroundGraphicComponent implements OnInit, AfterViewInit {
-  //
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~>>>
 
-  // This HostBinding is equivalent to:
-  // <app-about-page [ngClass]="variableClassName"></...>
-  // @HostBinding('class')
   varHostClassName = 'host-dark-theme';
 
-  imageNames = [
-    //
-    'ground',
-    'mountains',
-    'telescope'
-  ];
+  imageNames = ['ground', 'mountains', 'telescope'];
 
-  // videoSrc = '../../../assets/videos/mp4s/cometz5.mp4';
-  // videoSrc = '../../../assets/videos/webms/cometz7.webm';
-  // videoSrc = './assets/videos/webms/cometz7.webm';
   videoSrc = 'assets/videos/webms/cometz7.webm';
 
   isBackgroundShown = true;
@@ -46,11 +34,12 @@ export class BackgroundGraphicComponent implements OnInit, AfterViewInit {
   videoId = simpleUid() + 'backgroundVideoId';
 
   constructor(private store: Store<AppState>) {
-    //
+    // ------------------------------------->>>
 
     // Listen to changes in route; show/hide background based on present route
     this.store.select(selectNavigationRecords).subscribe(navRecords => {
-      this.isBackgroundShown = ['/', '/home'].includes(navRecords.presentRoute);
+      this.isBackgroundShown =
+        !!navRecords.presentRoute && ['/', '/home'].includes(navRecords.presentRoute);
       this.varHostClassName = 'host-' + this.siteTheme.toLowerCase();
 
       if (false) setTimeout(() => startStars(), 300);
@@ -63,8 +52,6 @@ export class BackgroundGraphicComponent implements OnInit, AfterViewInit {
       }
     });
 
-    //
-
     this.store.select(selectSiteSettingsEffectiveTheme).subscribe(theme => {
       this.siteTheme = theme;
     });
@@ -76,11 +63,6 @@ export class BackgroundGraphicComponent implements OnInit, AfterViewInit {
     // Slow down video
     const vidEl = document.getElementById(this.videoId);
     if (!!vidEl) (vidEl as HTMLVideoElement).playbackRate = 0.4;
-
-    // setTimeout(() => startStars(), 300);
-    // setTimeout(() => CometAnimation.start(), 500);
-
-    // setTimeout(() => CometAnimation.stop(), 0);
   }
 
   backgroundImageClassLogic() {

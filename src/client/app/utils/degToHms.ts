@@ -1,6 +1,8 @@
-export function degToHms(ra: number, dec: number) {
+export function degToHms(ra?: number, dec?: number) {
   //
   // Adapted from: http://www.bdnyc.org/2012/10/decimal-deg-to-hms/
+
+  if (!ra || !dec) return [0, 0];
 
   const ds = dec < 0 ? -1 : 1;
   dec = Math.abs(dec);

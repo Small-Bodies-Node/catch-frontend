@@ -47,4 +47,21 @@ mat-toolbar {
       }
     }
   }
+
+  // Make header bar responsive
+  .showing-side-nav {
+    display: none;
+  }
+  .not-showing-side-nav {
+    display: flex;
+  }
+
+  @media only screen and (max-width: 600px) {
+    .showing-side-nav {
+      display: flex;
+    }
+    .not-showing-side-nav {
+      display: none;
+    }
+  }
 }

@@ -18,6 +18,7 @@ export interface INeatObjectQueryResultLabels {
   instrument: INeatObjectQueryResultLabel;
   jd: INeatObjectQueryResultLabel;
   phase: INeatObjectQueryResultLabel;
+  preview_url?: INeatObjectQueryResultLabel;
   productid: INeatObjectQueryResultLabel;
   ra: INeatObjectQueryResultLabel;
   raDec?: INeatObjectQueryResultLabel;
@@ -25,7 +26,7 @@ export interface INeatObjectQueryResultLabels {
   rh: INeatObjectQueryResultLabel;
   sangle: INeatObjectQueryResultLabel;
   selong: INeatObjectQueryResultLabel;
-  thumbnail_url: INeatObjectQueryResultLabel;
+  thumbnail_url?: INeatObjectQueryResultLabel;
   tmtp: INeatObjectQueryResultLabel;
   trueanomaly: INeatObjectQueryResultLabel;
   unc_a: INeatObjectQueryResultLabel;
@@ -36,7 +37,7 @@ export interface INeatObjectQueryResultLabels {
 }
 
 export interface INeatObjectQueryStatus {
-  objid: string;
-  message: string;
+  objid?: string;
+  message?: string;
   code: 'searching' | 'found' | 'notfound' | 'unknown';
 }

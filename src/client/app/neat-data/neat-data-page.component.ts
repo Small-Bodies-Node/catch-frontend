@@ -1,7 +1,7 @@
 import { Component, OnInit, HostBinding, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Observable, Subscription, combineLatest } from 'rxjs';
-import { map, take } from 'rxjs/operators';
+import { map } from 'rxjs/operators';
 import { Store } from '@ngrx/store';
 
 import {
@@ -16,10 +16,7 @@ import { selectNavigationRecords } from '../ngrx/selectors/navigation.selectors'
 import { IScreenDevice, TDevices } from '../models/screen-device.model';
 import { AppState } from '@client/app/ngrx/reducers';
 import { selectNeatObjectQueryResults } from '../ngrx/selectors/neat-object-query.selectors';
-import {
-  selectSiteSettingsTheme,
-  selectSiteSettingsEffectiveTheme
-} from '../ngrx/selectors/site-settings.selectors';
+import { selectSiteSettingsEffectiveTheme } from '../ngrx/selectors/site-settings.selectors';
 import { TPermittedTheme } from '../models/site-settings.model';
 
 interface ILatestData {
@@ -33,14 +30,13 @@ interface ILatestData {
   styleUrls: ['./neat-data-page.component.scss']
 })
 export class NeatDataPageComponent implements OnInit, OnDestroy {
-  //
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~>>>
 
   subscriptions = new Subscription();
-  objid: string;
+  objid?: string;
   isUiDrawn = false;
-  // selectedLayout = 'mobile';
   triSize = 20;
-  theme$: Observable<TPermittedTheme>;
+  theme$?: Observable<TPermittedTheme>;
   latestData$: Observable<ILatestData>;
 
   // This HostBinding is equivalent to: <app-about-page [ngClass]="variableClassName"></...>
@@ -51,6 +47,9 @@ export class NeatDataPageComponent implements OnInit, OnDestroy {
     private store: Store<AppState>,
     private router: Router
   ) {
+    //
+    // this.store.dispatch(new NavigationSetIsNewRouteScheduled({ isNewRouteScheduled: false }));
+
     // Extract query param from url
     this.subscriptions.add(
       combineLatest([
@@ -124,7 +123,6 @@ export class NeatDataPageComponent implements OnInit, OnDestroy {
   }
 
   refresh() {
-    // console.log('>>>>>');
     this.isUiDrawn = false;
     setTimeout(() => (this.isUiDrawn = true), 0);
   }
@@ -132,7 +130,6 @@ export class NeatDataPageComponent implements OnInit, OnDestroy {
   getLayoutClass(effectiveDevice: TDevices) {
     if (effectiveDevice === 'tablet') effectiveDevice = 'desktop';
     const layoutClass = effectiveDevice + '-layout';
-    // console.log('layoutClass', layoutClass);
     return layoutClass;
   }
 

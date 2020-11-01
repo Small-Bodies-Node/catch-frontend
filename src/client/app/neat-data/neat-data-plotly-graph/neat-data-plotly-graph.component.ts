@@ -12,10 +12,11 @@ import { IPlotlySettings, TPlotlyColor as Color } from '../../models/plotly.mode
 
 import { julianIntToDate } from '@client/app/utils/julian-to-date';
 import { selectSiteSettingsTheme } from '@client/app/ngrx/selectors/site-settings.selectors';
+import { INeatObjectQueryResultLabels } from '@client/app/models/neat-object-query-result-labels.model';
 
 export interface IPlotlyGraphInput {
-  xDataKey: string;
-  yDataKey?: string;
+  xDataKey: keyof INeatObjectQueryResultLabels;
+  yDataKey?: keyof INeatObjectQueryResultLabels;
   isMiniMode?: boolean;
   plotTitle?: string;
 }
@@ -27,15 +28,14 @@ export interface IPlotlyGraphInput {
   encapsulation: ViewEncapsulation.None
 })
 export class NeatDataPlotlyGraphComponent implements OnInit, OnChanges {
-  //
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~>>>
 
   @Input()
-  inputPlotlyParams: IPlotlyGraphInput;
+  inputPlotlyParams!: IPlotlyGraphInput;
 
-  // inputPlotlyParam$ = new BehaviorSubject<IPlotlyGraphInput>(this.inputPlotlyParams);
-  inputPlotlyParam$: BehaviorSubject<IPlotlyGraphInput>;
+  inputPlotlyParam$!: BehaviorSubject<IPlotlyGraphInput>;
 
-  public plotlySetting$: Observable<IPlotlySettings>;
+  plotlySetting$!: Observable<IPlotlySettings>;
 
   constructor(private store: Store<AppState>) {
     this.setPlotlySettings();
@@ -45,7 +45,7 @@ export class NeatDataPlotlyGraphComponent implements OnInit, OnChanges {
     this.inputPlotlyParam$ = new BehaviorSubject<IPlotlyGraphInput>(this.inputPlotlyParams);
   }
 
-  ngOnChanges(changes) {
+  ngOnChanges(changes: any) {
     if (!(changes.inputPlotlyParams && changes.inputPlotlyParams.currentValue)) return;
     this.inputPlotlyParam$.next(this.inputPlotlyParams);
   }
@@ -65,21 +65,21 @@ export class NeatDataPlotlyGraphComponent implements OnInit, OnChanges {
 
         // Extract vars from observables
         const isLightTheme = !!siteTheme.includes('LIGHT');
-        const { xDataKey, yDataKey, plotTitle, isMiniMode } = inputPlotlyParams;
+        const { xDataKey, yDataKey, isMiniMode } = inputPlotlyParams;
 
         // For now, we're only allowing two types of graph based on presence/absence of y data
         const plotType = yDataKey ? 'scatter' : 'histogram';
 
         // Data
-        const xData = results.map(el => el[xDataKey]);
-        const yData = !!yDataKey ? undefined : results.map(el => el[yDataKey]);
-        const tooltipInfo = results.map(el => el.jd).map(el => 'Date: ' + julianIntToDate(el));
+        const xData = !!results ? results.map(el => el[xDataKey]!) : [];
+        const yData = !!yDataKey ? undefined : results!.map(el => el[yDataKey!]!);
+        const tooltipInfo = results!.map(el => el.jd).map(el => 'Date: ' + julianIntToDate(el));
         const effectivePlotTitle = isMiniMode
           ? ''
           : this.breakUpText(
               !!yDataKey
                 ? `${xDataKey.toUpperCase()} vs ${yDataKey.toUpperCase()}`
-                : resultLabels[xDataKey].description
+                : resultLabels?.[xDataKey as keyof INeatObjectQueryResultLabels]?.description || ''
             );
 
         // Axes Config
@@ -87,7 +87,7 @@ export class NeatDataPlotlyGraphComponent implements OnInit, OnChanges {
         const yAxisTitle = isMiniMode ? '' : yDataKey || 'Frequency';
         const yAxisRange =
           plotType === 'scatter' && !!yData
-            ? [0, Math.ceil(Math.max.apply(null, yData))]
+            ? [0, Math.ceil(Math.max.apply(null, yData as number[]))]
             : undefined;
         const xAxisTicks: 'outside' | 'inside' | '' = !!isMiniMode ? '' : 'outside';
         const yAxisTicks: 'outside' | 'inside' | '' = !!isMiniMode ? '' : 'outside';
@@ -107,11 +107,11 @@ export class NeatDataPlotlyGraphComponent implements OnInit, OnChanges {
 
         // Combine
         const plotlySettings: IPlotlySettings = {
-          isMiniMode,
+          isMiniMode: !!isMiniMode,
           config: { displaylogo: false, responsive: true, displayModeBar: 'hover' },
           data: [
             {
-              x: xData,
+              x: xData!,
               y: !!yData ? yData : undefined,
               text: tooltipInfo,
               type: plotType,
@@ -219,10 +219,10 @@ export class NeatDataPlotlyGraphComponent implements OnInit, OnChanges {
   breakUpText(input: string, br = '<br>', lineMax = 20) {
     const res = input
       .split(/\s+/)
-      .reduce((acc, el) => {
+      .reduce((acc: any, el) => {
         if (!acc.length) return [el]; // First event
         const lastLength = acc
-          .reduce((acc2, el2) => (el2 === br ? [] : [...acc2, el2]), [])
+          .reduce((acc2: any, el2: any) => (el2 === br ? [] : [...acc2, el2]), [])
           .join(' ').length;
         return lastLength > lineMax ? [...acc, br, el] : [...acc, el];
       }, [])
@@ -234,17 +234,17 @@ export class NeatDataPlotlyGraphComponent implements OnInit, OnChanges {
    * Logic to prevent plotly dialog being too big or too small
    */
   getPlotSize(): { width: number; height: number } {
-    const isWide = window.innerWidth > window.innerHeight;
-    const maxSide = 800;
-    const side =
-      0.65 *
-      (isWide
-        ? window.innerHeight < maxSide
-          ? window.innerHeight
-          : maxSide
-        : window.innerWidth < maxSide
-        ? window.innerWidth
-        : maxSide);
+    // const isWide = window.innerWidth > window.innerHeight;
+    // const maxSide = 800;
+    // const side =
+    //   0.65 *
+    //   (isWide
+    //     ? window.innerHeight < maxSide
+    //       ? window.innerHeight
+    //       : maxSide
+    //     : window.innerWidth < maxSide
+    //     ? window.innerWidth
+    //     : maxSide);
 
     // return { width: side, height: side };
     return { width: 0.65 * window.innerWidth, height: window.innerHeight * 0.65 };

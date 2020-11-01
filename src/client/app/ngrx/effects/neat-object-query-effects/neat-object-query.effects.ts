@@ -66,15 +66,7 @@ export class NeatObjectQueryEffects {
           const isObjectFound = !!neatObjectQueryResults.length;
 
           // After results received we trigger change of route
-          if (!!isObjectFound) {
-            // setTimeout(
-            //   () =>
-            //     this.router.navigate(['neat'], {
-            //       queryParams: { objid: action.payload.objectName }
-            //     }),
-            //   50
-            // );
-          } else {
+          if (!isObjectFound) {
             setTimeout(() => this.router.navigate([''], {}), 50);
             this.snackBar.open(`Search did not yield data for ${objectName}`, 'Close', {
               duration: 5000
@@ -102,7 +94,7 @@ export class NeatObjectQueryEffects {
       ENeatObjectQueryActionTypes.NeatObjectQueryFetchResultLabels,
       ENeatObjectQueryActionTypes.NeatObjectQueryFetchResults
     ),
-    switchMap(action => {
+    switchMap(_ => {
       return this.neatObjectQueryer.getNeatResultLabels().pipe(
         map(neatObjectQueryResultLabels => {
           // Combine ra and dec into single entry

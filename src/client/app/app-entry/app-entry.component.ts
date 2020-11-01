@@ -1,12 +1,10 @@
-import { Component, ViewEncapsulation, ChangeDetectorRef, NgZone } from '@angular/core';
+import { Component, ChangeDetectorRef, NgZone } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { MatSidenav } from '@angular/material/sidenav';
-import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { AppState } from '../ngrx/reducers';
 import { TPermittedTheme } from '../models/site-settings.model';
 import { selectRouterUrl } from '../ngrx/selectors/router.selectors';
-import { selectNavigationRecords } from '../ngrx/selectors/navigation.selectors';
 import { NavigationCollectRouteRecords } from '../ngrx/actions/navigation.actions';
 import { INeatObjectQueryStatus } from '../models/neat-object-query-result-labels.model';
 import { SiteSettingsLoadAllFromLocalStorage } from '../ngrx/actions/site-settings.actions';
@@ -14,41 +12,43 @@ import { LocalStorageService } from '../core/services/local-storage/local-storag
 import { selectNeatObjectQueryStatus } from '../ngrx/selectors/neat-object-query.selectors';
 import { selectSiteSettingsEffectiveTheme } from '../ngrx/selectors/site-settings.selectors';
 import {
-  footerAnimationToFromHomePageDelayMs,
-  footerAnimationNotToFromHomePageDelayMs,
+  selectNavigationRecords,
+  selectIsNewRouteScheduled
+} from '../ngrx/selectors/navigation.selectors';
+import {
   defaultPageAnimationDelayMs,
   fromHomePageAnimationDelayMs,
   toHomePageAnimationDelayMs,
-  pageFadeInDurationMs
+  pageFadeDurationMs
 } from '../../app/utils/animation-constants';
-import { concatMap, map, distinctUntilChanged, withLatestFrom } from 'rxjs/operators';
-import { timer, of, interval, zip } from 'rxjs';
+import { concatMap } from 'rxjs/operators';
+import { timer, of } from 'rxjs';
 import { NavigationEnd, Router } from '@angular/router';
-
-// declare const gtag: any;
+import { DelayedRouterService } from '../core/services/delayed-router/delayed-router';
 
 @Component({
   selector: 'app-entry-root',
   templateUrl: './app-entry.component.html',
   styleUrls: ['./app-entry.component.scss']
-  // encapsulation: ViewEncapsulation.None
 })
 export class AppEntryComponent {
-  //
+  // ~~~~~~~~~~~~~~~~~~~~~~~~>>>
 
-  siteTheme: TPermittedTheme;
+  siteTheme!: TPermittedTheme;
   selectedRoute = '';
   isHomePage = false;
   isAppLoaded = false;
-  isFooterHidden = true;
+  isPageTransitionScheduled = true;
   isRoutedPageHidden = true;
   isReadyForAnimation = false;
-  neatQueryStatus: INeatObjectQueryStatus;
+  neatQueryStatus!: INeatObjectQueryStatus;
+  delayTimeMs = defaultPageAnimationDelayMs;
 
   constructor(
     private localStorageService: LocalStorageService,
     private store: Store<AppState>,
     private router: Router,
+    private delayedRouter: DelayedRouterService,
     private ref: ChangeDetectorRef,
     private ngZone: NgZone
   ) {
@@ -104,21 +104,14 @@ export class AppEntryComponent {
       const isToHomePage = navSubstate.presentRoute === '/';
       const isFromHomePage = navSubstate.previousRoute === '/';
 
-      // Control footer animation
-      this.isFooterHidden = true;
-      setTimeout(
-        () => (this.isFooterHidden = false),
-        isToHomePage || isFromHomePage
-          ? footerAnimationToFromHomePageDelayMs
-          : footerAnimationNotToFromHomePageDelayMs
-      );
-
       // Control routed-page animation
-      this.isRoutedPageHidden = true;
-      let delayTimeMs = defaultPageAnimationDelayMs;
-      if (isToHomePage) delayTimeMs = toHomePageAnimationDelayMs;
-      if (isFromHomePage) delayTimeMs = fromHomePageAnimationDelayMs;
-      setTimeout(() => (this.isRoutedPageHidden = false), delayTimeMs);
+      this.delayTimeMs = defaultPageAnimationDelayMs;
+      if (isToHomePage) this.delayTimeMs = toHomePageAnimationDelayMs;
+      if (isFromHomePage) this.delayTimeMs = fromHomePageAnimationDelayMs;
+    });
+
+    this.store.select(selectIsNewRouteScheduled).subscribe(isNewRouteScheduled => {
+      this.isPageTransitionScheduled = isNewRouteScheduled;
     });
 
     // Logic to react to messages received from server
@@ -138,6 +131,7 @@ export class AppEntryComponent {
         })
       )
       .subscribe(status => {
+        console.log('Status', status);
         setTimeout(() => {
           // Update component properties
           if (!!status) this.neatQueryStatus = { ...status };
@@ -152,9 +146,7 @@ export class AppEntryComponent {
               // Routing here has to be carried out within ngZone
               // See: https://stackoverflow.com/a/55087372/8620332
               this.ngZone.run(() => {
-                this.router.navigate(['neat'], {
-                  queryParams: { objid: status.objid }
-                });
+                this.delayedRouter.delayedRouter('neat', { queryParams: { objid: status.objid } });
               });
             }, 500);
           }
@@ -174,13 +166,22 @@ export class AppEntryComponent {
   }
 
   getPageAnimateStyle() {
-    if (this.isRoutedPageHidden) return {};
-    return { animation: `pageFadeIn ${pageFadeInDurationMs}ms ease-in-out 0ms 1 normal forwards` };
+    const animation = this.isPageTransitionScheduled
+      ? `pageFadeOut ${pageFadeDurationMs}ms ease-in-out 0ms 1 normal forwards`
+      : `pageFadeIn ${pageFadeDurationMs}ms ease-in-out ${this.delayTimeMs}ms 1 normal forwards`;
+    return { animation };
+  }
+
+  getFooterAnimateStyle() {
+    const top = this.isPageTransitionScheduled || !this.isAppLoaded ? null : 0;
+    const transition = this.isPageTransitionScheduled
+      ? `top ${pageFadeDurationMs}ms ease-in-out 0ms`
+      : `top ${pageFadeDurationMs}ms ease-in-out ${this.delayTimeMs}ms`;
+    return { top, transition };
   }
 
   getSearchMessage(neatQueryStatus: any) {
     const result = ('' + neatQueryStatus.objid + ': ' + neatQueryStatus.message).replace('.', '');
-    // console.log('!!!result', neatQueryStatus, result);
     return result;
   }
 }

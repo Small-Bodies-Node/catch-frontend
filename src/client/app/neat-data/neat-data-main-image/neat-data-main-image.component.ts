@@ -8,14 +8,15 @@ import {
 } from '@client/app/ngrx/selectors/neat-object-query.selectors';
 import { combineLatest, Observable, interval, from } from 'rxjs';
 import { map, distinctUntilChanged, delay, switchMap } from 'rxjs/operators';
+import { INeatObjectQueryResult } from '@client/app/models/neat-object-query-result.model';
 
 interface ILatestData {
   selectedResultIndex: number;
+  width: number;
+  height: number;
   thumbUrl: string;
   fullUrl: string;
   fitsUrl: string;
-  width: number;
-  height: number;
 }
 
 @Component({
@@ -25,11 +26,13 @@ interface ILatestData {
   encapsulation: ViewEncapsulation.None
 })
 export class NeatDataMainImageComponent {
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~>>>
+
   @ViewChild('imagesWrapper')
-  imageWrapperDiv: ElementRef<HTMLDivElement>;
+  imageWrapperDiv!: ElementRef<HTMLDivElement>;
 
   @Input()
-  objid: string;
+  objid!: string;
 
   isFits = false;
 
@@ -37,9 +40,9 @@ export class NeatDataMainImageComponent {
 
   latestData$: Observable<ILatestData>;
 
-  mainImageUrl: string;
-
   constructor(private store: Store<AppState>) {
+    // ------------------------------------->>>
+
     // todo: fix this sh***y-interval approach to checking width changes!
     this.latestData$ = combineLatest([
       interval(1000).pipe(
@@ -76,8 +79,15 @@ export class NeatDataMainImageComponent {
   /**
    * If preview_url exists, use that for main image, else use thumbnail
    */
-  async chooseFullImageUrl([width, height, results, selectedResultIndex]): Promise<ILatestData> {
+  async chooseFullImageUrl([width, height, results, selectedResultIndex]: [
+    number,
+    number,
+    INeatObjectQueryResult[],
+    number
+  ]): Promise<ILatestData> {
     return new Promise(resolve => {
+      // ----------------------->>>
+
       const result = {
         width,
         height,
@@ -87,8 +97,10 @@ export class NeatDataMainImageComponent {
         fullUrl: results[selectedResultIndex].preview_url
       };
 
+      if (!result.fullUrl) resolve(result);
+
       const img = new Image();
-      img.src = results[selectedResultIndex].preview_url;
+      img.src = result.fullUrl!;
       img.onload = () => {
         try {
           resolve(result);
@@ -104,15 +116,12 @@ export class NeatDataMainImageComponent {
     });
   }
 
-  toggleFits(event: MouseEvent) {
-    // event.preventDefault();
-    // event.stopPropagation();
-    // console.log('event', event, typeof event);
+  toggleFits() {
     this.isFits = !this.isFits;
     if (!this.isFits) this.isButtonRaised = false;
   }
 
-  raiseButton(e) {
+  raiseButton() {
     this.isButtonRaised = true;
   }
 }

@@ -35,4 +35,4 @@ export const footerAnimationNotToFromHomePageDelayMs = 500;
 export const defaultPageAnimationDelayMs = 500;
 export const toHomePageAnimationDelayMs = 1900;
 export const fromHomePageAnimationDelayMs = 1500;
-export const pageFadeInDurationMs = 500;
+export const pageFadeDurationMs = 500;

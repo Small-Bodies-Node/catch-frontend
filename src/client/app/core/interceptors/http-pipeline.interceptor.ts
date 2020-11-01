@@ -7,8 +7,8 @@ import {
   HttpErrorResponse,
   HttpResponse
 } from '@angular/common/http';
-import { Observable, throwError, of } from 'rxjs';
-import { timeout, map, catchError, filter, retry } from 'rxjs/operators';
+import { Observable, throwError } from 'rxjs';
+import { timeout, map, catchError } from 'rxjs/operators';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { apiDefaultTimeoutMs } from 'src/client/app/utils/constants';
 import { Store } from '@ngrx/store';
@@ -33,7 +33,7 @@ export class PipelineInterceptor implements HttpInterceptor {
     //
     // Create rxjs pipeline for handling response events
     //
-    const timeoutValue = parseInt(req.headers.get('timeout'), 10) || apiDefaultTimeoutMs;
+    const timeoutValue = parseInt(req.headers.get('timeout') || '1', 10) || apiDefaultTimeoutMs;
 
     return next.handle(req).pipe(
       /**
@@ -108,7 +108,7 @@ export class PipelineInterceptor implements HttpInterceptor {
           // console.log('API pipeline completed');
           return event;
         },
-        err => {
+        (err: any) => {
           console.log('Got that error');
           return err;
         }

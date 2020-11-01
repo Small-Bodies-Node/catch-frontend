@@ -1,21 +1,17 @@
 .image-wheel-container {
-  // position: absolute;
-  // top: 0px;
-  // bottom: 0px;
-  // left: 0px;
-  // right: 0px;
   width: 100%;
   height: 100%;
   overflow-x: scroll;
   box-sizing: border-box;
 
   .mini-image {
-    padding: 1px;
+    // padding: 1px;
     display: inline-block;
     background-size: contain;
     background-repeat: no-repeat;
     background-color: rgba(white, 0.1);
     background-position: center center;
-    margin: 2px;
+    // margin: 2px;
+    box-sizing: border-box;
   }
 }

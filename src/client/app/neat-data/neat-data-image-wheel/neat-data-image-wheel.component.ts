@@ -7,7 +7,7 @@ import {
 } from '@client/app/ngrx/selectors/neat-object-query.selectors';
 import { INeatObjectQueryResult } from '@client/app/models/neat-object-query-result.model';
 import { take, map, distinctUntilChanged, delay } from 'rxjs/operators';
-import { Observable, Subscription, combineLatest, interval } from 'rxjs';
+import { Subscription, combineLatest, interval } from 'rxjs';
 import { NeatObjectQuerySetSelectedResultIndex } from '@client/app/ngrx/actions/neat-object-query.actions';
 
 @Component({
@@ -16,10 +16,10 @@ import { NeatObjectQuerySetSelectedResultIndex } from '@client/app/ngrx/actions/
   styleUrls: ['./neat-data-image-wheel.component.scss']
 })
 export class NeatDataImageWheelComponent implements OnInit, OnDestroy {
-  //
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~>>>
 
   @ViewChild('imageWheelContainer')
-  imageWheelContainerDiv: ElementRef<HTMLDivElement>;
+  imageWheelContainerDiv!: ElementRef<HTMLDivElement>;
 
   @Input()
   isVertical = false;
@@ -27,11 +27,11 @@ export class NeatDataImageWheelComponent implements OnInit, OnDestroy {
   // @Input()
   // size = '100px';
 
-  results: INeatObjectQueryResult[];
-  selectedResultIndex: number;
+  results!: INeatObjectQueryResult[];
+  selectedResultIndex!: number;
   subscriptions = new Subscription();
-  width: string;
-  height: string;
+  width!: string;
+  height!: string;
 
   constructor(private store: Store<AppState>) {
     this.store
@@ -83,6 +83,7 @@ export class NeatDataImageWheelComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {}
+
   ngOnDestroy() {
     this.subscriptions.unsubscribe();
   }
@@ -93,16 +94,13 @@ export class NeatDataImageWheelComponent implements OnInit, OnDestroy {
     return imageUrls;
   }
 
-  getStyleObject(url: string, index: number) {
+  getStyleObject(url: string) {
     const styleObject: Partial<CSSStyleDeclaration> = {
       backgroundImage: `url(${url})`,
       width: this.isVertical ? this.width : this.height,
       height: this.isVertical ? this.width : this.height,
-      marginBottom: '5px'
+      margin: this.isVertical ? '2px 0px' : '0px 2px'
     };
-    // if (index === this.selectedResultIndex) {
-    //   styleObject.border = 'solid 2px red';
-    // }
     return styleObject;
   }
 
