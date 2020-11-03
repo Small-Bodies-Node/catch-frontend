@@ -36,7 +36,6 @@ export class NeatDataPageComponent implements OnInit, OnDestroy {
   objid?: string;
   isUiDrawn = false;
   triSize = 20;
-  theme$?: Observable<TPermittedTheme>;
   latestData$: Observable<ILatestData>;
 
   // This HostBinding is equivalent to: <app-about-page [ngClass]="variableClassName"></...>
@@ -47,9 +46,6 @@ export class NeatDataPageComponent implements OnInit, OnDestroy {
     private store: Store<AppState>,
     private router: Router
   ) {
-    //
-    // this.store.dispatch(new NavigationSetIsNewRouteScheduled({ isNewRouteScheduled: false }));
-
     // Extract query param from url
     this.subscriptions.add(
       combineLatest([

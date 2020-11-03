@@ -4,7 +4,8 @@ import { IScreenDeviceSubstate } from '../reducers/screen-device-reducer/screen-
 export enum EScreenDeviceActionTypes {
   ScreenDeviceSetDevice = '[ScreenDevice] Set Device',
   ScreenDeviceSetLayout = '[ScreenDevice] Set Layout',
-  ScreenDeviceSetScreenWidth = '[ScreenDevice] Set Screen Width'
+  ScreenDeviceSetScreenWidth = '[ScreenDevice] Set Screen Width',
+  ScreenDeviceSetScreenHeight = '[ScreenDevice] Set Screen Height'
 }
 
 export class ScreenDeviceSetDevice implements Action {
@@ -21,8 +22,13 @@ export class ScreenDeviceSetScreenWidth implements Action {
   readonly type = EScreenDeviceActionTypes.ScreenDeviceSetScreenWidth;
   constructor(public payload: { width: number }) {}
 }
+export class ScreenDeviceSetScreenHeight implements Action {
+  readonly type = EScreenDeviceActionTypes.ScreenDeviceSetScreenHeight;
+  constructor(public payload: { height: number }) {}
+}
 
 export type ScreenDeviceActions =
   | ScreenDeviceSetDevice
   | ScreenDeviceSetScreenWidth
+  | ScreenDeviceSetScreenHeight
   | ScreenDeviceSetLayout;

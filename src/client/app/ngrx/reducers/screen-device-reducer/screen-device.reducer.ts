@@ -7,7 +7,8 @@ export interface IScreenDeviceSubstate extends IScreenDevice {}
 export const initialState: IScreenDeviceSubstate = {
   device: getDevice(),
   layout: 'auto',
-  screenWidthPxls: window.outerWidth
+  screenWidthPxls: window.innerWidth,
+  screenHeightPxls: window.innerHeight
 };
 
 export function ScreenDeviceReducer(
@@ -31,6 +32,12 @@ export function ScreenDeviceReducer(
       return {
         ...state,
         screenWidthPxls: action.payload.width
+      };
+
+    case EScreenDeviceActionTypes.ScreenDeviceSetScreenHeight:
+      return {
+        ...state,
+        screenHeightPxls: action.payload.height
       };
 
     default:

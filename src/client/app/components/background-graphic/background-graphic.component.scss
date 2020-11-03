@@ -7,6 +7,12 @@
   width: 100%;
 }
 
+.comet-wrapper {
+  height: 100%;
+  width: 100%;
+  transition: opacity 1500ms ease-in-out;
+}
+
 .background-image {
   position: absolute;
   top: 0px;
@@ -33,6 +39,9 @@
 
 .fade-out {
   opacity: 0;
+}
+.fade-in {
+  opacity: 1;
 }
 
 .stars-wrapper {

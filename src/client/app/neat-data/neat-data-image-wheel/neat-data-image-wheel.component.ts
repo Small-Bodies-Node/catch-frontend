@@ -24,9 +24,6 @@ export class NeatDataImageWheelComponent implements OnInit, OnDestroy {
   @Input()
   isVertical = false;
 
-  // @Input()
-  // size = '100px';
-
   results!: INeatObjectQueryResult[];
   selectedResultIndex!: number;
   subscriptions = new Subscription();

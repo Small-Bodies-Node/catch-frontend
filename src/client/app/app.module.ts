@@ -18,6 +18,7 @@ import { CommonModule } from '@angular/common';
 import { AboutPageComponent } from './components/about-page/about-page.component';
 import { AppEntryComponent } from './app-entry/app-entry.component';
 import { BackgroundGraphicComponent } from './components/background-graphic/background-graphic.component';
+import { CometAnimationsCssComponent } from './components/background-graphic/comet-animations-css/comet-animations-css.component';
 import { ContactPageComponent } from './components/contact-page/contact-page.component';
 import { FooterComponent } from './components/footer/footer.component';
 import { GenericDialogComponent } from './components/generic-dialog/generic-dialog.component';
@@ -54,6 +55,7 @@ const isMockDataUsed = !true;
     AboutPageComponent,
     AppEntryComponent,
     BackgroundGraphicComponent,
+    CometAnimationsCssComponent,
     ContactPageComponent,
     FooterComponent,
     HeaderComponent,

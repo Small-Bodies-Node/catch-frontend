@@ -8,7 +8,8 @@ import { IScreenDevice } from '@client/app/models/screen-device.model';
 import {
   ScreenDeviceSetDevice,
   ScreenDeviceSetScreenWidth,
-  ScreenDeviceActions
+  ScreenDeviceActions,
+  ScreenDeviceSetScreenHeight
 } from '../../actions/screen-device.actions';
 
 @Injectable()
@@ -17,7 +18,8 @@ export class ScreenDeviceEffects {
 
   resizeEvent$ = new BehaviorSubject<Partial<IScreenDevice>>({
     device: getDevice(),
-    screenWidthPxls: window.outerWidth
+    screenWidthPxls: window.innerWidth,
+    screenHeightPxls: window.innerHeight
   });
 
   constructor() {
@@ -25,7 +27,8 @@ export class ScreenDeviceEffects {
       setTimeout(() => {
         this.resizeEvent$.next({
           device: getDevice(),
-          screenWidthPxls: window.outerWidth
+          screenWidthPxls: window.innerWidth,
+          screenHeightPxls: window.innerHeight
         });
       }, 500);
     });
@@ -38,7 +41,8 @@ export class ScreenDeviceEffects {
     switchMap(_ => {
       return concat(
         of(new ScreenDeviceSetDevice({ device: _.device! })),
-        of(new ScreenDeviceSetScreenWidth({ width: _.screenWidthPxls! }))
+        of(new ScreenDeviceSetScreenWidth({ width: _.screenWidthPxls! })),
+        of(new ScreenDeviceSetScreenHeight({ height: _.screenHeightPxls! }))
       );
     })
   );

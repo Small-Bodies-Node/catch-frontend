@@ -41,7 +41,7 @@ export class NeatObjectQueryService {
     isCached = true;
 
     const url = ROOT_URL + `query/moving?target=${objid}${isCached ? '' : '&cached=false'}`;
-    // console.log('url', url);
+    console.log('url', url);
 
     return this.httpClient.get<ICatchObjidProbe>(url).pipe(
       map((data: ICatchObjidProbe) => {

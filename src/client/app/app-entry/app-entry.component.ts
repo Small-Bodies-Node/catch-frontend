@@ -131,7 +131,6 @@ export class AppEntryComponent {
         })
       )
       .subscribe(status => {
-        console.log('Status', status);
         setTimeout(() => {
           // Update component properties
           if (!!status) this.neatQueryStatus = { ...status };

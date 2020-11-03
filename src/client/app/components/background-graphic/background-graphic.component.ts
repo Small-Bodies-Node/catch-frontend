@@ -1,7 +1,7 @@
 import { Component, OnInit, AfterViewInit } from '@angular/core';
 import { AppState } from '../../ngrx/reducers';
 const startStars = require('./starry-sky.js');
-import { CometAnimation } from './comet-animations';
+import { CometAnimation } from './comet-animations-svg';
 
 import { Store } from '@ngrx/store';
 import { selectSiteSettingsEffectiveTheme } from '@client/app/ngrx/selectors/site-settings.selectors';
@@ -43,7 +43,7 @@ export class BackgroundGraphicComponent implements OnInit, AfterViewInit {
       this.varHostClassName = 'host-' + this.siteTheme.toLowerCase();
 
       if (false) setTimeout(() => startStars(), 300);
-      if (!false) {
+      if (false) {
         if (!!this.isBackgroundShown) setTimeout(() => CometAnimation.start(), 0);
         if (!this.isBackgroundShown)
           setTimeout(() => {
