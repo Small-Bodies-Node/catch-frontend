@@ -33,7 +33,8 @@ export class PipelineInterceptor implements HttpInterceptor {
     //
     // Create rxjs pipeline for handling response events
     //
-    const timeoutValue = parseInt(req.headers.get('timeout') || '1', 10) || apiDefaultTimeoutMs;
+    const timeoutValue =
+      parseInt(req.headers.get('timeout') || `${apiDefaultTimeoutMs}`, 10) || apiDefaultTimeoutMs;
 
     return next.handle(req).pipe(
       /**
