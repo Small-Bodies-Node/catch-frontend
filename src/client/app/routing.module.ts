@@ -36,7 +36,7 @@ const routes: Routes = [
     pathMatch: 'full'
   },
   {
-    path: 'neat',
+    path: 'data',
     loadChildren: () => import('./neat-data/neat-data.module').then(m => m.NeatDataModule)
   },
   {

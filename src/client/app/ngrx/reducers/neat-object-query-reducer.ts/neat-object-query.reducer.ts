@@ -16,7 +16,7 @@ import { neatObjectQueryResultLabels } from '@client/app/utils/neatObjectQueryRe
 
 export interface INeatObjectQuerySubstate {
   neatObjectSelectedResultIndex: number;
-  neatObjectQueryResults: INeatObjectQueryResult[];
+  neatObjectQueryResults?: INeatObjectQueryResult[];
   neatObjectQueryResultLabels: INeatObjectQueryResultLabels;
   neatObjectQueryStatus: INeatObjectQueryStatus;
   neatObjectQueryColumnState: TColInitState;
@@ -24,7 +24,7 @@ export interface INeatObjectQuerySubstate {
 
 export const initialState: INeatObjectQuerySubstate = {
   neatObjectSelectedResultIndex: 0,
-  neatObjectQueryResults: [],
+  neatObjectQueryResults: undefined,
   neatObjectQueryResultLabels,
   neatObjectQueryStatus: { code: 'unknown' },
   neatObjectQueryColumnState: { ...initialColumnState }
@@ -36,6 +36,10 @@ export function NeatObjectQueryReducer(
 ): INeatObjectQuerySubstate {
   switch (action.type) {
     case ENeatObjectQueryActionTypes.NeatObjectQuerySetSelectedResultIndex:
+      // ----------------------------------------->>>
+
+      console.log('---->', action);
+
       return {
         ...state,
         neatObjectSelectedResultIndex: action.payload.index

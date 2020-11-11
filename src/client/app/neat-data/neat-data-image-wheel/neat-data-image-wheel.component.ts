@@ -24,7 +24,7 @@ export class NeatDataImageWheelComponent implements OnInit, OnDestroy {
   @Input()
   isVertical = false;
 
-  results!: INeatObjectQueryResult[];
+  results?: INeatObjectQueryResult[];
   selectedResultIndex!: number;
   subscriptions = new Subscription();
   width!: string;
@@ -92,8 +92,11 @@ export class NeatDataImageWheelComponent implements OnInit, OnDestroy {
   }
 
   getStyleObject(url: string) {
+    // Use higher-res image instead of thumbnail
+    url = url?.replace('_thumb', '');
+
     const styleObject: Partial<CSSStyleDeclaration> = {
-      backgroundImage: `url(${url})`,
+      backgroundImage: `url(${url || ''})`,
       width: this.isVertical ? this.width : this.height,
       height: this.isVertical ? this.width : this.height,
       margin: this.isVertical ? '2px 0px' : '0px 2px'

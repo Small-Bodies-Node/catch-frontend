@@ -145,7 +145,7 @@ export class AppEntryComponent {
               // Routing here has to be carried out within ngZone
               // See: https://stackoverflow.com/a/55087372/8620332
               this.ngZone.run(() => {
-                this.delayedRouter.delayedRouter('neat', { queryParams: { objid: status.objid } });
+                this.delayedRouter.delayedRouter('data', { queryParams: { objid: status.objid } });
               });
             }, 500);
           }

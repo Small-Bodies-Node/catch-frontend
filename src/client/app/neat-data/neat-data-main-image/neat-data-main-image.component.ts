@@ -14,9 +14,9 @@ interface ILatestData {
   selectedResultIndex: number;
   width: number;
   height: number;
-  thumbUrl: string;
-  fullUrl: string;
-  fitsUrl: string;
+  thumbUrl?: string;
+  fullUrl?: string;
+  fitsUrl?: string;
 }
 
 @Component({
@@ -40,6 +40,8 @@ export class NeatDataMainImageComponent {
 
   latestData$: Observable<ILatestData>;
 
+  isFitsButtonDisabled = false;
+
   constructor(private store: Store<AppState>) {
     // ------------------------------------->>>
 
@@ -60,19 +62,6 @@ export class NeatDataMainImageComponent {
       switchMap(([width, height, results, selectedResultIndex]) => {
         return from(this.chooseFullImageUrl([width, height, results, selectedResultIndex]));
       })
-      // map(
-      //   ([width, height, results, selectedResultIndex]): ILatestData => {
-      //     return {
-      //       width,
-      //       height,
-      //       // height: width - 44 - 42,
-      //       selectedResultIndex,
-      //       fitsUrl: results[selectedResultIndex].cutout_url,
-      //       thumbUrl: results[selectedResultIndex].thumbnail_url,
-      //       fullUrl: results[selectedResultIndex].preview_url
-      //     };
-      //   }
-      // )
     );
   }
 
@@ -82,34 +71,50 @@ export class NeatDataMainImageComponent {
   async chooseFullImageUrl([width, height, results, selectedResultIndex]: [
     number,
     number,
-    INeatObjectQueryResult[],
+    INeatObjectQueryResult[] | undefined,
     number
   ]): Promise<ILatestData> {
     return new Promise(resolve => {
       // ----------------------->>>
 
+      // Always reset fits button to show jpg first
+      this.isFits = false;
+      this.isButtonRaised = false;
+
+      // Determine best image for thumbnail display
+      const fullUrl =
+        results?.[selectedResultIndex]?.preview_url ||
+        results?.[selectedResultIndex]?.thumbnail_url;
+
       const result = {
         width,
         height,
         selectedResultIndex,
-        fitsUrl: results[selectedResultIndex].cutout_url,
-        thumbUrl: results[selectedResultIndex].thumbnail_url,
-        fullUrl: results[selectedResultIndex].preview_url
+        fitsUrl: results?.[selectedResultIndex]?.cutout_url,
+        thumbUrl: results?.[selectedResultIndex]?.thumbnail_url,
+        fullUrl
       };
 
-      if (!result.fullUrl) resolve(result);
+      // TEMPORARY: disable fits button if skymapper
+      const source = results?.[selectedResultIndex]?.source;
+      this.isFitsButtonDisabled = !!source && source.toLowerCase() === 'skymapper';
 
+      // TEMPORARY: rename url resources to point to catch instead of catchsandbox
+      result.fitsUrl && result.fitsUrl.replace('catchsandbox', 'catch');
+      result.thumbUrl && result.thumbUrl.replace('catchsandbox', 'catch');
+      result.fullUrl && result.fullUrl.replace('catchsandbox', 'catch');
+
+      // Pre-download image
       const img = new Image();
-      img.src = result.fullUrl!;
+      img.src = result.fullUrl || '';
       img.onload = () => {
         try {
           resolve(result);
         } catch (err) {
-          //
+          console.log('>>>', err);
         }
       };
       img.onerror = () => {
-        // console.log(err);
         result.fullUrl = result.thumbUrl;
         resolve(result);
       };
@@ -123,5 +128,11 @@ export class NeatDataMainImageComponent {
 
   raiseButton() {
     this.isButtonRaised = true;
+  }
+
+  chooseImage(url?: string) {
+    // Decide whether to use thumbnail or not
+    // console.log('url', url);
+    return url && url.replace('_thumb', '');
   }
 }

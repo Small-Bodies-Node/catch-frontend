@@ -20,10 +20,16 @@ interface ICatchObjidProbe {
 
 export type TQueryNeatObject =
   | { status: 'error'; message: string }
-  | { results: INeatObjectQueryResult[]; status: 'success' };
+  | { status: 'success'; results: INeatObjectQueryResult[] };
+
+type TJobStreamResult =
+  | { status: 'error'; message: string }
+  | { status: 'success'; job_id: string };
 
 // export const ROOT_URL = 'https://musforti.astro.umd.edu/catch/';
-export const ROOT_URL = 'https://catch.astro.umd.edu/catch-stage/';
+// export const ROOT_URL = 'https://catch.astro.umd.edu/catch-stage/';
+// export const ROOT_URL = 'https://catchsandbox.astro.umd.edu/api/';
+export const ROOT_URL = 'https://catch.astro.umd.edu/api/';
 
 @Injectable({
   providedIn: 'root'
@@ -40,8 +46,14 @@ export class NeatObjectQueryService {
     // Don't allow user to re-compute queries from UI
     isCached = true;
 
+    if (!objid) {
+      return of({
+        status: 'error',
+        message: 'You must provide a target'
+      });
+    }
+
     const url = ROOT_URL + `query/moving?target=${objid}${isCached ? '' : '&cached=false'}`;
-    console.log('url', url);
 
     return this.httpClient.get<ICatchObjidProbe>(url).pipe(
       map((data: ICatchObjidProbe) => {
@@ -49,6 +61,9 @@ export class NeatObjectQueryService {
       }),
       // delay(isCached ? 1 * 1000 : 0),
       switchMap(data => {
+        if (!data.job_id) {
+          throw new Error('No valid job_id was returned');
+        }
         // If we did not just trigger a queued query then we can grab results immediately
         if (!data.queued) {
           // console.log('DENIED 1!!!');
@@ -65,7 +80,15 @@ export class NeatObjectQueryService {
         }
         // Else, listen to SSE stream and then grab data
         return from(this.watchJobStream(data.job_id)).pipe(
-          switchMap(job_id => {
+          switchMap(result => {
+            // ------------->>>
+
+            if (result.status === 'error') {
+              throw new Error(result.message);
+            }
+
+            const job_id = result.job_id;
+
             const url3 = ROOT_URL + `caught/${job_id}`;
             return this.httpClient
               .get<{ count: number; job_id: string; data: INeatObjectQueryResult[] }>(url3)
@@ -83,45 +106,68 @@ export class NeatObjectQueryService {
               );
           }),
           catchError(
-            (_): Observable<TQueryNeatObject> => {
+            (e: Error): Observable<TQueryNeatObject> => {
               // Provide info to carry on for now
               return of({
                 status: 'error',
-                message: 'Unused message at this point'
+                message: e.message
               });
             }
           )
         );
-      })
+      }),
+      catchError(
+        (e: Error): Observable<TQueryNeatObject> => {
+          // Provide info to carry on for now
+          return of({
+            status: 'error',
+            message: e.message
+          });
+        }
+      )
     );
   }
 
-  watchJobStream(jobId: string): Promise<string> {
-    // this.snackBar.open('Please wait - this query typically takes 5-30 seconds', 'Close', {
-    //   duration: 5000
-    // });
+  watchJobStream(jobId: string): Promise<TJobStreamResult> {
+    // ---------------------------------------->>>
+
     const store = this.store;
-    return new Promise<string>((resolve, reject) => {
+    return new Promise<TJobStreamResult>((resolve, reject) => {
       const url = ROOT_URL + 'stream';
       const source = new EventSource(url);
       source.onmessage = function(msgEvent: MessageEvent) {
         try {
-          const data = JSON.parse(msgEvent.data);
+          const data: {
+            job_prefix: string;
+            text: string;
+            status: 'success' | 'running' | 'queued' | 'error';
+          } = JSON.parse(msgEvent.data);
           const message: string = data.text;
-          console.log('message', message);
-          if (!!message) store.dispatch(new NeatObjectQuerySetStatus({ message }));
+
+          if (data.status !== 'error' && !!message) {
+            store.dispatch(new NeatObjectQuerySetStatus({ message }));
+          }
           if (data.status === 'success') {
             this.close(); // Sever connection to SSE route
-            resolve(jobId);
+            resolve({
+              status: 'success',
+              job_id: jobId
+            });
           }
           if (data.status === 'error') {
             this.close();
-            reject();
+            console.log('Debug 1', msgEvent.data);
+            let errMessage = 'Unknown error occurred while streaming from API';
+            if (data.text.includes('Unknown target')) errMessage = 'Unknown Target';
+            resolve({
+              status: 'error',
+              message: errMessage
+            });
           }
         } catch (e) {
           console.log('e message', e.message);
-          this.close(); // Sever connection to SSE route
-          reject();
+          this.close();
+          reject(e.message);
         }
       };
     });

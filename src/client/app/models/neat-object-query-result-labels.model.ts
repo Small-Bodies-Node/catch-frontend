@@ -15,7 +15,7 @@ export interface INeatObjectQueryResultLabels {
   dra: INeatObjectQueryResultLabel;
   exposure: INeatObjectQueryResultLabel;
   filter: INeatObjectQueryResultLabel;
-  instrument: INeatObjectQueryResultLabel;
+  instrument?: INeatObjectQueryResultLabel;
   jd: INeatObjectQueryResultLabel;
   phase: INeatObjectQueryResultLabel;
   preview_url?: INeatObjectQueryResultLabel;
@@ -26,6 +26,7 @@ export interface INeatObjectQueryResultLabels {
   rh: INeatObjectQueryResultLabel;
   sangle: INeatObjectQueryResultLabel;
   selong: INeatObjectQueryResultLabel;
+  source: INeatObjectQueryResultLabel;
   thumbnail_url?: INeatObjectQueryResultLabel;
   tmtp: INeatObjectQueryResultLabel;
   trueanomaly: INeatObjectQueryResultLabel;

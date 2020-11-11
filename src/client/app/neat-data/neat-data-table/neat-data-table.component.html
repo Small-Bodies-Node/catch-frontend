@@ -77,9 +77,18 @@
           *matCellDef="let element; let jj = index"
         >
           <div class="cell-content-wrapper">
-            <span *ngIf="!!element[col].length && element[col].includes('http'); else notShow">
-              <a class="left-align-table-cell-content" [href]="element[col]">FITS IMG</a>
-              <a class="invisibly-size-table-cell" [href]="element[col]">FITS IMG</a>
+            <span
+              *ngIf="
+                !!element[col] && !!element[col].length && element[col].includes('http');
+                else notShow
+              "
+            >
+              <a class="left-align-table-cell-content" [href]="element[col]">
+                {{ getLinkLabel(resultLabels![col]) }}
+              </a>
+              <a class="invisibly-size-table-cell" [href]="element[col]" target="_blank">
+                {{ getLinkLabel(resultLabels![col]) }}
+              </a>
             </span>
             <ng-template #notShow>
               <span class="left-align-table-cell-content">

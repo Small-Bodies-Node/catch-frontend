@@ -34,17 +34,14 @@ export class NeatObjectQueryEffects {
 
       return this.neatObjectQueryer.queryNeatObject(objectName, isRefreshed).pipe(
         switchMap(neatQueryObject => {
+          //
+
           // Handle error
           if (neatQueryObject.status === 'error') {
             setTimeout(() => this.router.navigate([''], {}), 50);
-            this.snackBar.open(
-              `Error occurred for ${objectName}. This may be because you're searching for a comet that has an asteroidal
-            designation. We're working to fix that!`,
-              'Close',
-              {
-                duration: 15000
-              }
-            );
+            this.snackBar.open(`Error occurred: ${neatQueryObject.message}.`, 'Close', {
+              duration: 15000
+            });
             return concat(
               of(
                 new NeatObjectQuerySetStatus({
@@ -61,6 +58,40 @@ export class NeatObjectQueryEffects {
           // Combine ra and dec
           neatObjectQueryResults.forEach((el, ind) => {
             neatObjectQueryResults[ind] = { ...el, raDec: el.ra + ' / ' + el.dec };
+          });
+
+          // TEMPORARY: serve resources through catch
+          neatObjectQueryResults.forEach((el, ind) => {
+            neatObjectQueryResults[ind] = {
+              ...el,
+              archive_url: !!el.archive_url
+                ? el.archive_url?.replace('catchsandbox', 'catch')
+                : null,
+              cutout_url: el.cutout_url?.replace('catchsandbox', 'catch'),
+              preview_url: !!el.preview_url
+                ? el.preview_url?.replace('catchsandbox', 'catch')
+                : null,
+              thumbnail_url: el.thumbnail_url?.replace('catchsandbox', 'catch')
+            };
+          });
+
+          // TEMPORARY
+          neatObjectQueryResults.forEach((el, ind) => {
+            neatObjectQueryResults[ind] = {
+              ...el,
+              source: el.source
+                .replace('neat_maui_geodss', 'NEAT Maui')
+                .replace('neat_palomar', 'NEAT Palomar')
+                .replace('skymapper', 'Skymapper')
+            };
+          });
+
+          // TEMPORARY
+          neatObjectQueryResults.forEach((el, ind) => {
+            neatObjectQueryResults[ind] = {
+              ...el,
+              archive_url: !!el.archive_url ? el.archive_url?.replace('fit.fz', 'fits') : null
+            };
           });
 
           const isObjectFound = !!neatObjectQueryResults.length;
@@ -97,16 +128,6 @@ export class NeatObjectQueryEffects {
     switchMap(_ => {
       return this.neatObjectQueryer.getNeatResultLabels().pipe(
         map(neatObjectQueryResultLabels => {
-          // Combine ra and dec into single entry
-          neatObjectQueryResultLabels.raDec = {
-            label: 'RA/Dec',
-            description:
-              neatObjectQueryResultLabels.ra.description +
-              ' / ' +
-              neatObjectQueryResultLabels.dec.description,
-            fractionSize: neatObjectQueryResultLabels.ra.fractionSize
-          };
-
           return new NeatObjectQuerySetResultLabels({ neatObjectQueryResultLabels });
         })
       );

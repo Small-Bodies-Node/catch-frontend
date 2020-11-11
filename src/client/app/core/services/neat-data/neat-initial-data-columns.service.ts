@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 
 export const initialColumnState = {
+  source: true,
   raDec: true,
   delta: true,
   rh: true,
@@ -33,6 +34,7 @@ export const initialColumnState = {
 export type TColName = keyof typeof initialColumnState;
 
 export type TColInitState = typeof initialColumnState;
+// export type TColInitState = { [TColName]: boolean };
 
 @Injectable({
   providedIn: 'root'

@@ -29,7 +29,7 @@ The angular app has the following features:
 
 Why ngrx?
 
-I started out without ngrx, thinking that this app would, at most, become 'medium' sized, and therefore run fine with just angualr services. However, in working with this approach, I've come to conclude that refactoring an angular app without ngrx is awful, and that I will only ever NOT use ngrx in anangular app if I'm sure that it will only ever be an insanely simple app. (However, if the app is insanely simple, then it would probably be better set up with wordpress. In short, I intend to pretty much always use ngrx from hereon when using angular.)
+I started out without ngrx, thinking that this app would, at most, become 'medium' sized, and therefore run fine with just angular services. However, in working with this approach, I've come to conclude that refactoring an angular app without ngrx is awful, and that I will only ever NOT use ngrx in an angular app if I'm sure that it will only ever be an insanely simple app.
 
 If you're new to the world of redux/ngrx, then you've got a learning curve ahead of you I'm afraid. It involves some hefty upfront boilerplate, and things will feel slow/awkward for ~weeks. However, I assure you that if you embrace the world of rxjs then you'll come to see that it was worth it.
 
@@ -42,7 +42,7 @@ _Schematic of ngrx at work_
 
 - Preserve component state with HMR. See [here](https://stackoverflow.com/questions/49595833/how-to-preserve-state-during-hmr-using-angular) and [here](https://github.com/PatrickJS/starter) to get started.
 
-- Implement scully SSG
+- Implement scully SSG?
 
 ### Notes/Issues
 

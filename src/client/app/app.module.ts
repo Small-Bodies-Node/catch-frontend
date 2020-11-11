@@ -48,8 +48,10 @@ import { ObjectNameMatchService } from './core/services/object-name-match/object
 import { ObjectNameMatchMockService } from './core/services/object-name-match/object-name-match-mock.service';
 import { TermsComponent } from './components/terms/terms.component';
 import { ApisPageComponent } from './components/apis-page/apis-page.component';
+import { UnrecognizedNameDialogComponent } from './components/search-field/unrecognized-name-dialog.component';
 
 const isMockDataUsed = !true;
+
 @NgModule({
   declarations: [
     AboutPageComponent,
@@ -66,6 +68,7 @@ const isMockDataUsed = !true;
     TestPageComponent,
     GenericDialogComponent,
     TermsComponent,
+    UnrecognizedNameDialogComponent,
     ApisPageComponent
   ],
   imports: [

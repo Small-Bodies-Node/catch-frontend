@@ -49,7 +49,7 @@ export class NeatDataTableComponent implements OnInit, OnDestroy {
   trueanomalyData!: number[];
 
   // Table Pagination Params
-  pageSizeOptions = [25, 50, 100];
+  pageSizeOptions = [500, 1000, 10000];
   private paginator: MatPaginator | undefined;
   @ViewChild(MatPaginator) set setPaginator(content: MatPaginator) {
     this.paginator = content;
@@ -72,16 +72,12 @@ export class NeatDataTableComponent implements OnInit, OnDestroy {
   resultLabels!: INeatObjectQueryResultLabels;
   shownCols!: Partial<TColName>[];
 
-  rawResults!: INeatObjectQueryResult[];
+  rawResults?: INeatObjectQueryResult[];
   cleanedResults?: INeatObjectQueryResult[];
   tableData!: MatTableDataSource<INeatObjectQueryResult>;
 
   constructor(private store: Store<AppState>, private dialog: MatDialog) {
-    //
-
-    // Get neat-object-query results from server
-    // todo: At the moment we assume there are results in the store
-    // todo: later we need to retrieve results based on objid query param
+    // ---------------------------------------------------------------->>>
 
     this.subscriptions.add(
       this.store
@@ -104,7 +100,9 @@ export class NeatDataTableComponent implements OnInit, OnDestroy {
       this.store
         .select(selectNeatObjectQueryResultLabels)
         .pipe(take(1))
-        .subscribe(resultLabels => (this.resultLabels = resultLabels))
+        .subscribe(resultLabels => {
+          this.resultLabels = resultLabels;
+        })
     );
 
     this.subscriptions.add(
@@ -124,6 +122,9 @@ export class NeatDataTableComponent implements OnInit, OnDestroy {
   }
 
   processRawResults() {
+    if (!this.rawResults) return;
+
+    // Extract data for plotly graphs
     this.raData = this.rawResults.map(el => el.ra);
     this.decData = this.rawResults.map(el => el.dec);
     this.deltaData = this.rawResults.map(el => el.delta);
@@ -132,14 +133,6 @@ export class NeatDataTableComponent implements OnInit, OnDestroy {
     this.phaseData = this.rawResults.map(el => el.phase);
     this.tmtpData = this.rawResults.map(el => el.tmtp);
     this.trueanomalyData = this.rawResults.map(el => el.trueanomaly);
-
-    // Hacks to fix archive_url:
-    this.cleanedResults?.forEach((el, ind) => {
-      this.cleanedResults![ind] = {
-        ...el,
-        archive_url: el.archive_url.replace('fits', 'fit.fz')
-      };
-    });
 
     // Mutate each result object by adding combined 'raDec' property
     this.cleanedResults?.forEach((el, ind) => {
@@ -158,7 +151,6 @@ export class NeatDataTableComponent implements OnInit, OnDestroy {
     this.tableData.connect().subscribe(d => (this.renderedTableData = d));
   }
 
-  //
   onClickPlotly(e: MouseEvent, plot: Partial<TColName>) {
     e.stopPropagation();
 
@@ -177,18 +169,32 @@ export class NeatDataTableComponent implements OnInit, OnDestroy {
   }
 
   formatCellEntry(entry: any, labels?: INeatObjectQueryResultLabel) {
-    //
+    // ------------------------->>>
+
+    // If null (e.g. skymapper instrument), then print 'N/A'
+    if (!entry) return 'N/A';
+
     if (typeof entry === 'number') return entry.toFixed(labels!.fractionSize);
 
     // Parse raDec, toFix, reassemble
-    if (entry.includes('/')) {
-      //
+    if (!!labels && labels.label === 'RA/Dec') {
       const [ra, dec] = entry
         .split('/')
         .map((el: string) => parseFloat(el.trim()).toFixed(labels!.fractionSize));
       return ra + ' / ' + dec;
     }
     return entry;
+  }
+
+  getLinkLabel(labels?: INeatObjectQueryResultLabel) {
+    //
+
+    if (!labels) return '';
+
+    return labels.label.toUpperCase();
+
+    /*     if (labels.label.toLowerCase().includes('archive')) return labels.label.toUpperCase();
+    if (labels.label.toLowerCase().includes('archive')) return labels.label.toUpperCase(); */
   }
 
   selectRow(index: number) {

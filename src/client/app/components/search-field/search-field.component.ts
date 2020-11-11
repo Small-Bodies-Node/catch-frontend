@@ -1,7 +1,7 @@
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { NavigationExtras } from '@angular/router';
 import { FormGroup, FormControl } from '@angular/forms';
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { Subject, Subscription } from 'rxjs';
 import { Store } from '@ngrx/store';
 
@@ -16,6 +16,9 @@ import {
 } from '@client/app/ngrx/actions/neat-object-query.actions';
 import { selectObjectNameMatchResults } from '@client/app/ngrx/selectors/object-name-match.selectors';
 import { DelayedRouterService } from '@client/app/core/services/delayed-router/delayed-router';
+import { MatDialog } from '@angular/material/dialog';
+import { UnrecognizedNameDialogComponent } from './unrecognized-name-dialog.component';
+import { MatAutocompleteTrigger } from '@angular/material/autocomplete';
 
 @Component({
   selector: 'app-search-field',
@@ -24,6 +27,9 @@ import { DelayedRouterService } from '@client/app/core/services/delayed-router/d
 })
 export class SearchFieldComponent implements OnInit, OnDestroy {
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~>>>
+
+  @ViewChild(MatAutocompleteTrigger)
+  autocomplete!: MatAutocompleteTrigger;
 
   myForm: FormGroup;
   objectNameMatchResults: IObjectNameMatchResult[] = [];
@@ -37,8 +43,12 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
   subscriptions = new Subscription();
   searchTermChangeSubject: Subject<string> = new Subject<string>();
 
-  constructor(private store: Store<AppState>, private delayedRouter: DelayedRouterService) {
-    // ----------------------->>>
+  constructor(
+    private dialog: MatDialog,
+    private store: Store<AppState>,
+    private delayedRouter: DelayedRouterService
+  ) {
+    // ------------------------------------->>>
 
     // Define form group
     this.myForm = new FormGroup({
@@ -84,46 +94,66 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
     this.subscriptions.unsubscribe();
   }
 
-  isObjectNameMatched() {
-    const match = this.objectNameMatchResults.find(el => el.display_text === this.latestInputText);
+  isTargetMatched() {
+    const match = this.objectNameMatchResults.find(el => el.target === this.latestInputText.trim());
     return !!match;
   }
 
   submitObjectNameMatch(e: MouseEvent) {
     e.stopPropagation();
-    // console.log('CLICK LAUNCH');
     this.tryLaunchingObjectQuery(true);
   }
 
   getSearchMessageText() {
     if (this.latestInputText.length === 0) return 'Search for Object';
-    if (this.isObjectNameMatched()) return 'Object Matched';
+
+    const target = this.latestInputText.trim();
+    const match = this.objectNameMatchResults.find(el => el.target === target);
+    if (!!match) return 'Match: ' + match.display_text;
+
     return 'Object Not Recognized';
   }
 
   getFormColor(): 'primary' | 'accent' | 'warn' {
     if (!this.latestInputText.length || !this.objectNameMatchResults.length) return 'primary';
-    if (this.isObjectNameMatched()) return 'accent';
+    if (this.isTargetMatched()) return 'accent';
     return 'warn';
   }
 
-  tryLaunchingObjectQuery(isRefreshed: boolean) {
-    // Isolate objectName
-    const objectNameMatchResult = this.objectNameMatchResults.find(
-      el => el.display_text === this.latestInputText
-    );
-    const objectName = !!objectNameMatchResult && objectNameMatchResult.target;
+  tryLaunchingObjectQuery(isRefreshed = false) {
+    // -------------------------------------->>>
 
-    if (this.isObjectNameMatched() && !!objectName) {
-      this.store.dispatch(
-        new NeatObjectQuerySetStatus({
-          objid: objectName,
-          message: 'Starting search....',
-          code: 'searching'
-        })
-      );
-      this.store.dispatch(new NeatObjectQueryFetchResults({ objectName, isRefreshed }));
+    const target = this.latestInputText.trim();
+
+    if (this.isTargetMatched()) {
+      this.launchObjectQuery(target, isRefreshed);
+      return;
     }
+
+    // If target isn't matched, give user option to search anyway
+    const dialogRef = this.dialog.open<UnrecognizedNameDialogComponent, any>(
+      UnrecognizedNameDialogComponent,
+      { data: { submittedText: target } }
+    );
+    this.subscriptions.add(
+      dialogRef.afterClosed().subscribe(isSearchConfirmed => {
+        if (!!isSearchConfirmed) {
+          this.launchObjectQuery(target, isRefreshed);
+        }
+      })
+    );
+  }
+
+  launchObjectQuery(objid: string, isRefreshed: boolean) {
+    this.autocomplete.closePanel();
+    this.store.dispatch(
+      new NeatObjectQuerySetStatus({
+        objid,
+        message: 'Starting search....',
+        code: 'searching'
+      })
+    );
+    this.store.dispatch(new NeatObjectQueryFetchResults({ objectName: objid, isRefreshed }));
   }
 
   keyDownOnInputText(event: KeyboardEvent) {
@@ -156,9 +186,7 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
       state: { objid, displayText }
     };
     await sleep(500);
-    // this.router.navigate(['neat'], navigationExtras);
-    this.delayedRouter.delayedRouter('neat', navigationExtras);
-    // private delayedRouter: DelayedRouterService
+    this.delayedRouter.delayedRouter('data', navigationExtras);
   };
 
   getInputTextColor() {

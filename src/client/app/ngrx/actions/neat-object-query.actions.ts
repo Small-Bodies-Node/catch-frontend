@@ -19,9 +19,7 @@ export enum ENeatObjectQueryActionTypes {
 
 export class NeatObjectQuerySetColumnState implements Action {
   readonly type = ENeatObjectQueryActionTypes.NeatObjectQuerySetColumnState;
-  constructor(public payload: { newColState: TColInitState }) {
-    console.log('public payload', this.payload);
-  }
+  constructor(public payload: { newColState: TColInitState }) {}
 }
 
 export class NeatObjectQueryFetchResults implements Action {

@@ -4,10 +4,15 @@ import { CommonModule } from '@angular/common';
 
 import { CoreModule } from '../core/core.module';
 import { SharedModule } from '../shared/shared.module';
+// import { PlotlyModule } from 'angular-plotly.js';
+// // import * as PlotlyJS from 'plotly.js/dist/plotly.js';
+// const PlotlyJs = require('plotly.js/lib/core');
+// PlotlyModule.plotlyjs = PlotlyJs;
+
+// @ts-ignore
+import * as PlotlyJS from 'plotly.js/dist/plotly.js';
 import { PlotlyModule } from 'angular-plotly.js';
-// import * as PlotlyJS from 'plotly.js/dist/plotly.js';
-const Plotly = require('plotly.js/lib/core');
-PlotlyModule.plotlyjs = Plotly;
+PlotlyModule.plotlyjs = PlotlyJS;
 
 import { NeatDataPageComponent } from './neat-data-page.component';
 import { NeatDataTitleComponent } from './neat-data-title/neat-data-title.component';

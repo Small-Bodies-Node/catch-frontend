@@ -1,29 +1,32 @@
 <div #imagesWrapper class="images-wrapper">
   <ng-container *ngIf="latestData$ | async as data; else loading">
-    <div
-      *ngIf="!isFits"
-      class="main-image"
-      [ngStyle]="{
-        backgroundImage: 'url(' + (data.fullUrl || '') + ')',
-        height: '100%'
-      }"
-    ></div>
-    <app-fits-graphic
-      *ngIf="isFits"
-      [width]="data.width"
-      [height]="data.height"
-      [fitsUrl]="data.fitsUrl"
-      (isFitsLoaded)="raiseButton()"
-    ></app-fits-graphic>
-    <button
-      mat-fab
-      (click)="toggleFits()"
-      class="edit-fab"
-      [ngClass]="{ 'raise-button': isButtonRaised }"
-    >
-      <mat-icon *ngIf="!!isFits">{{ 'image' }}</mat-icon>
-      <span *ngIf="!isFits" style="font-weight: bold;">{{ 'FITS' }}</span>
-    </button>
+    <ng-container *ngIf="data.fitsUrl">
+      <div
+        *ngIf="!isFits"
+        class="main-image"
+        [ngStyle]="{
+          backgroundImage: 'url(' + (chooseImage(data.fullUrl) || '') + ')',
+          height: '100%'
+        }"
+      ></div>
+      <app-fits-graphic
+        *ngIf="isFits"
+        [width]="data.width"
+        [height]="data.height"
+        [fitsUrl]="data.fitsUrl"
+        (isFitsLoaded)="raiseButton()"
+      ></app-fits-graphic>
+      <button
+        mat-fab
+        [disabled]="isFitsButtonDisabled"
+        (click)="toggleFits()"
+        class="edit-fab"
+        [ngClass]="{ 'raise-button': isButtonRaised }"
+      >
+        <mat-icon *ngIf="!!isFits">{{ 'image' }}</mat-icon>
+        <span *ngIf="!isFits" style="font-weight: bold;">{{ 'FITS' }}</span>
+      </button>
+    </ng-container>
   </ng-container>
   <ng-template #loading>
     <div class="spinner-wrapper">

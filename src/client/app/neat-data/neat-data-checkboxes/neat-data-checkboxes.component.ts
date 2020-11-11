@@ -76,13 +76,15 @@ export class NeatDataCheckboxesComponent implements OnInit, OnDestroy {
   ngOnDestroy() {}
 
   updateColState(e: MatCheckboxChange, colName: TColName) {
-    this.colState[colName] = e.checked;
+    // this.colState[colName] = e.checked;
+    this.colState = { ...this.colState, [colName]: e.checked };
     this.store.dispatch(new NeatObjectQuerySetColumnState({ newColState: { ...this.colState } }));
   }
 
   selectAll() {
     Object.keys(this.colState).forEach(key => {
-      this.colState[key as keyof TColInitState] = true;
+      // this.colState[key as keyof TColInitState] = true;
+      this.colState = { ...this.colState, [key]: true };
     });
     this.store.dispatch(new NeatObjectQuerySetColumnState({ newColState: { ...this.colState } }));
   }

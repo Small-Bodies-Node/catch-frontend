@@ -9,6 +9,8 @@
     "experimentalDecorators": true,
     "module": "esnext",
     "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
     "importHelpers": true,
     "target": "es2015",
     "typeRoots": [
@@ -27,7 +29,7 @@
     /// Added TS Strictness
     /////////////////////////////////////////////////////////////////////////////////////
     // "strict": true                     /* Enable all strict type-checking options. */,
-    "noImplicitAny": true                /* Raise error on expressions and declarations with an implied 'any' type. */,
+    // "noImplicitAny": true                /* Raise error on expressions and declarations with an implied 'any' type. */,
     "strictNullChecks": true              /* Enable strict null checks. */,
     "strictFunctionTypes": true           /* Enable strict checking of function types. */,
     "strictPropertyInitialization": true  /* Enable strict checking of property initialization in classes. */,

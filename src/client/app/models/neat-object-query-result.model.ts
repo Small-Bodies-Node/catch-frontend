@@ -1,6 +1,6 @@
 export interface INeatObjectQueryResult {
   airmass: number;
-  archive_url: string;
+  archive_url: string | null;
   cutout_url: string;
   ddec: number;
   dec: number;
@@ -9,10 +9,10 @@ export interface INeatObjectQueryResult {
   dra: number;
   exposure: number;
   filter: string;
-  instrument: string;
+  instrument: string | null;
   jd: number;
   phase: number;
-  preview_url: string;
+  preview_url: string | null;
   productid: string;
   ra: number;
   raDec?: string;
@@ -20,6 +20,7 @@ export interface INeatObjectQueryResult {
   rh: number;
   sangle: number;
   selong: number;
+  source: string;
   thumbnail_url: string;
   tmtp: number;
   trueanomaly: number;
