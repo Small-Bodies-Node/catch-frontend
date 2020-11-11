@@ -35,7 +35,7 @@ export class NeatDataTableComponent implements OnInit, OnDestroy {
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~>>>
 
   // Track all subscriptions that will need removal
-  subscriptions: Subscription = new Subscription();
+  subscriptions = new Subscription();
 
   selectedIndex = 0;
 
@@ -204,6 +204,11 @@ export class NeatDataTableComponent implements OnInit, OnDestroy {
   openSettingsDialog(e: MouseEvent) {
     e.stopPropagation();
     this.dialog.open<NeatDataTableWrapperComponent>(NeatDataTableWrapperComponent);
+  }
+
+  getLabelDescription(labels?: INeatObjectQueryResultLabel) {
+    if (!labels) return '';
+    return labels.description;
   }
 }
 

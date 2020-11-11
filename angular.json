@@ -39,7 +39,8 @@
               "src/client/assets/js9-compiled/js9prefs.js",
               "src/client/assets/js9-compiled/js9support.min.js",
               "src/client/assets/js9-compiled/js9.modified.min.js",
-              "src/client/assets/js9-compiled/js9plugins.js"
+              "src/client/assets/js9-compiled/js9plugins.js",
+              "src/client/assets/jszipScripts/jszip.js"
             ]
           },
           "configurations": {

@@ -1,8 +1,8 @@
 <div
   #titleContainer
   class="title-container"
-  *ngIf="latestData$ | async as data"
-  [ngClass]="{ 'single-row': data.width > 550, 'hide-buttons': device === 'mobile' }"
+  *ngIf="divWidth$ | async as divWidth"
+  [ngClass]="{ 'single-row': divWidth > 550, 'hide-buttons': device === 'mobile' }"
 >
   <div class="title">
     <h2>{{ 'DATA: ' + (objid ? objid : '') }}</h2>
@@ -25,5 +25,20 @@
         <mat-icon>tv</mat-icon>
       </mat-button-toggle>
     </mat-button-toggle-group>
+
+    <button
+      class="download-button"
+      mat-button
+      (click)="downloadData()"
+      matTooltip="Download All Data"
+      [disabled]="!isDownloadButtonShown"
+    >
+      <ng-container *ngIf="!!isDownloadButtonShown">
+        <mat-icon>download</mat-icon>
+      </ng-container>
+      <ng-container *ngIf="!isDownloadButtonShown">
+        <mat-spinner style="zoom: 0.2"></mat-spinner>
+      </ng-container>
+    </button>
   </div>
 </div>

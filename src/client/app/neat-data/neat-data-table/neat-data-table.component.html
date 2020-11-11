@@ -28,7 +28,13 @@
         *ngFor="let col of shownCols; let j = index"
         [matColumnDef]="col"
       >
-        <th mat-header-cell class="table-header-cell" *matHeaderCellDef mat-sort-header>
+        <th
+          mat-header-cell
+          class="table-header-cell"
+          *matHeaderCellDef
+          mat-sort-header
+          [matTooltip]="getLabelDescription(resultLabels![col])"
+        >
           <span style="white-space: nowrap;">
             {{ resultLabels![col] && resultLabels[col]!.label }}
           </span>
