@@ -12,9 +12,9 @@ if [[ -z $invoke_url ]]; then
 fi
 
 # Print and export $invoke_url
-[[ $1 != '--quiet' ]] && echo -e """
+[[ $1 != '--quiet' ]] && echo -e """${RED}
 ==============================================================================
-The invoke url is\033[31m ${invoke_url} \033[0m
+The invoke url is ${WHI} ${invoke_url} ${RED}
 ==============================================================================
-"""
+${WHI}"""
 export invoke_url=$invoke_url

@@ -3,7 +3,6 @@
 # compiled output
 /dist
 /dist-*
-/dist-local
 /tmp
 /out-tsc
 # Only exists if Bazel was run

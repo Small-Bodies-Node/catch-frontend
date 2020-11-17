@@ -6,6 +6,7 @@
     {
       "name": "api-offline-demo",
       "urls": ["https://jsonplaceholder.typicode.com/users/"],
+
       "cacheConfig": {
         "strategy": "freshness",
         "maxSize": 100,

@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { DEPLOYMENT_ROOT_URL } from '@client/app/utils/constants';
 
 @Component({
   selector: 'app-apis-page',
@@ -6,6 +7,14 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./apis-page.component.scss']
 })
 export class ApisPageComponent implements OnInit {
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~>>>
+
+  DATA_API_ROOT_URL = DEPLOYMENT_ROOT_URL + '/api';
+  ROUTE1 = this.DATA_API_ROOT_URL + '/query/name?name=65P';
+  ROUTE2 = this.DATA_API_ROOT_URL + '/query/moving?target=65P';
+  ROUTE3 = this.DATA_API_ROOT_URL + '/caught/{job_id}';
+  ROUTE4 = this.DATA_API_ROOT_URL + '/stream';
+
   constructor() {}
 
   ngOnInit() {}

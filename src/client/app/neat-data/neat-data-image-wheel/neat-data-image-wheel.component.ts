@@ -87,7 +87,7 @@ export class NeatDataImageWheelComponent implements OnInit, OnDestroy {
 
   getImageUrls() {
     if (!this.results) return [];
-    const imageUrls = this.results.map(el => el.thumbnail_url);
+    const imageUrls = this.results.map(el => el.thumbnail_url || '');
     return imageUrls;
   }
 

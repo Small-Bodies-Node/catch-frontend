@@ -40,17 +40,18 @@ import { ScreenDeviceEffects } from './ngrx/effects/screen-device-effects/screen
 // Services
 import { NeatObjectQueryService } from './core/services/neat-data/neat-object-query.service';
 import { NeatObjectQueryMockService } from './core/services/neat-data/neat-object-query-mock.service';
+import { ObjectNameMatchService } from './core/services/object-name-match/object-name-match.service';
+import { ObjectNameMatchMockService } from './core/services/object-name-match/object-name-match-mock.service';
 
 // Misc
 import { environment } from '../environments/environment';
 import { HmrModule, stateSetter } from './hmr.module';
-import { ObjectNameMatchService } from './core/services/object-name-match/object-name-match.service';
-import { ObjectNameMatchMockService } from './core/services/object-name-match/object-name-match-mock.service';
 import { TermsComponent } from './components/terms/terms.component';
 import { ApisPageComponent } from './components/apis-page/apis-page.component';
 import { UnrecognizedNameDialogComponent } from './components/search-field/unrecognized-name-dialog.component';
 
-const isMockDataUsed = !true;
+// Choose data source based on environment config
+const isMockDataUsed = environment.dataApi === 'mock';
 
 @NgModule({
   declarations: [
@@ -97,17 +98,11 @@ const isMockDataUsed = !true;
   providers: [
     {
       provide: NeatObjectQueryService,
-      useClass:
-        !isMockDataUsed || !!environment.production
-          ? NeatObjectQueryService
-          : NeatObjectQueryMockService
+      useClass: isMockDataUsed ? NeatObjectQueryMockService : NeatObjectQueryService
     },
     {
       provide: ObjectNameMatchService,
-      useClass:
-        !isMockDataUsed || !!environment.production
-          ? ObjectNameMatchService
-          : ObjectNameMatchMockService
+      useClass: isMockDataUsed ? ObjectNameMatchMockService : ObjectNameMatchService
     }
   ],
   bootstrap: [AppEntryComponent]

@@ -1,5 +1,5 @@
 #! /bin/bash
 
 ### Download labels from API
-curl -L 'https://catchsandbox.astro.umd.edu/api/caught/labels' \
+curl -L 'https://catchstage.astro.umd.edu/api/caught/labels' \
   -o './src/client/assets/json/catch-data-labels.json'

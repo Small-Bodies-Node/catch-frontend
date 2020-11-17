@@ -22,6 +22,7 @@ import {
 import { saveAs } from 'file-saver';
 import * as JSZip from 'jszip';
 import { environment } from '@client/environments/environment';
+import { DEPLOYMENT_ROOT_URL, PROXY_ROOT_URL } from '@client/app/utils/constants';
 
 // const noCorsIssueImage = // const imageUrl =
 'https://images.unsplash.com/photo-1576328842079-95ef7deedc89?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1500&q=80.jpg';
@@ -81,7 +82,7 @@ export class NeatDataTitleComponent implements OnInit {
         this.resultLabels = labels;
         // Extract images
         if (!results) return;
-        this.jpgUrls = results.map(result => result.preview_url || result.thumbnail_url);
+        this.jpgUrls = results.map(result => result.preview_url || result.thumbnail_url || '');
         this.fitsUrls = results.map(result => result.cutout_url);
       })
     );
@@ -122,11 +123,9 @@ export class NeatDataTitleComponent implements OnInit {
     let fitsUrls = this.fitsUrls!.filter(url => url.includes('https'));
 
     if (!environment.production) {
-      jpgUrls = jpgUrls.map(url =>
-        url.replace('https://catch.astro.umd.edu', 'http://localhost:8010/proxy')
-      );
+      jpgUrls = jpgUrls.map(url => url.replace(DEPLOYMENT_ROOT_URL, PROXY_ROOT_URL));
       fitsUrls = fitsUrls.map(url =>
-        url.replace('https://catch.astro.umd.edu', 'http://localhost:8010/proxy')
+        url.replace(DEPLOYMENT_ROOT_URL, 'http://localhost:8010/proxy')
       );
     }
 

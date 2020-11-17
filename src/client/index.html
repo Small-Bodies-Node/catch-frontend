@@ -15,7 +15,6 @@
     <meta charset="utf-8" />
     <title>CATCH GUI</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <!-- <link rel="icon" type="image/x-icon" href="favicon.ico" /> -->
     <link
       rel="apple-touch-icon"
       href="https://catch.astro.umd.edu/assets/images/pngs/observatory_dark.png"
@@ -49,68 +48,91 @@
       body,
       html {
         height: 100%;
-        background-size: cover;
       }
+
       .app-loading {
-        position: absolute;
+        position: fixed;
         top: 0;
         left: 0;
         bottom: 0;
         right: 0;
-        /* background: #111B3B; */
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-      }
-
-      .app-loading .spinner {
-        height: 300px;
-        width: 300px;
-        animation: rotate 12s linear infinite;
-        transform-origin: center center;
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        margin: auto;
-      }
-
-      .app-loading .spinner .path,
-      .path {
-        stroke-dasharray: 1, 200;
-        stroke-dashoffset: 0;
-        animation: dash 2.5s ease-in-out infinite;
-        stroke-linecap: round;
-        stroke: #1088f6;
+        /* background: cyan; */
+        perspective: 1000px;
+        perspective-origin: 50% 50%;
       }
 
       .app-loading > .logo {
-        width: 100px;
-        height: 100px;
-        background: url(../assets/icons/logo0.png) center center no-repeat;
-        background-size: contain;
+        padding: 10px;
+        box-sizing: border-box;
+        /* border: solid rgba(0, 0, 0, 0.3) 1px; */
+        border-radius: 10px;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 400px;
+        height: 400px;
+        background: url(assets/icons/logo0.png) center center no-repeat;
+        /*         background: url('https://catch.astro.umd.edu/assets/images/pngs/observatory_dark.png')
+          center center no-repeat; */
+        /* background-size: contain; */
+        background-size: 90%;
+        /* background-color: pink; */
+        transform: translate(-50%, -50%) translateZ(1000px);
+        animation: splash 2s forwards ease-in-out 1s;
       }
 
-      @keyframes rotate {
-        100% {
-          transform: rotate(360deg);
-        }
+      .app-loading > .loading-wrapper {
+        /* border: solid 1px black; */
+        position: absolute;
+        top: calc(50% + 150px);
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 30px;
+        height: 50px;
+        width: 150px;
+        overflow: visible;
+        white-space: nowrap;
+        opacity: 0;
+        animation: dotsAppear 0ms forwards 3s;
+        color: rgb(23, 138, 245);
+      }
+      .loading-wrapper > .loading-word {
+        display: inline-block;
+        vertical-align: top;
+      }
+      .loading-wrapper > .loading-dots {
+        display: inline-block;
+        animation: retyping 1s infinite;
+        overflow: hidden;
+        vertical-align: top;
       }
 
-      @keyframes dash {
+      @keyframes dotsAppear {
         0% {
-          stroke-dasharray: 1, 200;
-          stroke-dashoffset: 0;
-        }
-        50% {
-          stroke-dasharray: 89, 200;
-          stroke-dashoffset: -35px;
+          opacity: 0;
         }
         100% {
-          stroke-dasharray: 89, 200;
-          stroke-dashoffset: -124px;
+          opacity: 1;
+        }
+      }
+      @keyframes retyping {
+        0% {
+          width: 1px;
+        }
+        100% {
+          width: 30px;
+        }
+      }
+
+      @keyframes splash {
+        0% {
+          transform: translate(-50%, -50%) translateZ(500px) rotateY(90deg);
+        }
+        90% {
+          transform: translate(-50%, -50%) translateZ(-100px) rotateY(340deg);
+        }
+        100% {
+          transform: translate(-50%, -50%) translateZ(0px) rotateY(360deg);
         }
       }
     </style>
@@ -122,17 +144,10 @@
 
     <div id="appLoadingDivId" class="app-loading" style="z-index: 100;">
       <div class="logo"></div>
-      <svg style="background: rgba(0,0,0,0);" class="spinner" viewBox="25 25 50 50">
-        <circle
-          class="path"
-          cx="50"
-          cy="50"
-          r="20"
-          fill="none"
-          stroke-width="2"
-          stroke-miterlimit="10"
-        />
-      </svg>
+      <div class="loading-wrapper">
+        <span class="loading-word">LOADING</span>
+        <span class="loading-dots">...</span>
+      </div>
     </div>
 
     <noscript>Please enable JavaScript to continue using this application.</noscript>

@@ -21,7 +21,7 @@ export interface INeatObjectQueryResult {
   sangle: number;
   selong: number;
   source: string;
-  thumbnail_url: string;
+  thumbnail_url: string | null;
   tmtp: number;
   trueanomaly: number;
   unc_a: number;

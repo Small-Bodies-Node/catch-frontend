@@ -1,4 +1,4 @@
-<div [class]="'theme-wrapper ' + siteTheme.toLowerCase()">
+<div *ngIf="!!isAppLoaded" [class]="'theme-wrapper ' + siteTheme.toLowerCase()">
   <div
     class="loading-overlay"
     [ngStyle]="{

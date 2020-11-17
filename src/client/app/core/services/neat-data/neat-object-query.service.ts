@@ -10,6 +10,7 @@ import { AppState } from '@client/app/ngrx/reducers';
 import { Store } from '@ngrx/store';
 import { NeatObjectQuerySetStatus } from '../../../ngrx/actions/neat-object-query.actions';
 import { neatObjectQueryResultLabels } from '@client/app/utils/neatObjectQueryResultLabels';
+import { DEPLOYMENT_ROOT_URL } from '@client/app/utils/constants';
 
 interface ICatchObjidProbe {
   job_id: string;
@@ -25,11 +26,6 @@ export type TQueryNeatObject =
 type TJobStreamResult =
   | { status: 'error'; message: string }
   | { status: 'success'; job_id: string };
-
-// export const ROOT_URL = 'https://musforti.astro.umd.edu/catch/';
-// export const ROOT_URL = 'https://catch.astro.umd.edu/catch-stage/';
-// export const ROOT_URL = 'https://catchsandbox.astro.umd.edu/api/';
-export const ROOT_URL = 'https://catch.astro.umd.edu/api/';
 
 @Injectable({
   providedIn: 'root'
@@ -53,7 +49,8 @@ export class NeatObjectQueryService {
       });
     }
 
-    const url = ROOT_URL + `query/moving?target=${objid}${isCached ? '' : '&cached=false'}`;
+    const url =
+      DEPLOYMENT_ROOT_URL + `api/query/moving?target=${objid}${isCached ? '' : '&cached=false'}`;
 
     return this.httpClient.get<ICatchObjidProbe>(url).pipe(
       map((data: ICatchObjidProbe) => {
@@ -67,7 +64,7 @@ export class NeatObjectQueryService {
         // If we did not just trigger a queued query then we can grab results immediately
         if (!data.queued) {
           // console.log('DENIED 1!!!');
-          const url2 = ROOT_URL + `caught/${data.job_id}`;
+          const url2 = DEPLOYMENT_ROOT_URL + `api/caught/${data.job_id}`;
           return this.httpClient
             .get<{ count: number; job_id: string; data: INeatObjectQueryResult[] }>(url2)
             .pipe(
@@ -89,7 +86,7 @@ export class NeatObjectQueryService {
 
             const job_id = result.job_id;
 
-            const url3 = ROOT_URL + `caught/${job_id}`;
+            const url3 = DEPLOYMENT_ROOT_URL + `api/caught/${job_id}`;
             return this.httpClient
               .get<{ count: number; job_id: string; data: INeatObjectQueryResult[] }>(url3)
               .pipe(
@@ -133,7 +130,7 @@ export class NeatObjectQueryService {
 
     const store = this.store;
     return new Promise<TJobStreamResult>((resolve, reject) => {
-      const url = ROOT_URL + 'stream';
+      const url = DEPLOYMENT_ROOT_URL + 'api/stream';
       const source = new EventSource(url);
       source.onmessage = function(msgEvent: MessageEvent) {
         try {

@@ -71,7 +71,9 @@ export class NeatObjectQueryEffects {
               preview_url: !!el.preview_url
                 ? el.preview_url?.replace('catchsandbox', 'catch')
                 : null,
-              thumbnail_url: el.thumbnail_url?.replace('catchsandbox', 'catch')
+              thumbnail_url: el.thumbnail_url
+                ? el.thumbnail_url.replace('catchsandbox', 'catch')
+                : null
             };
           });
 

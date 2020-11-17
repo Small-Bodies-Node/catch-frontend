@@ -69,22 +69,6 @@ export class AppEntryComponent {
     // Load localStorage settings into ngrx store
     this.store.dispatch(new SiteSettingsLoadAllFromLocalStorage());
 
-    // Set siteTheme
-    this.store.select(selectSiteSettingsEffectiveTheme).subscribe(siteTheme => {
-      this.siteTheme = siteTheme;
-      // Set body color based on siteTheme value
-      const isDark = siteTheme === 'DARK-THEME';
-      document.body.style.backgroundColor = isDark ? '#303030' : 'white';
-    });
-
-    // Remove loader graphic
-    const appLoadingDiv = document.getElementById('appLoadingDivId');
-    const fadeTimeMs = 100;
-    if (!!appLoadingDiv) appLoadingDiv.classList.add(`fade-out-${fadeTimeMs}`);
-    setTimeout(() => {
-      if (!!appLoadingDiv) appLoadingDiv.remove();
-    }, fadeTimeMs);
-
     // Whenever the native StoreRouter dispatches an action (viz. on route updates)
     // we dispatch our own "navigation-collect-route-records" action,
     // which triggers effect 'collectNavigationRecords$'
@@ -153,7 +137,29 @@ export class AppEntryComponent {
       });
 
     // Initialize app
-    this.isAppLoaded = true;
+    // Remove loader graphic
+    const fadeTimeMs = 2000;
+    const delayLoadTime = 3000;
+
+    // Set siteTheme
+    this.store.select(selectSiteSettingsEffectiveTheme).subscribe(siteTheme => {
+      this.siteTheme = siteTheme;
+      // Set body color based on siteTheme value
+      const isDark = siteTheme === 'DARK-THEME';
+      setTimeout(() => {
+        // This makes mobile swiping more attractive with dark theme
+        document.body.style.backgroundColor = isDark ? '#303030' : 'white';
+      }, delayLoadTime * 2);
+    });
+
+    setTimeout(() => {
+      const appLoadingDiv = document.getElementById('appLoadingDivId');
+      if (!!appLoadingDiv) appLoadingDiv.classList.add(`fade-out-${fadeTimeMs}`);
+      setTimeout(() => {
+        if (!!appLoadingDiv) appLoadingDiv.remove();
+      }, fadeTimeMs);
+      this.isAppLoaded = true;
+    }, delayLoadTime);
   }
 
   openSidenav(sidenav: MatSidenav) {

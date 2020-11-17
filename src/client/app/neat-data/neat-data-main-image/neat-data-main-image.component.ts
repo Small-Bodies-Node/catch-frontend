@@ -14,9 +14,9 @@ interface ILatestData {
   selectedResultIndex: number;
   width: number;
   height: number;
-  thumbUrl?: string;
-  fullUrl?: string;
-  fitsUrl?: string;
+  thumbUrl: string | null;
+  fullUrl: string | null;
+  fitsUrl: string | null;
 }
 
 @Component({
@@ -81,17 +81,24 @@ export class NeatDataMainImageComponent {
       this.isFits = false;
       this.isButtonRaised = false;
 
-      // Determine best image for thumbnail display
-      const fullUrl =
-        results?.[selectedResultIndex]?.preview_url ||
-        results?.[selectedResultIndex]?.thumbnail_url;
+      // Determine best image for thumbnail display; ensure type safety around null cases:
+      const fitsUrl =
+        results && results[selectedResultIndex] ? results[selectedResultIndex].cutout_url : null;
+      const thumbUrl =
+        results && results[selectedResultIndex] ? results[selectedResultIndex].thumbnail_url : null;
+      const previewUrl =
+        results && results[selectedResultIndex]
+          ? results && results[selectedResultIndex].preview_url
+          : null;
+      const fullUrl = previewUrl || thumbUrl || null;
 
+      // Finalize the image to be displayed
       const result = {
         width,
         height,
         selectedResultIndex,
-        fitsUrl: results?.[selectedResultIndex]?.cutout_url,
-        thumbUrl: results?.[selectedResultIndex]?.thumbnail_url,
+        fitsUrl,
+        thumbUrl,
         fullUrl
       };
 
@@ -100,9 +107,9 @@ export class NeatDataMainImageComponent {
       this.isFitsButtonDisabled = !!source && source.toLowerCase() === 'skymapper';
 
       // TEMPORARY: rename url resources to point to catch instead of catchsandbox
-      result.fitsUrl && result.fitsUrl.replace('catchsandbox', 'catch');
+      /*       result.fitsUrl && result.fitsUrl.replace('catchsandbox', 'catch');
       result.thumbUrl && result.thumbUrl.replace('catchsandbox', 'catch');
-      result.fullUrl && result.fullUrl.replace('catchsandbox', 'catch');
+      result.fullUrl && result.fullUrl.replace('catchsandbox', 'catch'); */
 
       // Pre-download image
       const img = new Image();
@@ -130,7 +137,7 @@ export class NeatDataMainImageComponent {
     this.isButtonRaised = true;
   }
 
-  chooseImage(url?: string) {
+  chooseImage(url: string | null) {
     // Decide whether to use thumbnail or not
     // console.log('url', url);
     return url && url.replace('_thumb', '');
