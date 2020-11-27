@@ -83,7 +83,7 @@ function DEPLOY_TO_LINUX() {
   [[ $DATA_API == "catchstage" ]] && DEPLOYMENT_BUCKET="www-catch-stage"
   [[ $DATA_API == "catchsandbox" ]] && DEPLOYMENT_BUCKET="www-catch-sandbox"
 
-  CMD="rsync -avzd $PWD/dist-local/ $LINUX_USER@$LINUX_HOST:$LINUX_CATCH_GUI_PATH/$DEPLOYMENT_BUCKET"
+  CMD="rsync -avzd $PWD/dist-$DATA_API/ $LINUX_USER@$LINUX_HOST:$LINUX_CATCH_GUI_PATH/$DEPLOYMENT_BUCKET"
   eval $CMD
   echo -e "${GRE}Running command >>>${WHI}${CMD}${GRE}<<<<"
 
@@ -266,16 +266,16 @@ elif [[ $CHOICE == 13 ]]; then
 
 elif [[ $CHOICE == 14 ]]; then
 
-  # Build dist with catch-api data and deploy to catch.astro.umd.edu
-  DATA_API="catchsandbox"
-  OUTPUT_DIR="dist-catchsandbox"
+  # Build dist with catchstage-api data and deploy to catchstage.astro.umd.edu
+  DATA_API="catch"
+  OUTPUT_DIR="dist-catch"
   BASE_HREF="/"
   BUILD_PROD_APP
   DEPLOY_TO_LINUX
 
 elif [[ $CHOICE == 15 ]]; then
 
-  # Build dist with catchstage-api data and deploy to catchstage.astro.umd.edu
+  # Build dist with catch-api data and deploy to catch.astro.umd.edu
   DATA_API="catchstage"
   OUTPUT_DIR="dist-catchstage"
   BASE_HREF="/"

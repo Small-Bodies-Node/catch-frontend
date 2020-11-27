@@ -79,8 +79,23 @@ export class AppEntryComponent {
             newPresentRoute: url
           })
         );
+
+        // TEMPORARY: used as part of a rerouting-without-apache hack:
+        const queryParams = this.router.parseUrl(url).queryParams;
+        queryParams.about && this.delayedRouter.delayedRouter('about');
+        queryParams.apis && this.delayedRouter.delayedRouter('apis');
+        queryParams.contact && this.delayedRouter.delayedRouter('contact');
+        queryParams.terms && this.delayedRouter.delayedRouter('terms');
+        queryParams.settings && this.delayedRouter.delayedRouter('settings');
+        queryParams.data &&
+          this.delayedRouter.delayedRouter('data', { queryParams: { objid: queryParams.data } });
       }
     });
+
+    /*     this.router.events.subscribe(event => {
+      const url =  !( event instanceof RouteConfigLoadStart) ? event.url;
+      console.log('url: ', url);
+    }); */
 
     // Logic to hide/show footer on route changes
     // We delay the appearance of the footer if navigating to or from homepage

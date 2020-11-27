@@ -22,11 +22,7 @@ export class BackgroundGraphicComponent implements OnInit, AfterViewInit {
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~>>>
 
   varHostClassName = 'host-dark-theme';
-
   imageNames = ['ground', 'mountains', 'telescope'];
-
-  videoSrc = 'assets/videos/webms/cometz7.webm';
-
   isBackgroundShown = true;
   isAnimating = false;
   selectedRoute = '';
@@ -36,10 +32,12 @@ export class BackgroundGraphicComponent implements OnInit, AfterViewInit {
   constructor(private store: Store<AppState>) {
     // ------------------------------------->>>
 
-    // Listen to changes in route; show/hide background based on present route
     this.store.select(selectNavigationRecords).subscribe(navRecords => {
-      this.isBackgroundShown =
-        !!navRecords.presentRoute && ['/', '/home'].includes(navRecords.presentRoute);
+      // ------------------------------------------------------------>>>
+
+      // Remove query params from url
+      const urlPath = (navRecords.presentRoute || '').split('?')[0];
+      this.isBackgroundShown = ['/', '/home'].includes(urlPath);
       this.varHostClassName = 'host-' + this.siteTheme.toLowerCase();
 
       if (false) setTimeout(() => startStars(), 300);
