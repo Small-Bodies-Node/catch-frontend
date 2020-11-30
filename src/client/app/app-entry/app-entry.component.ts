@@ -85,7 +85,7 @@ export class AppEntryComponent {
         queryParams.about && this.delayedRouter.delayedRouter('about');
         queryParams.apis && this.delayedRouter.delayedRouter('apis');
         queryParams.contact && this.delayedRouter.delayedRouter('contact');
-        queryParams.terms && this.delayedRouter.delayedRouter('terms');
+        queryParams.termkjs && this.delayedRouter.delayedRouter('terms');
         queryParams.settings && this.delayedRouter.delayedRouter('settings');
         queryParams.data &&
           this.delayedRouter.delayedRouter('data', { queryParams: { objid: queryParams.data } });

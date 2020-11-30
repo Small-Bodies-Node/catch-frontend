@@ -6,7 +6,7 @@
   <p>
     This is the frontend interface of the CATCH tool. The tool itself primarily consists in the
     publicly available APIs that you can access directly through
-    <a href="DATA_API_ROOT_URL+'docs'">this swagger interface</a>
+    <a [href]="DATA_API_ROOT_URL + 'docs'">this swagger interface</a>
     or via scripts as demonstrated at
     <a href="https://github.com/Small-Bodies-Node/catch-demo-scripts">this github repo</a>
     .
@@ -16,8 +16,9 @@
 
   <p>
     Querying an astronomical object for CATCH data involves a few steps. First, you need to ensure
-    that the name of the target comet/asteroid will be recognized. We provide a route to which you
-    can submit arbitrary text via the 'name' query parameter, e.g. 'Gunn':
+    that the name of the target comet/asteroid will be recognized. SBN provides a separate
+    name-resolution service to which you can submit arbitrary text via the 'name' query parameter,
+    e.g. 'Gunn':
   </p>
 
   <p>
@@ -39,7 +40,7 @@
   </p>
 
   <p>
-    <!-- <code>{{ ROUTE2 }}</code> -->
+    <code>{{ ROUTE2 }}</code>
   </p>
 
   <p>

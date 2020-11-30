@@ -139,6 +139,8 @@ else
   14. Build & Deploy Catch (6 & 10)
   15. Build & Deploy CatchStage (7 & 11)
   16. Build & Deploy CatchSandbox (8 & 12)
+  ${RED}
+  17. Misc 1
 ${WHI}
 =======================================================================
 """
@@ -287,6 +289,15 @@ elif [[ $CHOICE == 16 ]]; then
   # Build dist with catchsandbox-api data and deploy to catchsandbox.astro.umd.edu
   DATA_API="catchsandbox"
   OUTPUT_DIR="dist-catchsandbox"
+  BASE_HREF="/"
+  BUILD_PROD_APP
+  DEPLOY_TO_LINUX
+
+elif [[ $CHOICE == 17 ]]; then
+
+  # Build dist with catchsandbox-api data and deploy to catchsandbox.astro.umd.edu
+  DATA_API="musforti"
+  OUTPUT_DIR="dist-musforti"
   BASE_HREF="/"
   BUILD_PROD_APP
   DEPLOY_TO_LINUX

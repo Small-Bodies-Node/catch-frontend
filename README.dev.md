@@ -47,3 +47,7 @@ _Schematic of ngrx at work_
 ### Notes/Issues
 
 - Support for HMR in angular apps is surprisingly poorly supported. The most officious guide I could find was [here](). I also consulted [this repo](https://github.com/kubk/angular-ngrx-hmr) to get basic HMR working with ngrx. However, this did not preserve component state. As of 2-25-20 component state is yet to be resolved.
+
+* Had issues with service worker intercepting calls to api swagger interface at `/api/docs`. Solved by:
+  - Adding `"navigationUrls": ["!/api/**"]` to `ngsw.json` to prevent service worker trying to reroute such routes. In theory, you can add the various routed pages to this array to ensure that the service worker honors them. However, in practice, I found this was insufficient to enable one to route to pagers on first visit or on hard refreshes; so you also need to have:
+  - Adding `FallbackResource` directive to apache backend

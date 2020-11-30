@@ -9,11 +9,12 @@ import { DEPLOYMENT_ROOT_URL } from '@client/app/utils/constants';
 export class ApisPageComponent implements OnInit {
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~>>>
 
-  DATA_API_ROOT_URL = DEPLOYMENT_ROOT_URL + '/api';
-  ROUTE1 = this.DATA_API_ROOT_URL + '/query/name?name=65P';
-  ROUTE2 = this.DATA_API_ROOT_URL + '/query/moving?target=65P';
-  ROUTE3 = this.DATA_API_ROOT_URL + '/caught/{job_id}';
-  ROUTE4 = this.DATA_API_ROOT_URL + '/stream';
+  DATA_API_ROOT_URL = DEPLOYMENT_ROOT_URL + 'api/';
+  // ROUTE1 = this.DATA_API_ROOT_URL + 'query/name?name=65P';
+  ROUTE1 = 'https://musforti.astro.umd.edu/name-search/name?name=gunn';
+  ROUTE2 = this.DATA_API_ROOT_URL + 'query/moving?target=65P';
+  ROUTE3 = this.DATA_API_ROOT_URL + 'caught/{job_id}';
+  ROUTE4 = this.DATA_API_ROOT_URL + 'stream';
 
   constructor() {}
 

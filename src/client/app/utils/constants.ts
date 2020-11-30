@@ -23,6 +23,9 @@ switch (environment.dataApi) {
   case 'catchsandbox':
     DEPLOYMENT_ROOT_URL = 'https://catchsandbox.astro.umd.edu/';
     break;
+  case 'musforti':
+    DEPLOYMENT_ROOT_URL = 'https://musforti.astro.umd.edu/';
+    break;
   default:
     throw new Error('Data-api options are not exhaustive!');
 }

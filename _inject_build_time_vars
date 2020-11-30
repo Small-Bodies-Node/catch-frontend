@@ -24,7 +24,7 @@ if [[ -z $DATA_API ]]; then
 fi
 
 # Compute and export variable $invoke_url for lambda emailer
-source _invoke_url_export
+# source _invoke_url_export
 
 ########################################
 # Overwrite environment.ts file:
@@ -32,7 +32,7 @@ source _invoke_url_export
 cat >src/client/environments/environment.ts <<EOL
 export interface IEnvironment {
   production: boolean;
-  dataApi:  'mock' | 'catch' | 'catchstage' | 'catchsandbox';
+  dataApi:  'mock' | 'catch' | 'catchstage' | 'catchsandbox' | 'musforti';
   hmr: boolean;
   emailerEndpoint: string;
   baseHref: string;

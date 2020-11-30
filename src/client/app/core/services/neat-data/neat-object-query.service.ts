@@ -130,8 +130,23 @@ export class NeatObjectQueryService {
 
     const store = this.store;
     return new Promise<TJobStreamResult>((resolve, reject) => {
+      // --------------------------------------------------->>>
+
       const url = DEPLOYMENT_ROOT_URL + 'api/stream';
       const source = new EventSource(url);
+      const start = new Date();
+
+      const timer = setTimeout(() => {
+        // @ts-ignore
+        console.log('Query taking too long; go to results...', new Date() - start);
+        resolve({
+          status: 'success',
+          job_id: jobId
+        });
+        source.close();
+      }, 60 * 1000);
+      // console.log('timeer', timer);
+
       source.onmessage = function(msgEvent: MessageEvent) {
         try {
           const data: {
@@ -140,6 +155,7 @@ export class NeatObjectQueryService {
             status: 'success' | 'running' | 'queued' | 'error';
           } = JSON.parse(msgEvent.data);
           const message: string = data.text;
+          // console.log('Data', data);
 
           if (data.status !== 'error' && !!message) {
             store.dispatch(new NeatObjectQuerySetStatus({ message }));
@@ -150,6 +166,10 @@ export class NeatObjectQueryService {
               status: 'success',
               job_id: jobId
             });
+            console.log('timer', timer);
+            clearTimeout(timer);
+            // @ts-ignore
+            // console.log('success', new Date() - start);
           }
           if (data.status === 'error') {
             this.close();
@@ -160,11 +180,13 @@ export class NeatObjectQueryService {
               status: 'error',
               message: errMessage
             });
+            clearTimeout(timer);
           }
         } catch (e) {
           console.log('e message', e.message);
           this.close();
           reject(e.message);
+          clearTimeout(timer);
         }
       };
     });
