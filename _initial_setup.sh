@@ -52,16 +52,18 @@ fi
 if [[ ! -d ./.venv ]]; then
   echo -e "${CYA}>>> Virtual Environment Not Found -- Creating './.venv'${WHI}"
   $PYTHON_3_5_OR_HIGHER -m venv .venv
+  echo -e "${CYA}>>> Using python version:${WHI} $(python -V)${WHI}"
 fi
 
 ### 6. Activate VENV
 source ./.venv/bin/activate
 
 ### 7. Upgrade pip
-pip install --upgrade pip
+# pip install --upgrade pip
+# python3 -m pip install --upgrade pip setuptools wheel
 
 ### 8. Install Requirements to VENV
-echo "${CYA}>>> Installing python packages...${WHI}"
+echo -e "${CYA}>>> Installing python packages...${WHI}"
 sleep 1
 pip install -r requirements.vscode.txt
 pip install -r requirements.txt
@@ -70,7 +72,7 @@ pip install -r requirements.txt
 ln -fs $PWD/_precommit_hook $PWD/.git/hooks/pre-commit
 
 ### 10. Check that redis dirs exist and give status of redis:
-echo "${CYA}>>> Install and start redis if it's not already running; its status is:${WHI}"
+echo -e "${CYA}>>> Install and start redis if it's not already running; its status is:${WHI}"
 if [[ ! -d .redis ]]; then mkdir -p .redis; fi
 if [[ ! -d .redis/old-logs ]]; then mkdir -p .redis/old-logs; fi
 ./_redis_manager status

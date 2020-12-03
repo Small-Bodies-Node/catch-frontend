@@ -18584,7 +18584,9 @@ object-assign
                         case 9:
                           a = e.t0;
                         case 10:
-                          console.log("Hmmmmmm !!!");
+                          // DWD!!!!
+                          a.url = a.url.replace("catchsandbox", "catch");
+
                           return (
                             (n =
                               a.headers["content-type"] ||

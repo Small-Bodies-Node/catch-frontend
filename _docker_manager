@@ -1,0 +1,35 @@
+#! /bin/bash
+
+# $(docker run -it -v $PWD:/opt/app mycentos7 /bin/bash)
+
+# $(docker build --tag mycentos7 .)
+
+# $(docker system prune)
+
+source .env
+
+if [[ ! -z $1 ]]; then
+  choice=$1
+else
+  clear
+  echo -e """${WHI}
+  ============================================
+    Docker Manager:
+    ${CYA}
+    1. build image for local development
+    2. run container for local development
+    ${WHI}
+  ============================================
+  """
+  read choice
+fi
+
+if [[ $choice == 1 ]]; then
+  echo -e "${GRE}Building docker image 'ddwd/catchdev' ... ${WHI}"
+  docker build --tag ddwd/catchdev .
+fi
+
+if [[ $choice == 2 ]]; then
+  echo -e "${GRE}Running docker container 'ddwd/catchdev' ... ${WHI}"
+  docker run -it -p 5004:5004 -v $PWD:/home/postgres/app ddwd/catchdev /bin/bash
+fi
