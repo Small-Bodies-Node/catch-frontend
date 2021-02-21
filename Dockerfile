@@ -9,9 +9,14 @@ FROM centos:centos7
 #########################################################################################
 
 RUN yum update -y
+
+RUN yum-config-manager --enable pgdg12
+RUN curl -sL https://rpm.nodesource.com/setup_10.x | bash -
+
 RUN yum install -y \
-  # General stuff
+  # General stuff useful for operating linux
   which \
+  file \
   git \
   man  \
   yum-utils \
@@ -39,6 +44,8 @@ RUN yum install -y \
   rpm-python.x86_64 \
   python-devel.x86_64 \
   python-libs.x86_64 \
+  ### Node stuff: https://linuxize.com/post/how-to-install-node-js-on-centos-7/
+  nodejs \
   ### Stuff needed for building vim, tmux and zsh
   openssl.x86_64 \
   openssl-devel.x86_64 \
@@ -61,6 +68,11 @@ RUN yum install -y \
   # Add facilities to give non-root user sudo permissions
   passwd \
   sudo
+
+### Upgrade node/npm to v12/v6; install pm2 and nodemon globally:
+# RUN npm install n -g && n 12 && npm --version && node --version && npm i -g nodemon pm2
+RUN npm --version && node --version && npm i -g nodemon pm2
+
 
 # Create postgres user with sudo permissions
 # Note: doing everything as a user named 'postgres' is for simplicity in development
@@ -140,11 +152,27 @@ RUN /usr/pgsql-12/bin/pg_ctl -D /usr/local/pgsql/data start \
 ### Upgrade global pip
 RUN sudo python3 -m pip install --upgrade pip setuptools wheel
 
+RUN echo "Change me to rebuild from here !"
+
 ### Change to bash as default shell
 SHELL ["/bin/bash", "-c"]
 
+WORKDIR /app
 
-RUN mkdir /home/postgres/app && cd /home/postgres/app
+RUN sudo chown -R postgres:postgres /app
+
+RUN echo "Change me to rebuild from here"
+COPY ./_venv_installation.sh /app/
+COPY ./.env /app/
+COPY ./requirements* /app/
+COPY ./_redis_manager /app/
+
+
+
+
+RUN cd /app \
+  && source _venv_installation.sh \
+  && ./_redis_manager install
 
 # Create default command on docker-container startup
 CMD ["/usr/pgsql-12/bin/pg_ctl","-D","/usr/local/pgsql/data start"]

@@ -16,8 +16,9 @@ else
   ============================================
     Docker Manager:
     ${CYA}
-    1. build image for local development
-    2. run container for local development
+    1. HOST:      build image for local development
+    2. HOST:      run container for local development
+    3. CONTAINER: start servers
     ${WHI}
   ============================================
   """
@@ -26,10 +27,20 @@ fi
 
 if [[ $choice == 1 ]]; then
   echo -e "${GRE}Building docker image 'ddwd/catchdev' ... ${WHI}"
-  docker build --tag ddwd/catchdev .
+  docker build --no-cache --tag ddwd/catchdev .
 fi
 
 if [[ $choice == 2 ]]; then
   echo -e "${GRE}Running docker container 'ddwd/catchdev' ... ${WHI}"
-  docker run -it -p 5004:5004 -v $PWD:/home/postgres/app ddwd/catchdev /bin/bash
+  docker run -it -p 5003:5003 -v $PWD:/app ddwd/catchdev /bin/bash
+  # docker run -it --network host -v $PWD:/app ddwd/catchdev /bin/bash
+
+fi
+
+if [[ $choice == 3 ]]; then
+  echo -e "${GRE}Starting postgresql server ... ${WHI}"
+  /usr/pgsql-12/bin/pg_ctl -D /usr/local/pgsql/data start
+
+  echo -e "${GRE}Starting redis server ... ${WHI}"
+  ./_redis_manager start
 fi

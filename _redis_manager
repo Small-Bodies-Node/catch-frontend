@@ -3,8 +3,8 @@
 # ============================================================================
 # This manager script is used to install/start/stop/restart the REDIS server
 # Installation is done by downloading and building binary. You need to specify
-# the latest redis distro in the .env file. The app will intereact with redis
-# using the package 'rq'. rq comes with a cli. Run `rq info` for details
+# the latest redis distro in the .env file. The python app will intereact with
+# redis using the package 'rq'. rq comes with a cli. Run `rq info` for details
 #
 # REDIS_DIST=redis-5.0.5 is latest stable build as of Sept 2019
 #
@@ -26,7 +26,11 @@ calc_processes() {
 calc_processes
 
 d_install() {
-  rm -rf .redis/$REDIS_DIST
+  # Set up dirs
+  if [[ ! -d .redis ]]; then mkdir .redis; fi
+  if [[ -d .redis/$REDIS_DIST ]]; then rm -rf .redis/$REDIS_DIST; fi
+
+  # Install to versioned dir
   cd .redis
   wget 'http://download.redis.io/releases/'$REDIS_DIST'.tar.gz'
   tar -xf $REDIS_DIST'.tar.gz'

@@ -12,6 +12,8 @@ from tasks import RQueues
 subscribed_queues: List[str] = [RQueues.JOBS]
 
 redis_url: str = 'redis://localhost:'+str(ENV.REDIS_PORT)
+# redis_url: str = 'redis://192.168.65.1:'+str(ENV.REDIS_PORT)
+# redis_url: str = 'redis://host.docker.internal:'+str(ENV.REDIS_PORT)
 
 conn: Redis = from_url(redis_url)
 
