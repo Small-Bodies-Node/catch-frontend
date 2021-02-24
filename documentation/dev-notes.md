@@ -29,3 +29,5 @@ These are misc notes where you can describe issues/decisions-taken in the course
 -- DWD: to get redis working, you need to choose a stable release from [https://redis.io/download](https://redis.io/download), and insert it into `.env`. As of Sept 2019, this is `REDIS_DIST='redis-5.0.5'`. The `_init_setup` script will then install it locally if it doesn't exist. The script `_redis_server` will then provide you with `install/start/stop/restart/status` options.
 
 -- DWD: to start gunicorn from the project root acting on an app within the `src` directory, you either need to cd in/out of `src` in your `_gunicorn_manager` script or apply the flag `--chdir src` when calling gunicorn. I discovered however that the latter option messed up my restart mechanism (where I send a series of signals with the `kill` command). Not wanting to figure out what the issuse was there, I reverted to cd in/out.
+
+-- DWD: https://flask-sse.readthedocs.io/en/latest/config.html#redis
