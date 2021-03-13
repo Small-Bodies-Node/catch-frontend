@@ -4,7 +4,7 @@
 # Here we specify the bucket for production site
 resource "aws_s3_bucket" "bucket_resource" {
   # bucket = "${var.prod_bucket_name}"
-  bucket = "${var.bucket_name}"
+  bucket = var.bucket_name
   acl    = "public-read"
 
   cors_rule {

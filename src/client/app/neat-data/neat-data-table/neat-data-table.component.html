@@ -1,11 +1,51 @@
 <div
   class="table-paginator-wrapper"
-  *ngIf="!!cleanedResults && cleanedResults.length > 0 && !!resultLabels"
+  *ngIf="!!cleanedResults && cleanedResults.length > 0 && !!resultLabels && !!downloadRowState"
 >
   <div class="table-wrapper">
     <table mat-table matSort [dataSource]="tableData" class="data-table mat-elevation-z8XXX">
+      <ng-container class="first-checkbox-column" [matColumnDef]="'download_checkboxes'">
+        <th
+          mat-header-cell
+          class="table-header-cell checkbox-cell"
+          style="padding-top: 0px; padding-right: 0px; padding-left: 10px;"
+          *matHeaderCellDef
+        >
+          <div class="checkbox-wrapper">
+            <mat-checkbox
+              color="accent"
+              class="example-margin"
+              [checked]="isSelectAllDownloadRowCheckboxChecked"
+              (change)="selectAllDownloadRowCheckbox()"
+              matTooltip="Select/deselect all for download"
+            >
+              {{ '' }}
+            </mat-checkbox>
+          </div>
+        </th>
+        <td
+          mat-cell
+          class="table-body-cell checkbox-cell"
+          style="padding: 0px; padding-left: 10px;"
+          [ngClass]="{ 'highlighted-cell': kk === selectedIndex }"
+          *matCellDef="let element; let kk = index"
+          (click)="selectRow(kk)"
+        >
+          <div class="checkbox-wrapper">
+            <mat-checkbox
+              color="accent"
+              class="example-margin"
+              [checked]="downloadRowState[kk]"
+              (change)="updateDownloadRowCheckbox(kk)"
+            >
+              {{ '' }}
+            </mat-checkbox>
+          </div>
+        </td>
+      </ng-container>
+
       <ng-container class="first-thumbnail-column" [matColumnDef]="'thumbnail_url'">
-        <th mat-cell class="table-header-cell" *matHeaderCellDef>
+        <th mat-header-cell class="table-header-cell" *matHeaderCellDef>
           <button mat-button (click)="openSettingsDialog($event)">
             <mat-icon matTooltip="Choose table columns">
               settings
@@ -15,11 +55,14 @@
         <td
           mat-cell
           class="table-body-cell thumbnail-cell"
+          style="padding: 0px;"
           [ngClass]="{ 'highlighted-cell': jj === selectedIndex }"
           *matCellDef="let element; let jj = index"
           (click)="selectRow(jj)"
         >
-          <img [src]="element.thumbnail_url" />
+          <div class="thumnail-wrapper">
+            <img [src]="element.thumbnail_url" />
+          </div>
         </td>
       </ng-container>
 
@@ -78,7 +121,7 @@
         <td
           mat-cell
           (click)="selectRow(jj)"
-          class="table-body-cell"
+          class="table-body-cell mat-cell"
           [ngClass]="{ 'highlighted-cell': jj === selectedIndex }"
           *matCellDef="let element; let jj = index"
         >
@@ -109,14 +152,14 @@
       </ng-container>
 
       <tbody>
-        <tr mat-header-row *matHeaderRowDef="getAllCols()"></tr>
+        <tr mat-header-row *matHeaderRowDef="getAllCols(); sticky: true"></tr>
         <tr mat-row *matRowDef="let row; columns: getAllCols()"></tr>
       </tbody>
     </table>
   </div>
 </div>
-<mat-paginator
+<!-- <mat-paginator
   class="paginator"
   [pageSizeOptions]="pageSizeOptions"
   showFirstLastButtons
-></mat-paginator>
+></mat-paginator> -->

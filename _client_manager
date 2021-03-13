@@ -149,7 +149,7 @@ fi
 
 ### Handle choice
 
-if [[ $CHOICE == 0 ]]; then
+if [[ $CHOICE -eq 0 ]]; then
 
   # Run tests
   echo -e "${GRE} >>> Running tests... ${WHI}"
@@ -160,7 +160,7 @@ if [[ $CHOICE == 0 ]]; then
   fi
   echo -e "${GRE} >>> ... done! All tests passed! ${WHI}"
 
-elif [[ $CHOICE == 1 ]]; then
+elif [[ $CHOICE -eq 1 ]]; then
 
   # Develop locally with mock data
   DATA_API="mock"
@@ -168,7 +168,7 @@ elif [[ $CHOICE == 1 ]]; then
   BASE_HREF="/"
   SERVE_LOCAL
 
-elif [[ $CHOICE == 2 ]]; then
+elif [[ $CHOICE -eq 2 ]]; then
 
   # Develop locally with catch-api data
   DATA_API="catch"
@@ -176,7 +176,7 @@ elif [[ $CHOICE == 2 ]]; then
   BASE_HREF="/"
   SERVE_LOCAL
 
-elif [[ $CHOICE == 3 ]]; then
+elif [[ $CHOICE -eq 3 ]]; then
 
   # Develop locally with catchstage-api data
   DATA_API="catchstage"
@@ -184,7 +184,7 @@ elif [[ $CHOICE == 3 ]]; then
   BASE_HREF="/"
   SERVE_LOCAL
 
-elif [[ $CHOICE == 4 ]]; then
+elif [[ $CHOICE -eq 4 ]]; then
 
   # Develop locally with catchsandbox-api data
   DATA_API="catchsandbox"
@@ -192,7 +192,7 @@ elif [[ $CHOICE == 4 ]]; then
   BASE_HREF="/"
   SERVE_LOCAL
 
-elif [[ $CHOICE == 5 ]]; then
+elif [[ $CHOICE -eq 5 ]]; then
 
   # Build dist for github with mock data
   DATA_API="mock"
@@ -200,7 +200,7 @@ elif [[ $CHOICE == 5 ]]; then
   BASE_HREF="/$GITHUB_REPO_NAME/"
   BUILD_PROD_APP
 
-elif [[ $CHOICE == 6 ]]; then
+elif [[ $CHOICE -eq 6 ]]; then
 
   # Build dist with catch-api data
   DATA_API="catch"
@@ -208,7 +208,7 @@ elif [[ $CHOICE == 6 ]]; then
   BASE_HREF="/"
   BUILD_PROD_APP
 
-elif [[ $CHOICE == 7 ]]; then
+elif [[ $CHOICE -eq 7 ]]; then
 
   # Build dist with catchstage-api data
   DATA_API="catchstage"
@@ -216,7 +216,7 @@ elif [[ $CHOICE == 7 ]]; then
   BASE_HREF="/"
   BUILD_PROD_APP
 
-elif [[ $CHOICE == 8 ]]; then
+elif [[ $CHOICE -eq 8 ]]; then
 
   # Build dist with catchsandbox-api data
   DATA_API="catchsandbox"
@@ -224,7 +224,7 @@ elif [[ $CHOICE == 8 ]]; then
   BASE_HREF="/"
   BUILD_PROD_APP
 
-elif [[ $CHOICE == 9 ]]; then
+elif [[ $CHOICE -eq 9 ]]; then
 
   # Deploy to github
   DATA_API="mock"
@@ -232,16 +232,15 @@ elif [[ $CHOICE == 9 ]]; then
   BASE_HREF="/$GITHUB_REPO_NAME/"
   DEPLOY_TO_GITHUB
 
-elif [[ $CHOICE == 10 ]]; then
+elif [[ $CHOICE -eq 10 ]]; then
 
-  # Build dist with catch-api data and deploy to catch.astro.umd.edu
+  # Deploy to catch.astro.umd.edu
   DATA_API="catch"
   OUTPUT_DIR="dist-catch"
   BASE_HREF="/"
-  BUILD_PROD_APP
   DEPLOY_TO_LINUX
 
-elif [[ $CHOICE == 11 ]]; then
+elif [[ $CHOICE -eq 11 ]]; then
 
   # Deploy to catchstage.astro.umd.edu
   DATA_API="catchstage"
@@ -249,7 +248,7 @@ elif [[ $CHOICE == 11 ]]; then
   BASE_HREF="/"
   DEPLOY_TO_LINUX
 
-elif [[ $CHOICE == 12 ]]; then
+elif [[ $CHOICE -eq 12 ]]; then
 
   # Deploy to catchsandbox.astro.umd.edu
   DATA_API="catchsandbox"
@@ -257,7 +256,7 @@ elif [[ $CHOICE == 12 ]]; then
   BASE_HREF="/"
   DEPLOY_TO_LINUX
 
-elif [[ $CHOICE == 13 ]]; then
+elif [[ $CHOICE -eq 13 ]]; then
 
   # Build dist with mock data and deploy to github
   DATA_API="mock"
@@ -266,7 +265,7 @@ elif [[ $CHOICE == 13 ]]; then
   BUILD_PROD_APP
   DEPLOY_TO_GITHUB
 
-elif [[ $CHOICE == 14 ]]; then
+elif [[ $CHOICE -eq 14 ]]; then
 
   # Build dist with catchstage-api data and deploy to catchstage.astro.umd.edu
   DATA_API="catch"
@@ -275,7 +274,7 @@ elif [[ $CHOICE == 14 ]]; then
   BUILD_PROD_APP
   DEPLOY_TO_LINUX
 
-elif [[ $CHOICE == 15 ]]; then
+elif [[ $CHOICE -eq 15 ]]; then
 
   # Build dist with catch-api data and deploy to catch.astro.umd.edu
   DATA_API="catchstage"
@@ -284,7 +283,7 @@ elif [[ $CHOICE == 15 ]]; then
   BUILD_PROD_APP
   DEPLOY_TO_LINUX
 
-elif [[ $CHOICE == 16 ]]; then
+elif [[ $CHOICE -eq 16 ]]; then
 
   # Build dist with catchsandbox-api data and deploy to catchsandbox.astro.umd.edu
   DATA_API="catchsandbox"
@@ -293,7 +292,7 @@ elif [[ $CHOICE == 16 ]]; then
   BUILD_PROD_APP
   DEPLOY_TO_LINUX
 
-elif [[ $CHOICE == 17 ]]; then
+elif [[ $CHOICE -eq 17 ]]; then
 
   # Build dist with catchsandbox-api data and deploy to catchsandbox.astro.umd.edu
   DATA_API="musforti"

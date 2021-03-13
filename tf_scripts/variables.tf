@@ -26,3 +26,8 @@ variable "RECAPTCHA_SECRET" {
   description = "If a recaptcha secret key is provided, then the Lambda function will seek to verify a recaptcha token passed from client"
 }
 
+
+variable "RECAPTCHA_BYPASS_CODE" {
+  description = "If this bypass code is provided at endpoint invocation, then the requirement for RECAPTCHA will be bypassed"
+}
+

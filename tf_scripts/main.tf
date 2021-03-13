@@ -1,12 +1,7 @@
-
-
 # Specify region
-
 provider "aws" {
   region = "us-east-1"
 }
-
-
 
 # Dev-site bucket module
 module "dev_s3_bucket_module" {
@@ -34,6 +29,7 @@ module "lambda_emailer_function_module" {
   STATIC_SENDER_EMAIL       = var.STATIC_SENDER_EMAIL
   STATIC_RECEIVER_EMAIL     = var.STATIC_RECEIVER_EMAIL
   RECAPTCHA_SECRET          = var.RECAPTCHA_SECRET
+  RECAPTCHA_BYPASS_CODE     = var.RECAPTCHA_BYPASS_CODE
 }
 
 module "lambda_api_gateway_module" {

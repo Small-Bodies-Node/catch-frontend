@@ -10,7 +10,7 @@ resource "aws_cloudfront_distribution" "cloudfront_resource" {
   origin {
 
 
-    domain_name = "${var.domain_name}"
+    domain_name = var.domain_name
     origin_id   = local.s3_origin_id
 
     custom_origin_config {

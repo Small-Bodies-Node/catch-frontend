@@ -4,7 +4,6 @@ import { Store } from '@ngrx/store';
 import { take } from 'rxjs/operators';
 import { Subscription } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
-
 import {
   TColInitState,
   TColName
@@ -14,7 +13,8 @@ import {
   selectNeatObjectQueryResults,
   selectNeatObjectQueryResultLabels,
   selectNeatObjectQueryColumnState,
-  selectNeatObjectQuerySelectedResultIndex
+  selectNeatObjectQuerySelectedResultIndex,
+  selectNeatObjectDownloadRowState
 } from '@client/app/ngrx/selectors/neat-object-query.selectors';
 import { AppState } from '@client/app/ngrx/reducers';
 import {
@@ -22,7 +22,10 @@ import {
   INeatObjectQueryResultLabel
 } from '@client/app/models/neat-object-query-result-labels.model';
 import { NeatDataPlotlyGraphDialogComponent } from '../neat-data-plotly-graph/neat-data-plotly-graph.dialog-component';
-import { NeatObjectQuerySetSelectedResultIndex } from '@client/app/ngrx/actions/neat-object-query.actions';
+import {
+  NeatObjectQuerySetSelectedResultIndex,
+  NeatObjectQuerySetDownloadRowState
+} from '@client/app/ngrx/actions/neat-object-query.actions';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 
@@ -48,8 +51,11 @@ export class NeatDataTableComponent implements OnInit, OnDestroy {
   tmtpData!: number[];
   trueanomalyData!: number[];
 
+  isSelectAllDownloadRowCheckboxChecked = false;
+
   // Table Pagination Params
-  pageSizeOptions = [500, 1000, 10000];
+  // pageSizeOptions = [500, 1000, 10000];
+  pageSizeOptions = [99999999999999];
   private paginator: MatPaginator | undefined;
   @ViewChild(MatPaginator) set setPaginator(content: MatPaginator) {
     this.paginator = content;
@@ -71,6 +77,8 @@ export class NeatDataTableComponent implements OnInit, OnDestroy {
   colState?: TColInitState;
   resultLabels!: INeatObjectQueryResultLabels;
   shownCols!: Partial<TColName>[];
+
+  downloadRowState?: boolean[];
 
   rawResults?: INeatObjectQueryResult[];
   cleanedResults?: INeatObjectQueryResult[];
@@ -111,6 +119,13 @@ export class NeatDataTableComponent implements OnInit, OnDestroy {
         this.shownCols = Object.keys(this.colState).filter(
           key => this.colState![key as keyof TColInitState]
         ) as TColName[];
+      })
+    );
+
+    this.subscriptions.add(
+      this.store.select(selectNeatObjectDownloadRowState).subscribe(downloadRowState => {
+        this.downloadRowState = downloadRowState;
+        // console.log(this.downloadRowState);
       })
     );
   }
@@ -165,7 +180,7 @@ export class NeatDataTableComponent implements OnInit, OnDestroy {
 
   getAllCols() {
     if (!this.shownCols) return [];
-    return ['thumbnail_url', ...this.shownCols];
+    return ['download_checkboxes', 'thumbnail_url', ...this.shownCols];
   }
 
   formatCellEntry(entry: any, labels?: INeatObjectQueryResultLabel) {
@@ -209,6 +224,28 @@ export class NeatDataTableComponent implements OnInit, OnDestroy {
   getLabelDescription(labels?: INeatObjectQueryResultLabel) {
     if (!labels) return '';
     return labels.description;
+  }
+
+  updateDownloadRowCheckbox(rowIndex: number) {
+    if (!!this.downloadRowState) {
+      // Toggle entry
+      let newDownloadRowState = [...this.downloadRowState];
+      newDownloadRowState[rowIndex] = !newDownloadRowState[rowIndex];
+      this.store.dispatch(new NeatObjectQuerySetDownloadRowState({ newDownloadRowState }));
+    }
+  }
+
+  selectAllDownloadRowCheckbox() {
+    this.isSelectAllDownloadRowCheckboxChecked = !this.isSelectAllDownloadRowCheckboxChecked;
+
+    const newDownloadRowState =
+      this.cleanedResults &&
+      Array.apply(null, {
+        length: this.cleanedResults.length
+      }).map(() => this.isSelectAllDownloadRowCheckboxChecked);
+
+    newDownloadRowState &&
+      this.store.dispatch(new NeatObjectQuerySetDownloadRowState({ newDownloadRowState }));
   }
 }
 

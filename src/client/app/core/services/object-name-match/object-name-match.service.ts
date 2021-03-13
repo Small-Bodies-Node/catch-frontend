@@ -5,8 +5,8 @@ import { Observable } from 'rxjs';
 
 import { IObjectNameMatchResult } from '@client/app/models/object-name-match-result.model';
 
-const ROOT_URL = 'https://musforti.astro.umd.edu/name-search/';
-
+// const ROOT_URL = 'https://musforti.astro.umd.edu/name-search/';
+const ROOT_URL = 'https://astro-name-resolution.dandarg.com/';
 @Injectable({
   providedIn: 'root'
 })

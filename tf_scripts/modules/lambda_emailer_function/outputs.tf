@@ -1,6 +1,4 @@
 
-
-
 output "lambda_function_name" {
   description = "Name given to lambda function; required by api-gateway integrations"
   value       = aws_lambda_function.sendmail.function_name

@@ -20,6 +20,7 @@ export interface INeatObjectQuerySubstate {
   neatObjectQueryResultLabels: INeatObjectQueryResultLabels;
   neatObjectQueryStatus: INeatObjectQueryStatus;
   neatObjectQueryColumnState: TColInitState;
+  neatObjectQueryDownloadRowState: boolean[];
 }
 
 export const initialState: INeatObjectQuerySubstate = {
@@ -27,19 +28,18 @@ export const initialState: INeatObjectQuerySubstate = {
   neatObjectQueryResults: undefined,
   neatObjectQueryResultLabels,
   neatObjectQueryStatus: { code: 'unknown' },
-  neatObjectQueryColumnState: { ...initialColumnState }
+  neatObjectQueryColumnState: { ...initialColumnState },
+  neatObjectQueryDownloadRowState: []
 };
 
 export function NeatObjectQueryReducer(
   state = initialState,
   action: NeatObjectQueryActions
 ): INeatObjectQuerySubstate {
+  // --------------------->>>
+
   switch (action.type) {
     case ENeatObjectQueryActionTypes.NeatObjectQuerySetSelectedResultIndex:
-      // ----------------------------------------->>>
-
-      console.log('---->', action);
-
       return {
         ...state,
         neatObjectSelectedResultIndex: action.payload.index
@@ -49,6 +49,12 @@ export function NeatObjectQueryReducer(
       return {
         ...state,
         neatObjectQueryColumnState: { ...action.payload.newColState }
+      };
+
+    case ENeatObjectQueryActionTypes.NeatObjectQuerySetDownloadRowState:
+      return {
+        ...state,
+        neatObjectQueryDownloadRowState: [...action.payload.newDownloadRowState]
       };
 
     case ENeatObjectQueryActionTypes.NeatObjectQuerySetResults:

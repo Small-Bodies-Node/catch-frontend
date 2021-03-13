@@ -57,6 +57,9 @@ node_modules
 **/terraform.tfstate
 **/terraform.tfstate.backup
 **/.terraform.tfstate.lock.info
+.terraform.lock.hcl
+terraform.tfstate.*.backup
+
 temp*
 
 # Angular stuff

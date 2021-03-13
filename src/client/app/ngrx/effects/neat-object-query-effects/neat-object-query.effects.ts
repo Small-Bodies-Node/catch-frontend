@@ -8,6 +8,7 @@ import {
   NeatObjectQueryActions,
   NeatObjectQueryFetchResults,
   NeatObjectQuerySetResults,
+  NeatObjectQuerySetDownloadRowState,
   ENeatObjectQueryActionTypes,
   NeatObjectQuerySetResultLabels,
   NeatObjectQuerySetStatus
@@ -108,7 +109,17 @@ export class NeatObjectQueryEffects {
 
           // Return multiple actions in specific order using concat operator
           return concat(
+            // Set results array
             of(new NeatObjectQuerySetResults({ neatObjectQueryResults })),
+            // Set download-row array
+            of(
+              new NeatObjectQuerySetDownloadRowState({
+                newDownloadRowState: Array.apply(null, {
+                  length: neatObjectQueryResults.length
+                }).map(() => false)
+              })
+            ),
+            // Set status of neat query
             of(
               new NeatObjectQuerySetStatus({
                 objid: action.payload.objectName,

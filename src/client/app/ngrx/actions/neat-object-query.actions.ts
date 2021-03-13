@@ -14,12 +14,18 @@ export enum ENeatObjectQueryActionTypes {
   NeatObjectQuerySetResults = '[NeatObjectQuery] Set Results',
   NeatObjectQuerySetSelectedResultIndex = '[NeatObjectQuery] Set Selected Result Index',
   NeatObjectQuerySetResultLabels = '[NeatObjectQuery] Set Labels',
-  NeatObjectQuerySetColumnState = '[NeatObjectQuery] Set Column State'
+  NeatObjectQuerySetColumnState = '[NeatObjectQuery] Set Column State',
+  NeatObjectQuerySetDownloadRowState = '[NeatObjectQuery] Set Download Row State'
 }
 
 export class NeatObjectQuerySetColumnState implements Action {
   readonly type = ENeatObjectQueryActionTypes.NeatObjectQuerySetColumnState;
   constructor(public payload: { newColState: TColInitState }) {}
+}
+
+export class NeatObjectQuerySetDownloadRowState implements Action {
+  readonly type = ENeatObjectQueryActionTypes.NeatObjectQuerySetDownloadRowState;
+  constructor(public payload: { newDownloadRowState: boolean[] }) {}
 }
 
 export class NeatObjectQueryFetchResults implements Action {
@@ -65,4 +71,5 @@ export type NeatObjectQueryActions =
   | NeatObjectQuerySetStatus
   | NeatObjectQuerySetSelectedResultIndex
   | NeatObjectQueryResultsLoaded
-  | NeatObjectQuerySetColumnState;
+  | NeatObjectQuerySetColumnState
+  | NeatObjectQuerySetDownloadRowState;

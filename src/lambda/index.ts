@@ -2,6 +2,8 @@ import { emailer } from './lib/emailer';
 
 console.log('Hello from the outside');
 
+import { Handler, APIGatewayEvent } from 'aws-lambda';
+
 /**
  *
  *
@@ -18,21 +20,23 @@ console.log('Hello from the outside');
  * Function to call to return response to user
  *
  */
-exports.handler = async function(
-  event: any,
-  context: AWSLambda.Context,
+export const handler: Handler = async function(
+  event: APIGatewayEvent,
+  _context: AWSLambda.Context,
   callback: AWSLambda.Callback
 ) {
   // If you want to return a response to user but continue lambda process, then uncomment this:
   // context.callbackWaitsForEmptyEventLoop = false;
 
-  console.log('Starting Email Process');
+  console.log('Starting Email Process...');
+  console.log('typeof event >>>>', typeof event, JSON.stringify(event), '<<<<');
+  console.log('event.queryStringParameters:', event.queryStringParameters);
 
-  await emailer(event, callback);
+  await emailer(event, callback).catch(_ => {
+    console.log('The rejected promise has been herein caught');
+  });
 
-  console.log('Finishing Email Process');
+  console.log('Finishing Email Process.');
 
-  context.done();
+  callback();
 };
-
-// export { handler };

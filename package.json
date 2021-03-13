@@ -38,6 +38,7 @@
     "dms-conversion": "^3.1.1",
     "file-saver": "^2.0.2",
     "gzipper": "^3.4.2",
+    "json2csv": "^5.0.5",
     "jszip": "^3.5.0",
     "normalize-scss": "^7.0.1",
     "rxjs": "~6.6.3",

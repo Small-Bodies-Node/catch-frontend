@@ -1,23 +1,53 @@
-// @import '../../../styles/styles-variables';
-
 .table-paginator-wrapper {
   background: rgba(255, 255, 255, 0);
   max-width: 100%;
-  overflow-x: scroll;
+  // overflow-x: scroll;
 
   .table-wrapper {
     table,
     tr {
       margin: auto auto;
+      margin-left: 10px;
 
-      .thumbnail-cell {
+      * {
+        box-sizing: border-box;
       }
 
-      img {
-        width: 30px;
-        height: 30px;
-        margin-right: 15px;
-        margin-left: 15px;
+      .table-header-cell {
+        padding-bottom: 15px;
+      }
+
+      .checkbox-cell {
+        // padding: 0px;
+        // padding: 20px;
+        height: 100%;
+        width: 100%;
+        .checkbox-wrapper {
+          height: 100%;
+          width: 100%;
+          padding: 0px;
+          // padding-left: 15px;
+          // display: flex;
+          justify-content: center;
+          align-items: center;
+        }
+      }
+
+      .thumbnail-cell {
+        height: 100%;
+        width: 100%;
+        padding: 0px;
+        .thumnail-wrapper {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          img {
+            width: 30px;
+            height: 30px;
+            margin-right: 15px;
+            margin-left: 15px;
+          }
+        }
       }
 
       .wlot {
@@ -54,7 +84,7 @@
       }
 
       .mat-cell {
-        padding: 10px 10px 10px 0px;
+        padding: 15px 15px 15px 0px;
       }
     }
   }

@@ -1,7 +1,7 @@
 # Create rest api
 resource "aws_api_gateway_rest_api" "default" {
   name        = "${var.prefix}${var.api_gateway_name}"
-  description = "${var.api_gateway_description}"
+  description = var.api_gateway_description
 }
 
 # Add a main api resource to rest api created above
@@ -35,7 +35,7 @@ resource "aws_api_gateway_method_response" "response_200" {
   rest_api_id = aws_api_gateway_rest_api.default.id
   resource_id = aws_api_gateway_resource.main.id
   http_method = aws_api_gateway_method.sendmail.http_method
-  status_code = "${200}"
+  status_code = 200
   #
   # AWS Diff
   response_parameters = {
@@ -71,7 +71,7 @@ resource "aws_api_gateway_method_response" "options_200" {
   rest_api_id = aws_api_gateway_rest_api.default.id
   resource_id = aws_api_gateway_resource.main.id
   http_method = aws_api_gateway_method.options_method.http_method
-  status_code = "${200}"
+  status_code = 200
   response_models = {
     "application/json" = "Empty"
   }
@@ -163,8 +163,8 @@ resource "aws_api_gateway_usage_plan" "MyUsagePlan" {
   product_code = "MYCODE"
 
   api_stages {
-    api_id = "${aws_api_gateway_rest_api.default.id}"
-    stage  = "${aws_api_gateway_deployment.production.stage_name}"
+    api_id = aws_api_gateway_rest_api.default.id
+    stage  = aws_api_gateway_deployment.production.stage_name
   }
 
   quota_settings {

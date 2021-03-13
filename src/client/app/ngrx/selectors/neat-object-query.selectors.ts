@@ -33,3 +33,8 @@ export const selectNeatObjectQueryColumnState = createSelector(
   (state: AppState) => state.neatObjectQuery,
   (substate: INeatObjectQuerySubstate) => substate.neatObjectQueryColumnState
 );
+
+export const selectNeatObjectDownloadRowState = createSelector(
+  (state: AppState) => state.neatObjectQuery,
+  (substate: INeatObjectQuerySubstate) => substate.neatObjectQueryDownloadRowState
+);
