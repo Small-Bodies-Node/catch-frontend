@@ -103,8 +103,8 @@ export class NeatDataMainImageComponent {
       };
 
       // TEMPORARY: disable fits button if skymapper
-      const source = results?.[selectedResultIndex]?.source;
-      this.isFitsButtonDisabled = !!source && source.toLowerCase() === 'skymapper';
+      // const source = results?.[selectedResultIndex]?.source;
+      // this.isFitsButtonDisabled = !!source && source.toLowerCase() === 'skymapper';
 
       // TEMPORARY: rename url resources to point to catch instead of catchsandbox
       /*       result.fitsUrl && result.fitsUrl.replace('catchsandbox', 'catch');

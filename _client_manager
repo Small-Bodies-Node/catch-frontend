@@ -3,19 +3,36 @@
 clear
 
 ### Import env variables:
-if [ -f $PWD/.env ]; then source .env; else echo "No .env file found!!!" && return 1; fi
+[ ! -f $PWD/.env ] && echo "No .env file found!!!" && return 1
+source .env
 
-### Define major functions
-
+#######################################
+# Wrap wround `ng serve` and `lcp` from npm package `local-cors-proxy`
+# Arguments:
+#   hostnamePrefix (optional)
+# Globals:
+#   BASE_HREF, DATA_API
+#######################################
 function SERVE_LOCAL() {
 
+  # Get optional choice of data-api source
+  local hostnamePrefix=$1
+
   # Run local proxy server to bypass CORS for images from remote servers
-  lcp --proxyUrl https://catch.astro.umd.edu --port 8010 &
+  [[ $hostnamePrefix ]] && ./node_modules/.bin/lcp --proxyUrl "https://${hostnamePrefix}.astro.umd.edu" --port 8010 &
   # ...
   DATA_API=$DATA_API BASE_HREF=$BASE_HREF ./_inject_build_time_vars
   ./node_modules/.bin/ng serve --port 4200 --configuration hmr
+
 }
 
+#######################################
+# Wrap around `ng build` for controlled build
+# Arguments:
+#   none
+# Globals:
+#   OUTPUT_DIR, BASE_HREF, DATA_API
+#######################################
 function BUILD_PROD_APP() {
 
   echo -e """${WHI}
@@ -46,7 +63,7 @@ function BUILD_PROD_APP() {
     -- --stats-json
 
   # Add .htaccess to OUTPUT_DIR
-  cat >$OUTPUT_DIR/.htaccess <<EOL
+  cat >$OUTPUT_DIR/.htaccess <<-EOL
     RewriteEngine On
     RewriteBase /
     RewriteRule ^index\.html$ - [L]
@@ -75,15 +92,22 @@ EOL
   fi
 }
 
+#######################################
+# Wrap around rsync to deploy to host
+# Arguments:
+#   None
+# Globals:
+#   LINUX_USER, LINUX_HOST, DATA_API
+#######################################
 function DEPLOY_TO_LINUX() {
 
   # Build rsync command to upload frontend
-  LINUX_HOST="${DATA_API}.astro.umd.edu"
-  DEPLOYMENT_BUCKET="www-catch-prod"
-  [[ $DATA_API == "catchstage" ]] && DEPLOYMENT_BUCKET="www-catch-stage"
-  [[ $DATA_API == "catchsandbox" ]] && DEPLOYMENT_BUCKET="www-catch-sandbox"
+  local LINUX_HOST="${DATA_API}.astro.umd.edu"
+  local deployment_bucket="www-catch-prod"
+  [[ $DATA_API == "catchstage" ]] && deployment_bucket="www-catch-stage"
+  [[ $DATA_API == "catchsandbox" ]] && deployment_bucket="www-catch-sandbox"
 
-  CMD="rsync -avzd $PWD/dist-$DATA_API/ $LINUX_USER@$LINUX_HOST:$LINUX_CATCH_GUI_PATH/$DEPLOYMENT_BUCKET"
+  local CMD="rsync -avzd $PWD/dist-$DATA_API/ $LINUX_USER@$LINUX_HOST:$LINUX_CATCH_GUI_PATH/$deployment_bucket"
   eval $CMD
   echo -e "${GRE}Running command >>>${WHI}${CMD}${GRE}<<<<"
 
@@ -95,6 +119,13 @@ function DEPLOY_TO_LINUX() {
   ${WHI}"""
 }
 
+#######################################
+# Wrap around ngh to deploy to github
+# Arguments:
+#   None
+# Globals:
+#   GITHUB_USER_NAME, GITHUB_REPO_NAME
+#######################################
 function DEPLOY_TO_GITHUB() {
 
   ./node_modules/.bin/ngh --branch gh-pages --dir dist-github
@@ -174,7 +205,7 @@ elif [[ $CHOICE -eq 2 ]]; then
   DATA_API="catch"
   OUTPUT_DIR=""
   BASE_HREF="/"
-  SERVE_LOCAL
+  SERVE_LOCAL catch
 
 elif [[ $CHOICE -eq 3 ]]; then
 
@@ -182,7 +213,7 @@ elif [[ $CHOICE -eq 3 ]]; then
   DATA_API="catchstage"
   OUTPUT_DIR=""
   BASE_HREF="/"
-  SERVE_LOCAL
+  SERVE_LOCAL catchstage
 
 elif [[ $CHOICE -eq 4 ]]; then
 
@@ -190,7 +221,7 @@ elif [[ $CHOICE -eq 4 ]]; then
   DATA_API="catchsandbox"
   OUTPUT_DIR=""
   BASE_HREF="/"
-  SERVE_LOCAL
+  SERVE_LOCAL catchsandbox
 
 elif [[ $CHOICE -eq 5 ]]; then
 

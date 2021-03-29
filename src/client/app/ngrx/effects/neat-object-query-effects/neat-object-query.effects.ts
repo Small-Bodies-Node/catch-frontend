@@ -96,6 +96,21 @@ export class NeatObjectQueryEffects {
               archive_url: !!el.archive_url ? el.archive_url?.replace('fit.fz', 'fits') : null
             };
           });
+          console.log('====>', neatObjectQueryResults);
+
+          // TEMPORARY HACK TO SWAP IN HTTPS for Skymapper Objects
+          neatObjectQueryResults.forEach((el, ind) => {
+            neatObjectQueryResults[ind] = {
+              ...el,
+              cutout_url: el.cutout_url?.includes('http://api.skymapper')
+                ? el.cutout_url!.replace('http', 'https')
+                : el.cutout_url,
+              preview_url: el.preview_url?.includes('http://api.skymapper')
+                ? el.preview_url!.replace('http', 'https')
+                : el.preview_url,
+              thumbnail_url: el.thumbnail_url || el.preview_url || 'unavailable'
+            };
+          });
 
           const isObjectFound = !!neatObjectQueryResults.length;
 
