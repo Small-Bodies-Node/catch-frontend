@@ -15,6 +15,100 @@
     activity, or to understand why a survey did not detect or report observations of an object.
   </p>
 
+  <h4>Example searches</h4>
+  <ul>
+    <li><a href="data?objid=57P">57P/duToit-Neujmin-Delporte</a></li>
+    <li><a href="data?objid=69P">69P/Taylor</a></li>
+    <li><a href="data?objid=C%2F1995%20O1">C/1995 O1 (Hale-Bopp)</a></li>
+    <li><a href="data?objid=C%2F1996%20E1">C/1996 E1 (NEAT)</a></li>
+    <li><a href="data?objid=C%2F2001%20K5">C/2001 K5 (Young)</a></li>
+  </ul>
+
+  <h4>Data sources</h4>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Survey</th>
+        <th>Site</th>
+        <th>Dates (UTC)</th>
+        <th>Nights</th>
+        <th>Images</th>
+        <th>Pixel scale (arcsec)</th>
+        <th>
+          Field of view
+          <sup>a</sup>
+          (arcmin)
+        </th>
+        <th>Filters</th>
+        <th>Limiting magnitude</th>
+        <th>References</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>NEAT GEODSS</td>
+        <td>Haleakala Observatory (566)</td>
+        <td>April 1996 &ndash; May 1998</td>
+        <td>147</td>
+        <td>36,099</td>
+        <td>1.43</td>
+        <td>98×98</td>
+        <td>None</td>
+        <td>V~19</td>
+        <td>
+          <a href="https://sbn.psi.edu/pds/resource/neat.html">Bauer and Lawrence 2013</a>
+          ,
+          <a href="https://ui.adsabs.harvard.edu/abs/1999AJ....117.1616P">Pravdo et al. 1999</a>
+        </td>
+      </tr>
+      <tr>
+        <td>NEAT Palomar Tri-Cam</td>
+        <td>Palomar Observatory (644)</td>
+        <td>November 2001 &ndash; March 2003</td>
+        <td>150</td>
+        <td>131,389</td>
+        <td>1.01</td>
+        <td>69×69</td>
+        <td>None</td>
+        <td>V~20</td>
+        <td>
+          <a href="https://sbn.psi.edu/pds/resource/neat.html">Bauer and Lawrence 2013</a>
+          ,
+          <a href="https://ui.adsabs.harvard.edu/abs/2016AJ....151...80T">Tricarico 2016</a>
+        </td>
+      </tr>
+      <tr>
+        <td>SkyMapper Southern Survey (DR2)</td>
+        <td>Siding Spring Observatory (413)</td>
+        <td>March 2014 &ndash; March 2018</td>
+        <td>799</td>
+        <td>3,727,026</td>
+        <td>0.5</td>
+        <td>17×34</td>
+        <td>uvgriz</td>
+        <td>
+          shallow survey~19,
+          <br />
+          main survey~20&ndash;22
+        </td>
+        <td>
+          <a href="https://ui.adsabs.harvard.edu/abs/2018PASA...35...10W">Wolf et al. 2018</a>
+          ,
+          <a href="https://ui.adsabs.harvard.edu/abs/2019PASA...36...33O">Onken et al. 2019</a>
+        </td>
+      </tr>
+    </tbody>
+    <tfoot>
+      <tr>
+        <td colspan="8">
+          <sup>a</sup>
+          Field of view of a single image.
+        </td>
+      </tr>
+    </tfoot>
+  </table>
+
   <h3>
     CATCH Limitations and Caveats
   </h3>
@@ -28,35 +122,12 @@
     search, but this capability has been reserved for a future enhancement.
   </p>
 
-  <h3>Data sources</h3>
-
-  <p>
-    Near-Earth Asteroid Tracking (NEAT) survey data are from the NASA Planetary Data System archive
-    of
-    <a href="https://sbn.psi.edu/pds/resource/neat.html">Bauer and Lawrence</a>
-    (2013):
-  </p>
-  <ul>
-    <li>
-      NEAT
-      <abbr title="Ground-based Electro-Optical Deep Space Surveillance">GEODSS</abbr>
-      1m telescope at Haleakala Observatory, April 1996 &ndash; May 1998.
-    </li>
-    <li>
-      NEAT Palomar (Tri-Cam), using the 1.2m Oschin Schmidt telscope at Palomar Observatory,
-      November 2001 &ndash; March 2003.
-    </li>
-  </ul>
-
-  <p>
-    <a href="http://skymapper.anu.edu.au/">SkyMapper Southern Survey</a>
-    data are from the Austrailian National Observatory. The telescope is located at Siding Spring
-    Observatory. Data release 2 covers the period March 2014 &ndash; March 2018.
-  </p>
-
   <h3>Known issues</h3>
   <ol>
-    <li>NEAT astrometic solutions are only approximate, and typically 10s of arcsec off.</li>
+    <li>
+      The archived NEAT fields of view are only approximate, and do not represent the astrometric
+      solution. They are typically tens of arcsecs off.
+    </li>
     <li>
       SkyMapper cutout service is not yet compatible with CATCH. Images may be downloaded with the
       cutout URLs provided for each search result.
@@ -69,6 +140,20 @@
       . Use JPL's
       <a href="https://ssd.jpl.nasa.gov/sbdb.cgi">Small-Body Database Browser</a>
       to test object names that are not working.
+    </li>
+    <li>
+      Due to naming conventions at the Minor Planet Center searching for fragmented comets may
+      require additional knowledge of the comet.
+      <ol type="a">
+        <li>
+          For example, 73P/Schwassmann-Wachmann 3 refers to the pre-1995 comet and fragment C from
+          the comet's 1995 fragmentation.
+        </li>
+        <li>
+          Other fragments of 73P must be explicitly searched using the fragment suffix, e.g., 73P-B,
+          73P-E.
+        </li>
+      </ol>
     </li>
   </ol>
 
@@ -86,7 +171,6 @@
   </p>
 
   <h3>Acceptable Usage of Site</h3>
-
   <p>
     CATCH is a service built and operated by the
     <a href="https://pds-smallbodies.astro.umd.edu/">Small Bodies Node</a>
