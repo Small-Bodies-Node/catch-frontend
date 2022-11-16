@@ -1,0 +1,55 @@
+<div class="mat-toolbar-wrapper">
+  <div
+    class="cookie-message-wrapper"
+    *ngIf="
+      !(isHappyWithCookie$ | async) as isNotHappyWithCookie;
+      else isHappyWithCookie
+    "
+  >
+    <div class="screen-filter"></div>
+    <div>
+      <span>
+        This site uses third party services that will in general leave cookies.
+        Click to accept
+        <a routerLink="terms">terms</a>
+        .
+      </span>
+    </div>
+    <div>
+      <button mat-raised-button (click)="acceptTerms()">I Accept</button>
+    </div>
+  </div>
+
+  <ng-template #isHappyWithCookie>
+    <mat-toolbar color="primary">
+      <div class="toolbar-cell">
+        <a
+          href="https://github.com/Small-Bodies-Node/catch-apis"
+          target="_blank"
+        >
+          <div class="icon-wrapper start">
+            <mat-icon style="transform: translate(0px, -5px)">
+              <fa-icon [icon]="['fab', 'github']"></fa-icon>
+            </mat-icon>
+            <span class="icon-descriptor">
+              {{ "Github" }}
+            </span>
+          </div>
+        </a>
+      </div>
+      <div class="toolbar-cell">
+        <div class="text-wrapper" routerLink>
+          <div class="first">{{ " Copyright © " + timeStamp + " " }}</div>
+          <div class="second">{{ " Small Bodies Node " }}</div>
+        </div>
+      </div>
+      <div class="toolbar-cell">
+        <a href="https://pds-smallbodies.astro.umd.edu/" target="_blank">
+          <div class="icon-wrapper start">
+            <img [src]="sbnLogo" alt="" />
+          </div>
+        </a>
+      </div>
+    </mat-toolbar>
+  </ng-template>
+</div>

@@ -1,49 +1,36 @@
+/* To learn more about this file see: https://angular.io/config/tsconfig. */
 {
   "compileOnSave": false,
   "compilerOptions": {
     "baseUrl": "./",
-    "outDir": "./dist",
+    "outDir": "./dist/out-tsc",
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
     "sourceMap": true,
+    "resolveJsonModule": true,
+    "paths": {
+      "ngx-js9": ["dist/ngx-js9"],
+      "assert": ["node_modules/assert-browserify"],
+      "stream": ["node_modules/stream-browserify"]
+    },
+    "allowSyntheticDefaultImports": true,
     "declaration": false,
     "downlevelIteration": true,
     "experimentalDecorators": true,
-    "module": "esnext",
     "moduleResolution": "node",
-    "resolveJsonModule": true,
-    "allowSyntheticDefaultImports": true,
     "importHelpers": true,
-    "target": "es2015",
-    "typeRoots": [
-        "node_modules/@types"
-    ],
-    "lib": [
-      "es2018",
-      "dom"
-    ],
-    "paths": {
-      "@client/*": ["src/client/*"],
-      "@app/*": ["src/client/app/*"],
-      "@env/*": ["src/client/environments/*"]
-    },
-    /////////////////////////////////////////////////////////////////////////////////////
-    /// Added TS Strictness
-    /////////////////////////////////////////////////////////////////////////////////////
-    // "strict": true                     /* Enable all strict type-checking options. */,
-    // "noImplicitAny": true                /* Raise error on expressions and declarations with an implied 'any' type. */,
-    "strictNullChecks": true              /* Enable strict null checks. */,
-    "strictFunctionTypes": true           /* Enable strict checking of function types. */,
-    "strictPropertyInitialization": true  /* Enable strict checking of property initialization in classes. */,
-    "noImplicitThis": true                /* Raise error on 'this' expressions with an implied 'any' type. */,
-    "alwaysStrict": true                  /* Parse in strict mode and emit "use strict" for each source file. */,
-    "noUnusedLocals": true                /* Report errors on unused locals. */,
-    "noUnusedParameters": true            /* Report errors on unused parameters. */,
-    "noImplicitReturns": true             /* Report error when not all code paths in function return a value. */,
-    "noFallthroughCasesInSwitch": true,   /* Report errors for fallthrough cases in switch statement. */
-    "forceConsistentCasingInFileNames": true,
+    "target": "es2020",
+    "module": "es2020",
+    "lib": ["es2020", "dom"]
   },
   "angularCompilerOptions": {
-    "fullTemplateTypeCheck": true,
+    "enableI18nLegacyMessageIdFormat": false,
     "strictInjectionParameters": true,
+    "strictInputAccessModifiers": true,
     "strictTemplates": true
   }
 }

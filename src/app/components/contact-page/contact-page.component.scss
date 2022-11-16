@@ -1,0 +1,86 @@
+.contact-page-wrapper {
+  // --------------->>>
+
+  height: 100%;
+  width: 100%;
+  position: relative;
+  box-sizing: border-box;
+  z-index: 0;
+  text-align: center;
+  padding: 10px;
+  //
+
+  h1 {
+    margin: auto;
+    padding: 30px;
+  }
+
+  form {
+    max-width: 600px;
+    margin: auto auto;
+
+    mat-card {
+      gap: 10px;
+      display: grid;
+      grid-template-areas: "nameEmailWrapper" "message" "buttons";
+      grid-template-columns: repeat(1, minmax(200px, 1fr));
+      // grid-template-rows: repeat(3, minmax(0px, 1fr));
+      // grid-template-rows: minmax(0px, 1fr) minmax(0px, 1fr) minmax(0px, 1fr);
+
+      // grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      // grid-template-rows: 300px;
+      margin-bottom: 20px;
+
+      & > * {
+        min-height: 40px;
+        // border: white solid 1px;
+      }
+
+      #name-email-wrapper {
+        grid-area: nameEmailWrapper;
+        // background-color: green;
+
+        gap: 10px;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+
+        #fullname {
+          // background-color: red;
+        }
+        #email {
+          // background-color: blue;
+        }
+      }
+      #message {
+        grid-area: message;
+        // background-color: purple;
+      }
+      #buttons {
+        grid-area: buttons;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        // grid-template-columns: minmax(320px, 1fr) minmax(50px, 1fr);
+
+        #recaptcha-wrapper {
+          // background-color: red;
+          // min-width: 300px;
+        }
+
+        #submit-button-wrapper {
+          // background-color: pink;
+        }
+        // .recaptcha-submit {
+        //   display: flex;
+        //   justify-content: space-between;
+        //   align-items: center;
+        //   margin: 15px 0px;
+
+        //   button {
+        //     max-height: 50px;
+        //   }
+        // }
+      }
+    }
+  }
+}

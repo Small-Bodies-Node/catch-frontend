@@ -1,0 +1,22 @@
+<div class="title-bar-container">
+  <div class="title">
+    {{ "TARGET: " + (target ? target : "") }}
+  </div>
+
+  <div class="download-button-wrapper">
+    <button
+      class="download-button"
+      mat-button
+      (click)="downloadData()"
+      matTooltip="Download Selected Data"
+      [disabled]="isDownloadButtonDisabled()"
+    >
+      <ng-container *ngIf="!!isDownloadButtonShown">
+        <mat-icon>download</mat-icon>
+      </ng-container>
+      <ng-container *ngIf="!isDownloadButtonShown">
+        <mat-spinner style="zoom: 0.2"></mat-spinner>
+      </ng-container>
+    </button>
+  </div>
+</div>

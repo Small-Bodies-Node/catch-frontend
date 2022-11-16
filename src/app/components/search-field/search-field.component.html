@@ -1,0 +1,230 @@
+<div class="search-field-container">
+  <form
+    class="basic-search-form"
+    [formGroup]="basicSearchForm"
+    (keydown)="keyDownOnInputText($event)"
+  >
+    <mat-form-field
+      [color]="getFormColor()"
+      appearance="outline"
+      class="search-full-width"
+    >
+      <mat-label>{{ getSearchMessageText() }}</mat-label>
+
+      <input
+        matInput
+        type="text"
+        placeholder="E.g. 65P"
+        aria-label="Name of the object to be matched"
+        [formControlName]="formControlLabels.target_input_control"
+        [matAutocomplete]="auto"
+        #trigger="matAutocompleteTrigger"
+        [ngStyle]="getInputTextColor()"
+        (ngModelChange)="searchTermChangeSubject.next($event)"
+      />
+      <mat-autocomplete #auto="matAutocomplete">
+        <mat-option
+          *ngFor="let option of objectNameMatchResults"
+          [value]="option.target"
+        >
+          <span class="name-search-result">
+            {{ optionToText(option) + "" }}
+          </span>
+        </mat-option>
+      </mat-autocomplete>
+
+      <button
+        class="search-button"
+        [disabled]="!latestInputText.trim()"
+        mat-raised-button
+        mat-icon-button
+        matSuffix
+        aria-label="Button to start searching names"
+        (click)="submitObjectNameMatch($event)"
+      >
+        <mat-icon matSuffix *ngIf="!isTargetMatched()">search</mat-icon>
+        <mat-icon *ngIf="isTargetMatched()" [ngStyle]="{ color: successColor }"
+          >done</mat-icon
+        >
+      </button>
+    </mat-form-field>
+    <div class="advanced-controls-button-wrapper">
+      <button
+        class="advanced-controls-button"
+        [disabled]="false"
+        mat-raised-button
+        mat-icon-button
+        matSuffix
+        aria-label="Button to start searching names"
+        (click)="toggleAdvancedControls()"
+      >
+        <mat-icon matSuffix>tune</mat-icon>
+      </button>
+    </div>
+  </form>
+
+  <!--  -->
+
+  <form
+    class="advanced-search-form"
+    [formGroup]="advancedSearchForm"
+    (keydown)="keyDownOnInputText($event)"
+  >
+    <div
+      class="advanced-search-controls"
+      *ngIf="true || isAdvancedControls"
+      [ngStyle]="{
+        bottom: isAdvancedControls ? '0%' : '100%',
+        opacity: isAdvancedControls ? 1 : 0
+      }"
+    >
+      <!--  -->
+
+      <div class="data-sources-title">Data Sources</div>
+
+      <div class="checkbox-grid">
+        <div>
+          <div class="info-checkbox-wrapper">
+            <span class="icon-wrapper">
+              <mat-icon [matTooltip]="'XXX XXX'">info</mat-icon>
+            </span>
+            <mat-checkbox
+              [formControlName]="formControlLabels.neat_palomar_tricam"
+              >{{ formControlLabels.neat_palomar_tricam }}</mat-checkbox
+            >
+          </div>
+        </div>
+        <div>
+          <div class="info-checkbox-wrapper">
+            <span class="icon-wrapper">
+              <mat-icon [matTooltip]="'XXX XXX'">info</mat-icon>
+            </span>
+            <mat-checkbox
+              [formControlName]="formControlLabels.neat_maui_geodss"
+              >{{ formControlLabels.neat_maui_geodss }}</mat-checkbox
+            >
+          </div>
+        </div>
+        <div>
+          <div class="info-checkbox-wrapper">
+            <span class="icon-wrapper">
+              <mat-icon [matTooltip]="'XXX XXX'">info</mat-icon>
+            </span>
+            <mat-checkbox [formControlName]="formControlLabels.skymapper">{{
+              formControlLabels.skymapper
+            }}</mat-checkbox>
+          </div>
+        </div>
+        <div>
+          <div class="info-checkbox-wrapper">
+            <span class="icon-wrapper">
+              <mat-icon [matTooltip]="'XXX XXX'">info</mat-icon>
+            </span>
+            <mat-checkbox [formControlName]="formControlLabels.ps1dr2">{{
+              formControlLabels.ps1dr2
+            }}</mat-checkbox>
+          </div>
+        </div>
+        <div>
+          <div class="info-checkbox-wrapper">
+            <span class="icon-wrapper">
+              <mat-icon [matTooltip]="'XXX XXX'">info</mat-icon>
+            </span>
+            <mat-checkbox
+              [formControlName]="formControlLabels.catalina_bigelow"
+              >{{ formControlLabels.catalina_bigelow }}</mat-checkbox
+            >
+          </div>
+        </div>
+        <div>
+          <div class="info-checkbox-wrapper">
+            <span class="icon-wrapper">
+              <mat-icon [matTooltip]="'XXX XXX'">info</mat-icon>
+            </span>
+            <mat-checkbox
+              [formControlName]="formControlLabels.catalina_lemmon"
+              >{{ formControlLabels.catalina_lemmon }}</mat-checkbox
+            >
+          </div>
+        </div>
+        <div>
+          <div class="info-checkbox-wrapper">
+            <span class="icon-wrapper">
+              <mat-icon [matTooltip]="'XXX XXX'">info</mat-icon>
+            </span>
+            <mat-checkbox
+              [formControlName]="formControlLabels.catalina_kittpeak"
+              >{{ formControlLabels.catalina_kittpeak }}</mat-checkbox
+            >
+          </div>
+        </div>
+        <div>
+          <div class="info-checkbox-wrapper">
+            <span class="icon-wrapper">
+              <mat-icon [matTooltip]="'XXX XXX'">info</mat-icon>
+            </span>
+            <mat-checkbox [formControlName]="formControlLabels.spacewatch">{{
+              formControlLabels.spacewatch
+            }}</mat-checkbox>
+          </div>
+        </div>
+      </div>
+
+      <hr />
+
+      <div class="checkbox-grid">
+        <div>
+          <div class="info-checkbox-wrapper">
+            <span class="icon-wrapper">
+              <mat-icon
+                matTooltip="If this query has been performed in the past then return the most recently computed results"
+                >info</mat-icon
+              >
+            </span>
+            <mat-checkbox
+              [formControlName]="formControlLabels.use_cached_results_control"
+              >Use Cached Results</mat-checkbox
+            >
+          </div>
+        </div>
+        <div>
+          <div class="info-checkbox-wrapper">
+            <span class="icon-wrapper">
+              <mat-icon
+                matTooltip="Enable searches to account for an uncertainty ellipse using a polygonal approximation"
+                >info</mat-icon
+              >
+            </span>
+            <mat-checkbox
+              [formControlName]="formControlLabels.uncertainty_ellipse_control"
+              >Uncertainty Ellipse</mat-checkbox
+            >
+          </div>
+        </div>
+      </div>
+
+      <hr />
+
+      <div class="padding-field-wrapper">
+        <div style="width: 100%">
+          <mat-form-field appearance="standard">
+            <mat-label>Extra Padding </mat-label>
+            <input
+              matInput
+              placeholder="0"
+              value="0"
+              [formControlName]="formControlLabels.padding_input_control"
+            />
+            <mat-icon
+              matSuffix
+              matTooltip="Increase the search area by padding the ephemeris by this amount, in units of arcmin"
+              >info</mat-icon
+            >
+            <mat-hint>arcsecs</mat-hint>
+          </mat-form-field>
+        </div>
+      </div>
+      <!--  -->
+    </div>
+  </form>
+</div>

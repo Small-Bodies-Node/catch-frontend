@@ -1,8 +1,0 @@
-#!/bin/bash
-
-### This was installed with:
-# npm install -g local-cors-proxy
-
-# Run this to download resources from the url
-# Replace with http://localhost:8010/proxy is code
-lcp --proxyUrl https://catch.astro.umd.edu

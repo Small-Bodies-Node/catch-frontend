@@ -1,0 +1,11 @@
+<div #imageWheelContainer class="image-wheel-container">
+  <ng-container *ngIf="apiData">
+    <div
+      class="image-wheel-image"
+      *ngFor="let apiDatum of apiData; let i = index"
+      (click)="setSelectedDatum(apiDatum)"
+      [ngStyle]="getStyleObject(apiDatum)"
+      [ngClass]="isImageSelected(apiDatum) ? 'add-border' : ''"
+    ></div>
+  </ng-container>
+</div>

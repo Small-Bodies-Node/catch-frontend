@@ -1,0 +1,18 @@
+@mixin app-data-table-component-theme($theme) {
+  //
+
+  $primary: map-get($theme, primary);
+  $accent: map-get($theme, accent);
+  $warn: map-get($theme, warn);
+
+  app-table {
+    .highlighted-sticky-cell {
+      // background-color: rgba(mat-color($accent, 800), 1);
+      // background-color: rgba(mat-color($accent), 1);
+      background-color: rgba(mat-color($accent, 900), 1);
+    }
+    .highlighted-non-sticky-cell {
+      background-color: rgba(mat-color($accent, 800), 0.3);
+    }
+  }
+}

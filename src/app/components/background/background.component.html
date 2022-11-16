@@ -1,0 +1,27 @@
+<div
+  style="display: block"
+  class="background-image"
+  [ngClass]="backgroundImageClassLogic()"
+></div>
+
+<div
+  *ngIf="true || isBackgroundShown"
+  class="stars-wrapper"
+  id="canvas-container"
+  [ngClass]="isBackgroundShown ? 'fade-in' : 'fade-out'"
+></div>
+
+<div class="comet-wrapper" [ngClass]="isBackgroundShown ? '' : 'fade-out'">
+  <app-comet-animations></app-comet-animations>
+</div>
+
+<div
+  class="images-wrapper shakingXXX"
+  style="display: block; background: rgba(255, 0, 0, 0)"
+>
+  <div
+    *ngFor="let imageName of imageNames; let imageIndex = index"
+    [ngClass]="'animated-image' + (!isBackgroundShown ? '' : ' show-image ')"
+    [ngStyle]="getAnimatedImageStyle(imageName, imageIndex)"
+  ></div>
+</div>

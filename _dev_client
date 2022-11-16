@@ -1,5 +1,15 @@
-#! /bin/bash
+#!/bin/bash
+#
+# Run locally with hmr; use node v16, ng 14
 
-./_inject_build_time_vars
+if [[ ! $(node --version | grep v16) ]]; then
+  echo -e "${RED}You need node v16!${WHI}"
+  exit 1
+fi
 
-./node_modules/.bin/ng serve --port 4200 --configuration hmr
+if [[ ! $(ng version | grep 'Angular: 14') ]]; then
+  echo -e "${RED}You need ng v14!${WHI}"
+  exit 1
+fi
+
+ng serve --host 0.0.0.0 --port 4200 --hmr

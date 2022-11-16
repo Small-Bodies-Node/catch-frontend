@@ -1,0 +1,112 @@
+<div class="about-container">
+  <h2>ABOUT</h2>
+
+  <h3>CATCH Overview</h3>
+
+  <p>
+    The Comet-Asteroid Telescopic Catalog Hub (CATCH) is a moving-target search
+    tool for large data sets, such as time-domain or near-Earth object surveys.
+    You submit the name of an asteroid or comet, and CATCH will request an
+    ephemeris for that object from
+    <a href="https://ssd.jpl.nasa.gov/?horizons">NASA JPL's Horizons</a>
+    tool, then compute whether the ephemeris intersects any images within its
+    database of observations. If any matches are found, CATCH displays all the
+    salient data to you. The telescopic surveys are the haystack, and the
+    comet/asteroid is the needle that CATCH will help you find. Use CATCH to
+    help identify pre-discovery detections, to examine past cometary activity,
+    or to understand why a survey did not detect or report observations of an
+    object.
+  </p>
+
+  <h3>CATCH Limitations and Caveats</h3>
+  <p>
+    CATCH does not perform detection-based searches. i.e., it cannot determine
+    if an object was observed. Rather, it identifies images that
+    <em>could</em>
+    have observed a target, based on the target's ephemeris. This search
+    requires that the ephemeris correctly describes the target's motion on the
+    sky. CATCH properly considers the source data observatory when computing
+    ephemerides. CATCH does not consider ephemeris uncertainties in the search,
+    but this capability has been reserved for a future enhancement.
+  </p>
+
+  <h3>Data sources</h3>
+
+  <p>
+    Near-Earth Asteroid Tracking (NEAT) survey data are from the NASA Planetary
+    Data System archive of
+    <a href="https://sbn.psi.edu/pds/resource/neat.html">Bauer and Lawrence</a>
+    (2013):
+  </p>
+  <ul>
+    <li>
+      NEAT
+      <abbr title="Ground-based Electro-Optical Deep Space Surveillance"
+        >GEODSS</abbr
+      >
+      1m telescope at Haleakala Observatory, April 1996 &ndash; May 1998.
+    </li>
+    <li>
+      NEAT Palomar (Tri-Cam), using the 1.2m Oschin Schmidt telscope at Palomar
+      Observatory, November 2001 &ndash; March 2003.
+    </li>
+  </ul>
+
+  <p>
+    <a href="http://skymapper.anu.edu.au/">SkyMapper Southern Survey</a>
+    data are from the Austrailian National Observatory. The telescope is located
+    at Siding Spring Observatory. Data release 2 covers the period March 2014
+    &ndash; March 2018.
+  </p>
+
+  <h3>Known issues</h3>
+  <ol>
+    <li>
+      NEAT astrometic solutions are only approximate, and typically 10s of
+      arcsec off.
+    </li>
+    <li>
+      SkyMapper cutout service is not yet compatible with CATCH. Images may be
+      downloaded with the cutout URLs provided for each search result.
+    </li>
+    <li>
+      Target names: our name resolution service is incomplete. Some real target
+      names may not be resolved. However, CATCH can still attempt to search for
+      them. Ultimately, any target must be resolvable by
+      <a href="https://ssd.jpl.nasa.gov/?horizons">Horizons</a>
+      . Use JPL's
+      <a href="https://ssd.jpl.nasa.gov/sbdb.cgi"
+        >Small-Body Database Browser</a
+      >
+      to test object names that are not working.
+    </li>
+  </ol>
+
+  <h3>Acknowledgements</h3>
+  <p>
+    This software is built entirely with open-source resources, and so we thank
+    all of the authors in the JS/python community. Special thanks to Eric Mandel
+    for building the
+    <a href="https://js9.si.edu/">JS9 fits-file viewer</a>
+    and for his assistance in integrating it into this
+    <a href="https://en.wikipedia.org/wiki/Angular_(web_framework)">angular</a>
+    <a href="https://en.wikipedia.org/wiki/Single-page_application">SPA</a>
+    .
+  </p>
+
+  <h3>Acceptable Usage of Site</h3>
+
+  <p>
+    CATCH is a service built and operated by the
+    <a href="https://pds-smallbodies.astro.umd.edu/">Small Bodies Node</a>
+    of the
+    <a href="https://pds.nasa.gov/">NASA Planetary Data System</a>
+    group at the
+    <a href="https://www.umd.edu/">University of Maryland</a>
+    . You are welcome to use the tool for research and educational purposes. By
+    using this tool, you agree to our
+    <a routerLink="/terms">terms and conditions</a>
+    .
+  </p>
+  {{ xxx() }}
+</div>

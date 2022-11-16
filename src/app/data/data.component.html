@@ -1,0 +1,17 @@
+<ng-container *ngIf="isDataReady; else dataNotReady">
+  <div class="container" [ngStyle]="{ maxHeight }">
+    <div class="title-wrapper mat-elevation-z8">
+      <!-- {{ target }} -->
+      <app-title></app-title>
+    </div>
+    <div class="table-wrapper">
+      <app-table></app-table>
+    </div>
+    <div class="carousel-wrapper">
+      <app-carousel></app-carousel>
+    </div>
+  </div>
+</ng-container>
+<ng-template #dataNotReady>
+  <!--  -->
+</ng-template>
