@@ -4,3 +4,16 @@
   margin: auto auto;
   overflow: hidden;
 }
+
+.data-source-table {
+  border-collapse: collapse;
+
+  thead {
+    border-bottom: 1px solid white;
+  }
+
+  th,
+  td {
+    padding: 10px;
+  }
+}
