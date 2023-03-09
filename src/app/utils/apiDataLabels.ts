@@ -19,7 +19,7 @@ export const apiDataLabels: Readonly<TApiDataLabels> = {
   },
   //
   date: {
-    description: 'ASK MSK',
+    description: 'Date at which ephemeris was calculated, UTC',
     label: 'Date',
   },
   //
@@ -48,17 +48,17 @@ export const apiDataLabels: Readonly<TApiDataLabels> = {
     label: 'd[RA]/dt',
   },
   drh: {
-    description: 'ASK MSK',
+    description: 'Heliocentric radial velocity (km/s)',
     fractionSize: 2,
-    label: 'drh',
+    label: 'd[rh]/dt',
   },
   elong: {
-    description: 'ASK MSK',
+    description: 'Solar elongation (deg)',
     fractionSize: 2,
     label: 'elong',
   },
   exposure: {
-    description: 'Exposure time',
+    description: 'Exposure time (s)',
     fractionSize: 0,
     label: 'Exp',
   },
@@ -71,19 +71,19 @@ export const apiDataLabels: Readonly<TApiDataLabels> = {
     label: 'Instrument',
   },
   jd: {
-    description: 'Julian Date',
+    description: 'Julian date',
     label: 'JD',
   },
   maglimit: {
-    description: 'ASK MSK',
+    description: 'Detection limit (mag. Definition varies by survey.',
     label: 'magLimit',
   },
   mjd_start: {
-    description: 'ASK MSK',
+    description: 'Exposure start time, modified Julian date',
     label: 'MJD Start',
   },
   mjd_stop: {
-    description: 'ASK MSK',
+    description: 'Exposure stop time, modified Julian date',
     label: 'MJD STOP',
   },
   phase: {
@@ -105,11 +105,6 @@ export const apiDataLabels: Readonly<TApiDataLabels> = {
     fractionSize: 4,
     label: 'RA',
   },
-  rdot: {
-    description: 'Heliocentric radial velocity (km/s)',
-    fractionSize: 1,
-    label: 'd[rh]/dt',
-  },
   rh: {
     description: 'Heliocentric distance (au)',
     fractionSize: 3,
@@ -122,7 +117,7 @@ export const apiDataLabels: Readonly<TApiDataLabels> = {
     label: 'PA(\u2299)',
   },
   seeing: {
-    description: 'ASK MSK',
+    description: 'Point source FWHM (arcsec)',
     fractionSize: 0,
     label: 'Seeing',
   },
@@ -132,11 +127,11 @@ export const apiDataLabels: Readonly<TApiDataLabels> = {
     label: 'E(\u2299)',
   },
   source: {
-    description: 'ASK MSK',
+    description: 'Observational data source key',
     label: 'Source',
   },
   source_name: {
-    description: 'ASK MSK',
+    description: 'Observational data source name',
     label: 'Source Name',
   },
   tmtp: {
