@@ -236,4 +236,30 @@ export class TableComponent implements OnInit, AfterViewInit {
   isRowChecked(apiDatum: IApiDatum) {
     return this.downloadRowState[apiDatum.product_id];
   }
+
+  keyPress(event: KeyboardEvent) {
+    // --->
+
+    // Extract pertinent info from event
+    event.preventDefault();
+    const arrowDirn = event.key;
+    const isArrowDown = arrowDirn === 'ArrowDown';
+    const isArrowUp = arrowDirn === 'ArrowUp';
+
+    // Determine index of presently selected datum:
+    const sortedApiData = this.getSortedApiData();
+    const selectedDatum = this.apiSelectedDatum;
+
+    // Logic to select row above/below
+    if (selectedDatum && sortedApiData && (isArrowUp || isArrowDown)) {
+      const oldIndex = sortedApiData
+        .map((el) => el.product_id)
+        .indexOf(selectedDatum.product_id);
+      let newIndex = isArrowUp ? oldIndex - 1 : oldIndex + 1;
+      if (newIndex < 0) newIndex = 0;
+      if (newIndex >= sortedApiData.length) newIndex = sortedApiData.length - 1;
+      const apiDatum = sortedApiData[newIndex];
+      this.store$.dispatch(new ApiSetSelectedDatum({ apiDatum }));
+    }
+  }
 }

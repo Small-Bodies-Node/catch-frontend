@@ -142,7 +142,12 @@
 
     <tbody>
       <tr mat-header-row *matHeaderRowDef="getAllCols(); sticky: true"></tr>
-      <tr mat-row *matRowDef="let row; columns: getAllCols()"></tr>
+      <tr
+        mat-row
+        *matRowDef="let row; columns: getAllCols()"
+        (keydown)="keyPress($event)"
+        tabindex="0"
+      ></tr>
     </tbody>
   </table>
 </div>
