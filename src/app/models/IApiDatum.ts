@@ -21,6 +21,7 @@ export interface IApiDatum {
   preview_url: string | null;
   product_id: string;
   ra: number;
+  retrieved: string;
   // raDec?: string;
   rdot?: number;
   rh: number;
