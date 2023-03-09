@@ -36,9 +36,9 @@ const formControlLabels: {
 
 type TControlsForm = {
   [K in typeof formControlLabels[TFormControlKeys]]:
-    | FormControl<boolean | null>
-    | FormControl<number | null>
-    | FormControl<string | null>;
+  | FormControl<boolean | null>
+  | FormControl<number | null>
+  | FormControl<string | null>;
 };
 
 @Component({
@@ -84,7 +84,6 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
       [formControlLabels.neat_palomar_tricam]: new FormControl(true),
       [formControlLabels.neat_maui_geodss]: new FormControl(true),
       [formControlLabels.catalina_bigelow]: new FormControl(true),
-      [formControlLabels.catalina_kittpeak]: new FormControl(true),
       [formControlLabels.catalina_lemmon]: new FormControl(true),
       [formControlLabels.ps1dr2]: new FormControl(true),
       [formControlLabels.skymapper]: new FormControl(true),

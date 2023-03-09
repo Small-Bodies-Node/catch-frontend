@@ -9,7 +9,6 @@ export const sources = [
   `ps1dr2`,
   `catalina_bigelow`,
   `catalina_lemmon`,
-  `catalina_kittpeak`,
   `spacewatch`,
 ] as const;
 
