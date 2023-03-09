@@ -1,12 +1,11 @@
 import { TSources } from '../models/TSources';
 
 export const sourcesNamesDict: { [K in TSources]: string } = {
-  neat_palomar_tricam: 'Neat Palomar Tricam',
-  neat_maui_geodss: 'Neat Maui Geodss',
-  skymapper: 'Skymapper',
-  ps1dr2: 'PS1DR2',
-  catalina_bigelow: 'Catalina Bigelow',
-  catalina_lemmon: 'Catalina Lemmon',
-  catalina_kittpeak: 'Catalina Kittpeak',
-  spacewatch: 'Spacewatch',
+  neat_palomar_tricam: 'NEAT (Palomar)',
+  neat_maui_geodss: 'NEAT (Haleakala)',
+  skymapper: 'SkyMapper',
+  ps1dr2: 'PanSTARRS1',
+  catalina_bigelow: 'Catalina Sky Survey (Bigelow)',
+  catalina_lemmon: 'Catalina Sky Survey (Lemmon)',
+  spacewatch: 'Spacewatch MCS',
 };

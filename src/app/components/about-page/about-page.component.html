@@ -5,82 +5,179 @@
 
   <p>
     The Comet-Asteroid Telescopic Catalog Hub (CATCH) is a moving-target search
-    tool for large data sets, such as time-domain or near-Earth object surveys.
-    You submit the name of an asteroid or comet, and CATCH will request an
-    ephemeris for that object from
-    <a href="https://ssd.jpl.nasa.gov/?horizons">NASA JPL's Horizons</a>
-    tool, then compute whether the ephemeris intersects any images within its
-    database of observations. If any matches are found, CATCH displays all the
-    salient data to you. The telescopic surveys are the haystack, and the
-    comet/asteroid is the needle that CATCH will help you find. Use CATCH to
-    help identify pre-discovery detections, to examine past cometary activity,
-    or to understand why a survey did not detect or report observations of an
-    object.
+    tool for large astronomical data sets, such as time-domain or near-Earth
+    object surveys. CATCH solves the needle in the haystack problem: comets and
+    asteroids are the needles, and the archives of survey data are the
+    haystacks.
   </p>
+
+  <p>
+    <em>Use CATCH to help identify pre-discovery detections, to examine past
+      cometary activity, or to help you understand why a survey did not detect or
+      report observations of an object.</em>
+  </p>
+
+  <p>Provide the name of an asteroid or comet, and for each indexed data set
+    CATCH will:</p>
+  <ol>
+    <li>Request an ephemeris for that object from
+      NASA JPL's <a href="https://ssd.jpl.nasa.gov/horizons/">Horizons System</a>.</li>
+
+    <li>Query the CATCH database for data near the ephemeris.</li>
+
+    <li>Test each approximate match for detailed intersection.</li>
+
+    <li>Return all positive matches with target and observational metadata.</li>
+  </ol>
+
+  <h3>Capabilities</h3>
+  <ul>
+    <li>Results are presented in the browser, complete with image cutouts around
+      the query target (when available).</li>
+
+    <li>Backed by a publicly accessible API.</li>
+
+    <li>Searches all near-Earth object survey data archived with NASA's
+      Planetary Data System, and potentially any publicly hosted data archive
+      could be included.</li>
+
+    <li>Search results are cached and may be quickly retrieved thereafter, or
+      refreshed with a new query.</li>
+
+    <li>Queries may optionally search an area around the ephemeris: either an
+      arbitrary radius, or using the ephemeris uncertainty ellipse (when
+      available).</li>
+
+    <li>Pixel-level precision is possible, depending on the metadata quality of
+      the survey data or observation in question.</li>
+  </ul>
+
+  <p>For a summary of CATCH's techniques, see <a
+      href="https://www.youtube.com/watch?v=wkqoUXds26U?start=18824"><em>CATCHing
+        Near-Earth Objects in Archival Survey Data</em></a> a talk given by
+    M.&nbsp;Kelley, D.&nbsp;Darg, and J.&nbsp;Bauer to the 7th IAA Planetary
+    Defense Conference (2021 Apr 27):</p>
+
+  <iframe allowfullscreen="" frameborder="0" height="315" width="420"
+    src="https://www.youtube.com/embed/wkqoUXds26U?start=18824"></iframe>
+
+  <h3>Data sources</h3>
+  <table class="data-source-table">
+    <thead>
+      <tr>
+        <th>Survey</th>
+        <th>Site</th>
+        <th>Dates (UTC)</th>
+        <th>Nights</th>
+        <th>Images</th>
+        <th>Pixel scale (arcsec)</th>
+        <th>
+          Field of view
+          <sup>a</sup>
+          (arcmin)
+        </th>
+        <th>Filters</th>
+        <th>Limiting magnitude</th>
+        <th>References</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>NEAT GEODSS</td>
+        <td>Haleakala Observatory (566)</td>
+        <td>April 1996 &ndash; May 1998</td>
+        <td>147</td>
+        <td>36,099</td>
+        <td>1.43</td>
+        <td>98×98</td>
+        <td>None</td>
+        <td>V~19</td>
+        <td>
+          <a href="https://sbn.psi.edu/pds/resource/neat.html">Bauer and Lawrence 2013</a>,
+          <a href="https://ui.adsabs.harvard.edu/abs/1999AJ....117.1616P">Pravdo et al. 1999</a>
+        </td>
+      </tr>
+      <tr>
+        <td>NEAT Palomar Tri-Cam</td>
+        <td>Palomar Observatory (644)</td>
+        <td>November 2001 &ndash; March 2003</td>
+        <td>150</td>
+        <td>131,389</td>
+        <td>1.01</td>
+        <td>69×69</td>
+        <td>None</td>
+        <td>V~20</td>
+        <td>
+          <a href="https://sbn.psi.edu/pds/resource/neat.html">Bauer and Lawrence 2013</a>,
+          <a href="https://ui.adsabs.harvard.edu/abs/2016AJ....151...80T">Tricarico 2016</a>
+        </td>
+      </tr>
+      <tr>
+        <td>SkyMapper Southern Survey (DR2)</td>
+        <td>Siding Spring Observatory (413)</td>
+        <td>March 2014 &ndash; March 2018</td>
+        <td>799</td>
+        <td>3,727,026</td>
+        <td>0.5</td>
+        <td>17×34</td>
+        <td>uvgriz</td>
+        <td>
+          shallow survey~19,
+          <br />
+          main survey~20&ndash;22
+        </td>
+        <td>
+          <a href="https://ui.adsabs.harvard.edu/abs/2018PASA...35...10W">Wolf et al. 2018</a>,
+          <a href="https://ui.adsabs.harvard.edu/abs/2019PASA...36...33O">Onken et al. 2019</a>
+        </td>
+      </tr>
+    </tbody>
+    <tfoot>
+      <tr>
+        <td colspan="8">
+          <sup>a</sup>
+          Field of view of a single image.
+        </td>
+      </tr>
+    </tfoot>
+  </table>
 
   <h3>CATCH Limitations and Caveats</h3>
   <p>
     CATCH does not perform detection-based searches. i.e., it cannot determine
     if an object was observed. Rather, it identifies images that
     <em>could</em>
-    have observed a target, based on the target's ephemeris. This search
+    have observed a target, based on the target's ephemeris. This search also
     requires that the ephemeris correctly describes the target's motion on the
-    sky. CATCH properly considers the source data observatory when computing
-    ephemerides. CATCH does not consider ephemeris uncertainties in the search,
-    but this capability has been reserved for a future enhancement.
-  </p>
-
-  <h3>Data sources</h3>
-
-  <p>
-    Near-Earth Asteroid Tracking (NEAT) survey data are from the NASA Planetary
-    Data System archive of
-    <a href="https://sbn.psi.edu/pds/resource/neat.html">Bauer and Lawrence</a>
-    (2013):
-  </p>
-  <ul>
-    <li>
-      NEAT
-      <abbr title="Ground-based Electro-Optical Deep Space Surveillance"
-        >GEODSS</abbr
-      >
-      1m telescope at Haleakala Observatory, April 1996 &ndash; May 1998.
-    </li>
-    <li>
-      NEAT Palomar (Tri-Cam), using the 1.2m Oschin Schmidt telscope at Palomar
-      Observatory, November 2001 &ndash; March 2003.
-    </li>
-  </ul>
-
-  <p>
-    <a href="http://skymapper.anu.edu.au/">SkyMapper Southern Survey</a>
-    data are from the Austrailian National Observatory. The telescope is located
-    at Siding Spring Observatory. Data release 2 covers the period March 2014
-    &ndash; March 2018.
+    sky, and that a potentially matching observation is correctly described by
+    its metadata. Known issues are given below.
   </p>
 
   <h3>Known issues</h3>
   <ol>
-    <li>
-      NEAT astrometic solutions are only approximate, and typically 10s of
-      arcsec off.
-    </li>
-    <li>
-      SkyMapper cutout service is not yet compatible with CATCH. Images may be
-      downloaded with the cutout URLs provided for each search result.
-    </li>
-    <li>
-      Target names: our name resolution service is incomplete. Some real target
+    <li>NEAT astrometric solutions are typically 10s of arcsec off.</li>
+
+    <li>Cutout services are not yet available for NEAT, Catalina Sky Survey, or
+      Spacewatch.</li>
+
+    <li>Target name resolution: our name resolution service is incomplete. Some real target
       names may not be resolved. However, CATCH can still attempt to search for
       them. Ultimately, any target must be resolvable by
-      <a href="https://ssd.jpl.nasa.gov/?horizons">Horizons</a>
-      . Use JPL's
-      <a href="https://ssd.jpl.nasa.gov/sbdb.cgi"
-        >Small-Body Database Browser</a
-      >
-      to test object names that are not working.
+      <a href="https://ssd.jpl.nasa.gov/horizons/">Horizons</a>. Use JPL's
+      <a href="https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html">Small-Body Database Lookup</a>
+      to test object names that are not working. Take care when searching for
+      fragmented comets (e.g., 73P vs. 73P-C).
     </li>
+
+    <li>Searches only include dates when an object is brighter than V=25 mag, as
+      predicted by the ephemeris generator. Contact us if this limit is affecting
+      your work.</li>
   </ol>
+
+  <h3>Updates</h3>
+  <ul>
+    <b>2020 Nov 12</b>: First release to the public.
+  </ul>
 
   <h3>Acknowledgements</h3>
   <p>
