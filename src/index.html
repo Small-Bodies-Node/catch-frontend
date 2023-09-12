@@ -4,18 +4,33 @@
     <meta charset="utf-8" />
     <base href="/" />
     <title>CATCH GUI</title>
+
+    <!-- Google tag (gtag.js) -->
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=G-3MXJJRGKDH"
+    ></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag("js", new Date());
+      gtag("config", "G-XXXXXXXXXX");
+    </script>
+
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="apple-touch-icon" href="/assets/images/pngs/telescope_v1.png" />
+    <link rel="apple-touch-icon" href="assets/images/pngs/telescope_v1.png" />
     <link
       rel="icon"
       type="image/png"
-      href="/assets/images/pngs/telescope_v1.png"
+      href="assets/images/pngs/telescope_v1.png"
       sizes="16x16"
     />
     <link
       rel="icon"
       type="image/png"
-      href="/assets/images/pngs/telescope_v1.png"
+      href="assets/images/pngs/telescope_v1.png"
       sizes="32x32"
     />
     <link rel="preconnect" href="https://fonts.gstatic.com" />
@@ -38,6 +53,8 @@
       rel="stylesheet"
       href="assets/js9-to-be-served/js9.css"
     />
+
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
   </head>
   <body class="mat-typography">
     <app-entry></app-entry>

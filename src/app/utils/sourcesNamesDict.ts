@@ -7,6 +7,6 @@ export const sourcesNamesDict: { [K in TSources]: string } = {
   ps1dr2: 'PS1DR2',
   catalina_bigelow: 'Catalina Bigelow',
   catalina_lemmon: 'Catalina Lemmon',
-  catalina_kittpeak: 'Catalina Kittpeak',
+  // catalina_kittpeak: 'Catalina Kittpeak',
   spacewatch: 'Spacewatch',
 };

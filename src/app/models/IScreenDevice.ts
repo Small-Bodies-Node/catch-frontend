@@ -1,4 +1,4 @@
-export type TDevices = 'mobile' | 'tablet' | 'desktop';
+import { TDevices } from './TDevices';
 
 export interface IScreenDevice {
   device: TDevices;

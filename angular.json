@@ -20,7 +20,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "outputPath": "dist/catch-frontend",
+            "outputPath": "dist/catch-gui-prod",
             "index": "src/index.html",
             "main": "src/main.ts",
             "polyfills": "src/polyfills.ts",
@@ -43,7 +43,11 @@
             "allowedCommonJsDependencies": ["stream", "assert"]
           },
           "configurations": {
-            "production": {
+            "catch-prod": {
+              "index": {
+                "input": "src/index.prod.html",
+                "output": "index.html"
+              },
               "budgets": [
                 {
                   "type": "initial",
@@ -59,10 +63,56 @@
               "fileReplacements": [
                 {
                   "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.prod.ts"
+                  "with": "src/environments/environment.catch-prod.ts"
                 }
               ],
-              "outputHashing": "all"
+              "outputHashing": "all",
+              "outputPath": "dist/catch-gui-prod"
+            },
+            "catch-dev": {
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "1000kb",
+                  "maximumError": "3mb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "2kb",
+                  "maximumError": "4kb"
+                }
+              ],
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.catch-dev.ts"
+                }
+              ],
+              "outputHashing": "all",
+              "outputPath": "dist/catch-gui-dev"
+            },
+            "catch-github": {
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "1000kb",
+                  "maximumError": "3mb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "2kb",
+                  "maximumError": "4kb"
+                }
+              ],
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.catch-github.ts"
+                }
+              ],
+              "outputHashing": "all",
+              "outputPath": "dist/catch-gui-github",
+              "baseHref": "/catch-frontend/"
             },
             "development": {
               "buildOptimizer": false,
@@ -73,7 +123,7 @@
               "namedChunks": true
             }
           },
-          "defaultConfiguration": "production"
+          "defaultConfiguration": "catch-prod"
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",

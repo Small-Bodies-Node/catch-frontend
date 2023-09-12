@@ -9,6 +9,7 @@ export interface IApiSubstate {
   apiStatus: IApiStatus;
   apiSelectedDatum?: IApiDatum;
   apiData?: IApiDatum[];
+  apiJobId?: string;
   apiDataColumnState: Partial<TApiDataColState>;
   apiDataDownloadRowState: TDownloadRowsState;
 }
@@ -16,6 +17,7 @@ export interface IApiSubstate {
 export const initialState: IApiSubstate = {
   apiSelectedDatum: undefined,
   apiData: undefined,
+  apiJobId: undefined,
   apiStatus: { code: 'unknown', message: '' },
   apiDataColumnState: { ...apiDataInitColState },
   apiDataDownloadRowState: {},
@@ -44,6 +46,12 @@ export function apiDataReducer(
       return {
         ...state,
         apiData: [...action.payload.apiData],
+      };
+
+    case EApiActionTypes.ApiSetJobId:
+      return {
+        ...state,
+        apiJobId: action.payload,
       };
 
     case EApiActionTypes.ApiSetStatus:

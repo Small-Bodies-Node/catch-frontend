@@ -35,17 +35,40 @@
 
       <button
         class="search-button"
-        [disabled]="!latestInputText.trim()"
+        *ngIf="!latestInputText.trim()"
+        disabled
         mat-raised-button
         mat-icon-button
         matSuffix
         aria-label="Button to start searching names"
         (click)="submitObjectNameMatch($event)"
       >
-        <mat-icon matSuffix *ngIf="!isTargetMatched()">search</mat-icon>
-        <mat-icon *ngIf="isTargetMatched()" [ngStyle]="{ color: successColor }"
-          >done</mat-icon
+        <mat-icon matSuffix>search</mat-icon>
+      </button>
+
+      <button
+        class="search-button xxx"
+        *ngIf="!!latestInputText.trim()"
+        mat-raised-button
+        matSuffix
+        aria-label="Button to start searching names"
+        (click)="submitObjectNameMatch($event)"
+      >
+        <span style="font-size: 12px">START</span>
+        <!-- <mat-icon
+          *ngIf="true && isTargetMatched()"
+          [ngStyle]="{ color: successColor }"
         >
+          done</mat-icon
+        > -->
+        <!-- <span
+          *ngIf="true && isTargetMatched()"
+          [ngStyle]="{ color: successColor }"
+        >
+          start</span
+        > -->
+
+        <!-- START -->
       </button>
     </mat-form-field>
     <div class="advanced-controls-button-wrapper">
@@ -147,7 +170,7 @@
             >
           </div>
         </div>
-        <div>
+        <!-- <div>
           <div class="info-checkbox-wrapper">
             <span class="icon-wrapper">
               <mat-icon [matTooltip]="'XXX XXX'">info</mat-icon>
@@ -157,7 +180,7 @@
               >{{ formControlLabels.catalina_kittpeak }}</mat-checkbox
             >
           </div>
-        </div>
+        </div> -->
         <div>
           <div class="info-checkbox-wrapper">
             <span class="icon-wrapper">

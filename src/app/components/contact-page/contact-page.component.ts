@@ -9,6 +9,9 @@ import { IAppState } from 'src/app/ngrx/reducers';
 import { selectSiteSettingsEffectiveTheme } from 'src/app/ngrx/selectors/site-settings.selectors';
 
 import { EmailerService } from '../../core/services/emailer/emailer.service';
+import { environment } from 'src/environments/environment';
+
+// declare const grecaptcha: typeof grecaptcha;
 
 @Component({
   selector: 'app-contact-page',
@@ -53,7 +56,25 @@ export class ContactPageComponent implements OnInit, AfterViewInit, OnDestroy {
   ngOnInit() {}
 
   ngAfterViewInit() {
-    setTimeout(() => {}, 1000);
+    setTimeout(() => {
+      (grecaptcha as typeof grecaptcha).render('recaptcha-id', {
+        sitekey: environment.recaptchaSiteKey,
+        theme: this.theme!.toUpperCase().includes('LIGHT') ? 'light' : 'dark',
+        size: 'normal',
+        callback: (token: string) => {
+          this.recaptchaToken = token;
+          this.isMessageSendable = true;
+          setTimeout(() => this.form.updateValueAndValidity(), 0);
+        },
+        'expired-callback': () => {
+          this.isMessageSendable = false;
+          this.recaptchaToken = undefined;
+        },
+        'error-callback': () => {
+          // executed when reCAPTCHA encounters an error (usually network connectivity)
+        },
+      });
+    }, 1000);
   }
 
   ngOnDestroy(): void {

@@ -147,7 +147,7 @@ export class NgxJs9Component implements OnInit, OnDestroy, OnChanges {
        * structure that JS9 may have wrought previously by so-acting.
        */
       this.isShown = false;
-      const crudeDelay = 200;
+      const crudeDelay = 500;
       setTimeout(() => {
         this.isShown = true;
         setTimeout(() => this.resetJS9Display(), crudeDelay);

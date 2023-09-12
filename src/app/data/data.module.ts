@@ -21,6 +21,8 @@ import {
 } from './plotly-graph/plotly-graph.component';
 import { TitleComponent } from './title/title.component';
 import { SearchFieldComponent } from '../components/search-field/search-field.component';
+import { MobileViewComponent } from './mobile-view/mobile-view.component';
+import { DesktopViewComponent } from './desktop-view/desktop-view.component';
 
 const routes: Routes = [{ path: '', component: DataComponent }];
 
@@ -35,6 +37,8 @@ const routes: Routes = [{ path: '', component: DataComponent }];
     PlotlyGraphComponent,
     PlotlyGraphWrapperComponent,
     TitleComponent,
+    MobileViewComponent,
+    DesktopViewComponent,
   ],
   imports: [
     CommonModule,

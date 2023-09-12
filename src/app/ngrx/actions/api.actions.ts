@@ -9,6 +9,7 @@ export enum EApiActionTypes {
   ApiDataLoaded = '[Api] Data Loaded',
   ApiFetchResult = '[Api] Fetch Result',
   ApiSetData = '[Api] Set Data',
+  ApiSetJobId = '[Api] Set JobId',
   ApiSetSelectedDatum = '[Api] Set Selected Datum',
   ApiDataSetDownloadRowState = '[Api] Set Download Row State',
 }
@@ -41,6 +42,11 @@ export class ApiSetStatus implements Action {
   constructor(public payload: Partial<IApiStatus>) {}
 }
 
+export class ApiSetJobId implements Action {
+  readonly type = EApiActionTypes.ApiSetJobId;
+  constructor(public payload: string) {}
+}
+
 export class ApiDataLoaded implements Action {
   readonly type = EApiActionTypes.ApiDataLoaded;
   constructor() {}
@@ -57,6 +63,7 @@ export type ApiActions =
   | ApiFetchResult
   | ApiSetData
   | ApiSetStatus
+  | ApiSetJobId
   | ApiSetSelectedDatum
   | ApiDataLoaded
   | ApiSetDownloadRowState;

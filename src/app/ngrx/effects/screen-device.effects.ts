@@ -25,6 +25,7 @@ export class ScreenDeviceEffects {
 
   constructor() {
     window.addEventListener('resize', () => {
+      console.log('Resize!!!');
       setTimeout(() => {
         this.resizeEvent$.next({
           device: getDevice(),

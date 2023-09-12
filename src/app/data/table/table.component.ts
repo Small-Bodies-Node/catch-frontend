@@ -177,7 +177,16 @@ export class TableComponent implements OnInit, AfterViewInit {
   }
 
   getThumbnailUrl(url: string) {
-    return url || 'assets/images/pngs/sbn_logo_v0.png';
+    /**
+     * ! Ugly hack !
+     */
+    if (url && url.includes('sbnsurveys')) {
+      const xxx = url.split('api');
+      const res = xxx[0] + 'api' + xxx[1].replace(':', '%3A');
+      return res;
+    }
+    if (url) return url;
+    return 'assets/images/pngs/sbn_logo_v0.png';
   }
 
   getSourceName(fullName: string) {
@@ -221,7 +230,9 @@ export class TableComponent implements OnInit, AfterViewInit {
 
   openSettingsDialog(e: MouseEvent) {
     e.stopPropagation();
-    this.dialog.open<TableCheckboxesComponent>(TableCheckboxesComponent);
+    this.dialog.open<TableCheckboxesComponent>(TableCheckboxesComponent, {
+      // di
+    });
   }
 
   onClickPlotly(e: MouseEvent, xDataKey: Partial<TColName>) {
@@ -261,5 +272,9 @@ export class TableComponent implements OnInit, AfterViewInit {
       const apiDatum = sortedApiData[newIndex];
       this.store$.dispatch(new ApiSetSelectedDatum({ apiDatum }));
     }
+  }
+
+  isFirstFewColsSticky() {
+    return true;
   }
 }

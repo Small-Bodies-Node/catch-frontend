@@ -1,0 +1,7 @@
+#!/bin/bash
+#
+# Basic angular update commands to go from e.g. 14.1 to 14.3
+
+ng update @angular/core@14 @angular/cli@14 @angular/cdk@14
+
+ng update @angular/material@14

@@ -1,8 +1,7 @@
 export interface IEnvironment {
   production: boolean;
-  apiData: 'mock' | 'catch';
+  apiData: 'mock' | 'catch-prod' | 'catch-dev';
   hmr: boolean;
-  // emailerEndpoint: string;
-  // baseHref: string;
-  // recaptchaSiteKey: string;
+  emailerEndpoint: string;
+  recaptchaSiteKey: string;
 }

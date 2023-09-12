@@ -23,6 +23,16 @@ export class NavigationEffects {
     return this.actions$.pipe(
       map((action) => {
         // console.log('action', action);
+
+        if (action.type === '@ngrx/router-store/request') {
+          setTimeout(() => {
+            // console.log('>>>', document.location.href, action.payload);
+            gtag('event', 'page_view', {
+              page_location: document.location.href,
+              // page_title: document.title,
+            });
+          }, 1000);
+        }
         return action;
       }),
       // Allow only actions of type NavigationCollectRouteRecords

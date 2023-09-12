@@ -25,8 +25,8 @@ export const apiDataInitColState: Readonly<Partial<TApiDataColState>> = {
   dra: true,
   drh: true,
   elong: true,
-  mjd_start: true,
-  mjd_stop: true,
+  mjd_start: !true,
+  mjd_stop: !true,
   rh: true,
   vmag: true,
   // ================

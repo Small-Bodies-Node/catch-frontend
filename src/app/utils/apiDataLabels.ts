@@ -19,7 +19,7 @@ export const apiDataLabels: Readonly<TApiDataLabels> = {
   },
   //
   date: {
-    description: 'ASK MSK',
+    description: 'Date at which ephemeris is calculated, UTC',
     label: 'Date',
   },
   //
@@ -38,27 +38,23 @@ export const apiDataLabels: Readonly<TApiDataLabels> = {
     fractionSize: 3,
     label: '\u0394',
   },
-  designation: {
-    description: 'Object designation',
-    label: 'Designation',
-  },
   dra: {
     description: 'Right Ascension rate of change: dRA/dt cos(Dec) (arcsec/hr)',
     fractionSize: 2,
     label: 'd[RA]/dt',
   },
   drh: {
-    description: 'ASK MSK',
+    description: 'Heliocentric radial velocity (km/s)',
     fractionSize: 2,
-    label: 'drh',
+    label: 'd[rh]/dt',
   },
   elong: {
-    description: 'ASK MSK',
+    description: 'Solar elongation (deg)',
     fractionSize: 2,
     label: 'elong',
   },
   exposure: {
-    description: 'Exposure time',
+    description: 'Exposure time (s)',
     fractionSize: 0,
     label: 'Exp',
   },
@@ -66,24 +62,16 @@ export const apiDataLabels: Readonly<TApiDataLabels> = {
     description: 'Filter name',
     label: 'Filter',
   },
-  instrument: {
-    description: 'NEAT instrument name',
-    label: 'Instrument',
-  },
-  jd: {
-    description: 'Julian Date',
-    label: 'JD',
-  },
   maglimit: {
-    description: 'ASK MSK',
+    description: 'Detection limit (mag. Definition varies by survey.',
     label: 'magLimit',
   },
   mjd_start: {
-    description: 'ASK MSK',
+    description: 'Exposure start time, modified Julian date',
     label: 'MJD Start',
   },
   mjd_stop: {
-    description: 'ASK MSK',
+    description: 'Exposure stop time, modified Julian date',
     label: 'MJD STOP',
   },
   phase: {
@@ -97,7 +85,7 @@ export const apiDataLabels: Readonly<TApiDataLabels> = {
     label: 'Preview URL',
   },
   product_id: {
-    description: 'Unique NEAT product ID',
+    description: 'Unique data product identifier, format varies by data source',
     label: 'Product ID',
   },
   ra: {
@@ -105,10 +93,10 @@ export const apiDataLabels: Readonly<TApiDataLabels> = {
     fractionSize: 4,
     label: 'RA',
   },
-  rdot: {
-    description: 'Heliocentric radial velocity (km/s)',
-    fractionSize: 1,
-    label: 'd[rh]/dt',
+  retrieved: {
+    description:
+      'Date when the ephemeris was retrieved from the ephemeris generator, UTC',
+    label: 'Retrieved',
   },
   rh: {
     description: 'Heliocentric distance (au)',
@@ -122,52 +110,42 @@ export const apiDataLabels: Readonly<TApiDataLabels> = {
     label: 'PA(\u2299)',
   },
   seeing: {
-    description: 'ASK MSK',
+    description: 'Point source FWHM (arcsec)',
     fractionSize: 0,
     label: 'Seeing',
   },
-  selong: {
-    description: 'Solar elongation (deg)',
-    fractionSize: 0,
-    label: 'E(\u2299)',
-  },
   source: {
-    description: 'ASK MSK',
+    description: 'Observational data source key',
     label: 'Source',
   },
   source_name: {
-    description: 'ASK MSK',
+    description: 'Observational data source name',
     label: 'Source Name',
   },
-  tmtp: {
-    description:
-      'Time to nearest perihelion based on osculating orbital elements (days)',
-    fractionSize: 1,
-    label: 'T-T\u209a',
-  },
   true_anomaly: {
-    description: 'True anomaly based on osculating orbital elements (deg)',
+    description: 'True anomaly angle (deg)',
     fractionSize: 1,
     label: '\u03bd',
   },
   unc_a: {
-    description: 'Error ellipse semi-major axis (arcsec)',
+    description: 'Ephemeris uncertainty ellipse semi-major axis (arcsec)',
     fractionSize: 2,
     label: '\u03c3(a)',
   },
   unc_b: {
-    description: 'Error ellipse semi-minor axis (arcsec)',
+    description: 'Ephemeris uncertainty ellipse semi-minor axis (arcsec)',
     fractionSize: 2,
     label: '\u03c3(b)',
   },
   unc_theta: {
-    description: 'Error ellipse position angle (deg)',
+    description:
+      'Ephemeris uncertainty ellipse position angle, east of Celestial north (deg)',
     fractionSize: 0,
     label: '\u03c3(\u03b8)',
   },
   vangle: {
     description:
-      'Position angle of projected target velocity   vector, east of Celestial north (deg)',
+      'Position angle of projected target velocity vector, east of Celestial north (deg)',
     fractionSize: 0,
     label: 'PA(v)',
   },

@@ -10,8 +10,7 @@ import {
 import { Observable, throwError } from 'rxjs';
 import { timeout, map, catchError } from 'rxjs/operators';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { Store } from '@ngrx/store';
-import { IAppState } from 'src/app/ngrx/reducers';
+
 import { apiDefaultTimeoutMs } from 'src/app/utils/constants';
 
 /**
@@ -21,10 +20,7 @@ import { apiDefaultTimeoutMs } from 'src/app/utils/constants';
  */
 @Injectable()
 export class PipelineInterceptor implements HttpInterceptor {
-  constructor(
-    private snackBar: MatSnackBar,
-    private store$: Store<IAppState>
-  ) {}
+  constructor(private snackBar: MatSnackBar) {}
 
   intercept(
     req: HttpRequest<any>,
@@ -94,7 +90,7 @@ export class PipelineInterceptor implements HttpInterceptor {
 
         // Throw error
         console.log('######', errorMessage);
-        return throwError(errorMessage);
+        return throwError(() => new Error(errorMessage));
       }),
 
       // Retry?

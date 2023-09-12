@@ -43,4 +43,11 @@ Thumbs.db
 
 # DWD:
 .env
-_deploy_ec2
+_deploy_catch-prod
+_deploy_catch-dev
+
+**/environment.*.ts
+src/environments/environment.ts
+
+# Exclude production html with GA4 code
+src/index.prod.html

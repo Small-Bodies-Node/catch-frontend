@@ -20,6 +20,8 @@ import { getOrderedColNames } from 'src/app/utils/getOrderedColNames';
 import { apiDataInitColState } from 'src/app/utils/apiDataInitColState';
 import { TableCheckboxSetState } from 'src/app/ngrx/actions/table-checkbox.actions';
 import { selectTableCheckboxState } from 'src/app/ngrx/selectors/table-checkbox.selectors';
+import { MatDialogRef } from '@angular/material/dialog';
+import { selectScreenDeviceEffectiveDevice } from 'src/app/ngrx/selectors/screen-device.selectors';
 
 @Component({
   selector: 'app-table-checkboxes',
@@ -37,6 +39,7 @@ export class TableCheckboxesComponent implements OnInit {
   labels: Readonly<TApiDataLabels> = apiDataLabels;
   containerWidth$: Observable<number>;
   isSpinner = true;
+  isMobile = false;
 
   allColNames: TApiDataColName[] = getOrderedColNames().filter(
     (colName) =>
@@ -46,7 +49,10 @@ export class TableCheckboxesComponent implements OnInit {
       ].includes(colName)
   );
 
-  constructor(private $store: Store<IAppState>) {
+  constructor(
+    private $store: Store<IAppState>,
+    private dialogRef: MatDialogRef<TableCheckboxesComponent>
+  ) {
     // --->>
 
     this.subscriptions.add(
@@ -56,6 +62,14 @@ export class TableCheckboxesComponent implements OnInit {
           this.isSpinner = false;
         }, 1000);
       })
+    );
+
+    this.subscriptions.add(
+      this.$store
+        .select(selectScreenDeviceEffectiveDevice)
+        .subscribe((device) => {
+          this.isMobile = device === 'mobile';
+        })
     );
 
     this.containerWidth$ = interval(50).pipe(
@@ -109,5 +123,9 @@ export class TableCheckboxesComponent implements OnInit {
         })
       );
     }, 1000);
+  }
+
+  closeDialog() {
+    this.dialogRef.close();
   }
 }

@@ -9,6 +9,15 @@ div.search-field-container {
   max-height: 100%;
   // background-color: green;
 
+  mat-raised-button {
+    height: 20px;
+  }
+
+  .xxx {
+    // height: 10px;
+    transform: translateY(5px);
+  }
+
   form.basic-search-form {
     position: relative;
     width: 100%;
@@ -46,6 +55,10 @@ div.search-field-container {
             animation: fadeIn 300ms ease-in-out;
           }
         }
+      }
+      .xxx {
+        transform: translate(8px, -8px);
+        // height: 30px;
       }
     }
 

@@ -7,7 +7,7 @@ import { IObjectNameMatchResult } from '../../../models/IObjectNameMatchResult';
 
 type TOONMR = Observable<IObjectNameMatchResult[]>;
 
-const ROOT_URL = 'https://astro-name-resolution.dandarg.com/';
+const ROOT_URL = 'https://name-resolution.astro-prod-it.aws.umd.edu/';
 
 @Injectable({
   providedIn: 'root',

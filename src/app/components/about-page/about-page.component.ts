@@ -9,8 +9,4 @@ export class AboutPageComponent implements OnInit {
   constructor() {}
 
   ngOnInit(): void {}
-
-  xxx() {
-    // console.log('About render');
-  }
 }

@@ -23,6 +23,7 @@ export interface IApiDatum {
   ra: number;
   // raDec?: string;
   rdot?: number;
+  retrieved?: string;
   rh: number;
   sangle: number;
   seeing: number | null;

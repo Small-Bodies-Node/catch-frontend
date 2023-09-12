@@ -67,11 +67,15 @@ export class ApiService implements IApiService {
       acc += '&sources=' + source;
       return acc;
     }, '');
+
+    // Need this hack for now because API will refuse padding <= 0
+    const effectivePadding = padding < 0.01 ? 0.01 : padding;
+
     let catchUrl =
       apiBaseUrl +
       `/catch?target=${target}&cached=${isCached ? 'true' : 'false'}` +
       `&uncertainty_ellipse=${isUncertaintyEllipse ? 'true' : 'false'}` +
-      `&padding=${padding}` +
+      `&padding=${effectivePadding}` +
       sourceStr;
     console.log('catchUrl >>> ', catchUrl);
     return this.httpClient.get<IApiCatchResult>(catchUrl);
@@ -114,6 +118,7 @@ export class ApiService implements IApiService {
       return of({
         status: 'error',
         message: 'You must provide a target',
+        jobId: 'N/A',
       });
     }
 
@@ -134,11 +139,12 @@ export class ApiService implements IApiService {
 
         if (!queued) {
           return this.apiCaughtRequest(job_id).pipe(
-            map(({ data }): TApiDataResult => {
-              return { data, status: 'success' };
+            map(({ data, job_id }): TApiDataResult => {
+              return { data, jobId: job_id, status: 'success' };
             }),
             catchError((e: Error): Observable<TApiDataResult> => {
               return of({
+                jobId: job_id,
                 status: 'error',
                 message: e.message,
               });
@@ -156,10 +162,14 @@ export class ApiService implements IApiService {
 
             return this.apiCaughtRequest(job_id).pipe(
               map(({ data }): TApiDataResult => {
-                return { data, status: 'success' };
+                return { data, jobId: job_id, status: 'success' };
               }),
               catchError((e: Error): Observable<TApiDataResult> => {
-                return of({ status: 'error', message: e.message });
+                return of({
+                  status: 'error',
+                  message: e.message,
+                  jobId: job_id,
+                });
               })
             );
           }),
@@ -167,6 +177,7 @@ export class ApiService implements IApiService {
             return of({
               status: 'error',
               message: e.message,
+              jobId: job_id,
             });
           })
         );
@@ -175,6 +186,7 @@ export class ApiService implements IApiService {
         return of({
           status: 'error',
           message: e.message,
+          jobId: 'N/A',
         });
       })
     );

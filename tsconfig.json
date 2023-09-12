@@ -17,6 +17,7 @@
       "assert": ["node_modules/assert-browserify"],
       "stream": ["node_modules/stream-browserify"]
     },
+    "typeRoots": ["node_modules/@types"],
     "allowSyntheticDefaultImports": true,
     "declaration": false,
     "downlevelIteration": true,

@@ -15,8 +15,11 @@ import { IAppState } from 'src/app/ngrx/reducers';
 import {
   selectApiData,
   selectApiDataDownloadRowState,
+  selectApiJobId,
   selectApiStatus,
 } from 'src/app/ngrx/selectors/api.selectors';
+import { apiBaseUrl } from 'src/app/utils/constants';
+import { selectScreenDeviceEffectiveDevice } from 'src/app/ngrx/selectors/screen-device.selectors';
 
 @Component({
   selector: 'app-title',
@@ -30,9 +33,13 @@ export class TitleComponent implements OnInit {
   subscriptions = new Subscription();
   queryStatus?: IApiStatus;
   apiData?: IApiDatum[];
+  jobId?: string;
+  dataLink?: string;
   apiDataForDownload?: IApiDatum[];
   apiDataLabels: TApiDataLabels = apiDataLabels;
   dataDownloadRowState?: TDownloadRowsState;
+
+  isMobile = false;
 
   jpgUrlsForDownload?: string[];
   fitsUrlsForDownload?: string[];
@@ -50,8 +57,14 @@ export class TitleComponent implements OnInit {
         this.store$.select(selectApiStatus).pipe(take(1)),
         this.store$.select(selectApiData).pipe(take(1)),
         this.store$.select(selectApiDataDownloadRowState),
-      ]).subscribe(([status, apiData, dataDownloadRowState]) => {
+        this.store$.select(selectApiJobId),
+        this.store$.select(selectScreenDeviceEffectiveDevice),
+      ]).subscribe(([status, apiData, dataDownloadRowState, jobId, device]) => {
         // --->>
+
+        this.isMobile = device === 'mobile';
+
+        console.log('isMobile', this.isMobile);
 
         if (!status.query) return;
         const {
@@ -67,6 +80,8 @@ export class TitleComponent implements OnInit {
         this.queryStatus = status;
         this.dataDownloadRowState = dataDownloadRowState;
         this.apiData = apiData;
+        this.jobId = jobId;
+        this.dataLink = apiBaseUrl + '/caught/' + jobId;
 
         if (!this.apiData || !this.dataDownloadRowState) return;
         if (!this.dataDownloadRowState) return;
@@ -199,5 +214,10 @@ export class TitleComponent implements OnInit {
 
   isDownloadButtonDisabled() {
     //
+  }
+
+  getJobId() {
+    if (!this.jobId) return '';
+    return this.jobId.substring(0, 8).toUpperCase();
   }
 }

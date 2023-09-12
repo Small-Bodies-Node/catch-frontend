@@ -1,0 +1,29 @@
+#! /bin/bash
+
+source .env
+BASE_HREF="/$GITHUB_REPO_NAME/"
+
+# # Build pages for github deployment
+# ./_build_client github
+
+if [[ $? == 0 ]]; then
+
+  echo -e """${GRE}
+===========================
+DEPLOYING BUNDLES TO GITHUB
+BASE_HREF : ${WHI}${BASE_HREF} ${GRE}
+=========================== ${WHI}
+"""
+
+  # Use `angular-cli-ghpages` package to do some deployment magic
+  # N.b. this required setting `build.options.outputPath` to just `dist` in `angular.json`
+  ./node_modules/.bin/gh-pages --branch 'gh-pages' --dist 'dist/catch-gui-github'
+
+  echo -e """${GRE}
+==========================================================
+Done. Your page has been deployed to:${CYA}
+https://"$GITHUB_USER_NAME".github.io/"$GITHUB_REPO_NAME"/ ${GRE}
+========================================================== ${WHI}
+"""
+
+fi

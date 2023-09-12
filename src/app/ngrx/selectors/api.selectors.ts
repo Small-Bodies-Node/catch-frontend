@@ -19,6 +19,11 @@ export const selectApiData = createSelector(
   (substate: IApiSubstate) => substate.apiData
 );
 
+export const selectApiJobId = createSelector(
+  (state: IAppState) => state.api,
+  (substate: IApiSubstate) => substate.apiJobId
+);
+
 export const selectApiStatus = createSelector(
   (state: IAppState) => state.api,
   (substate: IApiSubstate) => substate.apiStatus

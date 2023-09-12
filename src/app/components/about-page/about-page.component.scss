@@ -4,3 +4,19 @@
   margin: auto auto;
   overflow: hidden;
 }
+
+.table-wrapper {
+  width: 100%;
+  overflow: scroll;
+
+  .data-source-table {
+    border-collapse: collapse;
+    thead {
+      border-bottom: 1px solid white;
+    }
+    th,
+    td {
+      padding: 10px;
+    }
+  }
+}

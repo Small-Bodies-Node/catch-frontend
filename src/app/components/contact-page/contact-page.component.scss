@@ -1,6 +1,4 @@
 .contact-page-wrapper {
-  // --------------->>>
-
   height: 100%;
   width: 100%;
   position: relative;
@@ -64,22 +62,23 @@
 
         #recaptcha-wrapper {
           // background-color: red;
-          // min-width: 300px;
+          min-width: 300px;
+          // min-height: 100px;
         }
 
         #submit-button-wrapper {
           // background-color: pink;
         }
-        // .recaptcha-submit {
-        //   display: flex;
-        //   justify-content: space-between;
-        //   align-items: center;
-        //   margin: 15px 0px;
+        .recaptcha-submit {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin: 15px 0px;
 
-        //   button {
-        //     max-height: 50px;
-        //   }
-        // }
+          button {
+            max-height: 50px;
+          }
+        }
       }
     }
   }

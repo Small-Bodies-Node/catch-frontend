@@ -84,7 +84,7 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
       [formControlLabels.neat_palomar_tricam]: new FormControl(true),
       [formControlLabels.neat_maui_geodss]: new FormControl(true),
       [formControlLabels.catalina_bigelow]: new FormControl(true),
-      [formControlLabels.catalina_kittpeak]: new FormControl(true),
+      // [formControlLabels.catalina_kittpeak]: new FormControl(true),
       [formControlLabels.catalina_lemmon]: new FormControl(true),
       [formControlLabels.ps1dr2]: new FormControl(true),
       [formControlLabels.skymapper]: new FormControl(true),
@@ -149,7 +149,9 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
   }
 
   getSearchMessageText() {
-    if (this.latestInputText.length === 0) return 'Search for Object';
+    if (this.latestInputText.length === 0) {
+      return 'Search for Astronomical Object';
+    }
 
     const target = this.latestInputText.trim();
     const match = this.objectNameMatchResults.find(
@@ -157,7 +159,7 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
     );
     if (!!match) return 'Match: ' + match.display_text;
 
-    return 'Object Not Recognized';
+    return 'Object Not Recognized (But Still Searchable)';
   }
 
   getFormColor(): 'primary' | 'accent' | 'warn' {
@@ -288,5 +290,9 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
 
   toggleAdvancedControls() {
     this.isAdvancedControls = !this.isAdvancedControls;
+  }
+
+  getSearchButtonIconText() {
+    return 'search';
   }
 }

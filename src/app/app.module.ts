@@ -48,8 +48,12 @@ import { StreamingMessagesComponent } from './components/streaming-messages/stre
 import { ObjectNameMatchService } from './core/services/object-name-match/object-name-match.service';
 import { ObjectNameMatchMockService } from './core/services/object-name-match/object-name-match-mock.service';
 
-// const isMockDataUsed = environment.apiData === 'mock';
-const isMockDataUsed = false;
+export const isMockDataUsed = !false && environment.apiData === 'mock';
+console.log('isMockDataUsed', isMockDataUsed);
+// export const isMockDataUsed = true;
+// export const apiData = environment.apiData;
+
+// console.log(environment);
 
 @NgModule({
   declarations: [

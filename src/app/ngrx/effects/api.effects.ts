@@ -14,6 +14,7 @@ import {
   ApiSetStatus,
   EApiActionTypes,
   ApiSetSelectedDatum,
+  ApiSetJobId,
 } from '../actions/api.actions';
 import { DelayedRouterService } from 'src/app/core/services/delayed-router/delayed-router.service';
 
@@ -63,9 +64,11 @@ export class ApiEffects {
               if (apiResult.status === 'error') {
                 setTimeout(() => this.router.navigate([''], {}), 50);
                 this.snackBar.open(
-                  `Error occurred: ${apiResult.message}.`,
+                  `Error occurred: ${apiResult.message}. JobId: ${apiResult.jobId}`,
                   'Close',
-                  { duration: 15000 }
+                  {
+                    // duration: 15000,
+                  }
                 );
                 return concat(
                   of(
@@ -84,6 +87,7 @@ export class ApiEffects {
               }
               // Continue without errors
               const apiData = apiResult.data;
+              const jobId = apiResult.jobId;
               const isDataFound = !!apiData.length;
 
               // After results received we trigger change of route
@@ -100,9 +104,11 @@ export class ApiEffects {
               } else {
                 setTimeout(() => this.router.navigate([''], {}), 50);
                 this.snackBar.open(
-                  `Search did not yield data for ${target}`,
+                  `Search did not yield data for ${target}. JobId: ${jobId}`,
                   'Close',
-                  { duration: 5000 }
+                  {
+                    // duration: 5000
+                  }
                 );
               }
 
@@ -118,6 +124,8 @@ export class ApiEffects {
               return concat(
                 // Set results array
                 of(new ApiSetData({ apiData })),
+                // Set jobId
+                of(new ApiSetJobId(jobId)),
                 // Set selected datum
                 of(
                   new ApiSetSelectedDatum({

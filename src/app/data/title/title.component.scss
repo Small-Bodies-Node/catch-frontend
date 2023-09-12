@@ -1,14 +1,29 @@
 .title-bar-container {
+  position: absolute;
+  top: 0px;
+  bottom: 0px;
+  left: 0px;
+  right: 0px;
   display: flex;
-  flex-direction: row;
   align-items: center;
   justify-content: center;
 
-  .title {
+  font-size: 16px;
+  &.isMobile {
+    font-size: 12px;
+  }
+
+  div {
+    flex: 1;
+  }
+
+  .title,
+  .jobid {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 24px;
+    // background-color: green;
+    // margin-right: 35px;
   }
 
   .download-button-wrapper {

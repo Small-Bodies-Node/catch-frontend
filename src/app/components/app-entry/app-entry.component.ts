@@ -40,10 +40,12 @@ export class AppEntryComponent implements OnInit {
     private store$: Store<IAppState>,
     private localStorageService: LocalStorageService
   ) {
-    this._onSiteLoad();
+    // this._onSiteLoad();
   }
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this._onSiteLoad();
+  }
 
   private _onSiteLoad() {
     // --->>
@@ -104,6 +106,7 @@ export class AppEntryComponent implements OnInit {
     // Monitor API Status
     this.store$.select(selectApiStatus).subscribe((status) => {
       this.isStreamingMessage = status.code === 'searching';
+      // console.log('%%%', status.code, this.isStreamingMessage);
     });
   }
 

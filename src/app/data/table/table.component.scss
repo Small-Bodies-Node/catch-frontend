@@ -1,4 +1,9 @@
 .table-container {
+  // Needed for iOS mobile
+  .mat-tooltip-trigger {
+    touch-action: auto !important;
+  }
+
   width: 100%;
   height: 100%;
   overflow: auto; // Important: this is how non-sticky sections scroll

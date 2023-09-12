@@ -10,7 +10,6 @@ export const apiMockResult = {
       archive_url: null,
       cutout_url:
         'https://api.skymapper.nci.org.au/public/siap/dr2/get_image?IMAGE=20170806095706-22&SIZE=0.0833&POS=237.2244,-23.40758&FORMAT=fits',
-      // cutout_url: 'xxx',
       date: '2017-08-06 09:57:57.000',
       ddec: -7.37031,
       dec: -23.40758,

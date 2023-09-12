@@ -25,6 +25,9 @@ import { IApiCaughtResult } from 'src/app/utils/IApiCaughtResult';
 import { TApiDataResult } from 'src/app/utils/TApiResult';
 import { mockStreamMessages } from '../../../utils/mockStreamMessages';
 
+const mockTime1 = 0;
+const mockTime2 = 0;
+
 @Injectable({
   providedIn: 'root',
 })
@@ -55,6 +58,7 @@ export class ApiMockService implements IApiService {
       return of({
         status: 'error',
         message: 'You must provide a target',
+        jobId: 'N/A',
       });
     }
 
@@ -77,12 +81,13 @@ export class ApiMockService implements IApiService {
         if (!queued) {
           return this.apiCaughtRequest(job_id).pipe(
             map(({ data }): TApiDataResult => {
-              return { data, status: 'success' };
+              return { data, jobId: job_id, status: 'success' };
             }),
             catchError((e: Error): Observable<TApiDataResult> => {
               return of({
                 status: 'error',
                 message: e.message,
+                jobId: job_id,
               });
             })
           );
@@ -99,10 +104,18 @@ export class ApiMockService implements IApiService {
 
             return this.apiCaughtRequest(job_id).pipe(
               map(({ data }): TApiDataResult => {
-                return { data, status: 'success' };
+                return {
+                  data,
+                  jobId: job_id,
+                  status: 'success',
+                };
               }),
               catchError((e: Error): Observable<TApiDataResult> => {
-                return of({ status: 'error', message: e.message });
+                return of({
+                  status: 'error',
+                  message: e.message,
+                  jobId: job_id,
+                });
               })
             );
           }),
@@ -110,6 +123,7 @@ export class ApiMockService implements IApiService {
             return of({
               status: 'error',
               message: e.message,
+              jobId: job_id,
             });
           })
         );
@@ -118,6 +132,7 @@ export class ApiMockService implements IApiService {
         return of({
           status: 'error',
           message: e.message,
+          jobId: 'N/A',
         });
       })
     );
@@ -162,7 +177,7 @@ export class ApiMockService implements IApiService {
       count: 10,
       job_id: jobId,
       data: apiMockResult.data.filter((_, ind) => ind < 300),
-    }).pipe(delay<IApiCaughtResult>(0));
+    }).pipe(delay<IApiCaughtResult>(mockTime1));
   }
 
   watchJobStream(jobId: string): Promise<TJobStreamResult> {
@@ -177,7 +192,7 @@ export class ApiMockService implements IApiService {
       subscription = of<IApiServiceStream[]>(mockStreamMessages)
         .pipe(
           concatAll(), // flatten the array into individual next notifications
-          concatMap((message) => of(message).pipe(delay(500 * 10)))
+          concatMap((message) => of(message).pipe(delay(mockTime2)))
         )
         .subscribe(({ job_prefix, status, text }) => {
           console.log('>>>>>', job_prefix, status, text);
