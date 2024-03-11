@@ -9,11 +9,11 @@
     height: 70%;
     padding-top: 5px;
     box-sizing: border-box;
-    img {
-      width: 100%;
-      height: 100%;
-      // object-fit: fill;
-      object-fit: contain;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    app-table-thumbnail {
+      flex: 1;
     }
     button {
       position: absolute;
@@ -27,6 +27,13 @@
       // background-color: red;
       border: 3px solid rgba(255, 255, 255, 0.3);
       transform: translateY(-30px);
+    }
+
+    .thumbnail-wrapper {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background-color: green;
     }
   }
 

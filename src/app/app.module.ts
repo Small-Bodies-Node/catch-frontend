@@ -49,7 +49,7 @@ import { ObjectNameMatchService } from './core/services/object-name-match/object
 import { ObjectNameMatchMockService } from './core/services/object-name-match/object-name-match-mock.service';
 
 export const isMockDataUsed = !false && environment.apiData === 'mock';
-console.log('isMockDataUsed', isMockDataUsed);
+// console.log('Env Details: ', environment);
 // export const isMockDataUsed = true;
 // export const apiData = environment.apiData;
 

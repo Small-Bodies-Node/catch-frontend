@@ -14,10 +14,11 @@
   }
 
   div {
-    flex: 1;
+    flex: 1 1;
   }
 
   .title,
+  .results,
   .jobid {
     display: flex;
     align-items: center;

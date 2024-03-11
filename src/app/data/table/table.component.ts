@@ -1,9 +1,13 @@
 import {
   AfterViewInit,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   ElementRef,
+  OnChanges,
   OnInit,
   QueryList,
+  SimpleChanges,
   ViewChild,
   ViewChildren,
 } from '@angular/core';
@@ -35,15 +39,17 @@ import {
 import { PlotlyGraphWrapperComponent } from '../plotly-graph/plotly-graph.component';
 import { TDownloadRowsState } from 'src/app/models/TDownloadRowsState';
 import { MatCheckboxChange } from '@angular/material/checkbox';
+import { cutoutUrlBuilder } from 'src/app/utils/cutoutUrlBuilder';
 
 type TColName = keyof IApiDatum;
 
 @Component({
   selector: 'app-table',
   templateUrl: './table.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrls: ['./table.component.scss'],
 })
-export class TableComponent implements OnInit, AfterViewInit {
+export class TableComponent implements OnInit, AfterViewInit, OnChanges {
   // --->>>
 
   @ViewChild(MatSort)
@@ -68,7 +74,11 @@ export class TableComponent implements OnInit, AfterViewInit {
   tableData?: MatTableDataSource<IApiDatum>;
   downloadRowState: TDownloadRowsState = {};
 
-  constructor(private store$: Store<IAppState>, private dialog: MatDialog) {
+  constructor(
+    private store$: Store<IAppState>,
+    private dialog: MatDialog,
+    private changeDetector: ChangeDetectorRef
+  ) {
     // --->>
 
     this.subscriptions.add(
@@ -85,6 +95,10 @@ export class TableComponent implements OnInit, AfterViewInit {
         .select(selectApiSelectedDatum)
         .subscribe((apiSelectedDatum) => {
           this.apiSelectedDatum = apiSelectedDatum;
+
+          // console.log('CHANGE!!!');
+          // this.changeDetector.markForCheck();
+          this.changeDetector.detectChanges();
 
           // Determine position Scroll to selected row in table
           const sortedApiData = this.getSortedApiData();
@@ -137,6 +151,14 @@ export class TableComponent implements OnInit, AfterViewInit {
     this.subscriptions.unsubscribe();
   }
 
+  ngOnChanges(changes: SimpleChanges): void {
+    console.log('???');
+    if (changes['apiSelectedDatum'].currentValue) {
+      //
+      console.log('>>> ', changes['apiSelectedDatum'].currentValue);
+    }
+  }
+
   onTableClick() {
     if (!this.tableData) return;
   }
@@ -176,14 +198,27 @@ export class TableComponent implements OnInit, AfterViewInit {
     this.store$.dispatch(new ApiSetDownloadRowState({ newDownloadRowState }));
   }
 
-  getThumbnailUrl(url: string) {
+  rerenderTable($event: string) {
+    // this.message = $event;
+    // console.log('>>> ', $event);
+    this.changeDetector.detectChanges();
+  }
+
+  getThumbnailUrl(element: IApiDatum) {
     /**
      * ! Ugly hack !
      */
+    const url = element.preview_url;
     if (url && url.includes('sbnsurveys')) {
       const xxx = url.split('api');
       const res = xxx[0] + 'api' + xxx[1].replace(':', '%3A');
       return res;
+    }
+    if (!url) {
+      if (['catalina_bigelow'].includes(element.source)) {
+        const xxx = cutoutUrlBuilder(element);
+        return xxx;
+      }
     }
     if (url) return url;
     return 'assets/images/pngs/sbn_logo_v0.png';
@@ -225,7 +260,12 @@ export class TableComponent implements OnInit, AfterViewInit {
   }
 
   isRowSelected(element: IApiDatum) {
-    return element.product_id === this.apiSelectedDatum?.product_id;
+    const isRowSelected =
+      element.product_id === this.apiSelectedDatum?.product_id;
+    if (isRowSelected) {
+      // console.log('???', element.product_id);
+    }
+    return isRowSelected;
   }
 
   openSettingsDialog(e: MouseEvent) {

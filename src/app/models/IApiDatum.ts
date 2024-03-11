@@ -1,6 +1,10 @@
+/**
+ * ps1:frame_id
+ */
 export interface IApiDatum {
   airmass: number | null;
   archive_url: string | null;
+  'css:telescope'?: string;
   cutout_url: string | null;
   date: string;
   ddec: number;
@@ -14,12 +18,15 @@ export interface IApiDatum {
   filter: string | null;
   instrument?: string | null;
   jd?: number;
-  maglimit: string | null;
+  maglimit: string | number | null;
   mjd_start: number;
   mjd_stop: number;
   phase: number;
   preview_url: string | null;
   product_id: string;
+  'ps1:frame_id'?: number;
+  'ps1:projection_id'?: number;
+  'ps1:skycell_id'?: number;
   ra: number;
   // raDec?: string;
   rdot?: number;
@@ -28,6 +35,10 @@ export interface IApiDatum {
   sangle: number;
   seeing: number | null;
   selong?: number;
+  'skymapper:field_id'?: number;
+  'skymapper:image_type'?: string;
+  'skymapper:sb_mag'?: number;
+  'skymapper:zpapprox'?: number;
   source: string;
   source_name: string;
   thumbnail_url?: string | null;

@@ -31,6 +31,8 @@ export class PipelineInterceptor implements HttpInterceptor {
     // Be sure to treat req as an immutable
     // ...
 
+    console.log('Being used?!');
+
     //
     // Create rxjs pipeline for handling response events
     //

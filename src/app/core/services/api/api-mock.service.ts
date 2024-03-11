@@ -45,14 +45,15 @@ export class ApiMockService implements IApiService {
   ): Observable<TApiDataResult> {
     // --->>
 
-    console.log(
-      '<< FETCHING MOCK DATA >>',
-      target,
-      isCached,
-      isUncertaintyEllipse,
-      padding,
-      sources
-    );
+    false &&
+      console.log(
+        '<< FETCHING MOCK DATA >>',
+        target,
+        isCached,
+        isUncertaintyEllipse,
+        padding,
+        sources
+      );
 
     if (!target) {
       return of({
@@ -72,7 +73,7 @@ export class ApiMockService implements IApiService {
       switchMap((apiCatchResult) => {
         // --->>
 
-        console.log(' << MOCK CATCH REQUEST >> ', apiCatchResult);
+        false && console.log(' << MOCK CATCH REQUEST >> ', apiCatchResult);
         const { job_id, queued } = apiCatchResult;
         if (!job_id) {
           throw new Error('No valid job_id was returned');
@@ -152,7 +153,7 @@ export class ApiMockService implements IApiService {
       message: isCached
         ? 'Found cached data.  Retrieve from results URL.'
         : `Enqueued search.  Listen to task messaging stream until job completed, then retrieve data from results URL.`,
-      message_stream: 'http://catch-v2.astro-prod-it.aws.umd.edu/stream',
+      message_stream: 'http://catch-dev-api.astro.umd.edu/stream',
       query: {
         cached: isCached,
         padding: 0,
@@ -163,7 +164,7 @@ export class ApiMockService implements IApiService {
       },
       queued: !isCached,
       results:
-        'http://catch-v2.astro-prod-it.aws.umd.edu/caught/e8c4f483ffd34552a58a315f8a65ef92',
+        'http://catch-dev-api.astro.umd.edu/caught/e8c4f483ffd34552a58a315f8a65ef92',
       version: '2.0.0-dev0',
     });
     return result;
@@ -176,7 +177,16 @@ export class ApiMockService implements IApiService {
     return of({
       count: 10,
       job_id: jobId,
-      data: apiMockResult.data.filter((_, ind) => ind < 300),
+      data: apiMockResult.data
+        .filter((_, ind) => {
+          return true;
+          return [
+            //
+            'catalina_bigelow',
+            // 'neat_maui_geodss',
+          ].includes(_.source);
+        })
+        .filter((_, ind) => ind < 1000),
     }).pipe(delay<IApiCaughtResult>(mockTime1));
   }
 

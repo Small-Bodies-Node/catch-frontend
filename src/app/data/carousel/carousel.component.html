@@ -20,7 +20,16 @@
     </ng-container>
 
     <ng-template #elseBlockShow>
-      <img [src]="chooseImage()" alt="" />
+      <div class="thumbnail-wrapper">
+        <app-star-overlay></app-star-overlay>
+        <app-table-thumbnail
+          [element]="chooseApiDatum()"
+          [label]="getLabel()"
+          [size]="'100%'"
+          [diameterPxls]="150"
+          [isPriority]="true"
+        ></app-table-thumbnail>
+      </div>
     </ng-template>
 
     <button
@@ -34,6 +43,6 @@
     </button>
   </div>
   <div class="image-wheel-wrapper">
-    <app-image-wheel></app-image-wheel>
+    <!-- <app-image-wheel></app-image-wheel> -->
   </div>
 </div>

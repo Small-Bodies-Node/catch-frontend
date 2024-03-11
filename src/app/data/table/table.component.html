@@ -62,7 +62,13 @@
         [ngClass]="{ 'highlighted-sticky-cell': isRowSelected(element) }"
       >
         <div class="thumbnail-wrapper cell-container">
-          <img [src]="getThumbnailUrl(element.preview_url)" />
+          <!-- <img [src]="getThumbnailUrl(element)" /> -->
+          <app-table-thumbnail
+            [element]="element"
+            [isPriority]="isRowSelected(element)"
+            [label]="(isRowSelected(element) ? '*' : '') + 'T' + i"
+            (onLoadEventMessage)="rerenderTable($event)"
+          ></app-table-thumbnail>
         </div>
       </td>
     </ng-container>

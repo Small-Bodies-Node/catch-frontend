@@ -1,4 +1,11 @@
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
 import { Store } from '@ngrx/store';
 import { distinctUntilChanged, interval, map, Subscription, take } from 'rxjs';
 
@@ -15,6 +22,7 @@ const placeholderUrl = 'assets/images/pngs/sbn_logo_v0.png';
 @Component({
   selector: 'app-image-wheel',
   templateUrl: './image-wheel.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrls: ['./image-wheel.component.scss'],
 })
 export class ImageWheelComponent implements OnInit {
@@ -31,7 +39,10 @@ export class ImageWheelComponent implements OnInit {
   width = 100;
   imageWheelMarginRightPxl = 5;
 
-  constructor(private store$: Store<IAppState>) {
+  constructor(
+    private store$: Store<IAppState>,
+    private changeDetector: ChangeDetectorRef
+  ) {
     // --->>
 
     this.subscriptions.add(
@@ -58,6 +69,7 @@ export class ImageWheelComponent implements OnInit {
               behavior: 'smooth',
             });
           }
+          this.changeDetector.detectChanges();
         })
     );
 
@@ -95,7 +107,7 @@ export class ImageWheelComponent implements OnInit {
   getStyleObject(apiDatum: IApiDatum) {
     const imageUrl = apiDatum.preview_url || placeholderUrl;
     return {
-      backgroundImage: `url('${imageUrl || placeholderUrl}')`,
+      // backgroundImage: `url('${imageUrl || placeholderUrl}')`,
       width: this.width + 'px',
       marginRight: this.imageWheelMarginRightPxl + 'px',
     };
@@ -108,5 +120,12 @@ export class ImageWheelComponent implements OnInit {
 
   setSelectedDatum(apiDatum: IApiDatum) {
     this.store$.dispatch(new ApiSetSelectedDatum({ apiDatum }));
+    this.changeDetector.detectChanges();
+  }
+
+  rerenderWheel($event: string) {
+    // this.message = $event;
+    // console.log('>>> ', $event);
+    this.changeDetector.detectChanges();
   }
 }

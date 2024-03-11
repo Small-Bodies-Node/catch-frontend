@@ -13,7 +13,9 @@
   .mat-footer-cell,
   .mat-cell {
     & .cell-container {
-      padding: 5px;
+      // padding: 5px;
+      padding-left: 5px;
+      padding-right: 5px;
       white-space: nowrap;
     }
 
@@ -26,6 +28,7 @@
     }
     .thumbnail-wrapper {
       padding-left: 0px;
+      padding: 5px;
       display: flex;
       justify-content: center;
       align-items: center;

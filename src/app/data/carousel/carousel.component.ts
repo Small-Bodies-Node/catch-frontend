@@ -26,7 +26,6 @@ export class CarouselComponent implements OnInit {
   isButtonRaised = false;
   isFits = false;
   fitsUrl = '';
-  // 'http://localhost:4200/assets/fits/65P_P20020121_OBSDATA_20020121132624C_ra177.51011_dec+15.25013_5arcmin.fits';
   width = 0;
   height = 0;
   isFitsLoaded = false;
@@ -93,6 +92,11 @@ export class CarouselComponent implements OnInit {
     return this.apiSelectedDatum?.preview_url || placeholderUrl;
   }
 
+  chooseApiDatum() {
+    // console.log('>>>>> ????');
+    return this.apiSelectedDatum;
+  }
+
   toggleFits() {
     this.isFits = !this.isFits;
     if (!this.isFits) this.isButtonRaised = false;
@@ -117,5 +121,14 @@ export class CarouselComponent implements OnInit {
     return this.apiDataWithProblematicFitsUrls.includes(
       this.apiSelectedDatum?.product_id || ''
     );
+  }
+
+  getLabel() {
+    // Create a label for this image from the carousel
+    this.apiSelectedDatum;
+    const i = this.apiData
+      ?.map((apiDatum) => apiDatum.product_id)
+      .indexOf(this.apiSelectedDatum?.product_id || '');
+    return '*C' + i;
   }
 }

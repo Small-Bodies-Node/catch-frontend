@@ -38,6 +38,7 @@ export class TitleComponent implements OnInit {
   apiDataForDownload?: IApiDatum[];
   apiDataLabels: TApiDataLabels = apiDataLabels;
   dataDownloadRowState?: TDownloadRowsState;
+  rowsInTable?: number;
 
   isMobile = false;
 
@@ -64,8 +65,6 @@ export class TitleComponent implements OnInit {
 
         this.isMobile = device === 'mobile';
 
-        console.log('isMobile', this.isMobile);
-
         if (!status.query) return;
         const {
           //
@@ -85,6 +84,9 @@ export class TitleComponent implements OnInit {
 
         if (!this.apiData || !this.dataDownloadRowState) return;
         if (!this.dataDownloadRowState) return;
+
+        //
+        this.rowsInTable = this.apiData.length;
 
         // Filter data to be downloaded:
         this.apiDataForDownload = this.apiData.filter((apiDatum) => {
@@ -194,8 +196,6 @@ export class TitleComponent implements OnInit {
     // Create folders for images
     const jpgs = zip.folder('jpgs');
     const fits = zip.folder('fits');
-
-    console.log('&&&&', jpgImageFiles);
 
     // Place images in respective folders
     jpgImageFiles.map(({ file, product_id }) => {

@@ -23,6 +23,8 @@ import { TitleComponent } from './title/title.component';
 import { SearchFieldComponent } from '../components/search-field/search-field.component';
 import { MobileViewComponent } from './mobile-view/mobile-view.component';
 import { DesktopViewComponent } from './desktop-view/desktop-view.component';
+import { TableThumbnailComponent } from './table-thumbnail/table-thumbnail.component';
+import { StarOverlayComponent } from './star-overlay/star-overlay.component';
 
 const routes: Routes = [{ path: '', component: DataComponent }];
 
@@ -39,6 +41,8 @@ const routes: Routes = [{ path: '', component: DataComponent }];
     TitleComponent,
     MobileViewComponent,
     DesktopViewComponent,
+    TableThumbnailComponent,
+    StarOverlayComponent,
   ],
   imports: [
     CommonModule,

@@ -67,15 +67,6 @@ export class DesktopViewComponent implements OnInit {
               sources = [...Object.keys(sourcesNamesDict)] as any;
             }
 
-            console.log(
-              '>>> ',
-              sources,
-              isCached,
-              isUncertaintyEllipse,
-              padding,
-              target
-            );
-
             return {
               sources,
               isCached,

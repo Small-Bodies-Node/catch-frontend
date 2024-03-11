@@ -47,7 +47,7 @@
       </button>
 
       <button
-        class="search-button xxx"
+        class="search-button shift"
         *ngIf="!!latestInputText.trim()"
         mat-raised-button
         matSuffix
@@ -55,18 +55,6 @@
         (click)="submitObjectNameMatch($event)"
       >
         <span style="font-size: 12px">START</span>
-        <!-- <mat-icon
-          *ngIf="true && isTargetMatched()"
-          [ngStyle]="{ color: successColor }"
-        >
-          done</mat-icon
-        > -->
-        <!-- <span
-          *ngIf="true && isTargetMatched()"
-          [ngStyle]="{ color: successColor }"
-        >
-          start</span
-        > -->
 
         <!-- START -->
       </button>
@@ -109,7 +97,12 @@
         <div>
           <div class="info-checkbox-wrapper">
             <span class="icon-wrapper">
-              <mat-icon [matTooltip]="'XXX XXX'">info</mat-icon>
+              <mat-icon
+                [matTooltip]="
+                  'Near-Earth Asteroid Tracking (NEAT) was a program run by NASA and the Jet Propulsion Laboratory, surveying the sky for near-Earth objects from December 1995 until April 2007. These are the images taken at the Palomar Observatory in California'
+                "
+                >info</mat-icon
+              >
             </span>
             <mat-checkbox
               [formControlName]="formControlLabels.neat_palomar_tricam"
@@ -120,7 +113,12 @@
         <div>
           <div class="info-checkbox-wrapper">
             <span class="icon-wrapper">
-              <mat-icon [matTooltip]="'XXX XXX'">info</mat-icon>
+              <mat-icon
+                [matTooltip]="
+                  'Near-Earth Asteroid Tracking (NEAT) was a program run by NASA and the Jet Propulsion Laboratory, surveying the sky for near-Earth objects from December 1995 until April 2007. These are the images taken at GEODSS on Maui in Hawaii'
+                "
+                >info</mat-icon
+              >
             </span>
             <mat-checkbox
               [formControlName]="formControlLabels.neat_maui_geodss"
@@ -131,7 +129,12 @@
         <div>
           <div class="info-checkbox-wrapper">
             <span class="icon-wrapper">
-              <mat-icon [matTooltip]="'XXX XXX'">info</mat-icon>
+              <mat-icon
+                [matTooltip]="
+                  'SkyMapper is a fully automated 1.35 m (4.4 ft) wide-angle optical telescope at Siding Spring Observatory in northern New South Wales, Australia'
+                "
+                >info</mat-icon
+              >
             </span>
             <mat-checkbox [formControlName]="formControlLabels.skymapper">{{
               formControlLabels.skymapper
@@ -141,7 +144,12 @@
         <div>
           <div class="info-checkbox-wrapper">
             <span class="icon-wrapper">
-              <mat-icon [matTooltip]="'XXX XXX'">info</mat-icon>
+              <mat-icon
+                [matTooltip]="
+                  'Pan-STARRS1 Data Release 2. The Panoramic Survey Telescope and Rapid Response System (Pan-STARRS1) are located at Haleakala Observatory, Hawaii'
+                "
+                >info</mat-icon
+              >
             </span>
             <mat-checkbox [formControlName]="formControlLabels.ps1dr2">{{
               formControlLabels.ps1dr2
@@ -151,7 +159,12 @@
         <div>
           <div class="info-checkbox-wrapper">
             <span class="icon-wrapper">
-              <mat-icon [matTooltip]="'XXX XXX'">info</mat-icon>
+              <mat-icon
+                [matTooltip]="
+                  'Catalina Sky Survey images taken from Mount Bigelow Observatory near Tucson, Arizona'
+                "
+                >info</mat-icon
+              >
             </span>
             <mat-checkbox
               [formControlName]="formControlLabels.catalina_bigelow"
@@ -162,7 +175,12 @@
         <div>
           <div class="info-checkbox-wrapper">
             <span class="icon-wrapper">
-              <mat-icon [matTooltip]="'XXX XXX'">info</mat-icon>
+              <mat-icon
+                [matTooltip]="
+                  'Catalina Sky Survey images taken from Mount Lemmon Observatory near Tucson, Arizona'
+                "
+                >info</mat-icon
+              >
             </span>
             <mat-checkbox
               [formControlName]="formControlLabels.catalina_lemmon"
@@ -170,21 +188,31 @@
             >
           </div>
         </div>
-        <!-- <div>
-          <div class="info-checkbox-wrapper">
-            <span class="icon-wrapper">
-              <mat-icon [matTooltip]="'XXX XXX'">info</mat-icon>
-            </span>
-            <mat-checkbox
-              [formControlName]="formControlLabels.catalina_kittpeak"
-              >{{ formControlLabels.catalina_kittpeak }}</mat-checkbox
-            >
-          </div>
-        </div> -->
         <div>
           <div class="info-checkbox-wrapper">
             <span class="icon-wrapper">
-              <mat-icon [matTooltip]="'XXX XXX'">info</mat-icon>
+              <mat-icon
+                [matTooltip]="
+                  'Catalina Sky Survey images taken from Mount Kitt Peak near Tuscon Arizona'
+                "
+                >info</mat-icon
+              >
+            </span>
+            <mat-checkbox
+              [formControlName]="formControlLabels.catalina_bokneosurvey"
+              >{{ formControlLabels.catalina_bokneosurvey }}</mat-checkbox
+            >
+          </div>
+        </div>
+        <div>
+          <div class="info-checkbox-wrapper">
+            <span class="icon-wrapper">
+              <mat-icon
+                [matTooltip]="
+                  'The Spacewatch Project is an astronomical survey that specializes in the study of minor planets, including various types of asteroids and comets at University of Arizona telescopes on Kitt Peak near Tucson, Arizona'
+                "
+                >info</mat-icon
+              >
             </span>
             <mat-checkbox [formControlName]="formControlLabels.spacewatch">{{
               formControlLabels.spacewatch

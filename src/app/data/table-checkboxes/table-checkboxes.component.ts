@@ -77,7 +77,6 @@ export class TableCheckboxesComponent implements OnInit {
         const w = this.checkboxesContainer
           ? this.checkboxesContainer.nativeElement.offsetWidth
           : 100;
-        console.log('>>>>', w);
         return w;
       }),
       distinctUntilChanged()

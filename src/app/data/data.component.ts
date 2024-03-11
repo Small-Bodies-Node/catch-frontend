@@ -20,8 +20,7 @@ export class DataComponent implements OnInit {
     const x = store$
       .select(selectScreenDeviceEffectiveDevice)
       .subscribe((device) => {
-        this.device = device;
-        console.log('>>>', device);
+        // this.device = device;
       });
   }
 

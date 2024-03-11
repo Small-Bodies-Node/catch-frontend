@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { Component, HostListener, Inject, NgZone } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 @Component({
@@ -30,6 +30,7 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
       }
     `,
   ],
+  // standalone: true,
 })
 export class UnrecognizedNameDialogComponent {
   // --->>>
@@ -37,10 +38,14 @@ export class UnrecognizedNameDialogComponent {
   constructor(
     public dialogRef: MatDialogRef<UnrecognizedNameDialogComponent>,
     @Inject(MAT_DIALOG_DATA)
-    public data: { submittedText: string }
+    public data: { submittedText: string },
+    private ngZone: NgZone
   ) {}
 
   closeDialog(isSearchConfirmed: boolean) {
-    this.dialogRef.close(isSearchConfirmed);
+    console.log('CLOSING DIALOG', isSearchConfirmed);
+    this.ngZone.run(() => {
+      this.dialogRef.close(isSearchConfirmed);
+    });
   }
 }

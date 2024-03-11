@@ -7,4 +7,5 @@ export interface IApiCaughtResult {
   count: number;
   job_id: string;
   data: IApiDatum[];
+  version?: string;
 }

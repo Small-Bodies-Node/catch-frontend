@@ -35,7 +35,7 @@ const formControlLabels: {
 };
 
 type TControlsForm = {
-  [K in typeof formControlLabels[TFormControlKeys]]:
+  [K in (typeof formControlLabels)[TFormControlKeys]]:
     | FormControl<boolean | null>
     | FormControl<number | null>
     | FormControl<string | null>;
@@ -84,7 +84,7 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
       [formControlLabels.neat_palomar_tricam]: new FormControl(true),
       [formControlLabels.neat_maui_geodss]: new FormControl(true),
       [formControlLabels.catalina_bigelow]: new FormControl(true),
-      // [formControlLabels.catalina_kittpeak]: new FormControl(true),
+      [formControlLabels.catalina_bokneosurvey]: new FormControl(true),
       [formControlLabels.catalina_lemmon]: new FormControl(true),
       [formControlLabels.ps1dr2]: new FormControl(true),
       [formControlLabels.skymapper]: new FormControl(true),
@@ -136,6 +136,10 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
     this.subscriptions.unsubscribe();
   }
 
+  /**
+   * Check to see if the text entered into the search box is a target within
+   * 'objectNameMatchResults'
+   */
   isTargetMatched() {
     const match = this.objectNameMatchResults.find(
       (el) => el.target === this.latestInputText.trim()
@@ -194,18 +198,29 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // If target isn't matched, give user option to search anyway
-    const dialogRef = this.dialog.open<UnrecognizedNameDialogComponent, any>(
-      UnrecognizedNameDialogComponent,
-      { data: { submittedText: target } }
-    );
-    this.subscriptions.add(
-      dialogRef.afterClosed().subscribe((isSearchConfirmed) => {
-        if (!!isSearchConfirmed) {
-          this.launchObjectQuery(target, sources);
-        }
-      })
-    );
+    if (!this.dialog.openDialogs.length) {
+      setTimeout(() => {
+        // If target isn't matched, give user option to search anyway
+        const dialogRef = this.dialog.open<
+          UnrecognizedNameDialogComponent,
+          any
+        >(UnrecognizedNameDialogComponent, { data: { submittedText: target } });
+
+        this.subscriptions.add(
+          dialogRef.afterClosed().subscribe((isSearchConfirmed) => {
+            console.log(
+              'Request received: >>>',
+              isSearchConfirmed,
+              '<<<',
+              typeof isSearchConfirmed
+            );
+            if (!!isSearchConfirmed) {
+              this.launchObjectQuery(target, sources);
+            }
+          })
+        );
+      }, 0);
+    }
   }
 
   launchObjectQuery(target: string, sources: TSources[]) {
@@ -257,8 +272,8 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
     } else if ((event as any).keyCode !== undefined) {
       keyCode = (event as any).keyCode;
     }
+
     if (keyCode === 'Enter') {
-      console.log('KEY LAUNCH');
       this.tryLaunchingObjectQuery();
     }
   }

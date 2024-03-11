@@ -31,7 +31,13 @@
               "src/assets",
               "src/assets/fits",
               "src/assets/js9-to-be-served",
-              "src/assets/js9-to-be-compiled"
+              "src/assets/js9-to-be-compiled",
+              "src/assets/socket.io",
+              {
+                "glob": "**/*",
+                "input": "src/assets/socket.io/",
+                "output": "/socket.io/"
+              }
             ],
             "styles": ["src/styles/styles.scss"],
             "scripts": [
@@ -70,16 +76,22 @@
               "outputPath": "dist/catch-gui-prod"
             },
             "catch-dev": {
+              "buildOptimizer": false,
+              "optimization": false,
+              "vendorChunk": true,
+              "extractLicenses": false,
+              "sourceMap": true,
+              "namedChunks": true,
               "budgets": [
                 {
                   "type": "initial",
                   "maximumWarning": "1000kb",
-                  "maximumError": "3mb"
+                  "maximumError": "40mb"
                 },
                 {
                   "type": "anyComponentStyle",
                   "maximumWarning": "2kb",
-                  "maximumError": "4kb"
+                  "maximumError": "16kb"
                 }
               ],
               "fileReplacements": [
@@ -113,14 +125,6 @@
               "outputHashing": "all",
               "outputPath": "dist/catch-gui-github",
               "baseHref": "/catch-frontend/"
-            },
-            "development": {
-              "buildOptimizer": false,
-              "optimization": false,
-              "vendorChunk": true,
-              "extractLicenses": false,
-              "sourceMap": true,
-              "namedChunks": true
             }
           },
           "defaultConfiguration": "catch-prod"
@@ -128,14 +132,14 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
-            "production": {
-              "browserTarget": "catch-frontend:build:production"
+            "catch-prod": {
+              "browserTarget": "catch-frontend:build:catch-prod"
             },
-            "development": {
-              "browserTarget": "catch-frontend:build:development"
+            "catch-dev": {
+              "browserTarget": "catch-frontend:build:catch-dev"
             }
           },
-          "defaultConfiguration": "development"
+          "defaultConfiguration": "catch-dev"
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
@@ -173,14 +177,14 @@
             "project": "projects/ngx-js9/ng-package.json"
           },
           "configurations": {
-            "production": {
+            "catch-prod": {
               "tsConfig": "projects/ngx-js9/tsconfig.lib.prod.json"
             },
-            "development": {
+            "catch-dev": {
               "tsConfig": "projects/ngx-js9/tsconfig.lib.json"
             }
           },
-          "defaultConfiguration": "production"
+          "defaultConfiguration": "catch-prod"
         },
         "test": {
           "builder": "@angular-devkit/build-angular:karma",

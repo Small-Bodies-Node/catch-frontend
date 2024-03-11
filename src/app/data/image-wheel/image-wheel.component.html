@@ -6,6 +6,14 @@
       (click)="setSelectedDatum(apiDatum)"
       [ngStyle]="getStyleObject(apiDatum)"
       [ngClass]="isImageSelected(apiDatum) ? 'add-border' : ''"
-    ></div>
+    >
+      <app-table-thumbnail
+        [element]="apiDatum"
+        [size]="'100%'"
+        [label]="(isImageSelected(apiDatum) ? '*' : '') + 'W' + i"
+        [isPriority]="isImageSelected(apiDatum)"
+        (onLoadEventMessage)="rerenderWheel($event)"
+      ></app-table-thumbnail>
+    </div>
   </ng-container>
 </div>
