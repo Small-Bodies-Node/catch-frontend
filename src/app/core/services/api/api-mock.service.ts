@@ -186,7 +186,7 @@ export class ApiMockService implements IApiService {
             // 'neat_maui_geodss',
           ].includes(_.source);
         })
-        .filter((_, ind) => ind < 1000),
+        .filter((_, ind) => ind < 1),
     }).pipe(delay<IApiCaughtResult>(mockTime1));
   }
 

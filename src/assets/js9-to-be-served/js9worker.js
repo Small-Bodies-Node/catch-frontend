@@ -12,6 +12,8 @@
 
 /*global importScripts, io */
 
+console.log("JS9WORKER.js LOADED");
+
 // socket.io support
 let socket = null;
 let socketActive = false;

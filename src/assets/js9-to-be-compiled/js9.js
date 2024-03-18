@@ -14,6 +14,8 @@
 
 "use strict";
 
+console.log("JS9.js LOADED");
+
 // ensure Emscripten's Module object is available so we can pass properties
 // (e.g. wasmBinary) in js9prefs.js and during JS9.init()
 // (use var to add to global scope because it's how Emscripten does it)
@@ -48,7 +50,8 @@ var JS9 = (function () {
   JS9.SCALESIZE = 16384; // size of scaled color array
   JS9.INVSIZE = 1024; // size of inverse array
   JS9.HISTSIZE = 16384; // size of histogram equalization array
-  JS9.INSTALLDIR = ""; // prefix to get to js9 install directory
+  JS9.INSTALLDIR = "assets/js9-to-be-served/"; // prefix to get to js9 install directory
+  // JS9.INSTALLDIR = ""; // prefix to get to js9 install directory
   JS9.TOROOT = ""; // prefix to get to data file from install
   JS9.PLUGINS = ""; // regexp list of plugins
   JS9.LIGHTWIN = "dhtml"; // light window type: choice of dhtml
@@ -11134,6 +11137,7 @@ var JS9 = (function () {
         // set new value for width
         pinst.divjq.attr("data-width", `${String(nwidth)}px`);
         // re-init colorbar for this size
+        console.log("resize colorbar");
         JS9.Colorbar.init.call(pinst);
       }
     }
@@ -17681,6 +17685,7 @@ var JS9 = (function () {
     // add colorbar, if necessary
     if (opts.colorbar === undefined || opts.colorbar) {
       pinst = this.display.pluginInstances.JS9Colorbar;
+      console.log("Debug colorbar 1");
       if (pinst && pinst.isActive()) {
         // separate from main display
         yoff += 2;
