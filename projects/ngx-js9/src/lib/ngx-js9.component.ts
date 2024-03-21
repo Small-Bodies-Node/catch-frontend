@@ -260,11 +260,11 @@ export class NgxJs9Component implements OnInit, OnDestroy, OnChanges {
   }
 
   getHeight() {
-    const menuBarHeight = 35.5;
-    const colorBarHeight = 40;
+    const menuBarHeight = 36;
+    const colorBarHeight = 42;
     const menuBarPlusColorBarHeight = menuBarHeight + colorBarHeight;
     const result = this.height
-      ? this.height - menuBarPlusColorBarHeight + 'px'
+      ? this.height - menuBarPlusColorBarHeight - 12 + 'px'
       : '100px';
     return result;
   }

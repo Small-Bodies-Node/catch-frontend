@@ -3,15 +3,18 @@
   height: 100%;
   background-color: #424242;
 
+  $mainImageHeight: 60%;
+
   .main-image {
     position: relative;
     width: 100%;
-    height: 70%;
-    padding-top: 5px;
+    height: $mainImageHeight;
+    // padding-top: 5px;
     box-sizing: border-box;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    // display: flex;
+    // align-items: center;
+    // justify-content: center;
+    overflow: hidden;
     app-table-thumbnail {
       flex: 1;
     }
@@ -33,14 +36,15 @@
       position: relative;
       width: 100%;
       height: 100%;
-      background-color: green;
+      // background-color: green;
     }
   }
 
   .image-wheel-wrapper {
     // background-color: green;
-    height: 30%;
+    height: calc(100% - #{$mainImageHeight});
     padding-top: 5px;
     box-sizing: border-box;
+    overflow: hidden;
   }
 }

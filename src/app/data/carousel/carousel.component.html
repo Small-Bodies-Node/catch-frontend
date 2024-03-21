@@ -20,12 +20,18 @@
     </ng-container>
 
     <ng-template #elseBlockShow>
-      <div class="thumbnail-wrapper">
-        <app-star-overlay></app-star-overlay>
+      <div
+        class="thumbnail-wrapper"
+        [ngStyle]="{ width: width + 'px', height: height + 'px' }"
+      >
+        <!-- <app-star-overlay></app-star-overlay> -->
         <app-table-thumbnail
+          *ngIf="!false"
           [element]="chooseApiDatum()"
           [label]="getLabel()"
           [size]="'100%'"
+          [width]="width + 'px'"
+          [height]="height + 'px'"
           [diameterPxls]="150"
           [isPriority]="true"
         ></app-table-thumbnail>
@@ -43,6 +49,7 @@
     </button>
   </div>
   <div class="image-wheel-wrapper">
+    <app-solar-viewer></app-solar-viewer>
     <!-- <app-image-wheel></app-image-wheel> -->
   </div>
 </div>

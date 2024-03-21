@@ -25,6 +25,7 @@ import { MobileViewComponent } from './mobile-view/mobile-view.component';
 import { DesktopViewComponent } from './desktop-view/desktop-view.component';
 import { TableThumbnailComponent } from './table-thumbnail/table-thumbnail.component';
 import { StarOverlayComponent } from './star-overlay/star-overlay.component';
+import { SolarViewerComponent } from './solar-viewer/solar-viewer.component';
 
 const routes: Routes = [{ path: '', component: DataComponent }];
 
@@ -43,6 +44,7 @@ const routes: Routes = [{ path: '', component: DataComponent }];
     DesktopViewComponent,
     TableThumbnailComponent,
     StarOverlayComponent,
+    SolarViewerComponent,
   ],
   imports: [
     CommonModule,

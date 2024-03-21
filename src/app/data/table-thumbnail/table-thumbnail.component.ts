@@ -22,6 +22,8 @@ export class TableThumbnailComponent implements OnChanges {
 
   @Input() element?: IApiDatum;
   @Input() size: string = '60px';
+  @Input() width: string = '60px';
+  @Input() height: string = '60px';
   @Input() isPriority = false;
   @Input() label = '-';
   @Input() diameterPxls: number = 30;
@@ -34,8 +36,8 @@ export class TableThumbnailComponent implements OnChanges {
 
   // Control size of thumbnail and loading spinner
   imgStyles = {
-    width: `${this.size}`,
-    height: `${this.size}`,
+    width: `${this.width}`,
+    height: `${this.height}`,
     // padding: '5px',
   };
 
@@ -46,7 +48,12 @@ export class TableThumbnailComponent implements OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     // Update the size of the thumbnail
-    this.imgStyles = { ...this.imgStyles, width: this.size, height: this.size };
+    this.imgStyles = {
+      //
+      ...this.imgStyles,
+      width: this.width,
+      height: this.height,
+    };
 
     // Repeat request to image queue if isPriority changes
     if (changes['isPriority']?.currentValue) {

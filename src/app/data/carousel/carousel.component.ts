@@ -57,25 +57,26 @@ export class CarouselComponent implements OnInit {
         })
     );
 
-    this.subscriptions.add(
-      interval(1000)
-        .pipe(
-          map((_) => ({
-            width: this.mainImageDiv
-              ? this.mainImageDiv.nativeElement.clientWidth
-              : 100,
-            height: this.mainImageDiv
-              ? this.mainImageDiv.nativeElement.clientHeight
-              : 100,
-          })),
-          distinctUntilChanged()
-        )
-        .subscribe(({ width, height }) => {
-          this.width = width;
-          this.height = height;
-          // console.log('width height', this.width, this.height);
-        })
-    );
+    if (!false)
+      this.subscriptions.add(
+        interval(1000)
+          .pipe(
+            map((_) => ({
+              width: this.mainImageDiv
+                ? this.mainImageDiv.nativeElement.clientWidth
+                : 100,
+              height: this.mainImageDiv
+                ? this.mainImageDiv.nativeElement.clientHeight
+                : 100,
+            })),
+            distinctUntilChanged()
+          )
+          .subscribe(({ width, height }) => {
+            this.width = width;
+            this.height = height;
+            console.log('width height', this.width, this.height);
+          })
+      );
   }
 
   ngOnChanges() {

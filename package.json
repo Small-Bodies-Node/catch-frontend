@@ -9,7 +9,8 @@
   },
   "scripts": {
     "ng": "ng",
-    "start": "ng serve --host 0.0.0.0 --configuration catch-dev",
+    "dev": "ng serve --port 4200 --host 0.0.0.0 --configuration catch-dev",
+    "start": "ng serve --port 4200 --host 0.0.0.0 --configuration catch-dev",
     "watch": "ng build --watch --configuration catch-dev",
     "build": "echo 'See package.json for viable build commands'",
     "build-catch-dev": "ng build --configuration catch-dev --stats-json",
@@ -46,6 +47,8 @@
     "normalize-scss": "^7.0.1",
     "plotly.js-dist-min": "^2.14.0",
     "rxjs": "~7.5.0",
+    "sbn-solar-system-viewer": "file:../../../sbn-solar-system-viewers/sbn-solar-system-viewer-v1/dist",
+    "three": "^0.128.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.11.4"
   },
@@ -62,7 +65,9 @@
     "@types/gtag.js": "^0.0.12",
     "@types/jasmine": "~4.0.0",
     "@types/json2csv": "^5.0.3",
+    "@types/offscreencanvas": "^2019.7.3",
     "@types/plotly.js-dist-min": "^2.3.0",
+    "@types/three": "^0.128.0",
     "gh-pages": "^5.0.0",
     "jasmine-core": "~4.1.0",
     "karma": "~6.3.0",

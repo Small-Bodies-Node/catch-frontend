@@ -1,0 +1,29 @@
+{
+  "name": "sbn-solar-system-viewer",
+  "CamelName": "SbnSolarSystemViewer",
+  "version": "0.2.0",
+  "author": "dwd",
+  "license": "MIT",
+  "main": "./sbn-solar-system-viewer.cjs.js",
+  "module": "./sbn-solar-system-viewer.esm.js",
+  "engines": {
+    "node": ">=14"
+  },
+  "devDependencies": {
+    "@types/three": "^0.128.0",
+    "three": "^0.128.0"
+  },
+  "dependencies": {
+    "julian": "^0.2.0",
+    "kepler-utils": "^3.0.1"
+  },
+  "description": "## Intro",
+  "directories": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@d-w-d.github.com:Small-Bodies-Node/sbn-solar-system-viewer.git"
+  },
+  "keywords": []
+}
