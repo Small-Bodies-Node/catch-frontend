@@ -47,7 +47,8 @@ export class ImageFetchService {
 
     // Test if Catalina image is cached in S3. If yes, then return that instead
     if (url.includes('catalina')) {
-      const fileUrlInS3Bucket = await this.getCatalinaImageCachedInS3(url);
+      const fileUrlInS3Bucket =
+        false && (await this.getCatalinaImageCachedInS3(url));
       if (fileUrlInS3Bucket) {
         return new Promise((resolve, reject) => {
           const image = new Image();

@@ -47,7 +47,7 @@
     "normalize-scss": "^7.0.1",
     "plotly.js-dist-min": "^2.14.0",
     "rxjs": "~7.5.0",
-    "sbn-solar-system-viewer": "file:../../../sbn-solar-system-viewers/sbn-solar-system-viewer-v1/dist",
+    "sbn-solar-system-viewer": "file:../../../sbn-solar-system-projects/sbn-solar-system-viewer/dist",
     "three": "^0.128.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.11.4"

@@ -90,7 +90,7 @@ export class TableThumbnailComponent implements OnChanges {
       .fetchImage(url, {
         isPriority: this.isPriority,
         label: this.label,
-        minProcessTimeMs: 1000,
+        minProcessTimeMs: 100,
       })
       .then(
         (img) => {
