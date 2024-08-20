@@ -3,17 +3,11 @@
   height: 100%;
   background-color: #424242;
 
-  $mainImageHeight: 50%;
-
   .main-image {
     position: relative;
     width: 100%;
-    height: $mainImageHeight;
-    // padding-top: 5px;
+    height: 60%;
     box-sizing: border-box;
-    // display: flex;
-    // align-items: center;
-    // justify-content: center;
     overflow: hidden;
     app-table-thumbnail {
       flex: 1;
@@ -40,11 +34,36 @@
     }
   }
 
-  .image-wheel-wrapper {
+  .solar-viewer-wrapper {
     // background-color: green;
-    height: calc(100% - #{$mainImageHeight});
+    height: 40%;
     padding-top: 5px;
     box-sizing: border-box;
     overflow: hidden;
   }
+
+  /**
+    * Resize .main-image and .solar-viewer-wrapper when hovered
+    *
+    * NOTE: when we hover over one, we want to also resize the sibling;
+    * the `~` selector only selects siblings that come AFTER an element,
+    * so when we hover over .solar-viewer-wrapper, we have to select its
+    * previous sibling .main-image using the `:has()` selector
+    */
+
+  /*
+  .main-image:has(~ .solar-viewer-wrapper:hover) {
+    height: 20%;
+  }
+  .solar-viewer-wrapper:hover {
+    height: 80%;
+  }
+
+  .main-image:hover {
+    height: 80%;
+    ~ .solar-viewer-wrapper {
+      height: 20%;
+    }
+  }
+  */
 }
