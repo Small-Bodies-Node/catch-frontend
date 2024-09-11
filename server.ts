@@ -8,6 +8,7 @@ import { panstarrs } from './src/routes/panstarrs';
 import { hello } from './src/routes/hello';
 import { horizons } from './src/routes/horizons';
 import bodyParser from 'body-parser';
+import cors from 'cors';
 
 // The Express app is exported so that it can be used by serverless Functions.
 export function app(): express.Express {
@@ -27,7 +28,7 @@ export function app(): express.Express {
   // Example Express Rest API endpoints
   server.get('/api/hello', hello);
   server.get('/api/stars', panstarrs);
-  server.post('/api/horizons', horizons);
+  server.post('/api/horizons', cors(), horizons);
 
   // Serve static files from /browser
   server.get(
