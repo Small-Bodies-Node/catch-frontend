@@ -25,6 +25,8 @@ export function app(): express.Express {
   server.use(bodyParser.json());
   server.use(bodyParser.urlencoded({ extended: true }));
 
+  server.options('*', cors()); // Allow preflight for all routes
+
   // Example Express Rest API endpoints
   server.get('/api/hello', hello);
   server.get('/api/stars', panstarrs);

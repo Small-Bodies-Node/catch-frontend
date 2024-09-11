@@ -85,9 +85,8 @@ export const horizons = async (req: Request, res: Response) => {
       } catch (err: any) {
         return res.status(500).send(`Error uploading file: ${err.message}`);
       }
-
       // Return data
-      return res.status(400).send(contentHtml);
+      return res.status(200).send(contentHtml);
     } else {
       return res.status(400).json({ error: 'No data found' });
     }

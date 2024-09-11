@@ -13,8 +13,9 @@ const main = async () => {
   });
 
   const x = await res.text();
+  const y = await res.headers;
 
-  console.log(x);
+  console.log(x, y);
 };
 
 main();
