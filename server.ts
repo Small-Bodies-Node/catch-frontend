@@ -7,9 +7,9 @@ import bodyParser from 'body-parser';
 import cors from 'cors';
 
 import bootstrap from './src/main.server';
-import { panstarrs } from './src/routes/panstarrs';
-import { hello } from './src/routes/hello';
-import { horizons } from './src/routes/horizons';
+import { panstarrs } from './src/server/routes/panstarrs';
+import { hello } from './src/server/routes/hello';
+import { horizons } from './src/server/routes/horizons';
 
 // The Express app is exported so that it can be used by serverless Functions.
 export function app(): express.Express {
