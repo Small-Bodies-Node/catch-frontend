@@ -1,14 +1,15 @@
+import express from 'express';
 import { APP_BASE_HREF } from '@angular/common';
 import { CommonEngine } from '@angular/ssr';
-import express from 'express';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
+import bodyParser from 'body-parser';
+import cors from 'cors';
+
 import bootstrap from './src/main.server';
 import { panstarrs } from './src/routes/panstarrs';
 import { hello } from './src/routes/hello';
 import { horizons } from './src/routes/horizons';
-import bodyParser from 'body-parser';
-import cors from 'cors';
 
 // The Express app is exported so that it can be used by serverless Functions.
 export function app(): express.Express {
@@ -34,14 +35,15 @@ export function app(): express.Express {
 
   // Serve static files from /browser
   server.get(
-    '*.*',
+    '**',
     express.static(browserDistFolder, {
       maxAge: '1y',
+      index: 'index.html',
     })
   );
 
   // All regular routes use the Angular engine
-  server.get('*', (req, res, next) => {
+  server.get('**', (req, res, next) => {
     const { protocol, originalUrl, baseUrl, headers } = req;
 
     commonEngine

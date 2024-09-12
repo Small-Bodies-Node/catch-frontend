@@ -1,5 +1,4 @@
 import express, { Request, Response } from 'express';
-import axios from 'axios';
 
 /**
  *  Ping panstarrs API
@@ -16,17 +15,31 @@ export const panstarrs = async (req: Request, res: Response) => {
   console.log('ra:', ra, 'dec:', dec, 'radius:', radius);
 
   try {
-    const response = await axios.post(
+    const response = await fetch(
       'https://catalogs.mast.stsci.edu/api/v0.1/panstarrs/dr2/mean.json',
       {
-        params: {
-          ra,
-          dec,
-          radius,
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
+        body: JSON.stringify({
+          params: {
+            ra,
+            dec,
+            radius,
+          },
+        }),
       }
     );
-    return res.json(response.data);
+
+    if (response.ok) {
+      const data = await response.json();
+      return res.json(data);
+    } else {
+      throw new Error(
+        `Network response was not ok. Status: ${response.status}`
+      );
+    }
   } catch (error) {
     console.error('Error fetching data from the API:', error);
     return res

@@ -16,9 +16,6 @@ const s3 = new AWS.S3Client({
   },
 });
 
-// console.log('env >>>', process.env);
-// console.log('env >>> working?');
-
 /**
  *  Ping JPL horizons
  */
@@ -57,10 +54,6 @@ export const horizons = async (req: Request, res: Response) => {
     console.log('File does not exist; pinging: ', horizons_url);
     const contentHtml = await fetch(horizons_url)
       .then((res2) => res2.text())
-      .then((text) => {
-        // console.log(text);
-        return text;
-      })
       .catch((err) => {
         return undefined;
       });
