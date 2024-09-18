@@ -7,11 +7,11 @@ import { Router } from '@angular/router';
 
 import {
   ApiDataAction_FetchResult,
-  ApiAction_SetData,
-  ApiAction_SetDownloadRowState,
-  ApiAction_SetJobId,
-  ApiAction_SetSelectedDatum,
-  ApiAction_SetStatus,
+  ApiDataAction_SetData,
+  ApiDataAction_SetDownloadRowState,
+  ApiDataAction_SetJobId,
+  ApiDataAction_SetSelectedDatum,
+  ApiDataAction_SetStatus,
 } from '../actions/api-data.actions';
 import { ApiService } from '../../core/services/api/api.service';
 import { DelayedRouterService } from '../../core/services/delayed-router/delayed-router.service';
@@ -59,17 +59,15 @@ export const fetchApiDataResults$ = createEffect(() => {
               );
               return concat(
                 of(
-                  ApiAction_SetStatus({
-                    status: {
-                      query: {
-                        target,
-                        isCached,
-                        isUncertaintyEllipse,
-                        padding,
-                        sources,
-                      },
-                      code: 'notfound',
+                  ApiDataAction_SetStatus({
+                    query: {
+                      target,
+                      isCached,
+                      isUncertaintyEllipse,
+                      padding,
+                      sources,
                     },
+                    code: 'notfound',
                   })
                 )
               );
@@ -112,30 +110,28 @@ export const fetchApiDataResults$ = createEffect(() => {
              */
             return concat(
               // Set results array
-              of(ApiAction_SetData({ apiData })),
+              of(ApiDataAction_SetData({ apiData })),
               // Set jobId
-              of(ApiAction_SetJobId({ jobId })),
+              of(ApiDataAction_SetJobId({ jobId })),
               // Set selected datum
               of(
-                ApiAction_SetSelectedDatum({
+                ApiDataAction_SetSelectedDatum({
                   apiDatum: apiData[0],
                 })
               ),
               // Set object to track state of rows to be downloaded
-              of(ApiAction_SetDownloadRowState({ newDownloadRowState })),
+              of(ApiDataAction_SetDownloadRowState({ newDownloadRowState })),
               // Set status of query
               of(
-                ApiAction_SetStatus({
-                  status: {
-                    query: {
-                      target,
-                      isCached,
-                      isUncertaintyEllipse,
-                      padding,
-                      sources,
-                    },
-                    code: isDataFound ? 'found' : 'notfound',
+                ApiDataAction_SetStatus({
+                  query: {
+                    target,
+                    isCached,
+                    isUncertaintyEllipse,
+                    padding,
+                    sources,
                   },
+                  code: isDataFound ? 'found' : 'notfound',
                 })
               )
             );

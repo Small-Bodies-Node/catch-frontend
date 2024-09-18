@@ -5,8 +5,8 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import {
-  ENavigationActionTypes,
   NavigationAction_SetRouteRecords,
+  NavigationAction_UpdateRouteRecords,
 } from '../actions/navigation.actions';
 import { IAppState } from '../reducers';
 
@@ -36,7 +36,7 @@ export class NavigationEffects {
         return action;
       }),
       // Allow only actions of type NavigationCollectRouteRecords
-      ofType(ENavigationActionTypes.NavigationUpdateRouteRecords),
+      ofType(NavigationAction_UpdateRouteRecords),
 
       // Take the last observable (the action), take the store state,
       // and emit an observable of form Observable<[Action,StoreState]>
@@ -45,8 +45,8 @@ export class NavigationEffects {
       // Map two received observables to single new observable action
       // that will pass through and trigger SetRouteRecords reducer
       map(([action, navState]) => {
-        return new NavigationAction_SetRouteRecords({
-          presentRoute: action.payload.newPresentRoute,
+        return NavigationAction_SetRouteRecords({
+          presentRoute: action.newPresentRoute,
           previousRoute: navState.presentRoute,
           isNewRouteScheduled: false,
         });

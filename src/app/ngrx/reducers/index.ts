@@ -21,23 +21,23 @@ import {
 } from './object-name-match.reducer';
 
 export interface IAppState {
-  apiDataReducer: IApiDataSubstate;
-  navigationReducer: INavigationSubstate;
-  objectNameMatchReducer: IObjectNameMatchSubstate;
-  screenDeviceReducer: IScreenDeviceSubstate;
-  siteSettingsReducer: ISiteSettingsSubstate;
-  tableCheckboxReducer: ITableCheckboxSubstate;
+  apiData: IApiDataSubstate;
+  navigation: INavigationSubstate;
+  objectNameMatch: IObjectNameMatchSubstate;
+  screenDevice: IScreenDeviceSubstate;
+  siteSettingsSubstate: ISiteSettingsSubstate;
+  tableCheckbox: ITableCheckboxSubstate;
   // ---
   router: RouterReducerState;
 }
 
 export const reducers: ActionReducerMap<IAppState, any> = {
-  apiDataReducer,
-  navigationReducer,
-  objectNameMatchReducer,
-  screenDeviceReducer,
-  siteSettingsReducer,
-  tableCheckboxReducer,
+  apiData: apiDataReducer,
+  navigation: navigationReducer,
+  objectNameMatch: objectNameMatchReducer,
+  screenDevice: screenDeviceReducer,
+  siteSettingsSubstate: siteSettingsReducer,
+  tableCheckbox: tableCheckboxReducer,
   // ---
   router: routerReducer,
 };
