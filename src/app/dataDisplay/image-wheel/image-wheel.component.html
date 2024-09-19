@@ -1,0 +1,19 @@
+<div #imageWheelContainer class="image-wheel-container">
+  <ng-container *ngIf="apiData">
+    <div
+      class="image-wheel-image"
+      *ngFor="let apiDatum of apiData; let i = index"
+      (click)="setSelectedDatum(apiDatum)"
+      [ngStyle]="getStyleObject(apiDatum)"
+      [ngClass]="isImageSelected(apiDatum) ? 'add-border' : ''"
+    >
+      <app-table-thumbnail
+        [element]="apiDatum"
+        [size]="'100%'"
+        [label]="(isImageSelected(apiDatum) ? '*' : '') + 'W' + i"
+        [isPriority]="isImageSelected(apiDatum)"
+        (onLoadEventMessage)="rerenderWheel($event)"
+      ></app-table-thumbnail>
+    </div>
+  </ng-container>
+</div>

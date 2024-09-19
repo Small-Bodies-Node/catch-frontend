@@ -1,0 +1,48 @@
+<div class="settings-container">
+  <div class="cell title-cell">
+    <h1>SETTINGS</h1>
+  </div>
+
+  <div class="cell themes-cell">
+    <h2>{{ "THEMES" }}</h2>
+    <mat-card class="icon-form-field">
+      <mat-icon color="accent">
+        <fa-icon icon="paint-brush" [ngStyle]="getIconStyle()"></fa-icon>
+      </mat-icon>
+      <mat-form-field>
+        <mat-select
+          [disabled]="isAutoNightMode"
+          [placeholder]="selectedSiteTheme"
+          (selectionChange)="onThemeSelect($event)"
+          name="themes"
+        >
+          <mat-option *ngFor="let t of permittedThemes" [value]="t">
+            {{ t.replace("-", " ") }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </mat-card>
+  </div>
+
+  <div class="cell night-mode-cell">
+    <h2>{{ "NIGHT MODE" }}</h2>
+    <mat-card class="icon-form-field">
+      <mat-icon color="accent">
+        <fa-icon icon="lightbulb" [ngStyle]="getIconStyle()"></fa-icon>
+      </mat-icon>
+      <mat-placeholder>
+        <label>
+          {{ "Auto night mode" }}
+        </label>
+        <button mat-icon-button>
+          <mat-icon matTooltip="From 19:00 to 7:00"> info </mat-icon>
+        </button>
+      </mat-placeholder>
+      <mat-slide-toggle
+        color="accent"
+        [checked]="isAutoNightMode"
+        (change)="onAutoNightModeToggle($event)"
+      ></mat-slide-toggle>
+    </mat-card>
+  </div>
+</div>

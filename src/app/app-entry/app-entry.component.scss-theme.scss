@@ -1,0 +1,29 @@
+@import "~@angular/material/theming";
+
+@mixin app-entry-component-theme($theme) {
+  $primary-palette: map-get($theme, primary);
+  $accent-palette: map-get($theme, accent);
+  $warn-palette: map-get($theme, warn);
+
+  $background-palette: map-get($theme, background);
+  $base-background-color: mat-color($background-palette, background);
+  // $base-background-color: red;
+
+  /**
+      Note: don't try encapsulation with the app-entry-root component
+      It will fail because the themes are applied *within* app-entry-root,
+      and it's basically a global application anyway
+  **/
+  mat-sidenav-container {
+    mat-sidenav {
+      // background-color: $base-background-color;
+    }
+    mat-sidenav-content {
+      // background-color: $base-background-color;
+
+      // .footer-animator {
+      //   background-color: mat-color($primary, default);
+      // }
+    }
+  }
+}

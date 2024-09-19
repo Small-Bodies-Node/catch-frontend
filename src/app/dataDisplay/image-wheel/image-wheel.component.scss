@@ -1,0 +1,30 @@
+.image-wheel-container {
+  // background-color: pink;
+  // background-color: rgba(255, 255, 255, 0.1);
+  height: 100%;
+  vertical-align: 0px;
+  overflow-x: scroll;
+  overflow-y: hidden;
+  white-space: nowrap;
+  position: relative;
+
+  .image-wheel-image {
+    // background-color: yellow;
+
+    vertical-align: top;
+    background-color: rgba(255, 255, 255, 0.1);
+    height: 100%;
+    width: 200px;
+    display: inline-block;
+    // margin-right: 5px;
+
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center center;
+    box-sizing: border-box;
+  }
+
+  .add-border {
+    border: 5px green solid;
+  }
+}

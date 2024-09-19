@@ -1,0 +1,64 @@
+<div class="checkboxes-container3">
+  <!-- <h1>XXX</h1> -->
+  <ng-container *ngIf="isSpinner">
+    <div class="spinner-wrapper">
+      <mat-spinner></mat-spinner>
+    </div>
+  </ng-container>
+
+  <ng-container *ngIf="!!allColNames && !!labels && !!colState">
+    <ng-container *ngIf="containerWidth$ | async as containerWidth">
+      <div class="checkboxes-container2">
+        <button class="close-button" (click)="closeDialog()" mat-icon-button>
+          <mat-icon>close</mat-icon>
+        </button>
+
+        <div
+          #checkboxesContainer
+          class="checkboxes-container"
+          [ngClass]="{
+            'is-mobile': isMobile,
+            'checkboxes-container-x1-col': containerWidth > 0,
+            'checkboxes-container-x2-col': containerWidth > 250,
+            'checkboxes-container-x3-col': containerWidth > 450,
+            'checkboxes-container-x4-col': containerWidth > 600,
+            'checkboxes-container-x5-col': containerWidth > 750
+          }"
+        >
+          <div class="button-wrapper" *ngFor="let colName of allColNames">
+            <button
+              mat-icon-button
+              [matTooltip]="
+                (labels && labels[colName] && labels[colName]?.description) ||
+                ''
+              "
+            >
+              <mat-icon>info</mat-icon>
+            </button>
+            <mat-checkbox
+              color="accent"
+              class="example-margin"
+              [checked]="colState[colName]"
+              (change)="updateColState($event, colName)"
+            >
+              {{ (labels && labels[colName] && labels[colName]?.label) || "" }}
+            </mat-checkbox>
+          </div>
+        </div>
+
+        <div class="utility-buttons-wrapper">
+          <div class="utility-button">
+            <button mat-raised-button color="accent" (click)="selectAll()">
+              SELECT ALL
+            </button>
+          </div>
+          <div class="utility-button">
+            <button mat-raised-button color="accent" (click)="resetAll()">
+              RESET
+            </button>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+  </ng-container>
+</div>

@@ -1,0 +1,37 @@
+@mixin app-search-field-component-theme($theme) {
+  $primary-palette: map-get($theme, primary);
+  $accent-palette: map-get($theme, accent);
+  $warn-palette: map-get($theme, warn);
+
+  app-search-field {
+    //
+
+    // color: white;
+
+    .mat-form-field-appearance-fill .mat-form-field-flex,
+    .mat-form-field-outline {
+      // background: rgba(0, 255, 255, 0.5);
+      background: rgba(mat-color($primary-palette, darker), 0.75);
+      // background: rgba(mat-color($primary-palette, lighter), 0.25);
+      // border-radius: 5px;
+      // color: white;
+    }
+
+    .advanced-search-controls {
+      background: rgba(mat-color($primary-palette, darker), 0.75);
+    }
+
+    .mat-form-field-appearance-outline.mat-focused
+      .mat-form-field-outline-thick {
+      //
+      // color: white;
+    }
+  }
+
+  .mat-form-field.mat-focused .mat-form-field-label {
+    //
+    // color: white;
+    color: rgba(mat-color($accent-palette, lighter), 0.5);
+    // color: rgba(mat-color($accent-palette), 1);
+  }
+}

@@ -1,0 +1,281 @@
+<div class="search-field-container">
+  <form
+    class="basic-search-form"
+    [formGroup]="basicSearchForm"
+    (keydown)="keyDownOnInputText($event)"
+  >
+    <mat-form-field
+      [color]="getFormColor()"
+      appearance="outline"
+      class="search-full-width"
+    >
+      <mat-label>{{ getSearchMessageText() }}</mat-label>
+
+      <input
+        matInput
+        type="text"
+        placeholder="E.g. 65P"
+        aria-label="Name of the object to be matched"
+        [formControlName]="formControlLabels.target_input_control"
+        [matAutocomplete]="auto"
+        #trigger="matAutocompleteTrigger"
+        [ngStyle]="getInputTextColor()"
+        (ngModelChange)="searchTermChangeSubject.next($event)"
+      />
+      <mat-autocomplete #auto="matAutocomplete">
+        <mat-option
+          *ngFor="let option of objectNameMatchResults"
+          [value]="option.target"
+        >
+          <span class="name-search-result">
+            {{ optionToText(option) + "" }}
+          </span>
+        </mat-option>
+      </mat-autocomplete>
+
+      <button
+        class="search-button"
+        *ngIf="!latestInputText.trim()"
+        disabled
+        mat-raised-button
+        mat-icon-button
+        matSuffix
+        aria-label="Button to start searching names"
+        (click)="submitObjectNameMatch($event)"
+      >
+        <mat-icon matSuffix>search</mat-icon>
+      </button>
+
+      <button
+        class="search-button shift"
+        *ngIf="!!latestInputText.trim()"
+        mat-raised-button
+        matSuffix
+        aria-label="Button to start searching names"
+        (click)="submitObjectNameMatch($event)"
+      >
+        <span style="font-size: 12px">START</span>
+
+        <!-- START -->
+      </button>
+    </mat-form-field>
+    <div class="advanced-controls-button-wrapper">
+      <button
+        class="advanced-controls-button"
+        [disabled]="false"
+        mat-raised-button
+        mat-icon-button
+        matSuffix
+        aria-label="Button to start searching names"
+        (click)="toggleAdvancedControls()"
+      >
+        <mat-icon matSuffix>tune</mat-icon>
+      </button>
+    </div>
+  </form>
+
+  <!--  -->
+
+  <form
+    class="advanced-search-form"
+    [formGroup]="advancedSearchForm"
+    (keydown)="keyDownOnInputText($event)"
+  >
+    <div
+      class="advanced-search-controls"
+      *ngIf="true || isAdvancedControls"
+      [ngStyle]="{
+        bottom: isAdvancedControls ? '0%' : '100%',
+        opacity: isAdvancedControls ? 1 : 0
+      }"
+    >
+      <!--  -->
+
+      <div class="data-sources-title">Data Sources</div>
+
+      <div class="checkbox-grid">
+        <div>
+          <div class="info-checkbox-wrapper">
+            <span class="icon-wrapper">
+              <mat-icon
+                [matTooltip]="
+                  'Near-Earth Asteroid Tracking (NEAT) was a program run by NASA and the Jet Propulsion Laboratory, surveying the sky for near-Earth objects from December 1995 until April 2007. These are the images taken at the Palomar Observatory in California'
+                "
+                >info</mat-icon
+              >
+            </span>
+            <mat-checkbox
+              [formControlName]="formControlLabels.neat_palomar_tricam"
+              >{{ formControlLabels.neat_palomar_tricam }}</mat-checkbox
+            >
+          </div>
+        </div>
+        <div>
+          <div class="info-checkbox-wrapper">
+            <span class="icon-wrapper">
+              <mat-icon
+                [matTooltip]="
+                  'Near-Earth Asteroid Tracking (NEAT) was a program run by NASA and the Jet Propulsion Laboratory, surveying the sky for near-Earth objects from December 1995 until April 2007. These are the images taken at GEODSS on Maui in Hawaii'
+                "
+                >info</mat-icon
+              >
+            </span>
+            <mat-checkbox
+              [formControlName]="formControlLabels.neat_maui_geodss"
+              >{{ formControlLabels.neat_maui_geodss }}</mat-checkbox
+            >
+          </div>
+        </div>
+        <div>
+          <div class="info-checkbox-wrapper">
+            <span class="icon-wrapper">
+              <mat-icon
+                [matTooltip]="
+                  'SkyMapper is a fully automated 1.35 m (4.4 ft) wide-angle optical telescope at Siding Spring Observatory in northern New South Wales, Australia'
+                "
+                >info</mat-icon
+              >
+            </span>
+            <mat-checkbox [formControlName]="formControlLabels.skymapper">{{
+              formControlLabels.skymapper
+            }}</mat-checkbox>
+          </div>
+        </div>
+        <div>
+          <div class="info-checkbox-wrapper">
+            <span class="icon-wrapper">
+              <mat-icon
+                [matTooltip]="
+                  'Pan-STARRS1 Data Release 2. The Panoramic Survey Telescope and Rapid Response System (Pan-STARRS1) are located at Haleakala Observatory, Hawaii'
+                "
+                >info</mat-icon
+              >
+            </span>
+            <mat-checkbox [formControlName]="formControlLabels.ps1dr2">{{
+              formControlLabels.ps1dr2
+            }}</mat-checkbox>
+          </div>
+        </div>
+        <div>
+          <div class="info-checkbox-wrapper">
+            <span class="icon-wrapper">
+              <mat-icon
+                [matTooltip]="
+                  'Catalina Sky Survey images taken from Mount Bigelow Observatory near Tucson, Arizona'
+                "
+                >info</mat-icon
+              >
+            </span>
+            <mat-checkbox
+              [formControlName]="formControlLabels.catalina_bigelow"
+              >{{ formControlLabels.catalina_bigelow }}</mat-checkbox
+            >
+          </div>
+        </div>
+        <div>
+          <div class="info-checkbox-wrapper">
+            <span class="icon-wrapper">
+              <mat-icon
+                [matTooltip]="
+                  'Catalina Sky Survey images taken from Mount Lemmon Observatory near Tucson, Arizona'
+                "
+                >info</mat-icon
+              >
+            </span>
+            <mat-checkbox
+              [formControlName]="formControlLabels.catalina_lemmon"
+              >{{ formControlLabels.catalina_lemmon }}</mat-checkbox
+            >
+          </div>
+        </div>
+        <div>
+          <div class="info-checkbox-wrapper">
+            <span class="icon-wrapper">
+              <mat-icon
+                [matTooltip]="
+                  'Catalina Sky Survey images taken from Mount Kitt Peak near Tuscon Arizona'
+                "
+                >info</mat-icon
+              >
+            </span>
+            <mat-checkbox
+              [formControlName]="formControlLabels.catalina_bokneosurvey"
+              >{{ formControlLabels.catalina_bokneosurvey }}</mat-checkbox
+            >
+          </div>
+        </div>
+        <div>
+          <div class="info-checkbox-wrapper">
+            <span class="icon-wrapper">
+              <mat-icon
+                [matTooltip]="
+                  'The Spacewatch Project is an astronomical survey that specializes in the study of minor planets, including various types of asteroids and comets at University of Arizona telescopes on Kitt Peak near Tucson, Arizona'
+                "
+                >info</mat-icon
+              >
+            </span>
+            <mat-checkbox [formControlName]="formControlLabels.spacewatch">{{
+              formControlLabels.spacewatch
+            }}</mat-checkbox>
+          </div>
+        </div>
+      </div>
+
+      <hr />
+
+      <div class="checkbox-grid">
+        <div>
+          <div class="info-checkbox-wrapper">
+            <span class="icon-wrapper">
+              <mat-icon
+                matTooltip="If this query has been performed in the past then return the most recently computed results"
+                >info</mat-icon
+              >
+            </span>
+            <mat-checkbox
+              [formControlName]="formControlLabels.use_cached_results_control"
+              >Use Cached Results</mat-checkbox
+            >
+          </div>
+        </div>
+        <div>
+          <div class="info-checkbox-wrapper">
+            <span class="icon-wrapper">
+              <mat-icon
+                matTooltip="Enable searches to account for an uncertainty ellipse using a polygonal approximation"
+                >info</mat-icon
+              >
+            </span>
+            <mat-checkbox
+              [formControlName]="formControlLabels.uncertainty_ellipse_control"
+              >Uncertainty Ellipse</mat-checkbox
+            >
+          </div>
+        </div>
+      </div>
+
+      <hr />
+
+      <div class="padding-field-wrapper">
+        <div style="width: 100%">
+          <mat-form-field appearance="standard">
+            <mat-label>Extra Padding </mat-label>
+            <input
+              matInput
+              placeholder="0"
+              value="0"
+              [formControlName]="formControlLabels.padding_input_control"
+            />
+            <mat-icon
+              matSuffix
+              matTooltip="Increase the search area by padding the ephemeris by this amount, in units of arcmin"
+              >info</mat-icon
+            >
+            <mat-hint>arcsecs</mat-hint>
+          </mat-form-field>
+        </div>
+      </div>
+      <!--  -->
+    </div>
+  </form>
+</div>
