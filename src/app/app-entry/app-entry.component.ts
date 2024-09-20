@@ -20,11 +20,49 @@ import {
 import { selectSiteSettingsEffectiveTheme } from '../ngrx/selectors/site-settings.selectors';
 import { selectApiStatus } from '../ngrx/selectors/api-data.selectors';
 import { footerHeightPx, headerHeightPx } from '../../utils/layout-constants';
+import { SharedModule } from '../shared/shared.module';
+import { CoreModule } from '../core/core.module';
+
+import { SidenavComponent } from '../components/sidenav/sidenav.component';
+import { AboutPageComponent } from '../components/about-page/about-page.component';
+import { ApisPageComponent } from '../components/apis-page/apis-page.component';
+import { BackgroundComponent } from '../components/background/background.component';
+import { CometAnimationsComponent } from '../components/comet-animations/comet-animations.component';
+import { ContactPageComponent } from '../components/contact-page/contact-page.component';
+import { HeaderComponent } from '../components/header/header.component';
+import { HomePageComponent } from '../components/home-page/home-page.component';
+import { SettingsPageComponent } from '../components/settings-page/settings-page.component';
+import { TermsPageComponent } from '../components/terms-page/terms-page.component';
+import { FooterComponent } from '../components/footer/footer.component';
+import { SearchFieldComponent } from '../components/search-field/search-field.component';
+import { UnrecognizedNameDialogComponent } from '../components/search-field/unrecognized-name-dialog.component';
+import { StreamingMessagesComponent } from '../components/streaming-messages/streaming-messages.component';
 
 @Component({
   selector: 'app-entry',
   templateUrl: './app-entry.component.html',
   styleUrls: ['./app-entry.component.scss'],
+  standalone: true,
+  imports: [
+    SharedModule,
+    CoreModule,
+    //
+    AboutPageComponent,
+    ApisPageComponent,
+    BackgroundComponent,
+    CometAnimationsComponent,
+    ContactPageComponent,
+    HeaderComponent,
+    HomePageComponent,
+    SettingsPageComponent,
+    SidenavComponent,
+    TermsPageComponent,
+    FooterComponent,
+    SearchFieldComponent,
+    UnrecognizedNameDialogComponent,
+    StreamingMessagesComponent,
+  ],
+  // declarations: [AppSideNavComponent],
 })
 export class AppEntryComponent implements OnInit {
   // --->>>

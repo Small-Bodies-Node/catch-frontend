@@ -7,10 +7,10 @@ import {
   ApiDataAction_DataLoaded,
   ApiDataAction_SetDownloadRowState,
 } from '../actions/api-data.actions';
-import { IApiDataStatus } from '../../models/IApiDataStatus';
-import { IApiDatum } from '../../models/IApiDatum';
-import { TApiDataColState } from '../../models/TApiDataColState';
-import { TDownloadRowsState } from '../../models/TDownloadRowsState';
+import { IApiDataStatus } from '../../../models/IApiDataStatus';
+import { IApiDatum } from '../../../models/IApiDatum';
+import { TApiDataColState } from '../../../models/TApiDataColState';
+import { TDownloadRowsState } from '../../../models/TDownloadRowsState';
 import { apiDataInitColState } from '../../../utils/apiDataInitColState';
 
 export interface IApiDataSubstate {
@@ -54,11 +54,11 @@ export const apiDataReducer = createReducer(
     apiDataJobId: jobId,
   })),
 
-  on(ApiDataAction_SetStatus, (state, { status }) => ({
+  on(ApiDataAction_SetStatus, (state, newStatus) => ({
     ...state,
     apiDataStatus: {
       ...state.apiDataStatus,
-      ...status,
+      ...newStatus,
     },
   })),
 

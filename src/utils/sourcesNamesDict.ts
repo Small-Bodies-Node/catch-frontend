@@ -1,4 +1,4 @@
-import { TSources } from '../app/models/TSources';
+import { TSources } from '../models/TSources';
 
 export const sourcesNamesDict: { [K in TSources]: string } = {
   neat_palomar_tricam: 'Neat Palomar Tricam',

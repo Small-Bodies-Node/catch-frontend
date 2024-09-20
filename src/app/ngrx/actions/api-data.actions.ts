@@ -1,7 +1,7 @@
 import { createAction, props } from '@ngrx/store';
-import { TSources } from '../../models/TSources';
-import { IApiDatum } from '../../models/IApiDatum';
-import { IApiDataStatus } from '../../models/IApiDataStatus';
+import { TSources } from '../../../models/TSources';
+import { IApiDatum } from '../../../models/IApiDatum';
+import { IApiDataStatus } from '../../../models/IApiDataStatus';
 
 export const ApiDataAction_FetchResult = createAction(
   'Api Action: Fetch Result',

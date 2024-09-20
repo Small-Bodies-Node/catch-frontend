@@ -1,11 +1,11 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { NavigationSetIsNewRouteScheduled } from 'src/app/ngrx/actions/navigation.actions';
+import { NavigationAction_SetIsNewRouteScheduled } from '../../../ngrx/actions/navigation.actions';
 
-import { IAppState } from 'src/app/ngrx/reducers';
-import { selectNavigationRecordsPresentRoute } from 'src/app/ngrx/selectors/navigation.selectors';
-import { pageFadeDurationMs } from 'src/app/utils/animation-constants';
+import { IAppState } from '../../../ngrx/reducers';
+import { selectNavigationRecordsPresentRoute } from '../../../ngrx/selectors/navigation.selectors';
+import { pageFadeDurationMs } from '../../../../utils/animation-constants';
 
 @Injectable({
   providedIn: 'root',
@@ -30,7 +30,7 @@ export class DelayedRouterService {
 
     // Signal that a route change will take place soon
     this.store$.dispatch(
-      new NavigationSetIsNewRouteScheduled({ isNewRouteScheduled: true })
+      NavigationAction_SetIsNewRouteScheduled({ isNewRouteScheduled: true })
     );
 
     // Schedule change of route at end of page-fade-out animation

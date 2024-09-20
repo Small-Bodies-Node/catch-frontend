@@ -1,5 +1,5 @@
 import { createAction, props } from '@ngrx/store';
-import { TPermittedTheme } from '../../models/ISiteSettings';
+import { TPermittedTheme } from '../../../models/ISiteSettings';
 import { ISiteSettingsSubstate } from '../reducers/site-settings.reducer';
 
 export const SiteSettingsAction_SetAll = createAction(

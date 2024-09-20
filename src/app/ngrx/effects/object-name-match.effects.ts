@@ -1,40 +1,29 @@
-import { Actions, createEffect, ofType } from '@ngrx/effects';
+import { createEffect, ofType, Actions } from '@ngrx/effects';
 import { map, switchMap } from 'rxjs/operators';
-import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { inject } from '@angular/core';
 
 import {
-  EObjectNameMatchActionTypes,
-  ObjectNameMatchActions,
-  ObjectAction_NameMatchFetchResults,
-  ObjectNameMatchSetResults,
+  ObjectNameMatchAction_FetchResults,
+  ObjectNameMatchAction_SetResults,
 } from '../actions/object-name-match.actions';
-import { ObjectNameMatchService } from 'src/app/core/services/object-name-match/object-name-match.service';
+import { ObjectNameMatchService } from '../../core/services/object-name-match/object-name-match.service';
 
-@Injectable()
-export class ObjectNameMatchEffects {
-  constructor(
-    private actions$: Actions<ObjectNameMatchFetchResults>,
-    private objectNameMatcher: ObjectNameMatchService
-  ) {}
-
-  fetchObjectNameMatchResults$: Observable<ObjectNameMatchActions> =
-    createEffect(() => {
-      return this.actions$.pipe(
-        ofType(EObjectNameMatchActionTypes.ObjectNameMatchFetchResults),
-        map((_) => {
-          // console.log('_', _);
-          return _;
-        }),
-        // switchMap will flatten nested observable and cancel all but the most recently received observable
-        switchMap((action) => {
-          const searchTerm = action.payload.searchTerm;
-          return this.objectNameMatcher.objectNameMatch(searchTerm).pipe(
-            map((results) => {
-              return new ObjectNameMatchSetResults({ results });
-            })
+export const fetchObjectNameMatchResults$ = createEffect(
+  (
+    actions$ = inject(Actions),
+    objectNameMatcher = inject(ObjectNameMatchService)
+  ) => {
+    return actions$.pipe(
+      ofType(ObjectNameMatchAction_FetchResults),
+      switchMap((action) => {
+        const searchTerm = action.searchTerm;
+        return objectNameMatcher
+          .objectNameMatch(searchTerm)
+          .pipe(
+            map((results) => ObjectNameMatchAction_SetResults({ results }))
           );
-        })
-      );
-    });
-}
+      })
+    );
+  },
+  { functional: true }
+);

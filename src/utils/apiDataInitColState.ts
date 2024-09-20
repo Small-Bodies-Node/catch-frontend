@@ -1,4 +1,4 @@
-import { TApiDataColState } from '../app/models/TApiDataColState';
+import { TApiDataColState } from '../models/TApiDataColState';
 
 /**
  * Determines whether a column is displayed and/or displayable in the table

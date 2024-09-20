@@ -1,14 +1,15 @@
 import { Observable } from 'rxjs';
-import { IApiCatchResult } from '../utils/IApiCatchResult';
-import { IApiCaughtResult } from '../utils/IApiCaughtResult';
-import { TApiDataResult } from '../utils/TApiResult';
+
+import { IApiCatchResult } from './IApiCatchResult';
+import { IApiCaughtResult } from './IApiCaughtResult';
+import { TApiDataResult } from './TApiResult';
 import { TJobStreamResult } from './TJobStreamResult';
 import { TSources } from './TSources';
 
 /**
  * Interface to constrain service class that pings api
  */
-export interface IApiService {
+export interface IApiDataService {
   //
 
   fetchApiData: (

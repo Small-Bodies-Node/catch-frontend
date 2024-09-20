@@ -2,7 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import { MatSlideToggleChange } from '@angular/material/slide-toggle';
 import { Store } from '@ngrx/store';
 import { Subscription } from 'rxjs';
-import { permittedThemes, TPermittedTheme } from '../../models/ISiteSettings';
+import {
+  permittedThemes,
+  TPermittedTheme,
+} from '../../../models/ISiteSettings';
 import { IAppState } from '../../ngrx/reducers';
 import {
   selectSiteSettingsEffectiveTheme,
@@ -67,7 +70,7 @@ export class SettingsPageComponent implements OnInit {
     return style;
   }
 
-  onAutoNightModeToggle(event: MatSlideToggleChange) {
+  onAutoNightModeToggle(event: any | MatSlideToggleChange) {
     this.store$.dispatch(
       SiteSettingsAction_SetIsAutoNightMode({ isAutoNightMode: event.checked })
     );

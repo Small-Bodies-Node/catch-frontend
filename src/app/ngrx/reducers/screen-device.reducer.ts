@@ -5,7 +5,7 @@ import {
   ScreenDeviceAction_SetScreenWidth,
   ScreenDeviceAction_SetScreenHeight,
 } from '../actions/screen-device.actions';
-import { IScreenDevice } from '../../models/IScreenDevice';
+import { IScreenDevice } from '../../../models/IScreenDevice';
 import { getDevice } from '../../../utils/getDevice';
 
 export interface IScreenDeviceSubstate extends IScreenDevice {}

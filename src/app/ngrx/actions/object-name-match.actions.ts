@@ -1,5 +1,5 @@
 import { createAction, props } from '@ngrx/store';
-import { IObjectNameMatchResult } from '../../models/IObjectNameMatchResult';
+import { IObjectNameMatchResult } from '../../../models/IObjectNameMatchResult';
 
 export const ObjectNameMatchAction_FetchResults = createAction(
   'Object Name Match Action: Fetch Results',

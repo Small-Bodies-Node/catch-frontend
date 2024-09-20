@@ -1,68 +1,64 @@
 import { map, withLatestFrom, distinctUntilChanged } from 'rxjs/operators';
-import { Actions, createEffect, ofType } from '@ngrx/effects';
+import { createEffect, ofType, Actions } from '@ngrx/effects';
 import { Observable, interval } from 'rxjs';
-import { Injectable } from '@angular/core';
 import { Store } from '@ngrx/store';
 
 import {
-  ESiteSettingsActionTypes,
-  SiteSettingsActions,
+  SiteSettingsAction_LoadAllFromLocalStorage,
   SiteSettingsAction_SetAll,
-  SiteSettingsSetHour,
+  SiteSettingsAction_SetHour,
+  SiteSettingsAction_SetIsAutoNightMode,
+  SiteSettingsAction_SetIsHappyWithCookies,
+  SiteSettingsAction_SetIsPageAnimated,
+  SiteSettingsAction_SetSiteTheme,
 } from '../actions/site-settings.actions';
 import { IAppState } from '../reducers';
-import { LocalStorageService } from 'src/app/core/services/local-storage/local-storage.service';
+import { LocalStorageService } from '../../core/services/local-storage/local-storage.service';
+import { inject } from '@angular/core';
 
-@Injectable()
-export class SiteSettingsEffects {
-  // --->>>
-
-  // Check the hour every 60s
-  changeHour$: Observable<SiteSettingsSetHour> = interval(60_000).pipe(
+const changeHour$: Observable<ReturnType<typeof SiteSettingsAction_SetHour>> =
+  interval(60_000).pipe(
     map(() => new Date().getHours()),
-    distinctUntilChanged(), // Only emit when input changes
-    map((hour) => new SiteSettingsSetHour({ hour })) // Set new hour
+    distinctUntilChanged(),
+    map((hour) => SiteSettingsAction_SetHour({ hour }))
   );
 
-  constructor(
-    private actions$: Actions<any>,
-    private localStorageService: LocalStorageService,
-    private store$: Store<IAppState>
-  ) {}
-
-  loadSiteSettings: Observable<SiteSettingsSetAll> = createEffect(() => {
-    return this.actions$.pipe(
-      map((action) => {
-        // console.log('action', action);
-        return action;
-      }),
-      ofType(ESiteSettingsActionTypes.SiteSettingsLoadAllFromLocalStorage),
-      map((_) => {
-        const siteSettings = this.localStorageService.getLocalStorageState();
-        // console.log('siteSettings', siteSettings);
-        return new SiteSettingsAction_SetAll({ siteSettings });
+export const loadSiteSettings = createEffect(
+  (
+    actions$: Actions = inject(Actions),
+    localStorageService: LocalStorageService = inject(LocalStorageService)
+  ) => {
+    return actions$.pipe(
+      ofType(SiteSettingsAction_LoadAllFromLocalStorage),
+      map(() => {
+        const siteSettings = localStorageService.getLocalStorageState();
+        return SiteSettingsAction_SetAll({ siteSettings });
       })
     );
-  });
+  },
+  { functional: true }
+);
 
-  updateLocalStorage: Observable<void> = createEffect(
-    () => {
-      return this.actions$.pipe(
-        ofType<SiteSettingsActions>(
-          ESiteSettingsActionTypes.SiteSettingsSetAll,
-          ESiteSettingsActionTypes.SiteSettingsSetSiteTheme,
-          ESiteSettingsActionTypes.SiteSettingsSetIsPageAnimated,
-          ESiteSettingsActionTypes.SiteSettingsSetIsAutoNightMode,
-          ESiteSettingsActionTypes.SiteSettingsSetIsHappyWithCookies
-        ),
-        withLatestFrom(this.store$),
-        map(([_action, appState]) => {
-          // Whenever we update store's siteSettings, we re-set them in localStorage
-          const siteSettingsSubstate = appState.siteSettingsSubstate;
-          this.localStorageService.setLocalStorageState(siteSettingsSubstate);
-        })
-      );
-    },
-    { dispatch: false }
-  );
-}
+export const updateLocalStorage = createEffect(
+  (
+    actions$: Actions = inject(Actions),
+    store$: Store<IAppState> = inject(Store),
+    localStorageService: LocalStorageService = inject(LocalStorageService)
+  ) => {
+    return actions$.pipe(
+      ofType(
+        SiteSettingsAction_SetAll,
+        SiteSettingsAction_SetSiteTheme,
+        SiteSettingsAction_SetIsPageAnimated,
+        SiteSettingsAction_SetIsAutoNightMode,
+        SiteSettingsAction_SetIsHappyWithCookies
+      ),
+      withLatestFrom(store$),
+      map(([_action, appState]) => {
+        const siteSettingsSubstate = appState.siteSettingsSubstate;
+        localStorageService.setLocalStorageState(siteSettingsSubstate);
+      })
+    );
+  },
+  { functional: true, dispatch: false }
+);

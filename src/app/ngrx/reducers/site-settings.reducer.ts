@@ -1,4 +1,4 @@
-import { ISiteSettings } from '../../models/ISiteSettings';
+import { ISiteSettings } from '../../../models/ISiteSettings';
 import { createReducer, on } from '@ngrx/store';
 import {
   SiteSettingsAction_SetAll,

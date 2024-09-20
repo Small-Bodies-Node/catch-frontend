@@ -3,7 +3,7 @@ import {
   ObjectNameMatchAction_SetResults,
   ObjectNameMatchAction_SetIsSearching,
 } from '../actions/object-name-match.actions';
-import { IObjectNameMatchResult } from '../../models/IObjectNameMatchResult';
+import { IObjectNameMatchResult } from '../../../models/IObjectNameMatchResult';
 
 export interface IObjectNameMatchSubstate {
   results: IObjectNameMatchResult[];

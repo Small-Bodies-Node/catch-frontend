@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { OverlayContainer } from '@angular/cdk/overlay';
-import { ILocalStorageState } from 'src/app/models/ILocalStorageState';
+import { ILocalStorageState } from '../../../../models/ILocalStorageState';
 
 type LSKey = keyof ILocalStorageState; // Define type for 'LocalStorageKeys'
 

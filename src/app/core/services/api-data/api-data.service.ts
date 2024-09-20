@@ -4,19 +4,19 @@ import { Observable, from, of } from 'rxjs';
 import { map, switchMap, catchError } from 'rxjs/operators';
 import { Store } from '@ngrx/store';
 
-import { IApiService } from '../../../models/IApiService';
+import { IApiDataService } from '../../../../models/IApiDataService';
 import { IAppState } from '../../../ngrx/reducers';
-import { TSources } from '../../../models/TSources';
-import { IApiCatchResult } from '../../../models/IApiCatchResult';
+import { TSources } from '../../../../models/TSources';
+import { IApiCatchResult } from '../../../../models/IApiCatchResult';
 import { apiBaseUrl, apiStreamTimeoutSecs } from '../../../../utils/constants';
-import { IApiCaughtResult } from '../../../models/IApiCaughtResult';
-import { TApiDataResult } from '../../../models/TApiResult';
-import { TJobStreamResult } from '../../../models/TJobStreamResult';
-import { IApiServiceStream } from '../../../models/IApiServiceStream';
+import { IApiCaughtResult } from '../../../../models/IApiCaughtResult';
+import { TApiDataResult } from '../../../../models/TApiResult';
+import { TJobStreamResult } from '../../../../models/TJobStreamResult';
+import { IApiServiceStream } from '../../../../models/IApiServiceStream';
 import { ApiDataAction_SetStatus } from '../../../ngrx/actions/api-data.actions';
 
 @Injectable({ providedIn: 'root' })
-export class ApiService implements IApiService {
+export class ApiDataService implements IApiDataService {
   // --->>>
 
   constructor(

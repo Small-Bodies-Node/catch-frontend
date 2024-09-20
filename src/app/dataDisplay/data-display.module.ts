@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Routes, RouterModule } from '@angular/router';
-import { NgxJs9Module } from 'projects/ngx-js9/src/public-api';
+import { NgxJs9Module } from '../../../projects/ngx-js9/src/public-api';
 
 // See: https://www.npmjs.com/package/angular-plotly.js
 import * as PlotlyJS from 'plotly.js-dist-min';
