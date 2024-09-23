@@ -35,7 +35,7 @@ export const routes: Routes = [
   {
     path: 'data',
     loadChildren: () =>
-      import('../dataDisplay/data-display.module').then(
+      import('../data-display/data-display.module').then(
         (m) => m.DataDisplayModule
       ),
   },

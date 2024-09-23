@@ -1,10 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { apiBaseUrl } from '../../../utils/constants';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-apis-page',
   templateUrl: './apis-page.component.html',
   styleUrls: ['./apis-page.component.scss'],
+  standalone: true,
+  imports: [CommonModule],
 })
 export class ApisPageComponent implements OnInit {
   // --->>>

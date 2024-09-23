@@ -1,7 +1,12 @@
+import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import { MatSlideToggleChange } from '@angular/material/slide-toggle';
-import { Store } from '@ngrx/store';
+import {
+  MatSlideToggleChange,
+  MatSlideToggleModule,
+} from '@angular/material/slide-toggle';
 import { Subscription } from 'rxjs';
+import { Store } from '@ngrx/store';
+
 import {
   permittedThemes,
   TPermittedTheme,
@@ -15,11 +20,26 @@ import {
   SiteSettingsAction_SetIsAutoNightMode,
   SiteSettingsAction_SetSiteTheme,
 } from '../../ngrx/actions/site-settings.actions';
+import { MatCardModule } from '@angular/material/card';
+import { MatIconModule } from '@angular/material/icon';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
 
 @Component({
   selector: 'app-settings-page',
   templateUrl: './settings-page.component.html',
   styleUrls: ['./settings-page.component.scss'],
+  standalone: true,
+  imports: [
+    CommonModule,
+
+    //
+    MatCardModule,
+    MatIconModule,
+    MatFormFieldModule,
+    MatSelectModule,
+    MatSlideToggleModule,
+  ],
 })
 export class SettingsPageComponent implements OnInit {
   // --->>>

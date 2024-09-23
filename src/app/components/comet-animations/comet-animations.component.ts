@@ -1,3 +1,4 @@
+import { CommonModule } from '@angular/common';
 import {
   Component,
   OnInit,
@@ -7,6 +8,7 @@ import {
 } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { Subscription, fromEvent, debounceTime } from 'rxjs';
+
 import { IAppState } from '../../ngrx/reducers';
 import { selectScreenDeviceSubstate } from '../../ngrx/selectors/screen-device.selectors';
 import { selectSiteSettingsTheme } from '../../ngrx/selectors/site-settings.selectors';
@@ -16,6 +18,8 @@ import { simpleUid } from '../../../utils/simple-uid';
   selector: 'app-comet-animations',
   templateUrl: './comet-animations.component.html',
   styleUrls: ['./comet-animations.component.scss'],
+  standalone: true,
+  imports: [CommonModule],
 })
 export class CometAnimationsComponent implements OnInit, AfterViewInit {
   // --->>>

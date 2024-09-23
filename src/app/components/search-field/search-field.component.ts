@@ -1,15 +1,19 @@
+import { CommonModule } from '@angular/common';
 import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
-import { FormGroup, FormControl } from '@angular/forms';
-import { MatAutocompleteTrigger } from '@angular/material/autocomplete';
+import { FormGroup, FormControl, ReactiveFormsModule } from '@angular/forms';
+import {
+  MatAutocompleteModule,
+  MatAutocompleteTrigger,
+} from '@angular/material/autocomplete';
 import { Subject, Subscription } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { Store } from '@ngrx/store';
 
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { TSources } from '../../models/TSources';
+import { TSources } from '../../../models/TSources';
 import { sourcesNamesDict } from '../../../utils/sourcesNamesDict';
-import { IObjectNameMatchResult } from '../../models/IObjectNameMatchResult';
+import { IObjectNameMatchResult } from '../../../models/IObjectNameMatchResult';
 import { IAppState } from '../../ngrx/reducers';
 import { selectObjectNameMatchResults } from '../../ngrx/selectors/object-name-match.selectors';
 import { selectApiStatus } from '../../ngrx/selectors/api-data.selectors';
@@ -19,6 +23,10 @@ import {
   ApiDataAction_FetchResult,
   ApiDataAction_SetStatus,
 } from '../../ngrx/actions/api-data.actions';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatOptionModule } from '@angular/material/core';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 type TFormControlKeys =
   | TSources
@@ -48,6 +56,17 @@ type TControlsForm = {
   selector: 'app-search-field',
   templateUrl: './search-field.component.html',
   styleUrls: ['./search-field.component.scss'],
+  standalone: true,
+  imports: [
+    CommonModule,
+    //
+    ReactiveFormsModule,
+    MatFormFieldModule,
+    MatAutocompleteModule,
+    MatOptionModule,
+    MatIconModule,
+    MatTooltipModule,
+  ],
 })
 export class SearchFieldComponent implements OnInit, OnDestroy {
   // --->>>

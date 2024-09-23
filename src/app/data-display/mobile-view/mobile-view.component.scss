@@ -1,0 +1,59 @@
+// @import "../../../styles/styles-variables.scss";
+
+.mobile-container {
+  width: 100%;
+  // height: 100%;
+  height: auto;
+  padding: 30px;
+  box-sizing: border-box;
+
+  overflow: scroll;
+
+  display: grid;
+  // grid-template-rows: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-rows: auto auto auto;
+  // grid-template-columns: minmax(0, 1fr) minmax(0, 350px);
+  grid-template-columns: minmax(0, 1fr);
+  grid-gap: 15px;
+  grid-template-areas:
+    "title"
+    "table"
+    "carousel";
+
+  .title-wrapper {
+    position: relative;
+    background-color: #424242;
+    grid-area: title;
+    // display: flex;
+    // justify-content: center;
+    // justify-content: stretch;
+    // align-items: center;
+    font-size: 22px;
+    font-weight: bold;
+    // align-items: stretch;
+    min-height: 80px;
+  }
+
+  .table-wrapper {
+    grid-area: table;
+    max-height: 60vh;
+  }
+
+  .carousel-wrapper {
+    grid-area: carousel;
+  }
+}
+
+// .streaming-messages-overlay-wrapper-wrapper {
+//   position: relative;
+//   width: 100%;
+//   height: 100%;
+//   display: flex;
+//   justify-content: center;
+//   align-items: center;
+
+//   .streaming-messages-overlay-wrapper {
+//     width: 350px;
+//     max-width: 95vw;
+// }
+// }

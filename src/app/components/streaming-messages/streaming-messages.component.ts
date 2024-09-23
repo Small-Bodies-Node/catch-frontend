@@ -1,14 +1,23 @@
+import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { TApiStatusCode } from '../../models/TApiStatusCode';
+
+import { TApiStatusCode } from '../../../models/TApiStatusCode';
 import { IAppState } from '../../ngrx/reducers';
 import { selectApiStatus } from '../../ngrx/selectors/api-data.selectors';
 import { sourcesNamesDict } from '../../../utils/sourcesNamesDict';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 
 @Component({
   selector: 'app-streaming-messages',
   templateUrl: './streaming-messages.component.html',
   styleUrls: ['./streaming-messages.component.scss'],
+  standalone: true,
+  imports: [
+    CommonModule,
+    //
+    MatProgressBarModule,
+  ],
 })
 export class StreamingMessagesComponent implements OnInit {
   // --->>>

@@ -1,17 +1,26 @@
+import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { TApiStatusCode } from '../../models/TApiStatusCode';
+
+import { TApiStatusCode } from '../../../models/TApiStatusCode';
+import { IAppState } from '../../ngrx/reducers';
+import { selectApiStatus } from '../../ngrx/selectors/api-data.selectors';
 import {
   footerHeightPx,
   headerHeightPx,
 } from '../../../utils/layout-constants';
-import { IAppState } from '../../ngrx/reducers';
-import { selectApiStatus } from '../../ngrx/selectors/api-data.selectors';
+import { SearchFieldComponent } from '../search-field/search-field.component';
 
 @Component({
   selector: 'app-home-page',
   templateUrl: './home-page.component.html',
   styleUrls: ['./home-page.component.scss'],
+  standalone: true,
+  imports: [
+    CommonModule,
+    //
+    SearchFieldComponent,
+  ],
 })
 export class HomePageComponent implements OnInit {
   //--->>>

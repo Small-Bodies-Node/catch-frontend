@@ -1,19 +1,28 @@
 import { Component, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
+import { CommonModule } from '@angular/common';
 
 import { IAppState } from '../../ngrx/reducers';
-import { TPermittedTheme } from '../../models/ISiteSettings';
+import { TPermittedTheme } from '../../../models/ISiteSettings';
 import { selectNavigationRecords } from '../../ngrx/selectors/navigation.selectors';
 import { selectSiteSettingsEffectiveTheme } from '../../ngrx/selectors/site-settings.selectors';
 import {
   backgroundSwipeIntervalMs as intervalMs,
   backgroundSwipeDurationMs as durationMs,
 } from '../../../utils/animation-constants';
+import { CometAnimationsComponent } from '../comet-animations/comet-animations.component';
 
 @Component({
   selector: 'app-background',
   templateUrl: './background.component.html',
   styleUrls: ['./background.component.scss'],
+  standalone: true,
+  imports: [
+    CommonModule,
+    //
+    CometAnimationsComponent,
+  ],
+  //
 })
 export class BackgroundComponent implements OnInit {
   // --->>>

@@ -1,21 +1,39 @@
+import { CommonModule } from '@angular/common';
 import { Component, OnInit, AfterViewInit, OnDestroy } from '@angular/core';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { Validators, FormBuilder, FormGroup } from '@angular/forms';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import {
+  Validators,
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+} from '@angular/forms'; // <-- Add ReactiveFormsModule
 import { Store } from '@ngrx/store';
 import { Subscription } from 'rxjs';
 
 import { EmailerService } from '../../core/services/emailer/emailer.service';
-import { TPermittedTheme } from '../../models/ISiteSettings';
+import { TPermittedTheme } from '../../../models/ISiteSettings';
 import { IAppState } from '../../ngrx/reducers';
-import { selectSiteSettingsEffectiveTheme } from '../../ngrx/selectors/site-settings.selectors';
 import { environment } from '../../../environments/environment';
-
-// declare const grecaptcha: typeof grecaptcha;
+import { selectSiteSettingsEffectiveTheme } from '../../ngrx/selectors/site-settings.selectors';
+import { MatInputModule } from '@angular/material/input';
+import { MatButtonModule } from '@angular/material/button';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatCardModule } from '@angular/material/card';
 
 @Component({
   selector: 'app-contact-page',
   templateUrl: './contact-page.component.html',
   styleUrls: ['./contact-page.component.scss'],
+  standalone: true,
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    MatSnackBarModule, // <-- Add MatSnackBarModule
+    MatInputModule, // <-- Add MatInputModule
+    MatButtonModule, // <-- Add MatButtonModule
+    MatFormFieldModule, // <-- Add MatFormFieldModule
+    MatCardModule, // <-- Add MatCardModule
+  ], // <-- Add ReactiveFormsModule
 })
 export class ContactPageComponent implements OnInit, AfterViewInit, OnDestroy {
   // --->>>
@@ -26,7 +44,7 @@ export class ContactPageComponent implements OnInit, AfterViewInit, OnDestroy {
   // Require user to perform recaptcha for every new message
   isMessageSendable = false;
 
-  form?: FormGroup;
+  form: FormGroup;
 
   constructor(
     private fb: FormBuilder,
@@ -58,6 +76,7 @@ export class ContactPageComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngAfterViewInit() {
     setTimeout(() => {
+      // @ts-ignore
       (grecaptcha as typeof grecaptcha).render('recaptcha-id', {
         sitekey: environment.recaptchaSiteKey,
         theme: this.theme!.toUpperCase().includes('LIGHT') ? 'light' : 'dark',

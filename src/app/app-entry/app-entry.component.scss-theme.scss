@@ -1,13 +1,13 @@
-@import "~@angular/material/theming";
+@use "sass:map";
+@use "@angular/material" as mat;
 
 @mixin app-entry-component-theme($theme) {
-  $primary-palette: map-get($theme, primary);
-  $accent-palette: map-get($theme, accent);
-  $warn-palette: map-get($theme, warn);
+  $primary-palette: mat.get-theme-color($theme, primary);
+  $accent-palette: mat.get-theme-color($theme, accent);
+  $warn-palette: mat.get-theme-color($theme, warning);
 
-  $background-palette: map-get($theme, background);
-  $base-background-color: mat-color($background-palette, background);
-  // $base-background-color: red;
+  $background-palette: mat.get-theme-color($theme, background);
+  $base-background-color: mat.get-theme-color($background-palette, background);
 
   /**
       Note: don't try encapsulation with the app-entry-root component

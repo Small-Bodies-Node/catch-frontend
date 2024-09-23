@@ -1,6 +1,7 @@
-// @import '~@angular/material/theming';
+@use "sass:map";
+@use "@angular/material" as mat;
+@include mat.core();
 
-// See light theme for how to generate this
 $dark-primary-map: (
   50: #e8e8ed,
   100: #c5c6d3,
@@ -31,6 +32,39 @@ $dark-primary-map: (
     A200: #ffffff,
     A400: #ffffff,
     A700: #ffffff,
+  ),
+);
+
+$dark-accent-map: (
+  50: #fef6ed,
+  100: #fce8d3,
+  200: #fbd9b5,
+  300: #f9c997,
+  400: #f7be81,
+  500: #f6b26b,
+  600: #f5ab63,
+  700: #f3a258,
+  800: #f2994e,
+  900: #ef8a3c,
+  A100: #ffffff,
+  A200: #ffffff,
+  A400: #ffe7d5,
+  A700: #ffd8bc,
+  contrast: (
+    50: #000000,
+    100: #000000,
+    200: #000000,
+    300: #000000,
+    400: #000000,
+    500: #000000,
+    600: #000000,
+    700: #000000,
+    800: #000000,
+    900: #000000,
+    A100: #000000,
+    A200: #000000,
+    A400: #000000,
+    A700: #000000,
   ),
 );
 
@@ -100,22 +134,18 @@ $dark-warn-map: (
   ),
 );
 
-// Convert maps into 'palettes'
+$dark-primary-palette: mat.define-palette($dark-primary-map);
+$dark-accent-palette: mat.define-palette($dark-accent-map);
+$dark-warn-palette: mat.define-palette($dark-warn-map);
 
-// Custom palettes
-$dark-primary-palette: mat-palette($dark-primary-map);
-$dark-accent-palette: mat-palette($dark-accent-map);
-$dark-accent-palette: mat-palette($mat-green);
-$dark-warn-palette: mat-palette($dark-warn-map);
-
-// Conventional palettes
-// $dark-primary-palette: mat-palette($mat-indigo);
-// $dark-accent-palette: mat-palette($mat-pink);
-// $dark-warn-palette: mat-palette($mat-red);
-
-// Create 'theme' from palettes
-$app-dark-theme: mat-dark-theme(
-  $dark-primary-palette,
-  $dark-accent-palette,
-  $dark-warn-palette
+$app-dark-theme: mat.define-dark-theme(
+  (
+    color: (
+      primary: $dark-primary-palette,
+      accent: $dark-accent-palette,
+      warn: $dark-warn-palette,
+    ),
+    typography: mat.define-typography-config(),
+    density: 0,
+  )
 );

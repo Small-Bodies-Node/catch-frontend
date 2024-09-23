@@ -1,5 +1,6 @@
 import { Component, HostListener, Inject, NgZone } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatFormFieldModule } from '@angular/material/form-field';
 
 @Component({
   selector: 'app-unrecognized-name-dialog',
@@ -30,7 +31,11 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
       }
     `,
   ],
-  // standalone: true,
+  standalone: true,
+  imports: [
+    //
+    MatFormFieldModule,
+  ],
 })
 export class UnrecognizedNameDialogComponent {
   // --->>>

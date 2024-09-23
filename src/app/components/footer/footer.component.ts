@@ -1,14 +1,27 @@
+import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Store } from '@ngrx/store';
+
 import { IAppState } from '../../ngrx/reducers';
 import { SiteSettingsAction_SetIsHappyWithCookies } from '../../ngrx/actions/site-settings.actions';
 import { selectSiteSettingsIsHappyWithCookies } from '../../ngrx/selectors/site-settings.selectors';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatIconModule } from '@angular/material/icon';
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 
 @Component({
   selector: 'app-footer',
   templateUrl: './footer.component.html',
   styleUrls: ['./footer.component.scss'],
+  standalone: true,
+  imports: [
+    CommonModule,
+    //
+    MatToolbarModule,
+    MatIconModule,
+    FontAwesomeModule,
+  ],
 })
 export class FooterComponent {
   // --->>>
