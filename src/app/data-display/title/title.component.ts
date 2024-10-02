@@ -4,7 +4,9 @@ import { ActivatedRoute } from '@angular/router';
 import { combineLatest, Subscription, take } from 'rxjs';
 
 import { saveAs } from 'file-saver';
-import { parse } from 'json2csv';
+// import { parse } from 'json2csv';
+import { Parser } from '@json2csv/plainjs';
+
 import JSZip from 'jszip';
 
 import { IAppState } from '../../ngrx/reducers';
@@ -188,7 +190,11 @@ export class TitleComponent implements OnInit {
 
     // Convert JSON to CSV
     try {
-      const csv2 = parse(this.apiDataForDownload);
+      console.log('==========');
+      console.log(this.apiDataForDownload);
+      console.log(Parser);
+      const parser = new Parser();
+      const csv2 = parser.parse(this.apiDataForDownload);
       zip.file(`${target}_data.csv`, csv2);
     } catch (err) {
       console.log(err);

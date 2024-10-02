@@ -11,26 +11,31 @@ export const routes: Routes = [
     path: '',
     component: HomePageComponent,
     pathMatch: 'full',
+    data: { preload: true }, // Mark this route for pre-rendering
   },
   {
     path: 'about',
     component: AboutPageComponent,
     pathMatch: 'full',
+    data: { preload: true }, // Mark this route for pre-rendering
   },
   {
     path: 'apis',
     component: ApisPageComponent,
     pathMatch: 'full',
+    data: { preload: true }, // Mark this route for pre-rendering
   },
   {
     path: 'contact',
     component: ContactPageComponent,
     pathMatch: 'full',
+    data: { preload: true }, // Mark this route for pre-rendering
   },
   {
     path: 'settings',
     component: SettingsPageComponent,
     pathMatch: 'full',
+    data: { preload: true }, // Mark this route for pre-rendering
   },
   {
     path: 'data',

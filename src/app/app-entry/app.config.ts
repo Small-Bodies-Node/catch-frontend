@@ -11,15 +11,21 @@ import * as NavigationEffects from '../ngrx/effects/navigation.effects';
 import * as ObjectNameMatchEffects from '../ngrx/effects/object-name-match.effects';
 import * as ScreenDeviceEffects from '../ngrx/effects/screen-device.effects';
 import * as SiteSettingsEffects from '../ngrx/effects/site-settings.effects';
+import { provideHttpClient, withFetch } from '@angular/common/http';
+import { reducers } from '../ngrx/reducers';
+import { provideRouterStore } from '@ngrx/router-store';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
+    provideRouterStore(), // Add this line
     provideClientHydration(),
     provideAnimationsAsync(),
+    provideHttpClient(withFetch()),
+
     // NGRX
-    provideStore(),
+    provideStore(reducers),
     provideEffects(
       ApiDataEffects,
       NavigationEffects,

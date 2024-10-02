@@ -8,11 +8,12 @@ import {
   ScreenDeviceAction_SetScreenWidth,
   ScreenDeviceAction_SetScreenHeight,
 } from '../actions/screen-device.actions';
+import { winHeight, winWidth } from '../../../utils/animation-constants';
 
 const resizeEvent$ = new BehaviorSubject<Partial<IScreenDevice>>({
   device: getDevice(),
-  screenWidthPxls: window.innerWidth,
-  screenHeightPxls: window.innerHeight,
+  screenWidthPxls: winWidth,
+  screenHeightPxls: winHeight,
 });
 
 const handleResize = () => {
@@ -20,13 +21,17 @@ const handleResize = () => {
   setTimeout(() => {
     resizeEvent$.next({
       device: getDevice(),
-      screenWidthPxls: window.innerWidth,
-      screenHeightPxls: window.innerHeight,
+      screenWidthPxls: winWidth,
+      screenHeightPxls: winHeight,
     });
   }, 500);
 };
 
-window.addEventListener('resize', handleResize);
+try {
+  window.addEventListener('resize', handleResize);
+} catch (err) {
+  console.log('Nope: window aint here');
+}
 
 export const checkScreen$ = createEffect(
   () => {

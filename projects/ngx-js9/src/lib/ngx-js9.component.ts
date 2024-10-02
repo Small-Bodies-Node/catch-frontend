@@ -26,7 +26,12 @@ import { menuBarEntries } from './utils/menuBarEntries';
  * declaration and re-setting of a handle onto e.g. the snackBar
  */
 declare const JS9: any;
-const _originalJS9Error = JS9.error;
+let _originalJS9Error: any;
+
+try {
+  _originalJS9Error = JS9.error;
+} catch (e) {}
+
 let _onFitsError: (err: string) => void = () => {};
 if (true) {
   JS9.error = function (...args: any[]) {

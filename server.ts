@@ -11,6 +11,8 @@ import { panstarrs } from './src/api-routes/panstarrs';
 import { hello } from './src/api-routes/hello';
 import { horizons } from './src/api-routes/horizons';
 
+const routesToPreRender = ['/', '/about']; // Pre-render only these routes
+
 // The Express app is exported so that it can be used by serverless Functions.
 export function app(): express.Express {
   const server = express();
@@ -45,6 +47,16 @@ export function app(): express.Express {
   // All regular routes use the Angular engine
   server.get('**', (req, res, next) => {
     const { protocol, originalUrl, baseUrl, headers } = req;
+
+    //
+    console.log('Pre-rendering route:', originalUrl);
+
+    // Only pre-render the routes specified in routesToPreRender
+    if (!routesToPreRender.includes(originalUrl)) {
+      console.log('Skipping route:', originalUrl);
+      next();
+      return;
+    }
 
     commonEngine
       .render({

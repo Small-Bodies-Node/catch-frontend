@@ -2,12 +2,10 @@
 @use "@angular/material" as mat;
 
 @mixin app-entry-component-theme($theme) {
-  $primary-palette: mat.get-theme-color($theme, primary);
-  $accent-palette: mat.get-theme-color($theme, accent);
-  $warn-palette: mat.get-theme-color($theme, warning);
-
-  $background-palette: mat.get-theme-color($theme, background);
-  $base-background-color: mat.get-theme-color($background-palette, background);
+  $primary: mat.get-theme-color($theme, primary);
+  // $accent-palette: mat.get-theme-color($theme, accent);
+  $accent: mat.get-theme-color($theme, secondary);
+  $warn: mat.get-theme-color($theme, error);
 
   /**
       Note: don't try encapsulation with the app-entry-root component

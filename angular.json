@@ -27,10 +27,26 @@
               {
                 "glob": "**/*",
                 "input": "public"
+              },
+              "src/favicon.ico",
+              "src/assets",
+              "src/assets/fits",
+              "src/assets/js9-to-be-served",
+              "src/assets/js9-to-be-compiled",
+              "src/assets/socket.io",
+              {
+                "glob": "**/*",
+                "input": "src/assets/socket.io/",
+                "output": "/socket.io/"
               }
             ],
             "styles": ["src/styles/styles.scss"],
-            "scripts": [],
+            "scripts": [
+              "src/assets/js9-to-be-compiled/js9prefs.js",
+              "src/assets/js9-to-be-compiled/js9support.min.js",
+              "src/assets/js9-to-be-compiled/js9.js",
+              "src/assets/js9-to-be-compiled/js9plugins.js"
+            ],
             "server": "src/main.server.ts",
             "prerender": true,
             "ssr": {
@@ -94,10 +110,26 @@
               {
                 "glob": "**/*",
                 "input": "public"
+              },
+              "src/favicon.ico",
+              "src/assets",
+              "src/assets/fits",
+              "src/assets/js9-to-be-served",
+              "src/assets/js9-to-be-compiled",
+              "src/assets/socket.io",
+              {
+                "glob": "**/*",
+                "input": "src/assets/socket.io/",
+                "output": "/socket.io/"
               }
             ],
             "styles": ["src/styles/styles.scss"],
-            "scripts": []
+            "scripts": [
+              "src/assets/js9-to-be-compiled/js9prefs.js",
+              "src/assets/js9-to-be-compiled/js9support.min.js",
+              "src/assets/js9-to-be-compiled/js9.js",
+              "src/assets/js9-to-be-compiled/js9plugins.js"
+            ]
           }
         }
       }

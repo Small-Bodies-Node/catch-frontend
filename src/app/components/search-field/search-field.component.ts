@@ -27,6 +27,8 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatOptionModule } from '@angular/material/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatInputModule } from '@angular/material/input';
 
 type TFormControlKeys =
   | TSources
@@ -66,6 +68,8 @@ type TControlsForm = {
     MatOptionModule,
     MatIconModule,
     MatTooltipModule,
+    MatCheckboxModule,
+    MatInputModule,
   ],
 })
 export class SearchFieldComponent implements OnInit, OnDestroy {

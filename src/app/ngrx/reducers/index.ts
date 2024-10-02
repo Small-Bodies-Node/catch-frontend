@@ -1,5 +1,6 @@
 import { ActionReducerMap, MetaReducer } from '@ngrx/store';
-import { RouterReducerState, routerReducer } from '@ngrx/router-store';
+import { RouterReducerState } from '@ngrx/router-store';
+import { routerReducer } from '@ngrx/router-store';
 
 import { INavigationSubstate, navigationReducer } from './navigation.reducer';
 import {

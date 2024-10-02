@@ -13,12 +13,16 @@ export const updateNavigationRecords$ = createEffect(
   (actions$ = inject(Actions), store$ = inject(Store<IAppState>)) => {
     return actions$.pipe(
       tap((action) => {
+        // console.log('action:', action);
         if (action.type === '@ngrx/router-store/request') {
           setTimeout(() => {
-            //@ts-ignore
-            gtag('event', 'page_view', {
-              page_location: document.location.href,
-            });
+            try {
+              // gtag('event', 'page_view', {
+              //   page_location: document.location.href,
+              // });
+            } catch (e) {
+              console.log('Error:', e);
+            }
           }, 1000);
         }
       }),

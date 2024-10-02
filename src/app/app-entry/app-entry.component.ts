@@ -11,7 +11,7 @@ import { TPermittedTheme } from '../../models/ISiteSettings';
 import { IAppState } from '../ngrx/reducers';
 import { LocalStorageService } from '../core/services/local-storage/local-storage.service';
 import { SiteSettingsAction_LoadAllFromLocalStorage } from '../ngrx/actions/site-settings.actions';
-import { selectRouterUrl } from '../ngrx/selectors/router.selectors';
+import { selectUrl } from '../ngrx/selectors/router.selectors';
 import { NavigationAction_UpdateRouteRecords } from '../ngrx/actions/navigation.actions';
 import {
   selectIsNewRouteScheduled,
@@ -73,7 +73,7 @@ export class AppEntryComponent implements OnInit {
   delayTimeMs = defaultPageAnimationDelayMs;
   isAppLoaded = false;
   isStreamingMessage = false;
-  siteTheme!: TPermittedTheme;
+  siteTheme: TPermittedTheme = 'DARK-THEME';
 
   constructor(
     private store$: Store<IAppState>,
@@ -100,7 +100,7 @@ export class AppEntryComponent implements OnInit {
      * we dispatch our own "navigation-update-route-records" action,
      * so that the previous and present routes get updated
      */
-    this.store$.select(selectRouterUrl).subscribe((url) => {
+    this.store$.select(selectUrl).subscribe((url) => {
       if (!!url) {
         this.store$.dispatch(
           NavigationAction_UpdateRouteRecords({
@@ -113,6 +113,7 @@ export class AppEntryComponent implements OnInit {
     this.store$
       .select(selectIsNewRouteScheduled)
       .subscribe((isNewRouteScheduled) => {
+        console.log('isNewRouteScheduled:', isNewRouteScheduled);
         this.isPageTransitionScheduled = isNewRouteScheduled;
       });
 
@@ -121,6 +122,7 @@ export class AppEntryComponent implements OnInit {
      * We delay the reappearance of the footer if navigating to/from homepage
      */
     this.store$.select(selectNavigationRecords).subscribe((navSubstate) => {
+      console.log('navSubstate:', navSubstate);
       const isToHomePage = navSubstate.presentRoute === '/';
       const isFromHomePage = navSubstate.previousRoute === '/';
       // Control delay time for footer to reappear
@@ -138,7 +140,11 @@ export class AppEntryComponent implements OnInit {
         const isDark = siteTheme === 'DARK-THEME';
         setTimeout(() => {
           // This makes mobile swiping more attractive with dark theme
-          document.body.style.backgroundColor = isDark ? '#303030' : 'white';
+          try {
+            document.body.style.backgroundColor = isDark ? '#303030' : 'white';
+          } catch (e) {
+            console.error("Couldn't set body color");
+          }
         }, 0);
       });
 

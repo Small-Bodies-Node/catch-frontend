@@ -7,14 +7,15 @@ import {
 } from '../actions/screen-device.actions';
 import { IScreenDevice } from '../../../models/IScreenDevice';
 import { getDevice } from '../../../utils/getDevice';
+import { winHeight, winWidth } from '../../../utils/animation-constants';
 
 export interface IScreenDeviceSubstate extends IScreenDevice {}
 
 export const initialState: IScreenDeviceSubstate = {
   device: getDevice(),
   layout: 'auto',
-  screenWidthPxls: window.innerWidth,
-  screenHeightPxls: window.innerHeight,
+  screenWidthPxls: winWidth,
+  screenHeightPxls: winHeight,
 };
 
 export const screenDeviceReducer = createReducer(

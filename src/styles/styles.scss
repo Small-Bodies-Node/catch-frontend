@@ -55,3 +55,39 @@
   @include mat.all-component-themes($app-light-theme);
   @include custom-components-theme($app-light-theme);
 }
+
+////////////////////////////////
+////////////////////////////////
+////////////////////////////////
+// GLOBAL ANIMATIONS ///////////
+////////////////////////////////
+////////////////////////////////
+////////////////////////////////
+
+@keyframes pageFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-25px);
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0px);
+  }
+}
+
+@keyframes pageFadeOut {
+  0% {
+    opacity: 1;
+    transform: translateY(0px);
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-25px);
+  }
+}

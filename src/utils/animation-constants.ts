@@ -3,8 +3,19 @@
  * in this centralized location in order to coordinate them easily
  */
 
-let winWidth = window.innerWidth;
-window.addEventListener('resize', () => (winWidth = window.innerWidth));
+export let winWidth = 500;
+export let winHeight = 500;
+
+try {
+  winWidth = window.innerWidth;
+  winHeight = window.innerHeight;
+  window.addEventListener('resize', () => {
+    winWidth = window.innerWidth;
+    winHeight = window.innerHeight;
+  });
+} catch (err) {
+  console.log('Nope: window aint here');
+}
 
 /**
  * Time between start of each swipe left/right animation for each image

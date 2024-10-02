@@ -87,6 +87,7 @@ export const fetchApiDataResults$ = createEffect(
 
               // After results received we trigger change of route
               if (isDataFound) {
+                console.log('Data found!!!', apiData);
                 delayedRouter.delayedRouter('/data', {
                   queryParams: {
                     target,

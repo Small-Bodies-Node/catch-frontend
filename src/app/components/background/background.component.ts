@@ -42,7 +42,10 @@ export class BackgroundComponent implements OnInit {
 
       // Remove query params from url
       const urlPath = (navRecords.presentRoute || '').split('?')[0];
-      this.isBackgroundShown = ['/', '/home'].includes(urlPath);
+      console.log('urlPath:', urlPath);
+      this.isBackgroundShown =
+        ['/', '/home'].includes(urlPath) || urlPath === '';
+      // this.isBackgroundShown = true;
       this.varHostClassName = 'host-' + this.siteTheme.toLowerCase();
     });
 
@@ -74,7 +77,7 @@ export class BackgroundComponent implements OnInit {
       '_' +
       imageLabel +
       '_v1.png';
-    const filePath = `assets/images/pngs/${fileName}`;
+    const filePath = `images/pngs/${fileName}`;
 
     const delayBeforeTransitionMs = imageIndex * intervalMs;
     const dynamicStyles: Partial<CSSStyleDeclaration> = {

@@ -5,7 +5,9 @@ const tabletDesktopDivisor = 900;
 
 export const getDevice = (): IScreenDevice['device'] => {
   // --->
-  if (window.innerWidth < mobileTabletDivisor) return 'mobile';
-  if (window.innerWidth < tabletDesktopDivisor) return 'tablet';
+  try {
+    if (window.innerWidth < mobileTabletDivisor) return 'mobile';
+    if (window.innerWidth < tabletDesktopDivisor) return 'tablet';
+  } catch (e) {}
   return 'desktop';
 };
