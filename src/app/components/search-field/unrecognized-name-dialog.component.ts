@@ -53,4 +53,9 @@ export class UnrecognizedNameDialogComponent {
       this.dialogRef.close(isSearchConfirmed);
     });
   }
+
+  @HostListener('keydown.enter', ['$event'])
+  handleEnterKey(event: KeyboardEvent) {
+    event.preventDefault(); // Prevent ENTER key from triggering any actions
+  }
 }

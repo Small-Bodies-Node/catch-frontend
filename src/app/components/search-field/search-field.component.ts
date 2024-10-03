@@ -235,7 +235,7 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
         this.subscriptions.add(
           dialogRef.afterClosed().subscribe((isSearchConfirmed) => {
             console.log(
-              'Request received: >>>',
+              'Request received from dialog: >>>',
               isSearchConfirmed,
               '<<<',
               typeof isSearchConfirmed
