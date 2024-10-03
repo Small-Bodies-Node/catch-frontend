@@ -13,25 +13,27 @@ import {
   Subscription,
 } from 'rxjs';
 
-import { IApiService } from 'src/app/models/IApiService';
-import { IApiServiceStream } from 'src/app/models/IApiServiceStream';
-import { TJobStreamResult } from 'src/app/models/TJobStreamResult';
-import { TSources } from 'src/app/models/TSources';
-import { ApiSetStatus } from 'src/app/ngrx/actions/api.actions';
-import { IAppState } from 'src/app/ngrx/reducers';
-import { apiMockResult } from 'src/app/utils/apiMockResult';
-import { IApiCatchResult } from 'src/app/utils/IApiCatchResult';
-import { IApiCaughtResult } from 'src/app/utils/IApiCaughtResult';
-import { TApiDataResult } from 'src/app/utils/TApiResult';
-import { mockStreamMessages } from '../../../utils/mockStreamMessages';
+import { IApiDataService } from '../../../../models/IApiDataService';
+import { IApiServiceStream } from '../../../../models/IApiServiceStream';
+import { TJobStreamResult } from '../../../../models/TJobStreamResult';
+import { TSources } from '../../../../models/TSources';
+import { IAppState } from '../../../ngrx/reducers';
+import { TApiDataResult } from '../../../../models/TApiResult';
+import { IApiDataCatchResult } from '../../../../models/IApiDataCatchResult';
+import { IApiDataCaughtResult } from '../../../../models/IApiDataCaughtResult';
+import { mockStreamMessages } from '../../../../utils/mockStreamMessages';
+import { ApiDataAction_SetStatus } from '../../../ngrx/actions/api-data.actions';
+import { apiDataMockResult } from '../../../../utils/apiDataMockResult';
 
 const mockTime1 = 0;
 const mockTime2 = 0;
 
+const numResults = 10;
+
 @Injectable({
   providedIn: 'root',
 })
-export class ApiMockService implements IApiService {
+export class ApiDataMockService implements IApiDataService {
   // --->>>
 
   constructor(private store$: Store<IAppState>) {}
@@ -145,7 +147,7 @@ export class ApiMockService implements IApiService {
     isUncertaintyEllipse: boolean,
     padding: number,
     sources: TSources[]
-  ): Observable<IApiCatchResult> {
+  ): Observable<IApiDataCatchResult> {
     // --->>
 
     const result = of({
@@ -170,14 +172,14 @@ export class ApiMockService implements IApiService {
     return result;
   }
 
-  apiCaughtRequest(jobId: string): Observable<IApiCaughtResult> {
+  apiCaughtRequest(jobId: string): Observable<IApiDataCaughtResult> {
     // --->>
 
     console.log(' << MOCK CAUGHT REQUEST >> ');
     return of({
       count: 10,
       job_id: jobId,
-      data: apiMockResult.data
+      data: apiDataMockResult.data
         .filter((_, ind) => {
           return true;
           return [
@@ -186,8 +188,8 @@ export class ApiMockService implements IApiService {
             // 'neat_maui_geodss',
           ].includes(_.source);
         })
-        .filter((_, ind) => ind < 10000000),
-    }).pipe(delay<IApiCaughtResult>(mockTime1));
+        .filter((_, ind) => ind < numResults),
+    }).pipe(delay<IApiDataCaughtResult>(mockTime1));
   }
 
   watchJobStream(jobId: string): Promise<TJobStreamResult> {
@@ -206,7 +208,7 @@ export class ApiMockService implements IApiService {
         )
         .subscribe(({ job_prefix, status, text }) => {
           console.log('>>>>>', job_prefix, status, text);
-          store$.dispatch(new ApiSetStatus({ message: text }));
+          store$.dispatch(ApiDataAction_SetStatus({ message: text }));
 
           if (status === 'success') {
             resolve({ job_id: jobId, status });

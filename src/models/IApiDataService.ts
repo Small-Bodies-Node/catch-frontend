@@ -1,7 +1,7 @@
 import { Observable } from 'rxjs';
 
-import { IApiCatchResult } from './IApiCatchResult';
-import { IApiCaughtResult } from './IApiCaughtResult';
+import { IApiDataCatchResult } from './IApiDataCatchResult';
+import { IApiDataCaughtResult } from './IApiDataCaughtResult';
 import { TApiDataResult } from './TApiResult';
 import { TJobStreamResult } from './TJobStreamResult';
 import { TSources } from './TSources';
@@ -26,9 +26,9 @@ export interface IApiDataService {
     isUncertaintyEllipse: boolean,
     padding: number,
     sources: TSources[]
-  ) => Observable<IApiCatchResult>;
+  ) => Observable<IApiDataCatchResult>;
 
-  apiCaughtRequest: (jobId: string) => Observable<IApiCaughtResult>;
+  apiCaughtRequest: (jobId: string) => Observable<IApiDataCaughtResult>;
 
   watchJobStream: (jobId: string) => Promise<TJobStreamResult>;
 }

@@ -5,10 +5,7 @@ import { Store } from '@ngrx/store';
 import { TApiStatusCode } from '../../../models/TApiStatusCode';
 import { IAppState } from '../../ngrx/reducers';
 import { selectApiStatus } from '../../ngrx/selectors/api-data.selectors';
-import {
-  footerHeightPx,
-  headerHeightPx,
-} from '../../../utils/layout-constants';
+import { footerHeightPx, headerHeightPx } from '../../../utils/constants';
 import { SearchFieldComponent } from '../search-field/search-field.component';
 
 @Component({

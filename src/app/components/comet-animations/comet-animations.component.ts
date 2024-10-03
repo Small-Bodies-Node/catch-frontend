@@ -12,7 +12,7 @@ import { Subscription, fromEvent, debounceTime } from 'rxjs';
 import { IAppState } from '../../ngrx/reducers';
 import { selectScreenDeviceSubstate } from '../../ngrx/selectors/screen-device.selectors';
 import { selectSiteSettingsTheme } from '../../ngrx/selectors/site-settings.selectors';
-import { simpleUid } from '../../../utils/simple-uid';
+import { simpleUid } from '../../../utils/simpleUid';
 
 @Component({
   selector: 'app-comet-animations',

@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
-
-import { IObjectNameMatchResult } from '../../../models/IObjectNameMatchResult';
+import { IObjectNameMatchResult } from '../../../../models/IObjectNameMatchResult';
 
 @Injectable({
   providedIn: 'root',

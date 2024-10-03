@@ -5,18 +5,24 @@
   //
 
   // $primary: mat.get-theme-color($theme, primary);
-  $accent: mat.get-theme-color($theme, secondary);
-  // $warn: mat.get-theme-color($theme, warn);
+  // $accent: mat.get-theme-color($theme, secondary);
+  // $accent: mat.get-theme-color($theme, inverse-primary);
+  $accent: green;
 
   app-table {
     .highlighted-sticky-cell {
       // background-color: rgba(mat-color($accent, 800), 1);
       // background-color: rgba(mat-color($accent), 1);
       // background-color: rgba(mat-color($accent, 900), 1);
-      background-color: rgba($accent, 1);
+      // background-color: rgba($accent, 1);
+      // background-color: rgba($accent, 0.3);
+      // background-color: $accent;
+      background-color: rgba($accent, 0.5);
     }
     .highlighted-non-sticky-cell {
       background-color: rgba($accent, 0.3);
+      // background-color: $accent;
+      // background-color: $accent;
     }
   }
 }

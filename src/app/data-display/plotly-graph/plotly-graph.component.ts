@@ -3,6 +3,7 @@ import { Color } from 'plotly.js';
 import { Component, Inject, Input, OnInit } from '@angular/core';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { BehaviorSubject, combineLatest, map, Observable } from 'rxjs';
+
 import { IApiDatum } from '../../../models/IApiDatum';
 import { IPlotlyGraphInput } from '../../../models/IPlotlyGraphInput';
 import { IPlotlySettings } from '../../../models/IPlotlySettings';
@@ -10,7 +11,7 @@ import { IAppState } from '../../ngrx/reducers';
 import { selectApiData } from '../../ngrx/selectors/api-data.selectors';
 import { selectSiteSettingsTheme } from '../../ngrx/selectors/site-settings.selectors';
 import { apiDataLabels } from '../../../utils/apiDataLabels';
-import { julianIntToDate } from '../../../utils/julian-to-date';
+import { julianToDate } from '../../../utils/julianToDate';
 
 @Component({
   selector: 'app-plotly-graph',
@@ -71,7 +72,7 @@ export class PlotlyGraphComponent implements OnInit {
           : results.map((el) => el[yDataKey as keyof IApiDatum]);
         const tooltipInfo = results
           .map((el) => el.jd)
-          .map((el) => 'Date: ' + julianIntToDate(el || -1));
+          .map((el) => 'Date: ' + julianToDate(el || -1));
         const effectivePlotTitle = isMiniMode
           ? ''
           : this.breakUpText(

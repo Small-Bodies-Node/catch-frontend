@@ -6,7 +6,6 @@ import { TApiDataColState } from '../models/TApiDataColState';
  * in the checkbox dialog
  */
 
-// export const apiDataInitColState: Readonly<Partial<TApiDataColState>> = {
 export const apiDataInitColState: Readonly<Partial<TApiDataColState>> = {
   // ================
   // Not shown at all

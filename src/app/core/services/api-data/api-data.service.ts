@@ -7,13 +7,13 @@ import { Store } from '@ngrx/store';
 import { IApiDataService } from '../../../../models/IApiDataService';
 import { IAppState } from '../../../ngrx/reducers';
 import { TSources } from '../../../../models/TSources';
-import { IApiCatchResult } from '../../../../models/IApiCatchResult';
-import { apiBaseUrl, apiStreamTimeoutSecs } from '../../../../utils/constants';
-import { IApiCaughtResult } from '../../../../models/IApiCaughtResult';
 import { TApiDataResult } from '../../../../models/TApiResult';
 import { TJobStreamResult } from '../../../../models/TJobStreamResult';
 import { IApiServiceStream } from '../../../../models/IApiServiceStream';
 import { ApiDataAction_SetStatus } from '../../../ngrx/actions/api-data.actions';
+import { IApiDataCatchResult } from '../../../../models/IApiDataCatchResult';
+import { IApiDataCaughtResult } from '../../../../models/IApiDataCaughtResult';
+import { apiBaseUrl, apiStreamTimeoutSecs } from '../../../../utils/constants';
 
 @Injectable({ providedIn: 'root' })
 export class ApiDataService implements IApiDataService {
@@ -62,7 +62,7 @@ export class ApiDataService implements IApiDataService {
     isUncertaintyEllipse: boolean,
     padding: number,
     sources: TSources[]
-  ): Observable<IApiCatchResult> {
+  ): Observable<IApiDataCatchResult> {
     const sourceStr = sources.reduce((acc, source) => {
       acc += '&sources=' + source;
       return acc;
@@ -78,7 +78,7 @@ export class ApiDataService implements IApiDataService {
       `&padding=${effectivePadding}` +
       sourceStr;
     console.log('catchUrl >>> ', catchUrl);
-    return this.httpClient.get<IApiCatchResult>(catchUrl);
+    return this.httpClient.get<IApiDataCatchResult>(catchUrl);
   }
 
   /**
@@ -92,10 +92,10 @@ export class ApiDataService implements IApiDataService {
    *  "data": [...]
    * }
    */
-  apiCaughtRequest(jobId: string): Observable<IApiCaughtResult> {
+  apiCaughtRequest(jobId: string): Observable<IApiDataCaughtResult> {
     const caughtUrl = apiBaseUrl + `/caught/${jobId}`;
     console.log('caughtUrl >>> ', caughtUrl);
-    return this.httpClient.get<IApiCaughtResult>(caughtUrl);
+    return this.httpClient.get<IApiDataCaughtResult>(caughtUrl);
   }
 
   /**

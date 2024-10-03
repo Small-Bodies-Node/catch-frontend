@@ -2,7 +2,7 @@ import { createEffect } from '@ngrx/effects';
 import { of, BehaviorSubject, concat } from 'rxjs';
 import { distinctUntilChanged, debounceTime, switchMap } from 'rxjs/operators';
 import { IScreenDevice } from '../../../models/IScreenDevice';
-import { getDevice } from '../../../utils/get-device';
+import { getDevice } from '../../../utils/getDevice';
 import {
   ScreenDeviceAction_SetDevice,
   ScreenDeviceAction_SetScreenWidth,

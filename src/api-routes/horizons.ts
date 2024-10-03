@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 
 import * as AWS from '@aws-sdk/client-s3';
 import dotenv from 'dotenv';
-import { urlToFilename } from '../utils/url-to-file';
+import { urlToFilename } from '../utils/urlToFilename';
 
 // Load environment variables
 dotenv.config();

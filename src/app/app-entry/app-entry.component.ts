@@ -19,7 +19,7 @@ import {
 } from '../ngrx/selectors/navigation.selectors';
 import { selectSiteSettingsEffectiveTheme } from '../ngrx/selectors/site-settings.selectors';
 import { selectApiStatus } from '../ngrx/selectors/api-data.selectors';
-import { footerHeightPx, headerHeightPx } from '../../utils/layout-constants';
+import { footerHeightPx, headerHeightPx } from '../../utils/constants';
 import { SharedModule } from '../shared/shared.module';
 import { CoreModule } from '../core/core.module';
 

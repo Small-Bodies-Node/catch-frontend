@@ -15,7 +15,7 @@ import {
 } from '../../ngrx/actions/api-data.actions';
 import { IApiDataStatus } from '../../../models/IApiDataStatus';
 import { IApiDatum } from '../../../models/IApiDatum';
-import { headerHeightPx } from '../../../utils/layout-constants';
+import { headerHeightPx } from '../../../utils/constants';
 import { sourcesNamesDict } from '../../../utils/sourcesNamesDict';
 import { TSources } from '../../../models/TSources';
 

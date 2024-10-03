@@ -17,3 +17,9 @@ export const apiBaseUrl =
  * Limits time that can be spent listening for streaming results
  */
 export const apiStreamTimeoutSecs = 90;
+
+/**
+ * Layout Constants
+ */
+export const headerHeightPx = 60;
+export const footerHeightPx = 60;

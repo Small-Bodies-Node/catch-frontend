@@ -7,11 +7,17 @@ import {
   ObjectNameMatchAction_SetResults,
 } from '../actions/object-name-match.actions';
 import { ObjectNameMatchService } from '../../core/services/object-name-match/object-name-match.service';
+import { environment } from '../../../environments/environment';
+import { ObjectNameMatchMockService } from '../../core/services/object-name-match/object-name-match-mock.service';
+
+// export const isMockDataUsed = !false && environment.apiData === 'mock';
 
 export const fetchObjectNameMatchResults$ = createEffect(
   (
     actions$ = inject(Actions),
-    objectNameMatcher = inject(ObjectNameMatchService)
+    objectNameMatcher = environment.apiData === 'mock'
+      ? inject(ObjectNameMatchMockService)
+      : inject(ObjectNameMatchService)
   ) => {
     return actions$.pipe(
       ofType(ObjectNameMatchAction_FetchResults),
@@ -25,5 +31,5 @@ export const fetchObjectNameMatchResults$ = createEffect(
       })
     );
   },
-  { functional: true }
+  { functional: true, dispatch: true }
 );

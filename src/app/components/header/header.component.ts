@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, Output, EventEmitter } from '@angular/core';
 
 import { DelayedRouterService } from '../../core/services/delayed-router/delayed-router.service';
-import { headerHeightPx } from '../../../utils/layout-constants';
+import { headerHeightPx } from '../../../utils/constants';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 
 @Component({

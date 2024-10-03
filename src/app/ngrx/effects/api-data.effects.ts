@@ -17,14 +17,18 @@ import { ApiDataService } from '../../core/services/api-data/api-data.service';
 import { DelayedRouterService } from '../../core/services/delayed-router/delayed-router.service';
 import { TApiDataResult } from '../../../models/TApiResult';
 import { IApiDatum } from '../../../models/IApiDatum';
+import { ApiDataMockService } from '../../core/services/api-data/api-data-mock.service';
+import { environment } from '../../../environments/environment';
 
 export const fetchApiDataResults$ = createEffect(
   (
     actions$ = inject(Actions),
-    apiDataService = inject(ApiDataService),
     router = inject(Router),
     snackBar = inject(MatSnackBar),
-    delayedRouter = inject(DelayedRouterService)
+    delayedRouter = inject(DelayedRouterService),
+    apiDataService = environment.apiData === 'mock'
+      ? inject(ApiDataMockService)
+      : inject(ApiDataService)
   ) => {
     return actions$.pipe(
       map((action) => {

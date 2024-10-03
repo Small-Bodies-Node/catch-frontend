@@ -1,7 +1,7 @@
 /**
  * Shape of result from ping to "/catch?target=65P&..."
  */
-export interface IApiCatchResult {
+export interface IApiDataCatchResult {
   job_id: string;
   message: string;
   message_stream: string;
