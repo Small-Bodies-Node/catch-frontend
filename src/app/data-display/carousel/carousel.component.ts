@@ -8,6 +8,7 @@ import {
   selectApiData,
   selectApiSelectedDatum,
 } from '../../ngrx/selectors/api-data.selectors';
+import { PanstarrsOverlayComponent } from '../panstarrs-overlay/panstarrs-overlay.component';
 
 const placeholderUrl = 'assets/images/pngs/sbn_logo_v0.png';
 
@@ -15,6 +16,8 @@ const placeholderUrl = 'assets/images/pngs/sbn_logo_v0.png';
   selector: 'app-carousel',
   templateUrl: './carousel.component.html',
   styleUrls: ['./carousel.component.scss'],
+  // standalone: true,
+  // imports: [PanstarrsOverlayComponent],
 })
 export class CarouselComponent implements OnInit {
   // --->>>
@@ -74,7 +77,6 @@ export class CarouselComponent implements OnInit {
           .subscribe(({ width, height }) => {
             this.width = width;
             this.height = height;
-            console.log('width height', this.width, this.height);
           })
       );
   }

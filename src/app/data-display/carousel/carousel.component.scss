@@ -5,8 +5,11 @@
 
   .main-image {
     position: relative;
-    width: 100%;
-    height: 60%;
+    // width: 100%;
+    // height: 50%;
+
+    width: 500px;
+    height: 500px;
     box-sizing: border-box;
     overflow: hidden;
     app-table-thumbnail {
@@ -36,7 +39,7 @@
 
   .solar-viewer-wrapper {
     // background-color: green;
-    height: 40%;
+    height: 50%;
     padding-top: 5px;
     box-sizing: border-box;
     overflow: hidden;

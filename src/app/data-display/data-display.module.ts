@@ -25,6 +25,7 @@ import { DesktopViewComponent } from './desktop-view/desktop-view.component';
 import { TableThumbnailComponent } from './table-thumbnail/table-thumbnail.component';
 import { StarOverlayComponent } from './star-overlay/star-overlay.component';
 import { SolarViewerComponent } from './solar-viewer/solar-viewer.component';
+import { PanstarrsOverlayComponent } from './panstarrs-overlay/panstarrs-overlay.component';
 
 const routes: Routes = [{ path: '', component: DataDisplayComponent }];
 
@@ -36,6 +37,7 @@ const routes: Routes = [{ path: '', component: DataDisplayComponent }];
     CarouselComponent,
     ImageWheelComponent,
     TableCheckboxesComponent,
+    PanstarrsOverlayComponent,
     PlotlyGraphComponent,
     PlotlyGraphWrapperComponent,
     TitleComponent,

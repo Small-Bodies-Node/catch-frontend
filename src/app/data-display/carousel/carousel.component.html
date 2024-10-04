@@ -5,6 +5,10 @@
     [ngStyle]="{ border: (isFitsLoaded ? '3' : '0') + 'px solid red' }"
     #mainImage
   >
+    <!--  -->
+
+    <app-panstarrs-overlay></app-panstarrs-overlay>
+
     <ng-container *ngIf="isFits; else elseBlockShow">
       <!-- <lib-ngx-js9
         [width]="width"

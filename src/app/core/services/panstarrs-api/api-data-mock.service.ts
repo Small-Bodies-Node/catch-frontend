@@ -28,7 +28,7 @@ import { apiDataMockResult } from '../../../../utils/apiDataMockResult';
 const mockTime1 = 0;
 const mockTime2 = 0;
 
-const numResults = 100;
+const numResults = 10;
 
 @Injectable({
   providedIn: 'root',
@@ -181,20 +181,14 @@ export class ApiDataMockService implements IApiDataService {
       job_id: jobId,
       data: apiDataMockResult.data
         .filter((_, ind) => {
-          // return true;
+          return true;
           return [
-            `neat_palomar_tricam`,
-            `neat_maui_geodss`,
-            // `skymapper`,
-            // `ps1dr2`,
-            `catalina_bigelow`,
-            `catalina_lemmon`,
-            `catalina_kittpeak`,
-            `catalina_bokneosurvey`,
-            `spacewatch`,
+            //
+            'catalina_bigelow',
+            // 'neat_maui_geodss',
           ].includes(_.source);
         })
-        .filter((_, ind) => ind < 500),
+        .filter((_, ind) => ind < numResults),
     }).pipe(delay<IApiDataCaughtResult>(mockTime1));
   }
 

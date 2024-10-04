@@ -20,7 +20,7 @@ export interface IApiDataService {
     sources: TSources[]
   ) => Observable<TApiDataResult>;
 
-  apiCatchRequest: (
+  getPanstarrsData: (
     target: string,
     isCached: boolean,
     isUncertaintyEllipse: boolean,

@@ -56,7 +56,7 @@ export class ApiDataService implements IApiDataService {
    *  ...
    * }
    */
-  apiCatchRequest(
+  getPanstarrsData(
     target: string,
     isCached: boolean,
     isUncertaintyEllipse: boolean,
@@ -122,7 +122,7 @@ export class ApiDataService implements IApiDataService {
       });
     }
 
-    return this.apiCatchRequest(
+    return this.getPanstarrsData(
       target,
       isCached,
       isUncertaintyEllipse,
