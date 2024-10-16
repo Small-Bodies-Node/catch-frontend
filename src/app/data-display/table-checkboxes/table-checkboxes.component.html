@@ -41,7 +41,8 @@
               [checked]="colState[colName]"
               (change)="updateColState($event, colName)"
             >
-              {{ (labels && labels[colName] && labels[colName]?.label) || "" }}
+              <!-- {{ (labels && labels[colName] && labels[colName]?.label) || "" }} -->
+              {{ temp(labels, colName) || "" }}
             </mat-checkbox>
           </div>
         </div>

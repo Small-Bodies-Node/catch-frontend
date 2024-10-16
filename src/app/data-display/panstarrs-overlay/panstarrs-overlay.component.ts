@@ -95,7 +95,7 @@ export class PanstarrsOverlayComponent implements OnInit {
     const angularWidth = 0.0833;
     const width = this.myDiv.nativeElement.offsetWidth || 0;
     const res = (raErr / angularWidth) * width;
-    console.log('raErr:', raErr, 'res:', res);
+    // console.log('raErr:', raErr, 'res:', res);
     return res;
   }
 

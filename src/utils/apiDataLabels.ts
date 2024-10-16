@@ -48,6 +48,11 @@ export const apiDataLabels: Readonly<TApiDataLabels> = {
     fractionSize: 2,
     label: 'd[rh]/dt',
   },
+  designation: {
+    description: 'XXX',
+    // fractionSize: 2,
+    label: 'Designation',
+  },
   elong: {
     description: 'Solar elongation (deg)',
     fractionSize: 2,
@@ -61,6 +66,10 @@ export const apiDataLabels: Readonly<TApiDataLabels> = {
   filter: {
     description: 'Filter name',
     label: 'Filter',
+  },
+  instrument: {
+    description: 'XXX',
+    label: 'Instrument',
   },
   maglimit: {
     description: 'Detection limit (mag. Definition varies by survey.',
@@ -93,6 +102,11 @@ export const apiDataLabels: Readonly<TApiDataLabels> = {
     fractionSize: 4,
     label: 'RA',
   },
+  rdot: {
+    description: 'XXX',
+    // fractionSize: 4,
+    label: 'RDot',
+  },
   retrieved: {
     description:
       'Date when the ephemeris was retrieved from the ephemeris generator, UTC',
@@ -121,6 +135,11 @@ export const apiDataLabels: Readonly<TApiDataLabels> = {
   source_name: {
     description: 'Observational data source name',
     label: 'Source Name',
+  },
+  tmtp: {
+    description: 'XXX',
+    // fractionSize: 1,
+    label: 'tmpt',
   },
   true_anomaly: {
     description: 'True anomaly angle (deg)',

@@ -51,7 +51,7 @@ const routes: Routes = [{ path: '', component: DataDisplayComponent }];
     CommonModule,
     RouterModule.forChild(routes),
     SharedModule,
-    NgxJs9Module,
+    // NgxJs9Module,
     PlotlyModule,
   ],
 })

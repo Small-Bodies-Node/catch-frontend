@@ -6,7 +6,8 @@ import { TApiDataColState } from '../models/TApiDataColState';
  * in the checkbox dialog
  */
 
-export const apiDataInitColState: Readonly<Partial<TApiDataColState>> = {
+// export const apiDataInitColState: Readonly<Partial<TApiDataColState>> = {
+export const apiDataInitColState: Readonly<TApiDataColState> = {
   // ================
   // Not shown at all
   // ================
@@ -25,10 +26,10 @@ export const apiDataInitColState: Readonly<Partial<TApiDataColState>> = {
   dra: true,
   drh: true,
   elong: true,
-  mjd_start: !true,
-  mjd_stop: !true,
   rh: true,
   vmag: true,
+  mjd_start: !true,
+  mjd_stop: !true,
   // ================
   // Not shown by default
   // ================
@@ -40,17 +41,17 @@ export const apiDataInitColState: Readonly<Partial<TApiDataColState>> = {
   exposure: false,
   filter: false,
   instrument: false,
-  jd: false,
+  // jd: false,
   maglimit: false,
   phase: false,
-  // preview_url: false, // permanent col
+  preview_url: false, // permanent col
   product_id: false,
   rdot: false,
   sangle: false,
   seeing: false,
-  selong: false,
+  // selong: false,
   source: false,
-  // source_name: false, // permanent col
+  source_name: false, // permanent col
   tmtp: false,
   true_anomaly: false,
   unc_a: false,

@@ -127,4 +127,16 @@ export class TableCheckboxesComponent implements OnInit {
   closeDialog() {
     this.dialogRef.close();
   }
+
+  temp(labels: any, colName: any) {
+    //
+    console.log(
+      '>>> labels',
+      labels,
+      colName,
+      labels && labels[colName] && labels[colName]?.label
+    );
+
+    return (labels && labels[colName] && labels[colName]?.label) || '';
+  }
 }
