@@ -1,7 +1,6 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Routes, RouterModule } from '@angular/router';
-import { NgxJs9Module } from '../../../projects/ngx-js9/src/public-api';
 
 // See: https://www.npmjs.com/package/angular-plotly.js
 import * as PlotlyJS from 'plotly.js-dist-min';
@@ -26,32 +25,37 @@ import { TableThumbnailComponent } from './table-thumbnail/table-thumbnail.compo
 import { StarOverlayComponent } from './star-overlay/star-overlay.component';
 import { SolarViewerComponent } from './solar-viewer/solar-viewer.component';
 import { PanstarrsOverlayComponent } from './panstarrs-overlay/panstarrs-overlay.component';
+import { DesktopView1Component } from './desktop-view-1/desktop-view-1.component';
+import { FitsJpgTogglerComponent } from './fits-jpg-toggler/fits-jpg-toggler.component';
+import { NgxJs9Module } from '../../../projects/ngx-js9/src/public-api';
 
 const routes: Routes = [{ path: '', component: DataDisplayComponent }];
 
 @NgModule({
   declarations: [
-    DataDisplayComponent,
-    TempComponent,
-    TableComponent,
     CarouselComponent,
+    DataDisplayComponent,
+    DesktopView1Component,
+    DesktopViewComponent,
+    FitsJpgTogglerComponent,
     ImageWheelComponent,
-    TableCheckboxesComponent,
+    MobileViewComponent,
     PanstarrsOverlayComponent,
     PlotlyGraphComponent,
     PlotlyGraphWrapperComponent,
-    TitleComponent,
-    MobileViewComponent,
-    DesktopViewComponent,
-    TableThumbnailComponent,
-    StarOverlayComponent,
     SolarViewerComponent,
+    StarOverlayComponent,
+    TableCheckboxesComponent,
+    TableComponent,
+    TableThumbnailComponent,
+    TempComponent,
+    TitleComponent,
   ],
   imports: [
     CommonModule,
     RouterModule.forChild(routes),
     SharedModule,
-    // NgxJs9Module,
+    NgxJs9Module,
     PlotlyModule,
   ],
 })

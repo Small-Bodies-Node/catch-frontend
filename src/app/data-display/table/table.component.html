@@ -11,6 +11,36 @@
     [dataSource]="tableData"
     class="data-table"
   >
+    <!-- THUMBNAIL COL -->
+    <ng-container
+      [matColumnDef]="'preview_url'"
+      [sticky]="isFirstFewColsSticky()"
+    >
+      <th mat-header-cell *matHeaderCellDef>
+        <div class="thumbnail-wrapper cell-container">
+          <button mat-button (click)="openSettingsDialog($event)">
+            <fa-icon icon="cog" [fixedWidth]="true"></fa-icon>
+          </button>
+        </div>
+      </th>
+      <td
+        mat-cell
+        *matCellDef="let element; let i = index"
+        (click)="selectRowDatum(i)"
+        [ngClass]="{ 'highlighted-sticky-cell': isRowSelected(element) }"
+      >
+        <div class="thumbnail-wrapper cell-container">
+          <!-- <img [src]="getThumbnailUrl(element)" /> -->
+          <app-table-thumbnail
+            [element]="element"
+            [isPriority]="isRowSelected(element)"
+            [label]="(isRowSelected(element) ? '*' : '') + 'T' + i"
+            (onLoadEventMessage)="rerenderTable($event)"
+          ></app-table-thumbnail>
+        </div>
+      </td>
+    </ng-container>
+
     <!-- CHECKBOX COL -->
     <ng-container
       [matColumnDef]="'download_checkboxes'"
@@ -39,36 +69,6 @@
             (change)="updateDownloadRowCheckbox(element, $event)"
           >
           </mat-checkbox>
-        </div>
-      </td>
-    </ng-container>
-
-    <!-- THUMBNAIL COL -->
-    <ng-container
-      [matColumnDef]="'preview_url'"
-      [sticky]="isFirstFewColsSticky()"
-    >
-      <th mat-header-cell *matHeaderCellDef>
-        <div class="thumbnail-wrapper cell-container">
-          <button mat-button (click)="openSettingsDialog($event)">
-            <fa-icon icon="cog" [fixedWidth]="true"></fa-icon>
-          </button>
-        </div>
-      </th>
-      <td
-        mat-cell
-        *matCellDef="let element; let i = index"
-        (click)="selectRowDatum(i)"
-        [ngClass]="{ 'highlighted-sticky-cell': isRowSelected(element) }"
-      >
-        <div class="thumbnail-wrapper cell-container">
-          <!-- <img [src]="getThumbnailUrl(element)" /> -->
-          <app-table-thumbnail
-            [element]="element"
-            [isPriority]="isRowSelected(element)"
-            [label]="(isRowSelected(element) ? '*' : '') + 'T' + i"
-            (onLoadEventMessage)="rerenderTable($event)"
-          ></app-table-thumbnail>
         </div>
       </td>
     </ng-container>

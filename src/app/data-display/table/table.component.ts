@@ -111,7 +111,7 @@ export class TableComponent implements OnInit, AfterViewInit, OnChanges {
             const rowHeight = this.tableRows.get(1)?.nativeElement.offsetHeight;
             const offset = this.tableContainerDiv.nativeElement.clientHeight;
             if (rowHeight && offset) {
-              const top = rowOfApiSelectedDatum * rowHeight - offset * 0.4;
+              const top = rowOfApiSelectedDatum * rowHeight - offset * 0.2;
               this.tableContainerDiv.nativeElement.scroll({
                 top,
                 behavior: 'smooth',

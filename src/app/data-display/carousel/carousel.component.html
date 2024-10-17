@@ -10,7 +10,7 @@
     <app-panstarrs-overlay></app-panstarrs-overlay>
 
     <ng-container *ngIf="isFits; else elseBlockShow">
-      <!-- <lib-ngx-js9
+      <lib-ngx-js9
         [width]="width"
         [height]="height"
         [siteTheme]="'DARK-THEME'"
@@ -20,7 +20,7 @@
           alerts: !true
         }"
         (fitsLoadStatus)="onFitsLoadStatusUpdate($event)"
-      ></lib-ngx-js9> -->
+      ></lib-ngx-js9>
     </ng-container>
 
     <ng-template #elseBlockShow>
