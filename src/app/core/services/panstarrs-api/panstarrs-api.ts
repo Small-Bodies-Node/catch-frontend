@@ -27,11 +27,12 @@ export class PanstarrsApiService {
   getPanstarrsData(
     ra: number,
     dec: number,
-    nDetectionsMin = 10
+    nDetectionsMin = 10,
+    raDecMaxErr = 0.007
   ): Observable<IPanstarrsApiResponse> {
     //
 
-    let url = `/api/panstarrs?ra=${ra}&dec=${dec}&nDetectionsMin=${nDetectionsMin}&radius=0.083`;
+    let url = `/api/panstarrs?ra=${ra}&dec=${dec}&nDetectionsMin=${nDetectionsMin}&radius=0.083&raDecMaxErr=${raDecMaxErr}`;
 
     return this.httpClient.get<IPanstarrsApiResponse>(url, {
       //

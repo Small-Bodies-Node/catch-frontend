@@ -43,6 +43,11 @@ export function app(): express.Express {
     })
   );
 
+  // Handle /data route separately without SSR
+  server.get('/data', (req, res) => {
+    res.sendFile(indexHtml);
+  });
+
   // All regular routes use the Angular engine
   server.get('**', (req, res, next) => {
     const { protocol, originalUrl, baseUrl, headers } = req;

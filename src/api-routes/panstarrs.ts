@@ -17,8 +17,8 @@ setInterval(() => {
  *  Ping panstarrs API
  */
 export const panstarrs = async (req: Request, res: Response) => {
-  const { ra, dec, radius, nDetectionsMin } = req.query;
-  if (!ra || !dec || !radius || !nDetectionsMin) {
+  const { ra, dec, radius, nDetectionsMin, raDecMaxErr } = req.query;
+  if (!ra || !dec || !radius || !nDetectionsMin || !raDecMaxErr) {
     return res.status(400).json({
       error:
         'Missing required query parameters: ra, dec, radius, nDetectionsMin',
@@ -33,10 +33,12 @@ export const panstarrs = async (req: Request, res: Response) => {
     'radius:',
     radius,
     'nDetectionsMin',
-    nDetectionsMin
+    nDetectionsMin,
+    'raDecMaxErr:',
+    raDecMaxErr
   );
 
-  const cacheKey = `${ra},${dec},${radius},${nDetectionsMin}`;
+  const cacheKey = `${ra},${dec},${radius},${nDetectionsMin},${raDecMaxErr}`;
   if (panstarrsCache[cacheKey]) {
     console.log('Returning cached data');
     return res.json(panstarrsCache[cacheKey]);
@@ -57,6 +59,7 @@ export const panstarrs = async (req: Request, res: Response) => {
           dec,
           radius,
           'nDetections.min': nDetectionsMin + '',
+          'raMeanErr.max': raDecMaxErr + '',
           // Fixed
           columns: panstarrsRequestedColumns,
           flatten_response: false,

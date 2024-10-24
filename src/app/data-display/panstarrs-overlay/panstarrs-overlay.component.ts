@@ -49,7 +49,7 @@ export class PanstarrsOverlayComponent implements OnInit {
             // 50 works well for neat data
 
             this.pansstarrsApiService
-              .getPanstarrsData(ra, dec, 50)
+              .getPanstarrsData(ra, dec, 50, 0.003)
               .subscribe((apiPayload) => {
                 this.raDecs = apiPayload.data.map((datum: any) => {
                   return {
