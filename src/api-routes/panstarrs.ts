@@ -1,6 +1,13 @@
 import express, { Request, Response } from 'express';
 import { panstarrsRequestedColumns } from '../utils/panstarrsRequestedColumns';
 
+/**
+ *
+ * See here: https://catalogs.mast.stsci.edu/panstarrs/
+ *  ... for more information on the Pan-STARRS catalog.
+ *
+ */
+
 const panstarrsCache: any = {};
 
 // Clear cache every 24 hours (24 * 60 * 60 * 1000 ms)

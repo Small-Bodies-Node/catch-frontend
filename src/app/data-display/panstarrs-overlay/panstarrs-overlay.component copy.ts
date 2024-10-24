@@ -13,6 +13,8 @@ import { PanstarrsApiService } from '../../core/services/panstarrs-api/panstarrs
   styleUrls: ['./panstarrs-overlay.component.scss'],
 })
 export class PanstarrsOverlayComponent implements OnInit {
+  // --->>>
+
   @ViewChild('myContainer') myDiv!: ElementRef;
 
   apiSelectedDatum?: IApiDatum;
@@ -24,28 +26,41 @@ export class PanstarrsOverlayComponent implements OnInit {
     private store$: Store<IAppState>,
     private pansstarrsApiService: PanstarrsApiService
   ) {
+    //--->>
+
     this.subscriptions.add(
       combineLatest([this.store$.select(selectApiSelectedDatum)])
         .pipe(
           distinctUntilChanged(),
-          map(([apiSelectedDatum]) => apiSelectedDatum)
+          map(([apiSelectedDatum]) => {
+            // console.log('>>>>> ', apiStatus, target);
+            return apiSelectedDatum;
+          })
         )
         .subscribe((apiSelectedDatum) => {
+          // --->>
+
           this.apiSelectedDatum = apiSelectedDatum;
 
           if (this.apiSelectedDatum) {
             const ra = this.apiSelectedDatum.ra;
             const dec = this.apiSelectedDatum.dec;
 
+            // 50 works well for neat data
+
             this.pansstarrsApiService
               .getPanstarrsData(ra, dec, 50, 0.03)
               .subscribe((apiPayload) => {
-                this.raDecs = apiPayload.data.map((datum: any) => ({
-                  ra: datum.raMean,
-                  dec: datum.decMean,
-                  raErr: datum.raMeanErr,
-                  decErr: datum.decMeanErr,
-                }));
+                this.raDecs = apiPayload.data.map((datum: any) => {
+                  return {
+                    ra: datum.raMean,
+                    dec: datum.decMean,
+                    raErr: datum.raMeanErr,
+                    decErr: datum.decMeanErr,
+                  };
+                });
+
+                // console.log(this.raDecs);
               });
           }
         })
@@ -58,43 +73,12 @@ export class PanstarrsOverlayComponent implements OnInit {
     this.subscriptions.unsubscribe();
   }
 
-  // Convert degrees to radians
-  private deg2rad(degrees: number): number {
-    return degrees * (Math.PI / 180);
-  }
-
-  /**
-   * First-pass attempt
-   */
-  getDivLeftOld(ra: number): number {
+  getDivLeft(ra: number): number {
     const ra0 = this.apiSelectedDatum?.ra;
     if (!ra0) return -1000;
     const angularWidth = 0.0833;
     const width = this.myDiv.nativeElement.offsetWidth || 0;
     const res = ((ra - ra0) / angularWidth) * width + width / 2;
-    return res;
-  }
-
-  /**
-   * Claude-determined solution with cosine correction
-   */
-  getDivLeft(ra: number): number {
-    const ra0 = this.apiSelectedDatum?.ra;
-    if (!ra0) return -1000;
-
-    const dec0 = this.apiSelectedDatum?.dec;
-    if (dec0 === undefined) return -1000;
-
-    const angularWidth = 0.0833;
-    const width = this.myDiv.nativeElement.offsetWidth || 0;
-
-    // Apply the cosine correction factor based on declination
-    const cosDec = Math.cos(this.deg2rad(dec0));
-
-    // Adjust the RA difference by the cosine of declination
-    const correctedRaDiff = (ra - ra0) * cosDec;
-
-    const res = (correctedRaDiff / angularWidth) * width + width / 2;
     return res;
   }
 
@@ -108,17 +92,10 @@ export class PanstarrsOverlayComponent implements OnInit {
   }
 
   getDivWidth(raErr: number): number {
-    const dec0 = this.apiSelectedDatum?.dec;
-    if (dec0 === undefined) return 0;
-
     const angularWidth = 0.0833;
     const width = this.myDiv.nativeElement.offsetWidth || 0;
-
-    // Apply the cosine correction to the RA error as well
-    const cosDec = Math.cos(this.deg2rad(dec0));
-    const correctedRaErr = raErr * cosDec;
-
-    const res = (correctedRaErr / angularWidth) * width;
+    const res = (raErr / angularWidth) * width;
+    // console.log('raErr:', raErr, 'res:', res);
     return res;
   }
 

@@ -185,8 +185,8 @@ export class ApiDataMockService implements IApiDataService {
           return [
             `neat_palomar_tricam`,
             `neat_maui_geodss`,
-            // `skymapper`,
-            // `ps1dr2`,
+            `skymapper`,
+            `ps1dr2`,
             `catalina_bigelow`,
             `catalina_lemmon`,
             `catalina_kittpeak`,
