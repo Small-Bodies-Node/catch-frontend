@@ -43,7 +43,12 @@ export class SolarViewerComponent implements OnInit {
               this.solarViewer = new SbnSolarViewer({
                 containerId: this.sbnSolarViewerId,
                 // asteroid: { target: '65P*', data: timeStampsJds },
-                asteroid: { target: '65P*', data: timeStampsJds },
+                asteroid: { target: '65P', data: timeStampsJds },
+                isControlsShown: !true,
+                logScaleZoomingPositionAus: { x: 3, y: 0, z: 1 },
+                nonLogScaleZoomingPositionAus: { x: 0, y: 0, z: 10 },
+                // planetOpacity: 0.9,
+                isStarField: true,
               });
               this.solarViewer.setTargetTime(timeStamps[0]);
               this.solarViewer.begin();

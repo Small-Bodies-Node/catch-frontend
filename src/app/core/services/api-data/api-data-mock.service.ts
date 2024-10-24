@@ -194,7 +194,7 @@ export class ApiDataMockService implements IApiDataService {
             `spacewatch`,
           ].includes(_.source);
         })
-        .filter((_, ind) => ind < 500),
+        .filter((_, ind) => ind < 50),
     }).pipe(delay<IApiDataCaughtResult>(mockTime1));
   }
 
