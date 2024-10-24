@@ -108,6 +108,10 @@ export class PanstarrsOverlayComponent implements OnInit {
   }
 
   getDivWidth(raErr: number): number {
+    return 10;
+
+    //
+    /*
     const dec0 = this.apiSelectedDatum?.dec;
     if (dec0 === undefined) return 0;
 
@@ -120,12 +124,23 @@ export class PanstarrsOverlayComponent implements OnInit {
 
     const res = (correctedRaErr / angularWidth) * width;
     return res;
+    */
   }
 
   getDivHeight(decErr: number): number {
+    return 10;
+
+    //
     const angularWidth = 0.0833;
     const width = this.myDiv.nativeElement.offsetWidth || 0;
     const res = (decErr / angularWidth) * width;
     return res;
+  }
+
+  getOpacity(raErr: number) {
+    // Return a value between 0.1 and 1.0
+    // Return 0.1 if raErr is more than 0.007;
+    // Return 1.0 if raErr is less than 0.003;
+    return Math.max(0.1, 1.0 - (raErr - 0.003) / 0.004);
   }
 }

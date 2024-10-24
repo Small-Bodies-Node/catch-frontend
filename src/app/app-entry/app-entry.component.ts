@@ -64,7 +64,6 @@ import { RouterModule } from '@angular/router';
     UnrecognizedNameDialogComponent,
     StreamingMessagesComponent,
   ],
-  // declarations: [AppSideNavComponent],
 })
 export class AppEntryComponent implements OnInit {
   // --->>>
