@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { MatSidenav } from '@angular/material/sidenav';
 import { Store } from '@ngrx/store';
 import {
@@ -38,6 +38,7 @@ import { SearchFieldComponent } from '../components/search-field/search-field.co
 import { UnrecognizedNameDialogComponent } from '../components/search-field/unrecognized-name-dialog.component';
 import { StreamingMessagesComponent } from '../components/streaming-messages/streaming-messages.component';
 import { RouterModule } from '@angular/router';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-entry',
@@ -66,7 +67,7 @@ import { RouterModule } from '@angular/router';
   ],
 })
 export class AppEntryComponent implements OnInit {
-  // --->>>
+  private destroy$ = new Subject<void>();
 
   isPageTransitionScheduled = false;
   delayTimeMs = defaultPageAnimationDelayMs;
@@ -76,82 +77,106 @@ export class AppEntryComponent implements OnInit {
 
   constructor(
     private store$: Store<IAppState>,
-    private localStorageService: LocalStorageService
-  ) {
-    // this._onSiteLoad();
-  }
+    private localStorageService: LocalStorageService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit(): void {
     this._onSiteLoad();
   }
 
-  private _onSiteLoad() {
-    // --->>
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 
+  private _onSiteLoad() {
     // Ensure local storage is setup with default values
     this.localStorageService.verifyAndRepairLocalStorageState();
 
     // Load localStorage settings into ngrx store
     this.store$.dispatch(SiteSettingsAction_LoadAllFromLocalStorage());
 
-    /**
-     * Whenever the native StoreRouter dispatches an action (viz. on route updates)
-     * we dispatch our own "navigation-update-route-records" action,
-     * so that the previous and present routes get updated
-     */
-    this.store$.select(selectUrl).subscribe((url) => {
-      if (!!url) {
-        this.store$.dispatch(
-          NavigationAction_UpdateRouteRecords({
-            newPresentRoute: url,
-          })
-        );
-      }
-    });
-
+    // Handle route updates
     this.store$
-      .select(selectIsNewRouteScheduled)
-      .subscribe((isNewRouteScheduled) => {
-        console.log('isNewRouteScheduled:', isNewRouteScheduled);
-        this.isPageTransitionScheduled = isNewRouteScheduled;
+      .select(selectUrl)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((url) => {
+        if (!!url) {
+          this.store$.dispatch(
+            NavigationAction_UpdateRouteRecords({
+              newPresentRoute: url,
+            })
+          );
+        }
       });
 
-    /**
-     * Logic to hide/show footer on route changes
-     * We delay the reappearance of the footer if navigating to/from homepage
-     */
-    this.store$.select(selectNavigationRecords).subscribe((navSubstate) => {
-      console.log('navSubstate:', navSubstate);
-      const isToHomePage = navSubstate.presentRoute === '/';
-      const isFromHomePage = navSubstate.previousRoute === '/';
-      // Control delay time for footer to reappear
-      this.delayTimeMs = defaultPageAnimationDelayMs;
-      if (isToHomePage) this.delayTimeMs = toHomePageAnimationDelayMs;
-      if (isFromHomePage) this.delayTimeMs = fromHomePageAnimationDelayMs;
-    });
+    // Handle route scheduling
+    this.store$
+      .select(selectIsNewRouteScheduled)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((isNewRouteScheduled) => {
+        if (this.isPageTransitionScheduled !== isNewRouteScheduled) {
+          this.isPageTransitionScheduled = isNewRouteScheduled;
+          this.cdr.detectChanges();
+        }
+      });
 
-    // Set siteTheme
+    // Handle navigation state
+    this.store$
+      .select(selectNavigationRecords)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((navSubstate) => {
+        const isToHomePage = navSubstate.presentRoute === '/';
+        const isFromHomePage = navSubstate.previousRoute === '/';
+
+        const newDelayTime = isToHomePage
+          ? toHomePageAnimationDelayMs
+          : isFromHomePage
+          ? fromHomePageAnimationDelayMs
+          : defaultPageAnimationDelayMs;
+
+        if (this.delayTimeMs !== newDelayTime) {
+          this.delayTimeMs = newDelayTime;
+          this.cdr.detectChanges();
+        }
+      });
+
+    // Handle theme changes
     this.store$
       .select(selectSiteSettingsEffectiveTheme)
+      .pipe(takeUntil(this.destroy$))
       .subscribe((siteTheme) => {
-        this.siteTheme = siteTheme;
-        // Set body color based on siteTheme value
-        const isDark = siteTheme === 'DARK-THEME';
-        setTimeout(() => {
-          // This makes mobile swiping more attractive with dark theme
-          try {
-            document.body.style.backgroundColor = isDark ? '#303030' : 'white';
-          } catch (e) {
-            console.error("Couldn't set body color");
-          }
-        }, 0);
+        if (this.siteTheme !== siteTheme) {
+          this.siteTheme = siteTheme;
+
+          // Set body color based on siteTheme value
+          const isDark = siteTheme === 'DARK-THEME';
+          queueMicrotask(() => {
+            try {
+              document.body.style.backgroundColor = isDark
+                ? '#303030'
+                : 'white';
+            } catch (e) {
+              console.error("Couldn't set body color");
+            }
+          });
+
+          this.cdr.detectChanges();
+        }
       });
 
     // Monitor API Status
-    this.store$.select(selectApiStatus).subscribe((status) => {
-      this.isStreamingMessage = status.code === 'searching';
-      // console.log('%%%', status.code, this.isStreamingMessage);
-    });
+    this.store$
+      .select(selectApiStatus)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((status) => {
+        const newIsStreaming = status.code === 'searching';
+        if (this.isStreamingMessage !== newIsStreaming) {
+          this.isStreamingMessage = newIsStreaming;
+          this.cdr.detectChanges();
+        }
+      });
   }
 
   openSidenav(sidenav: MatSidenav) {

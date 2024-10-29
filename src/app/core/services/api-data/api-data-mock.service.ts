@@ -183,15 +183,15 @@ export class ApiDataMockService implements IApiDataService {
         .filter((_, ind) => {
           // return true;
           return [
-            `neat_palomar_tricam`,
-            `neat_maui_geodss`,
-            `skymapper`,
-            `ps1dr2`,
-            `catalina_bigelow`,
-            `catalina_lemmon`,
-            `catalina_kittpeak`,
-            `catalina_bokneosurvey`,
-            `spacewatch`,
+            'neat_palomar_tricam',
+            'neat_maui_geodss',
+            'skymapper_dr4',
+            'ps1dr2',
+            'catalina_bigelow',
+            'catalina_lemmon',
+            'catalina_bokneosurvey',
+            'spacewatch',
+            'loneos',
           ].includes(_.source);
         })
         .filter((_, ind) => ind < 500),

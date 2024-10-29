@@ -61,7 +61,8 @@ export const fetchApiDataResults$ = createEffect(
             switchMap((apiResult) => {
               // Handle error
               if (apiResult.status === 'error') {
-                setTimeout(() => router.navigate([''], {}), 50);
+                // setTimeout(() => router.navigate([''], {}), 5000000);
+                console.log('Error occurred:', apiResult.message);
                 snackBar.open(
                   `Error occurred: ${apiResult.message}. JobId: ${apiResult.jobId}`,
                   'Close',
@@ -89,9 +90,11 @@ export const fetchApiDataResults$ = createEffect(
               const jobId = apiResult.jobId;
               const isDataFound = !!apiData.length;
 
+              console.log('apiResult:', apiResult);
+
               // After results received we trigger change of route
               if (isDataFound) {
-                console.log('Data found!!!', apiData);
+                console.log('Data found!!!');
                 delayedRouter.delayedRouter('/data', {
                   queryParams: {
                     target,
@@ -102,7 +105,7 @@ export const fetchApiDataResults$ = createEffect(
                   },
                 });
               } else {
-                setTimeout(() => router.navigate([''], {}), 50);
+                // setTimeout(() => router.navigate([''], {}), 50000);
                 snackBar.open(
                   `Search did not yield data for ${target}. JobId: ${jobId}`,
                   'Close',
@@ -120,6 +123,13 @@ export const fetchApiDataResults$ = createEffect(
                 },
                 {} as { [key: string]: boolean }
               );
+
+              // return concat(
+              //   of({
+              //     type: 'SET_DATA',
+              //     apiData,
+              //   })
+              // );
 
               /**
                * Return multiple actions in specific order using concat operator

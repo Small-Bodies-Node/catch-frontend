@@ -113,7 +113,7 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
       [formControlLabels.catalina_bokneosurvey]: new FormControl(true),
       [formControlLabels.catalina_lemmon]: new FormControl(true),
       [formControlLabels.ps1dr2]: new FormControl(true),
-      [formControlLabels.skymapper]: new FormControl(true),
+      [formControlLabels.skymapper_dr4]: new FormControl(true),
       [formControlLabels.spacewatch]: new FormControl(true),
       //
       [formControlLabels.use_cached_results_control]: new FormControl(true),

@@ -16,7 +16,7 @@ export const apiBaseUrl =
 /**
  * Limits time that can be spent listening for streaming results
  */
-export const apiStreamTimeoutSecs = 90;
+export const apiStreamTimeoutSecs = 900;
 
 /**
  * Layout Constants

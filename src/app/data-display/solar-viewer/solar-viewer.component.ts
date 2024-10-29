@@ -37,7 +37,7 @@ export class SolarViewerComponent implements OnInit {
           const timeStampsJds = timeStamps.map((date) =>
             dateToJulianDay(new Date(date))
           );
-          console.log('timeStamps', timeStamps);
+          // console.log('timeStamps', timeStamps);
           if (!this.solarViewer) {
             setTimeout(() => {
               this.solarViewer = new SbnSolarViewer({

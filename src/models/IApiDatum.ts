@@ -35,10 +35,10 @@ export interface IApiDatum {
   sangle: number;
   seeing: number | null;
   // selong?: number;
-  // 'skymapper:field_id'?: number;
-  // 'skymapper:image_type'?: string;
-  // 'skymapper:sb_mag'?: number;
-  // 'skymapper:zpapprox'?: number;
+  'skymapper:field_id'?: any;
+  'skymapper:image_type'?: any;
+  'skymapper:sb_mag'?: any;
+  'skymapper:zpapprox'?: any;
   source: string;
   source_name: string;
   thumbnail_url?: string | null;

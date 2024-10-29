@@ -93,6 +93,7 @@ export class MobileViewComponent implements OnInit {
             params;
 
           if (!target) {
+            console.log('Debug X');
             this.router.navigate([''], {});
             return;
           }
