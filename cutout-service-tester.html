@@ -31,7 +31,7 @@
     <script>
       const main = async () => {
         const caughtUrl =
-          "https://catch-dev-api.astro.umd.edu/caught/fa3b628eaefe48cd88d93fb04806c179";
+          "https://catch-dev-api.astro.umd.edu/caught/b5d58feb02c44e10891366bd93f82a89";
 
         console.log("Fetching data from API...");
 
@@ -45,10 +45,12 @@
         const data = result.data;
         const urls = data
           .map((d) => d.preview_url)
-          .filter((d, ind) => d.includes("5ub5yo2kmj"))
+          .filter((d, ind) => {
+            return !!d && d.includes("5ub5yo2kmj");
+          })
           .filter((d, ind) => ind < 40);
 
-        // console.log(urls);
+        console.log(urls);
 
         // return;
 
