@@ -14,7 +14,6 @@ import { ApiDataAction_SetStatus } from '../../../ngrx/actions/api-data.actions'
 import { IApiDataCatchResult } from '../../../../models/IApiDataCatchResult';
 import { IApiDataCaughtResult } from '../../../../models/IApiDataCaughtResult';
 import { apiBaseUrl, apiStreamTimeoutSecs } from '../../../../utils/constants';
-import { apiDataMockResult } from '../../../../utils/apiDataMockResult';
 
 @Injectable({ providedIn: 'root' })
 export class ApiDataService implements IApiDataService {
@@ -153,7 +152,7 @@ export class ApiDataService implements IApiDataService {
       x = this.httpClient.get<IApiDataCaughtResult>(caughtUrl).pipe(
         catchError((error) => {
           console.error('HTTP Error details:', error);
-          debugger; // This will pause execution if devtools is open
+          // debugger; // This will pause execution if devtools is open
           // throw error; // Re-throw to maintain error flow
           return of({});
         })
@@ -211,8 +210,6 @@ export class ApiDataService implements IApiDataService {
           throw new Error('No valid job_id was returned');
         }
 
-        console.log('Debug 0; why always queued?!');
-
         if (!queued) {
           return this.apiCaughtRequest(job_id).pipe(
             map(({ data, job_id }): TApiDataResult => {
@@ -229,8 +226,6 @@ export class ApiDataService implements IApiDataService {
             })
           );
         }
-
-        console.log('Debug 1');
 
         // Else, listen to SSE stream and then grab data
         return from(this.watchJobStream(job_id)).pipe(

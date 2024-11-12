@@ -29,6 +29,7 @@ import { DesktopView1Component } from './desktop-view-1/desktop-view-1.component
 import { FitsJpgTogglerComponent } from './fits-jpg-toggler/fits-jpg-toggler.component';
 import { NgxJs9Module } from '../../../projects/ngx-js9/src/public-api';
 import { DesktopView2Component } from './desktop-view-2/desktop-view-2.component';
+import { Table1Component } from './table-1/table-1.component';
 
 const routes: Routes = [{ path: '', component: DataDisplayComponent }];
 
@@ -49,6 +50,7 @@ const routes: Routes = [{ path: '', component: DataDisplayComponent }];
     StarOverlayComponent,
     TableCheckboxesComponent,
     TableComponent,
+    Table1Component,
     TableThumbnailComponent,
     TempComponent,
     TitleComponent,

@@ -26,7 +26,7 @@ const defaultOptions: IOptions = {
 })
 export class ImageFetchService {
   private queue: FetchTask[] = [];
-  private concurrentLimit: number = 2;
+  private concurrentLimit: number = 5;
   private activeRequests: number = 0;
 
   constructor() {}

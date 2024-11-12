@@ -1,0 +1,12 @@
+@use "sass:map";
+@use "@angular/material" as mat;
+
+@mixin app-data-table-component-theme($theme) {
+  //
+
+  $accent: green;
+
+  app-table {
+    //
+  }
+}

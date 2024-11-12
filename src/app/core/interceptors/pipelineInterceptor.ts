@@ -13,8 +13,6 @@ export const pipelineInterceptor: HttpInterceptorFn = (req, next) => {
   // Instead of constructor injection, we use inject()
   const snackBar = inject(MatSnackBar);
 
-  console.log('Being used?!');
-
   // Get timeout value from headers
   const timeoutValue =
     parseInt(req.headers.get('timeout') || `${apiDefaultTimeoutMs}`, 10) ||
@@ -25,7 +23,7 @@ export const pipelineInterceptor: HttpInterceptorFn = (req, next) => {
     map((event) => {
       if (event instanceof HttpResponse) {
         // Do sth with response
-        console.log('Request event:', event);
+        // console.log('Request event:', event);
       }
       return event;
     }),
@@ -61,7 +59,7 @@ export const pipelineInterceptor: HttpInterceptorFn = (req, next) => {
     // Final mapping
     map(
       (event) => {
-        console.log('API pipeline completed', event);
+        // console.log('API pipeline completed', event);
         return event;
       },
       (err: any) => {
