@@ -194,7 +194,7 @@ export class ApiDataMockService implements IApiDataService {
             'loneos',
           ].includes(_.source);
         })
-        .filter((_, ind) => ind < 100),
+        .filter((_, ind) => ind < 10000000),
     }).pipe(delay<IApiDataCaughtResult>(mockTime1));
   }
 

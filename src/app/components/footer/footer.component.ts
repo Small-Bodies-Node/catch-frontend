@@ -45,7 +45,7 @@ export class FooterComponent {
     );
 
     this.isHappyWithCookie$.subscribe((val) => {
-      console.log('Is happy with cookies:', val);
+      // console.log('Is happy with cookies:', val);
     });
   }
 

@@ -42,7 +42,6 @@ export class BackgroundComponent implements OnInit {
 
       // Remove query params from url
       const urlPath = (navRecords.presentRoute || '').split('?')[0];
-      console.log('urlPath:', urlPath);
       this.isBackgroundShown =
         ['/', '/home'].includes(urlPath) || urlPath === '';
       // this.isBackgroundShown = true;
