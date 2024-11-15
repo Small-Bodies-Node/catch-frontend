@@ -26,6 +26,7 @@ import {
 import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
+import { ApiDataAction_SetSelectedDatum } from '../../ngrx/actions/api-data.actions';
 
 type TColName = keyof IApiDatum;
 
@@ -118,5 +119,61 @@ export class Table1Component
     if (this.dataSource.paginator) {
       this.dataSource.paginator.firstPage();
     }
+  }
+
+  getSourceName(fullName: string) {
+    const abbr = {
+      'NEAT Palomar Tricam': 'NEAT (PT)',
+      'NEAT Maui GEODSS': 'NEAT (MG)',
+      'PanSTARRS 1 DR2': 'PanSTARRS',
+      'Catalina Sky Survey, Mt. Lemmon': 'Catalina (ML)',
+      'Catalina Sky Survey, Mt. Bigelow': 'Catalina (MB)',
+    };
+    return abbr.hasOwnProperty(fullName)
+      ? abbr[fullName as keyof typeof abbr]
+      : fullName;
+  }
+
+  getAllCols() {
+    if (!this.shownCols) return [];
+    return [
+      // 'download_checkboxes',
+      // 'preview_url',
+      'source_name',
+      ...this.shownCols,
+    ];
+  }
+
+  keyPress(event: KeyboardEvent) {
+    // --->
+
+    // Extract pertinent info from event
+    event.preventDefault();
+    const arrowDirn = event.key;
+    const isArrowDown = arrowDirn === 'ArrowDown';
+    const isArrowUp = arrowDirn === 'ArrowUp';
+
+    // Determine index of presently selected datum:
+    const sortedApiData = this.getSortedApiData();
+    const selectedDatum = this.apiSelectedDatum;
+
+    // Logic to select row above/below
+    if (selectedDatum && sortedApiData && (isArrowUp || isArrowDown)) {
+      const oldIndex = sortedApiData
+        .map((el) => el.product_id)
+        .indexOf(selectedDatum.product_id);
+      let newIndex = isArrowUp ? oldIndex - 1 : oldIndex + 1;
+      if (newIndex < 0) newIndex = 0;
+      if (newIndex >= sortedApiData.length) newIndex = sortedApiData.length - 1;
+      const apiDatum = sortedApiData[newIndex];
+      this.store$.dispatch(ApiDataAction_SetSelectedDatum({ apiDatum }));
+    }
+  }
+
+  getSortedApiData(): IApiDatum[] | undefined {
+    if (!this.dataSource || !this.dataSource.sort) return undefined;
+    const data = [...this.dataSource.data];
+    const sort = this.dataSource.sort;
+    return this.dataSource.sortData(data, sort);
   }
 }

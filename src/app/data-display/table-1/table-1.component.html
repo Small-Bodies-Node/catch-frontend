@@ -1,5 +1,5 @@
 <div class="table-container mat-elevation-z8">
-  <mat-form-field>
+  <!-- <mat-form-field>
     <mat-label>Filter</mat-label>
     <input
       matInput
@@ -7,11 +7,23 @@
       placeholder="Ex. Mia"
       #input
     />
-  </mat-form-field>
+  </mat-form-field> -->
 
   @if (dataSource && shownCols) {
-  <div class="mat-elevation-z8">
+  <div class="table-wrapper mat-elevation-z8">
     <table mat-table [dataSource]="dataSource" matSort>
+      <!--  -->
+
+      <!--  -->
+      <ng-container [matColumnDef]="'source_name'" [sticky]="true">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>
+          {{ "SOURCE" }}
+        </th>
+        <td mat-cell *matCellDef="let row">
+          {{ getSourceName(row.source_name) }}
+        </td>
+      </ng-container>
+
       <!-- Loop through each key in the array of column keys -->
       @for (key of shownCols; track key) {
       <ng-container [matColumnDef]="key">
@@ -22,22 +34,31 @@
       </ng-container>
       }
 
-      <tr mat-header-row *matHeaderRowDef="shownCols"></tr>
-      <tr mat-row *matRowDef="let row; columns: shownCols"></tr>
+      <!-- <tr mat-header-row *matHeaderRowDef="shownCols; sticky: true"></tr> -->
+      <!-- <tr mat-row *matRowDef="let row; columns: shownCols"></tr> -->
+
+      <tr mat-header-row *matHeaderRowDef="getAllCols(); sticky: true"></tr>
+      <tr
+        mat-row
+        *matRowDef="let row; columns: getAllCols()"
+        (keydown)="keyPress($event)"
+        tabindex="0"
+      ></tr>
 
       <!-- Row shown when there is no matching data. -->
       <tr class="mat-row" *matNoDataRow>
         <td class="mat-cell" [attr.colspan]="shownCols.length">
-          No data matching the filter "{{ input.value }}"
+          <!-- No data matching the filter "{{ input.value }}" -->
+          No data matching the filter
         </td>
       </tr>
     </table>
-
-    <mat-paginator
-      [pageSizeOptions]="pageSizeOptions"
-      [pageSize]="pageSize"
-      aria-label="Select page of users"
-    ></mat-paginator>
   </div>
+
+  <mat-paginator
+    [pageSizeOptions]="pageSizeOptions"
+    [pageSize]="pageSize"
+    aria-label="Select page of users"
+  ></mat-paginator>
   }
 </div>

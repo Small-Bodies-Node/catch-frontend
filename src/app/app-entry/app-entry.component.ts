@@ -74,6 +74,7 @@ export class AppEntryComponent implements OnInit {
   isAppLoaded = false;
   isStreamingMessage = false;
   siteTheme: TPermittedTheme = 'DARK-THEME';
+  isFooterHidden = false;
 
   constructor(
     private store$: Store<IAppState>,
@@ -140,6 +141,8 @@ export class AppEntryComponent implements OnInit {
           this.delayTimeMs = newDelayTime;
           this.cdr.detectChanges();
         }
+
+        this.isFooterHidden = !!navSubstate.presentRoute?.startsWith('/data');
       });
 
     // Handle theme changes
@@ -201,6 +204,11 @@ export class AppEntryComponent implements OnInit {
   }
 
   getFooterStyle() {
+    // Hide footer if route begins /data
+    if (this.isFooterHidden) {
+      return { display: 'none' };
+    }
+
     return {
       height: `${footerHeightPx}px`,
       maxHeight: `${footerHeightPx}px`,
