@@ -26,7 +26,12 @@ import {
 import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
-import { ApiDataAction_SetSelectedDatum } from '../../ngrx/actions/api-data.actions';
+import {
+  ApiDataAction_SetDownloadRowState,
+  ApiDataAction_SetSelectedDatum,
+} from '../../ngrx/actions/api-data.actions';
+import { TDownloadRowsState } from '../../../models/TDownloadRowsState';
+import { MatCheckboxChange } from '@angular/material/checkbox';
 
 type TColName = keyof IApiDatum;
 
@@ -50,6 +55,9 @@ export class Table1Component
   ) as Partial<TColName>[];
   apiDataLabels: TApiDataLabels = apiDataLabels;
   subscriptions = new Subscription();
+  isDownloadAllCheckboxChecked = false;
+  isDownloadAllCheckboxIndeterminate = false;
+  downloadRowState: TDownloadRowsState = {};
 
   pageSizeOptions = [25, 50, 100, 200];
   pageSize = 25;
@@ -86,7 +94,7 @@ export class Table1Component
       this.store$
         .select(selectApiDataDownloadRowState)
         .subscribe((downloadRowState) => {
-          // Handle downloadRowState updates
+          this.downloadRowState = downloadRowState;
         })
     );
   }
@@ -137,7 +145,7 @@ export class Table1Component
   getAllCols() {
     if (!this.shownCols) return [];
     return [
-      // 'download_checkboxes',
+      'download_checkboxes', // download_checkboxes
       // 'preview_url',
       'source_name',
       ...this.shownCols,
@@ -175,5 +183,41 @@ export class Table1Component
     const data = [...this.dataSource.data];
     const sort = this.dataSource.sort;
     return this.dataSource.sortData(data, sort);
+  }
+
+  /////////////////////////////////////////////
+  // Logic related to checkboxes
+  /////////////////////////////////////////////
+  clickDownloadAllCheckbox() {
+    if (!this.apiData) return;
+    this.isDownloadAllCheckboxChecked = !this.isDownloadAllCheckboxChecked;
+    const newDownloadRowState = { ...this.downloadRowState };
+    Object.keys(newDownloadRowState).forEach((key, ind) => {
+      newDownloadRowState[key] = this.isDownloadAllCheckboxChecked;
+    });
+    this.store$.dispatch(
+      ApiDataAction_SetDownloadRowState({ newDownloadRowState })
+    );
+    this.isDownloadAllCheckboxIndeterminate = false;
+  }
+
+  updateDownloadRowCheckbox(apiDatum: IApiDatum, e: MatCheckboxChange) {
+    const productId = apiDatum.product_id;
+    const newDownloadRowState = { ...this.downloadRowState };
+    newDownloadRowState[productId] = !newDownloadRowState[productId];
+    this.store$.dispatch(
+      ApiDataAction_SetDownloadRowState({ newDownloadRowState })
+    );
+    this.isDownloadAllCheckboxIndeterminate = true;
+  }
+
+  isRowChecked(apiDatum: IApiDatum) {
+    return this.downloadRowState[apiDatum.product_id];
+  }
+
+  isRowSelected(element: IApiDatum) {
+    const isRowSelected =
+      element.product_id === this.apiSelectedDatum?.product_id;
+    return isRowSelected;
   }
 }
