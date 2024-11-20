@@ -1,5 +1,6 @@
 import {
   AfterViewInit,
+  ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
   OnChanges,
@@ -10,6 +11,11 @@ import {
 } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { Store } from '@ngrx/store';
+import { MatCheckboxChange } from '@angular/material/checkbox';
+import { MatDialog } from '@angular/material/dialog';
+import { MatTableDataSource } from '@angular/material/table';
+import { MatPaginator, PageEvent } from '@angular/material/paginator';
+import { MatSort } from '@angular/material/sort';
 
 import { IApiDatum } from '../../../models/IApiDatum';
 import { IAppState } from '../../ngrx/reducers';
@@ -23,15 +29,13 @@ import {
   selectApiData,
   selectApiSelectedDatum,
 } from '../../ngrx/selectors/api-data.selectors';
-import { MatTableDataSource } from '@angular/material/table';
-import { MatPaginator } from '@angular/material/paginator';
-import { MatSort } from '@angular/material/sort';
 import {
   ApiDataAction_SetDownloadRowState,
   ApiDataAction_SetSelectedDatum,
 } from '../../ngrx/actions/api-data.actions';
 import { TDownloadRowsState } from '../../../models/TDownloadRowsState';
-import { MatCheckboxChange } from '@angular/material/checkbox';
+import { TableCheckboxesComponent } from '../table-checkboxes/table-checkboxes.component';
+import { ImageFetchService } from '../../core/services/fetch-image/fetch-image.service';
 
 type TColName = keyof IApiDatum;
 
@@ -39,6 +43,7 @@ type TColName = keyof IApiDatum;
   selector: 'app-table-1',
   templateUrl: './table-1.component.html',
   styleUrls: ['./table-1.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Table1Component
   implements OnInit, AfterViewInit, OnDestroy, OnChanges
@@ -48,29 +53,32 @@ export class Table1Component
 
   dataSource?: MatTableDataSource<IApiDatum>;
   apiSelectedDatum?: IApiDatum;
-  apiData?: IApiDatum[];
+  allApiData?: IApiDatum[];
+  paginatedApiData?: IApiDatum[];
   colState: Partial<TApiDataColState> = { ...apiDataInitColState };
   shownCols: Partial<TColName>[] = Object.keys(apiDataInitColState).filter(
     (key) => apiDataInitColState[key as keyof TApiDataColState]
   ) as Partial<TColName>[];
-  apiDataLabels: TApiDataLabels = apiDataLabels;
   subscriptions = new Subscription();
   isDownloadAllCheckboxChecked = false;
   isDownloadAllCheckboxIndeterminate = false;
+  isScrolling = true;
   downloadRowState: TDownloadRowsState = {};
 
   pageSizeOptions = [25, 50, 100, 200];
   pageSize = 25;
+  pageIndex = 0;
 
   constructor(
     private store$: Store<IAppState>,
-    private changeDetectorRefs: ChangeDetectorRef
+    private changeDetector: ChangeDetectorRef,
+    private dialog: MatDialog,
+    private fetchImageService: ImageFetchService
   ) {
     this.subscriptions.add(
       this.store$.select(selectApiData).subscribe((apiData) => {
-        this.apiData = apiData?.filter((_, ind) => ind < 70000000000);
-        if (this.apiData) {
-          this.dataSource = new MatTableDataSource(this.apiData);
+        this.allApiData = apiData?.filter((_, ind) => ind < 70000000000);
+        if (this.allApiData) {
           this.setPaginatorAndSort();
         }
       })
@@ -80,6 +88,7 @@ export class Table1Component
         .select(selectApiSelectedDatum)
         .subscribe((apiSelectedDatum) => {
           this.apiSelectedDatum = apiSelectedDatum;
+          this.rerenderTable();
         })
     );
     this.subscriptions.add(
@@ -88,6 +97,7 @@ export class Table1Component
         this.shownCols = Object.keys(this.colState).filter(
           (key) => this.colState[key as keyof TApiDataColState]
         ) as TColName[];
+        this.rerenderTable();
       })
     );
     this.subscriptions.add(
@@ -95,6 +105,7 @@ export class Table1Component
         .select(selectApiDataDownloadRowState)
         .subscribe((downloadRowState) => {
           this.downloadRowState = downloadRowState;
+          this.rerenderTable();
         })
     );
   }
@@ -103,6 +114,14 @@ export class Table1Component
 
   ngAfterViewInit() {
     this.setPaginatorAndSort();
+    if (this.sort) {
+      this.sort.sortChange.subscribe(() => {
+        // Your code here, e.g., fetching new data or updating the UI
+        // console.log('Sort changed:', this.sort.active, this.sort.direction);
+        console.log('sort event');
+        this.rerenderTable();
+      });
+    }
   }
 
   ngOnDestroy() {
@@ -111,12 +130,44 @@ export class Table1Component
 
   ngOnChanges(changes: SimpleChanges): void {}
 
+  ///////////////////////////////////
+  // Pagination logic
+  ///////////////////////////////////
+
   setPaginatorAndSort() {
-    if (this.dataSource && this.paginator && this.sort) {
-      this.dataSource.paginator = this.paginator;
-      this.dataSource.sort = this.sort;
-    }
+    if (!this.allApiData) return;
+    this.dataSource = new MatTableDataSource(this.allApiData);
+
+    if (!this.paginator) return;
+    this.dataSource.paginator = this.paginator;
+
+    if (!this.sort) return;
+    this.dataSource.sort = this.sort;
+
+    this.rerenderTable();
   }
+
+  onPaginateChange(event: PageEvent) {
+    console.log('Page event: ', event);
+    this.pageIndex = event.pageIndex;
+    this.pageSize = event.pageSize;
+    this.fetchImageService.resetQueue();
+    this.rerenderTable();
+  }
+
+  isRowDisplayed(row: IApiDatum) {
+    const rowIndex = this.allApiData?.indexOf(row);
+    if (typeof rowIndex === 'undefined') return false;
+    if (
+      rowIndex >= this.pageIndex * this.pageSize &&
+      rowIndex < (this.pageIndex + 1) * this.pageSize
+    ) {
+      return true;
+    }
+    return false;
+  }
+
+  ///////////////////////////////////
 
   applyFilter(event: Event) {
     const filterValue = (event.target as HTMLInputElement).value;
@@ -146,7 +197,7 @@ export class Table1Component
     if (!this.shownCols) return [];
     return [
       'download_checkboxes', // download_checkboxes
-      // 'preview_url',
+      'preview_url',
       'source_name',
       ...this.shownCols,
     ];
@@ -189,7 +240,7 @@ export class Table1Component
   // Logic related to checkboxes
   /////////////////////////////////////////////
   clickDownloadAllCheckbox() {
-    if (!this.apiData) return;
+    if (!this.allApiData) return;
     this.isDownloadAllCheckboxChecked = !this.isDownloadAllCheckboxChecked;
     const newDownloadRowState = { ...this.downloadRowState };
     Object.keys(newDownloadRowState).forEach((key, ind) => {
@@ -219,5 +270,45 @@ export class Table1Component
     const isRowSelected =
       element.product_id === this.apiSelectedDatum?.product_id;
     return isRowSelected;
+  }
+
+  //////////////////////////
+
+  formatCellEntry(colName: keyof IApiDatum, colEntry: string | number | null) {
+    if (!colEntry) return 'N/A';
+    if (typeof colEntry === 'number') {
+      const label = apiDataLabels[colName];
+      if (!!label) {
+        return colEntry.toFixed(label.fractionSize);
+      } else {
+        return 'Err';
+      }
+    } else if (typeof colEntry === 'string') {
+      if (colEntry.length > 23) {
+        return colEntry.substring(0, 3) + '...' + colEntry.slice(-3);
+      }
+    }
+    return colEntry;
+  }
+
+  rerenderTable() {
+    this.changeDetector.detectChanges();
+  }
+
+  selectRowDatum(i: number) {
+    // Flip flag to prevent scrolling on table clicks
+    this.isScrolling = false;
+    setTimeout(() => (this.isScrolling = true), 300);
+    // Determine location of selectedDatum within sorted table data
+    const sortedApiData = this.getSortedApiData();
+    if (!sortedApiData) return;
+    const apiDatum = sortedApiData[i];
+    // If found then update
+    this.store$.dispatch(ApiDataAction_SetSelectedDatum({ apiDatum }));
+  }
+
+  openSettingsDialog(e: MouseEvent) {
+    e.stopPropagation();
+    this.dialog.open<TableCheckboxesComponent>(TableCheckboxesComponent, {});
   }
 }

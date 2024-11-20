@@ -33,7 +33,7 @@ const numResults = 10;
 @Injectable({
   providedIn: 'root',
 })
-export class ApiDataMockService implements IApiDataService {
+export class PanstarrsApiMockService implements IApiDataService {
   // --->>>
 
   constructor(private store$: Store<IAppState>) {}

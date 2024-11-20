@@ -195,6 +195,7 @@ export class ApiDataMockService implements IApiDataService {
           ].includes(_.source);
         })
         .filter((_, ind) => ind < 10000000),
+      // .filter((_, ind) => _.source.includes('catalina')),
     }).pipe(delay<IApiDataCaughtResult>(mockTime1));
   }
 

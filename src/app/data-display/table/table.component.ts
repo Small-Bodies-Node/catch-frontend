@@ -46,8 +46,8 @@ type TColName = keyof IApiDatum;
 @Component({
   selector: 'app-table',
   templateUrl: './table.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrls: ['./table.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TableComponent implements OnInit, AfterViewInit, OnChanges {
   // --->>>

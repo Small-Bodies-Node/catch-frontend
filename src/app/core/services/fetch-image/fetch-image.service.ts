@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { swapRaDecInFilename } from '../../../../utils/swapRaDecInFilename';
 
 interface FetchTask {
   url: string;
@@ -18,7 +19,7 @@ interface IOptions {
 const defaultOptions: IOptions = {
   isPriority: false,
   label: '-',
-  minProcessTimeMs: 100,
+  minProcessTimeMs: 200,
 };
 
 @Injectable({
@@ -26,10 +27,21 @@ const defaultOptions: IOptions = {
 })
 export class ImageFetchService {
   private queue: FetchTask[] = [];
-  private concurrentLimit: number = 5;
+  private concurrentLimit: number = 2;
   private activeRequests: number = 0;
+  private imageCache: { [url: string]: HTMLImageElement } = {};
 
-  constructor() {}
+  constructor() {
+    // Clear imageCache every hour
+    setInterval(() => {
+      this.imageCache = {};
+    }, 1000 * 60 * 60);
+  }
+
+  resetQueue() {
+    this.queue = [];
+    this.activeRequests = 0;
+  }
 
   async fetchImage(url: string, options?: IOptions): Promise<HTMLImageElement> {
     // --->
@@ -45,10 +57,18 @@ export class ImageFetchService {
       });
     }
 
+    // Check if image has already been downloaded
+    if (this.imageCache[url]) {
+      console.log('Image already in cache!');
+      return this.imageCache[url];
+    }
+
+    console.log('Reached?');
+
     // Test if Catalina image is cached in S3. If yes, then return that instead
-    if (url.includes('catalina')) {
-      const fileUrlInS3Bucket =
-        false && (await this.getCatalinaImageCachedInS3(url));
+    const isFetchableFromS3 = url.includes('catalina');
+    if (isFetchableFromS3) {
+      const fileUrlInS3Bucket = await this.getCatalinaImageCachedInS3(url);
       if (fileUrlInS3Bucket) {
         return new Promise((resolve, reject) => {
           const image = new Image();
@@ -58,6 +78,8 @@ export class ImageFetchService {
         });
       }
     }
+
+    console.log('Reached2?');
 
     // Begin queue logic
     const { isPriority, label, minProcessTimeMs } = {
@@ -125,10 +147,12 @@ export class ImageFetchService {
         if (processingTime < task.minProcessTimeMs) {
           setTimeout(() => {
             onProcessCompletion();
+            this.imageCache[task.url] = image;
             task.resolve(image);
           }, task.minProcessTimeMs - processingTime);
         } else {
           onProcessCompletion();
+          this.imageCache[task.url] = image;
           task.resolve(image);
         }
       };
@@ -193,6 +217,9 @@ export class ImageFetchService {
       safeFilename = safeFilename.replace(/_format_fits/i, '') + '.fits';
     }
 
-    return safeFilename;
+    // Need to put dec before ra
+    const raDecCorrectedFilename = swapRaDecInFilename(safeFilename);
+
+    return raDecCorrectedFilename;
   }
 }

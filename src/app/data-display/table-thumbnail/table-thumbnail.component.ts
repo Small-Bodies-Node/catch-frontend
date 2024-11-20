@@ -80,8 +80,8 @@ export class TableThumbnailComponent implements OnChanges {
 
     const { product_id, ra, dec, preview_url } = element;
     const catalinaUrl =
-      `https://5ub5yo2kmj.execute-api.us-east-1.amazonaws.com/api/images/` +
-      // `https://uxzqjwo0ye.execute-api.us-west-1.amazonaws.com/api/images/` +
+      // `https://5ub5yo2kmj.execute-api.us-east-1.amazonaws.com/api/images/` +
+      `https://uxzqjwo0ye.execute-api.us-west-1.amazonaws.com/api/images/` +
       // `https://ik6nf5q3ybiigiqe3kxo2iz7pi0dzoxe.lambda-url.us-west-1.on.aws/api/images/` +
       `${product_id}?dec=${dec}&ra=${ra}&size=5arcmin&format=jpeg`;
     const url = preview_url || catalinaUrl;
@@ -90,7 +90,7 @@ export class TableThumbnailComponent implements OnChanges {
       .fetchImage(url, {
         isPriority: this.isPriority,
         label: this.label,
-        minProcessTimeMs: 100,
+        minProcessTimeMs: 3000,
       })
       .then(
         (img) => {
