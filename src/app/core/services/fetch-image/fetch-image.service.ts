@@ -5,7 +5,7 @@ interface FetchTask {
   url: string;
   isPriority: boolean;
   minProcessTimeMs: number;
-  resolve: (value: HTMLImageElement | PromiseLike<HTMLImageElement>) => void;
+  resolve: (value: string | PromiseLike<string>) => void; // Now resolves to an object URL string
   reject: (reason?: any) => void;
   label: string;
 }
@@ -29,11 +29,14 @@ export class ImageFetchService {
   private queue: FetchTask[] = [];
   private concurrentLimit: number = 2;
   private activeRequests: number = 0;
-  private imageCache: { [url: string]: HTMLImageElement } = {};
+  private imageCache: { [url: string]: string } = {}; // Cache object URLs
 
   constructor() {
     // Clear imageCache every hour
     setInterval(() => {
+      Object.values(this.imageCache).forEach((objectUrl) => {
+        URL.revokeObjectURL(objectUrl); // Clean up object URLs
+      });
       this.imageCache = {};
     }, 1000 * 60 * 60);
   }
@@ -43,43 +46,35 @@ export class ImageFetchService {
     this.activeRequests = 0;
   }
 
-  async fetchImage(url: string, options?: IOptions): Promise<HTMLImageElement> {
-    // --->
-
+  async fetchImage(url: string, options?: IOptions): Promise<string> {
     // Decide if this URL can skip queue
     const isQueueNeeded = url.includes('catalina') || url.includes('neat');
     if (!isQueueNeeded) {
-      return new Promise((resolve, reject) => {
-        const image = new Image();
-        image.onerror = () => reject(new Error(url));
-        image.onload = () => resolve(image);
-        image.src = url;
-      });
+      return fetch(url)
+        .then((response) => response.blob())
+        .then((blob) => URL.createObjectURL(blob));
     }
 
-    // Check if image has already been downloaded
+    // Check if image is already cached
     if (this.imageCache[url]) {
       console.log('Image already in cache!');
       return this.imageCache[url];
     }
 
-    console.log('Reached?');
-
-    // Test if Catalina image is cached in S3. If yes, then return that instead
+    // Test if Catalina image is cached in S3
     const isFetchableFromS3 = url.includes('catalina');
     if (isFetchableFromS3) {
       const fileUrlInS3Bucket = await this.getCatalinaImageCachedInS3(url);
       if (fileUrlInS3Bucket) {
-        return new Promise((resolve, reject) => {
-          const image = new Image();
-          image.onerror = () => reject(new Error(fileUrlInS3Bucket));
-          image.onload = () => resolve(image);
-          image.src = fileUrlInS3Bucket;
-        });
+        return fetch(fileUrlInS3Bucket)
+          .then((response) => response.blob())
+          .then((blob) => {
+            const objectUrl = URL.createObjectURL(blob);
+            this.imageCache[url] = objectUrl;
+            return objectUrl;
+          });
       }
     }
-
-    console.log('Reached2?');
 
     // Begin queue logic
     const { isPriority, label, minProcessTimeMs } = {
@@ -87,10 +82,6 @@ export class ImageFetchService {
       ...options,
     };
     return new Promise((resolve, reject) => {
-      // Remove existing task for the same URL.
-      // this.queue = this.queue.filter((task) => task.url !== url);
-
-      // Create a new task for this url
       const task: FetchTask = {
         url,
         isPriority,
@@ -100,7 +91,7 @@ export class ImageFetchService {
         label,
       };
 
-      // Add the task to the queue based on priority.
+      // Add task to queue
       if (isPriority) {
         this.queue.unshift(task);
       } else {
@@ -112,15 +103,6 @@ export class ImageFetchService {
   }
 
   private checkQueue() {
-    this.queue.map((task) => {
-      // console.log('>>> ', task.refNum);
-    });
-    false &&
-      console.log(
-        '>>> ',
-        this.activeRequests,
-        this.queue.map((task) => task.label)
-      );
     if (this.activeRequests < this.concurrentLimit && this.queue.length > 0) {
       this.activeRequests++;
       const task = this.queue.shift()!;
@@ -137,26 +119,22 @@ export class ImageFetchService {
     };
 
     try {
-      const image = new Image();
-      image.onerror = () => {
-        onProcessCompletion();
-        task.reject(new Error('Sth went wrong loading image'));
-      };
-      image.onload = () => {
-        const processingTime = performance.now() - startTime;
-        if (processingTime < task.minProcessTimeMs) {
-          setTimeout(() => {
-            onProcessCompletion();
-            this.imageCache[task.url] = image;
-            task.resolve(image);
-          }, task.minProcessTimeMs - processingTime);
-        } else {
+      const response = await fetch(task.url);
+      const blob = await response.blob();
+      const objectUrl = URL.createObjectURL(blob);
+
+      const processingTime = performance.now() - startTime;
+      if (processingTime < task.minProcessTimeMs) {
+        setTimeout(() => {
           onProcessCompletion();
-          this.imageCache[task.url] = image;
-          task.resolve(image);
-        }
-      };
-      image.src = task.url;
+          this.imageCache[task.url] = objectUrl;
+          task.resolve(objectUrl);
+        }, task.minProcessTimeMs - processingTime);
+      } else {
+        onProcessCompletion();
+        this.imageCache[task.url] = objectUrl;
+        task.resolve(objectUrl);
+      }
     } catch (error) {
       onProcessCompletion();
       task.reject(error);
@@ -166,19 +144,13 @@ export class ImageFetchService {
   private async getCatalinaImageCachedInS3(
     url: string
   ): Promise<string | undefined> {
-    // --->
-
-    // IMPORTANT! You MUST use cloudfront to make HEAD requests to S3
-    // See here: https://serverfault.com/a/1132389/498437
     const fileUrlInS3Bucket =
       `https://dkbhqxdnxmt7r.cloudfront.net/` +
       `${this.convertUrlToFileNameInS3Bucket(url)}`;
     try {
       const response = await fetch(fileUrlInS3Bucket, { method: 'HEAD' }).catch(
         (_) => {
-          console.log('Error fetching from S3');
-          console.log(fileUrlInS3Bucket);
-          console.log(_);
+          console.log('Error fetching from S3', fileUrlInS3Bucket, _);
         }
       );
       if (response?.status === 200) {
@@ -190,36 +162,18 @@ export class ImageFetchService {
     return undefined;
   }
 
-  /**
-   * This logic has to EXACTLY correspond to the logic in the lambda function
-   * given in file `get_file_name.py` in [this repo](https://github.com/Small-Bodies-Node/sbn-survey-image-service-aws)
-   */
   private convertUrlToFileNameInS3Bucket(fullUrl: string): string {
-    // Extract the content after the last '/'
     const lastSlashIndex = fullUrl.lastIndexOf('/');
-    let contentAfterLastSlash: string;
-    if (lastSlashIndex === -1) {
-      contentAfterLastSlash = fullUrl;
-    } else {
-      contentAfterLastSlash = fullUrl.substring(lastSlashIndex + 1);
-    }
+    let contentAfterLastSlash =
+      lastSlashIndex === -1 ? fullUrl : fullUrl.substring(lastSlashIndex + 1);
 
-    // Convert to a file-name friendly format
     let safeFilename = contentAfterLastSlash.replace(/[/:?&=.]/g, '_');
-
-    // "..._format_jpeg..." -> "... .jpeg", etc.
-    if (
-      /_format_jpg/i.test(safeFilename) ||
-      /_format_jpeg/i.test(safeFilename)
-    ) {
+    if (/(_format_jpg|_format_jpeg)/i.test(safeFilename)) {
       safeFilename = safeFilename.replace(/_format_jpeg/i, '') + '.jpeg';
     } else if (/_format_fits/i.test(safeFilename)) {
       safeFilename = safeFilename.replace(/_format_fits/i, '') + '.fits';
     }
 
-    // Need to put dec before ra
-    const raDecCorrectedFilename = swapRaDecInFilename(safeFilename);
-
-    return raDecCorrectedFilename;
+    return swapRaDecInFilename(safeFilename);
   }
 }

@@ -93,8 +93,8 @@ export class TableThumbnailComponent implements OnChanges {
         minProcessTimeMs: 3000,
       })
       .then(
-        (img) => {
-          this.imageSrc = img.src;
+        (objUrl) => {
+          this.imageSrc = objUrl;
           this.isImageLoaded = true;
           this.isImageInQueue = false;
           // this.onLoadEventMessage.emit((element as any).num + '');
