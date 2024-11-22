@@ -25,12 +25,12 @@
     font-weight: bold;
     // min-height: 200px; // Added minimum height
     // background-color: $bgcolor;
-    background-color: black;
+    // background-color: black;
   }
 
   .table-wrapper {
     grid-area: table;
-    background-color: black;
+    // background-color: black;
     // background-color: $bgcolor;
     min-width: 200px; // Added minimum width
   }
@@ -44,6 +44,6 @@
 
   .solar-viewer-wrapper {
     grid-area: solarviewer;
-    background-color: black;
+    // background-color: black;
   }
 }

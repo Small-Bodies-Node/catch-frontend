@@ -3,11 +3,15 @@
   width: 100%;
   height: 100%;
   overflow: auto; // Important: this is how non-sticky sections scroll
+  background-color: transparent;
+
+  $footerHeight: 60px;
+  $gapHeight: 0px;
 
   .table-wrapper {
     width: 100%;
     // height: 60%;
-    height: calc(100% - 56px);
+    height: calc(100% - #{$footerHeight} - #{$gapHeight});
     overflow: auto; // Important: this is how non-sticky sections scroll
     cursor: pointer;
 
@@ -23,6 +27,37 @@
     td,
     th {
       width: 25%;
+    }
+  }
+
+  .gap {
+    height: $gapHeight;
+  }
+
+  .table-footer {
+    display: flex;
+    flex-direction: row; /* Already correct */
+    justify-content: space-between; /* Already correct */
+    // align-items: center; /* Already correct */
+    align-items: flex-start; /* Align items to the top */
+    // padding: 0 10px;
+    height: $footerHeight;
+    overflow: hidden;
+    // background-color: red;
+    // border-top: 1px solid #e0e0e0;
+    // gap: 10px; /* Optional: Adds space between items */
+
+    .form-field-wrapper {
+      flex: 1; /* Makes them share available space evenly */
+      min-width: 0; /* Ensures no weird wrapping */
+      mat-form-field {
+        width: 100%;
+        // height: 66px;
+      }
+    }
+    .paginator-wrapper {
+      flex: 2; /* Makes them share available space evenly */
+      min-width: 0; /* Ensures no weird wrapping */
     }
   }
 }

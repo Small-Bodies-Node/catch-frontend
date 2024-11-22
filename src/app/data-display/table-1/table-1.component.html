@@ -1,14 +1,4 @@
 <div class="table-container mat-elevation-z8">
-  <!-- <mat-form-field>
-    <mat-label>Filter</mat-label>
-    <input
-      matInput
-      (keyup)="applyFilter($event)"
-      placeholder="Ex. Mia"
-      #input
-    />
-  </mat-form-field> -->
-
   <!-- @if (true || dataSource && shownCols) { -->
   <div class="table-wrapper mat-elevation-z8">
     <table mat-table [dataSource]="dataSource || []" matSort>
@@ -112,12 +102,32 @@
     </table>
   </div>
 
-  <mat-paginator
-    [length]="allApiData?.length || 0"
-    [pageSizeOptions]="pageSizeOptions"
-    [pageSize]="pageSize"
-    (page)="onPaginateChange($event)"
-    aria-label="Select page of users"
-  ></mat-paginator>
+  <div class="gap">
+    <!--  -->
+  </div>
+
+  <div class="table-footer">
+    <div class="form-field-wrapper">
+      <mat-form-field>
+        <mat-label>Filter</mat-label>
+        <input
+          matInput
+          (keyup)="applyFilter($event)"
+          placeholder="Ex. Mia"
+          #input
+        />
+      </mat-form-field>
+    </div>
+    <div class="paginator-wrapper">
+      <mat-paginator
+        [length]="allApiData?.length || 0"
+        [pageSizeOptions]="pageSizeOptions"
+        [pageSize]="pageSize"
+        (page)="onPaginateChange($event)"
+        aria-label="Select page of users"
+      ></mat-paginator>
+    </div>
+  </div>
+
   <!-- } -->
 </div>
