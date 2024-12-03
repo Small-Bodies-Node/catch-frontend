@@ -4,6 +4,7 @@ import { AboutPageComponent } from '../components/about-page/about-page.componen
 import { ApisPageComponent } from '../components/apis-page/apis-page.component';
 import { ContactPageComponent } from '../components/contact-page/contact-page.component';
 import { SettingsPageComponent } from '../components/settings-page/settings-page.component';
+import { TermsPageComponent } from '../components/terms-page/terms-page.component';
 
 export const routes: Routes = [
   //
@@ -34,6 +35,12 @@ export const routes: Routes = [
   {
     path: 'settings',
     component: SettingsPageComponent,
+    pathMatch: 'full',
+    data: { preload: true }, // Mark this route for pre-rendering
+  },
+  {
+    path: 'terms',
+    component: TermsPageComponent,
     pathMatch: 'full',
     data: { preload: true }, // Mark this route for pre-rendering
   },

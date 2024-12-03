@@ -37,7 +37,12 @@ import { FooterComponent } from '../components/footer/footer.component';
 import { SearchFieldComponent } from '../components/search-field/search-field.component';
 import { UnrecognizedNameDialogComponent } from '../components/search-field/unrecognized-name-dialog.component';
 import { StreamingMessagesComponent } from '../components/streaming-messages/streaming-messages.component';
-import { RouterModule } from '@angular/router';
+import {
+  RouterLink,
+  RouterLinkActive,
+  RouterModule,
+  RouterOutlet,
+} from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 
 @Component({
@@ -49,6 +54,9 @@ import { Subject, takeUntil } from 'rxjs';
     SharedModule,
     CoreModule,
     RouterModule,
+    RouterLink,
+    RouterOutlet,
+    RouterLinkActive,
     //
     AboutPageComponent,
     ApisPageComponent,
