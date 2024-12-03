@@ -1,13 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
+import {MatGridListModule} from '@angular/material/grid-list';
 
 @Component({
   selector: 'app-about-page',
   templateUrl: './about-page.component.html',
   styleUrls: ['./about-page.component.scss'],
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, MatGridListModule],
 })
 export class AboutPageComponent implements OnInit {
 

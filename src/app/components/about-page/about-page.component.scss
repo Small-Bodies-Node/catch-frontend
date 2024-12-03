@@ -6,18 +6,16 @@
 }
 
 .about-figure {
-  margin: 1em 0;
-  img, iframe {
-  width: 100%;
-  max-width: 600px;
-  display: block;
-  margin: 0 auto;
-  }
+  margin: 1em;
   figcaption {
-  width: 100%;
-  max-width: 650px;
-  display: block;
-  margin: 1em auto;
+    margin: 1em 0;
+  }
+  img, iframe {
+    width: 100%;
+    max-width: 600px;
+  }
+  iframe {
+    aspect-ratio: 1.77;
   }
 }
 
@@ -37,5 +35,11 @@
     td {
       padding: 10px;
     }
+  }
+}
+
+ul, ol {
+  li {
+    margin-bottom: 0.3em;
   }
 }
