@@ -10,15 +10,8 @@ import { HttpClient } from '@angular/common/http';
   imports: [CommonModule],
 })
 export class AboutPageComponent implements OnInit {
-  constructor(private httpClient: HttpClient) {
-    this.httpClient
-      .get(
-        'https://catch-dev-api.astro.umd.edu/catch?cached=true&target=562274'
-      )
-      .subscribe((data) => {
-        console.log('data', data);
-      });
-  }
+
+  allSkyCoverage = 'assets/images/pngs/sky-coverage-20241127.png';
 
   ngOnInit(): void {}
 }

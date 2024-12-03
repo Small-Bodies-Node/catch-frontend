@@ -5,14 +5,33 @@
   overflow: hidden;
 }
 
+.about-figure {
+  margin: 1em 0;
+  img, iframe {
+  width: 100%;
+  max-width: 600px;
+  display: block;
+  margin: 0 auto;
+  }
+  figcaption {
+  width: 100%;
+  max-width: 650px;
+  display: block;
+  margin: 1em auto;
+  }
+}
+
 .table-wrapper {
   width: 100%;
-  overflow: scroll;
+  overflow: auto;
 
   .data-source-table {
     border-collapse: collapse;
     thead {
-      border-bottom: 1px solid white;
+      border-bottom: 1px solid #888;
+    }
+    tr {
+      border-bottom: 1px solid #888;
     }
     th,
     td {
