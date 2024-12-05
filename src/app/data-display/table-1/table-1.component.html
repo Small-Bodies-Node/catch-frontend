@@ -68,12 +68,16 @@
         >
           {{ "SOURCE" }}
         </th>
-        <td mat-cell *matCellDef="let row">
+        <td
+          mat-cell
+          *matCellDef="let row"
+          [ngClass]="{ 'highlighted-sticky-cell': isRowSelected(row) }"
+        >
           {{ getSourceName(row.source_name) }}
         </td>
       </ng-container>
 
-      <!-- Loop through each key in the array of column keys -->
+      <!-- LOOP: through each key in the array of column keys -->
       @for (key of shownCols; track key) {
       <ng-container [matColumnDef]="key">
         <th
@@ -84,16 +88,17 @@
         >
           {{ getColLabel(key) | titlecase }}
         </th>
-        <td mat-cell *matCellDef="let row">
-          <!-- {{ row[key] }} -->
+        <td
+          mat-cell
+          *matCellDef="let row; let i = index"
+          [ngClass]="{ 'highlighted-sticky-cell': isRowSelected(row) }"
+        >
           {{ formatCellEntry(key, row[key]) }}
         </td>
       </ng-container>
       }
 
-      <!-- <tr mat-header-row *matHeaderRowDef="shownCols; sticky: true"></tr> -->
-      <!-- <tr mat-row *matRowDef="let row; columns: shownCols"></tr> -->
-
+      <!-- These rows are needed; I assume that the above defns get injected into these rows somehow  -->
       <tr mat-header-row *matHeaderRowDef="getAllCols(); sticky: true"></tr>
       <tr
         mat-row

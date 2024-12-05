@@ -5,8 +5,20 @@
   //
 
   $accent: green;
+  $primary: mat.get-theme-color($theme, surface);
 
-  app-table {
-    //
+  app-table-1 {
+    .highlighted-sticky-cell {
+      // background-color: red;
+      // background-color: rgba(mat-color($accent, 900), 1);
+      // background-color: rgba(mat-color($background, background), 0.5);
+      // background-color: mat-color($primary, default-contrast);
+      // background-color: $primary;
+
+      background-color: rgba(green, 0.3);
+    }
+    .highlighted-non-sticky-cell {
+      // background-color: rgba(mat-color($accent, 800), 0.3);
+    }
   }
 }

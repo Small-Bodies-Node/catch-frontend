@@ -206,6 +206,8 @@ export class Table1Component
   keyPress(event: KeyboardEvent) {
     // --->
 
+    console.log('>>>', event.key);
+
     // Extract pertinent info from event
     event.preventDefault();
     const arrowDirn = event.key;
