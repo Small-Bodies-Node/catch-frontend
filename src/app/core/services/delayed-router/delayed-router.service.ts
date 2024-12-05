@@ -35,9 +35,7 @@ export class DelayedRouterService {
 
     // Schedule change of route at end of page-fade-out animation
     setTimeout(() => {
-      console.log('Debug 0');
       this.router.navigate([link], navigationExtras);
-      console.log('Debug 1');
     }, pageFadeDurationMs);
   }
 }

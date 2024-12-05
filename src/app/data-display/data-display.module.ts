@@ -30,8 +30,17 @@ import { FitsJpgTogglerComponent } from './fits-jpg-toggler/fits-jpg-toggler.com
 import { NgxJs9Module } from '../../../projects/ngx-js9/src/public-api';
 import { DesktopView2Component } from './desktop-view-2/desktop-view-2.component';
 import { Table1Component } from './table-1/table-1.component';
+import { Js9DevComponent } from './js9-dev/js9-dev.component';
 
-const routes: Routes = [{ path: '', component: DataDisplayComponent }];
+const routes: Routes = [
+  { path: '', component: DataDisplayComponent },
+  //
+  {
+    path: 'js9',
+    component: Js9DevComponent,
+    // pathMatch: 'full',
+  },
+];
 
 @NgModule({
   declarations: [
@@ -42,6 +51,7 @@ const routes: Routes = [{ path: '', component: DataDisplayComponent }];
     DesktopView2Component,
     FitsJpgTogglerComponent,
     ImageWheelComponent,
+    Js9DevComponent,
     MobileViewComponent,
     PanstarrsOverlayComponent,
     PlotlyGraphComponent,

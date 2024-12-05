@@ -5,6 +5,7 @@ import { ApisPageComponent } from '../components/apis-page/apis-page.component';
 import { ContactPageComponent } from '../components/contact-page/contact-page.component';
 import { SettingsPageComponent } from '../components/settings-page/settings-page.component';
 import { TermsPageComponent } from '../components/terms-page/terms-page.component';
+import { Js9DevComponent } from '../data-display/js9-dev/js9-dev.component';
 
 export const routes: Routes = [
   //

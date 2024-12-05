@@ -10,8 +10,8 @@
   >
     @if (isFits) {
     <lib-ngx-js9
-      [width]="width"
-      [height]="height"
+      [widthPxls]="widthPxls"
+      [heightPxls]="heightPxls"
       [siteTheme]="'DARK-THEME'"
       [fitsUrl]="fitsUrl"
       [globalOpts]="{
@@ -23,15 +23,15 @@
     } @else {
     <div
       class="thumbnail-wrapper"
-      [ngStyle]="{ width: width + 'px', height: height + 'px' }"
+      [ngStyle]="{ width: widthPxls + 'px', height: heightPxls + 'px' }"
     >
       <app-panstarrs-overlay></app-panstarrs-overlay>
       <app-table-thumbnail
         [apiDatum]="chooseApiDatum()"
         [label]="getLabel()"
         [size]="'100%'"
-        [width]="width + 'px'"
-        [height]="height + 'px'"
+        [width]="widthPxls + 'px'"
+        [height]="heightPxls + 'px'"
         [diameterPxls]="150"
         [isPriority]="true"
       ></app-table-thumbnail>

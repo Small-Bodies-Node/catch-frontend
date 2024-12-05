@@ -1,4 +1,4 @@
-.desktop-1-container {
+.desktop-2-container {
   $bgcolor: rgba(255, 255, 255, 0.15);
 
   background-color: $bgcolor;
@@ -10,20 +10,34 @@
   box-sizing: border-box;
 
   display: grid;
-  grid-template-rows: 1fr 4fr 7fr;
-  grid-template-columns: 3fr 1fr;
-  grid-gap: 10px;
+  grid-template-rows: 1fr 6fr auto;
+  // grid-template-columns: 3fr 1fr;
+  grid-template-columns: auto 1fr;
+  grid-gap: 5px;
   grid-template-areas:
-    "title solarviewer     "
-    "table solarviewer     "
-    "table fitsjpgtoggler  ";
+    "title fitsjpgtoggler     "
+    "table fitsjpgtoggler     "
+    "table solarviewer  ";
+
+  //
+  grid-auto-flow: dense;
+  overflow: hidden;
+
+  .title-wrapper,
+  .table-wrapper,
+  .fits-jpg-toggler-wrapper,
+  .solar-viewer-wrapper {
+    min-width: 0; // Prevents content from expanding the grid
+    min-height: 0; // Prevents content from expanding the grid
+    overflow: hidden; // Clips any overflowing content
+  }
 
   .title-wrapper {
     position: relative;
     grid-area: title;
     font-size: 32px;
     font-weight: bold;
-    // min-height: 200px; // Added minimum height
+    min-height: 30px; // Added minimum height
     // background-color: $bgcolor;
     // background-color: black;
   }
@@ -37,13 +51,20 @@
 
   .fits-jpg-toggler-wrapper {
     grid-area: fitsjpgtoggler;
-    // background-color: $bgcolor;
+    background-color: $bgcolor;
     aspect-ratio: 1 / 1;
-    // width: 100%;
+    // min-width: 300px;
+    // min-height: 300px;
+    width: 400px;
+    height: 400px;
+    // max-width: 300px;
+    // max-height: 300px;
   }
 
   .solar-viewer-wrapper {
+    background-color: red;
     grid-area: solarviewer;
     // background-color: black;
+    // max-height: 400px;
   }
 }

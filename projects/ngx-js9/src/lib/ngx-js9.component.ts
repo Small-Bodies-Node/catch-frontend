@@ -80,10 +80,10 @@ export class NgxJs9Component implements OnInit, OnDestroy, OnChanges {
   uid: string = 'JS9';
 
   @Input()
-  width: number = 0;
+  widthPxls: number = 0;
 
   @Input()
-  height: number = 0;
+  heightPxls: number = 0;
 
   @Input()
   fitsUrl = '';
@@ -138,8 +138,8 @@ export class NgxJs9Component implements OnInit, OnDestroy, OnChanges {
     if (
       //
       !!changes &&
-      !!this.width &&
-      !!this.height &&
+      !!this.widthPxls &&
+      !!this.heightPxls &&
       !!this.isJS9Initiated
     ) {
       JS9.CloseImage(); // See here: https://github.com/ericmandel/js9/issues/60#issuecomment-506104711
@@ -268,8 +268,8 @@ export class NgxJs9Component implements OnInit, OnDestroy, OnChanges {
     const menuBarHeight = 36;
     const colorBarHeight = 42;
     const menuBarPlusColorBarHeight = menuBarHeight + colorBarHeight;
-    const result = this.height
-      ? this.height - menuBarPlusColorBarHeight - 12 + 'px'
+    const result = this.heightPxls
+      ? this.heightPxls - menuBarPlusColorBarHeight - 12 + 'px'
       : '100px';
     return result;
   }

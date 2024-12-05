@@ -26,8 +26,8 @@ export class FitsJpgTogglerComponent implements OnInit {
   isButtonRaised = false;
   isFits = false;
   fitsUrl = '';
-  width = 0;
-  height = 0;
+  widthPxls = 0;
+  heightPxls = 0;
   isFitsLoaded = false;
   apiDataWithProblematicFitsUrls: string[] = [];
 
@@ -72,8 +72,8 @@ export class FitsJpgTogglerComponent implements OnInit {
             distinctUntilChanged()
           )
           .subscribe(({ width, height }) => {
-            this.width = width;
-            this.height = height;
+            this.widthPxls = width;
+            this.heightPxls = height;
           })
       );
   }

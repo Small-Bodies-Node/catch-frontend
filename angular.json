@@ -40,7 +40,11 @@
                 "output": "/socket.io/"
               }
             ],
-            "styles": ["src/styles/styles.scss"],
+            "styles": [
+              "src/styles/styles.scss",
+              "src/assets/js9-to-be-served/js9support.css",
+              "src/assets/js9-to-be-served/js9.css"
+            ],
             "scripts": [
               "src/assets/js9-to-be-compiled/js9prefs.js",
               "src/assets/js9-to-be-compiled/js9support.min.js",
@@ -123,7 +127,11 @@
                 "output": "/socket.io/"
               }
             ],
-            "styles": ["src/styles/styles.scss"],
+            "styles": [
+              "src/styles/styles.scss",
+              "src/assets/js9-to-be-served/js9support.css",
+              "src/assets/js9-to-be-served/js9.css"
+            ],
             "scripts": [
               "src/assets/js9-to-be-compiled/js9prefs.js",
               "src/assets/js9-to-be-compiled/js9support.min.js",
