@@ -22,6 +22,7 @@
           mat-cell
           *matCellDef="let element; let i = index"
           [ngClass]="{ 'highlighted-sticky-cell': isRowSelected(element) }"
+          (click)="selectRowDatum(i)"
         >
           <mat-checkbox
             color="accent"
@@ -42,8 +43,8 @@
         <td
           mat-cell
           *matCellDef="let element; let i = index"
-          (click)="selectRowDatum(i)"
           [ngClass]="{ 'highlighted-sticky-cell': isRowSelected(element) }"
+          (click)="selectRowDatum(i)"
         >
           @if(isRowDisplayed(element)){
           <app-table-thumbnail
@@ -70,8 +71,9 @@
         </th>
         <td
           mat-cell
-          *matCellDef="let row"
+          *matCellDef="let row; let i = index"
           [ngClass]="{ 'highlighted-sticky-cell': isRowSelected(row) }"
+          (click)="selectRowDatum(i)"
         >
           {{ getSourceName(row.source_name) }}
         </td>
@@ -92,6 +94,7 @@
           mat-cell
           *matCellDef="let row; let i = index"
           [ngClass]="{ 'highlighted-sticky-cell': isRowSelected(row) }"
+          (click)="selectRowDatum(i)"
         >
           {{ formatCellEntry(key, row[key]) }}
         </td>
