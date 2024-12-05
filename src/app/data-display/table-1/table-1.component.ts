@@ -295,6 +295,16 @@ export class Table1Component
     this.changeDetector.detectChanges();
   }
 
+  getColLabel(key: string) {
+    const apiDatumLabels = (apiDataLabels as any)[key as any];
+    return apiDatumLabels.label;
+  }
+
+  getTooltip(key: string) {
+    const apiDatumLabels = (apiDataLabels as any)[key as any];
+    return apiDatumLabels.description;
+  }
+
   selectRowDatum(i: number) {
     // Flip flag to prevent scrolling on table clicks
     this.isScrolling = false;

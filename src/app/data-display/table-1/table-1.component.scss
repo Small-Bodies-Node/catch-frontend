@@ -50,6 +50,7 @@
     .form-field-wrapper {
       flex: 1; /* Makes them share available space evenly */
       min-width: 0; /* Ensures no weird wrapping */
+      max-width: 200px;
       mat-form-field {
         width: 100%;
         // height: 66px;

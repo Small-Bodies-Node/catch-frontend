@@ -44,6 +44,7 @@ export class TableCheckboxesComponent implements OnInit {
       ![
         //
         'preview_url',
+        'source_name',
       ].includes(colName)
   );
 
@@ -91,6 +92,7 @@ export class TableCheckboxesComponent implements OnInit {
 
   updateColState(e: MatCheckboxChange, colName: TApiDataColName) {
     this.colState = { ...this.colState, [colName]: e.checked };
+    console.log('>>> ColName', colName, this.colState);
     this.$store.dispatch(
       TableCheckboxAction_SetState({
         newTableCheckboxState: { ...this.colState },
@@ -130,12 +132,13 @@ export class TableCheckboxesComponent implements OnInit {
 
   temp(labels: any, colName: any) {
     //
-    console.log(
-      '>>> labels',
-      labels,
-      colName,
-      labels && labels[colName] && labels[colName]?.label
-    );
+    false &&
+      console.log(
+        '>>> labels',
+        labels,
+        colName,
+        labels && labels[colName] && labels[colName]?.label
+      );
 
     return (labels && labels[colName] && labels[colName]?.label) || '';
   }
