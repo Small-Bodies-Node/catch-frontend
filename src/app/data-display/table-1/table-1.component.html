@@ -88,7 +88,25 @@
           mat-sort-header
           [matTooltip]="getTooltip(key)"
         >
-          {{ getColLabel(key) | titlecase }}
+          <span>
+            {{ getColLabel(key) | titlecase }}
+          </span>
+
+          @for (graphCol of [ 'ra', 'delta', 'rh', 'phase', 'tmtp',
+          'trueanomaly' ]; track graphCol) {
+          <!--  -->
+
+          @if(graphCol === key){
+          <span class="small-plotly-wrapper">
+            <app-plotly-graph
+              [inputPlotlyParams]="{ xDataKey: graphCol, isMiniMode: true }"
+            ></app-plotly-graph>
+          </span>
+          } @else {
+          <span> </span>
+          }
+          <!--  -->
+          }
         </th>
         <td
           mat-cell

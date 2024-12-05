@@ -122,7 +122,7 @@ export class TableThumbnailComponent implements OnChanges {
     // console.log('>>>', !this.apiDatum);
     if (!this.apiDatum) return 'scale(1, 1)';
     if (this.apiDatum.source === 'neat_palomar_tricam') {
-      return 'scale(1, -1)';
+      return 'scale(-1, -1)';
     }
     if (this.apiDatum.source === 'neat_maui_geodss') {
       return 'scale(1, -1)';
