@@ -156,7 +156,9 @@ export class Table1Component
   }
 
   isRowDisplayed(row: IApiDatum) {
-    const rowIndex = this.allApiData?.indexOf(row);
+    const sortedData = this.getSortedApiData();
+    if (!sortedData) return false;
+    const rowIndex = sortedData.indexOf(row);
     if (typeof rowIndex === 'undefined') return false;
     if (
       rowIndex >= this.pageIndex * this.pageSize &&
