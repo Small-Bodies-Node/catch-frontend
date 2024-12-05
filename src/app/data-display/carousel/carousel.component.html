@@ -31,7 +31,7 @@
         <!-- <app-star-overlay></app-star-overlay> -->
         <app-table-thumbnail
           *ngIf="!false"
-          [element]="chooseApiDatum()"
+          [apiDatum]="chooseApiDatum()"
           [label]="getLabel()"
           [size]="'100%'"
           [width]="width + 'px'"

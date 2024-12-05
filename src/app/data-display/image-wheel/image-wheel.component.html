@@ -8,7 +8,7 @@
       [ngClass]="isImageSelected(apiDatum) ? 'add-border' : ''"
     >
       <app-table-thumbnail
-        [element]="apiDatum"
+        [apiDatum]="apiDatum"
         [size]="'100%'"
         [label]="(isImageSelected(apiDatum) ? '*' : '') + 'W' + i"
         [isPriority]="isImageSelected(apiDatum)"

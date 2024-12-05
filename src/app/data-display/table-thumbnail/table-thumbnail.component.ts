@@ -20,7 +20,7 @@ import { ImageFetchService } from '../../core/services/fetch-image/fetch-image.s
 export class TableThumbnailComponent implements OnChanges {
   // --->>>
 
-  @Input() element?: IApiDatum;
+  @Input() apiDatum?: IApiDatum;
   @Input() size: string = '60px';
   @Input() width: string = '60px';
   @Input() height: string = '60px';
@@ -38,7 +38,7 @@ export class TableThumbnailComponent implements OnChanges {
   imgStyles = {
     width: `${this.width}`,
     height: `${this.height}`,
-    // padding: '5px',
+    transform: this.getSurveyScaleTransform(),
   };
 
   constructor(
@@ -48,29 +48,34 @@ export class TableThumbnailComponent implements OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     // Update the size of the thumbnail
+    const trans = this.getSurveyScaleTransform();
+    if (this.apiDatum?.source === 'skymapper_dr4') {
+      console.log('???', trans, this.apiDatum.source);
+    }
     this.imgStyles = {
       //
       ...this.imgStyles,
       width: this.width,
       height: this.height,
+      transform: this.getSurveyScaleTransform(),
     };
 
     // Repeat request to image queue if isPriority changes
     if (changes['isPriority']?.currentValue) {
       this.isImageInQueue = false;
-      if (this.element) this.loadImage(this.element);
+      if (this.apiDatum) this.loadImage(this.apiDatum);
     }
 
     // On component initialization, load the image
-    if (changes['element']?.currentValue) {
+    if (changes['apiDatum']?.currentValue) {
       // if (this.label.includes('T1')) console.log(changes);
       this.isImageLoaded = false;
       this.isImageInQueue = false;
-      this.loadImage(changes['element'].currentValue);
+      this.loadImage(changes['apiDatum'].currentValue);
     }
   }
 
-  private loadImage(element: IApiDatum): void {
+  private loadImage(apiDatum: IApiDatum): void {
     //
 
     // Prevent multiple calls to fetchImage
@@ -78,7 +83,7 @@ export class TableThumbnailComponent implements OnChanges {
     if (this.isImageInQueue) return;
     this.isImageInQueue = true;
 
-    const { product_id, ra, dec, preview_url } = element;
+    const { product_id, ra, dec, preview_url } = apiDatum;
     const catalinaUrl =
       // `https://5ub5yo2kmj.execute-api.us-east-1.amazonaws.com/api/images/` +
       `https://uxzqjwo0ye.execute-api.us-west-1.amazonaws.com/api/images/` +
@@ -97,8 +102,6 @@ export class TableThumbnailComponent implements OnChanges {
           this.imageSrc = objUrl;
           this.isImageLoaded = true;
           this.isImageInQueue = false;
-          // this.onLoadEventMessage.emit((element as any).num + '');
-          // console.log('>> ', (element as any).num);
           this.changeDetector.detectChanges();
         },
         (error) => {
@@ -113,5 +116,26 @@ export class TableThumbnailComponent implements OnChanges {
         // ...
         console.log('The following URL failed:', url);
       });
+  }
+
+  getSurveyScaleTransform() {
+    // console.log('>>>', !this.apiDatum);
+    if (!this.apiDatum) return 'scale(1, 1)';
+    if (this.apiDatum.source === 'neat_palomar_tricam') {
+      return 'scale(1, -1)';
+    }
+    if (this.apiDatum.source === 'neat_maui_geodss') {
+      return 'scale(1, -1)';
+      // return 'rotate(90deg)';
+    }
+    if (this.apiDatum.source === 'loneos') {
+      return 'scale(-1, -1)';
+    }
+    if (this.apiDatum.source === 'skymapper_dr4') {
+      // return 'scale(-1, -1)';
+      return 'rotate(180deg)';
+    }
+
+    return 'scale(1, 1)';
   }
 }

@@ -48,7 +48,7 @@
         >
           @if(isRowDisplayed(element)){
           <app-table-thumbnail
-            [element]="element"
+            [apiDatum]="element"
             [isPriority]="isRowSelected(element)"
             [label]="(isRowSelected(element) ? '*' : '') + 'T' + i"
             (onLoadEventMessage)="rerenderTable()"

@@ -1,3 +1,5 @@
+import { TSources } from './TSources';
+
 /**
  * ps1:frame_id
  */
@@ -39,7 +41,7 @@ export interface IApiDatum {
   'skymapper:image_type'?: any;
   'skymapper:sb_mag'?: any;
   'skymapper:zpapprox'?: any;
-  source: string;
+  source: TSources;
   source_name: string;
   thumbnail_url?: string | null;
   tmtp?: number;
