@@ -17,7 +17,7 @@ const resizeEvent$ = new BehaviorSubject<Partial<IScreenDevice>>({
 });
 
 const handleResize = () => {
-  console.log('Resize!!!');
+  console.log('Screen Resize!!!');
   setTimeout(() => {
     resizeEvent$.next({
       device: getDevice(),

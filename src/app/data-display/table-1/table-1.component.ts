@@ -36,6 +36,7 @@ import {
 import { TDownloadRowsState } from '../../../models/TDownloadRowsState';
 import { TableCheckboxesComponent } from '../table-checkboxes/table-checkboxes.component';
 import { ImageFetchService } from '../../core/services/fetch-image/fetch-image.service';
+import { PlotlyGraphWrapperComponent } from '../plotly-graph/plotly-graph.component';
 
 type TColName = keyof IApiDatum;
 
@@ -51,13 +52,19 @@ export class Table1Component
   @ViewChild(MatPaginator) paginator?: MatPaginator;
   @ViewChild(MatSort) sort?: MatSort;
 
+  nonHideableCols = ['download_checkboxes', 'preview_url', 'source_name'];
+
   dataSource?: MatTableDataSource<IApiDatum>;
   apiSelectedDatum?: IApiDatum;
   allApiData?: IApiDatum[];
   paginatedApiData?: IApiDatum[];
   colState: Partial<TApiDataColState> = { ...apiDataInitColState };
-  shownCols: Partial<TColName>[] = Object.keys(apiDataInitColState).filter(
-    (key) => apiDataInitColState[key as keyof TApiDataColState]
+  shownHideableCols: Partial<TColName>[] = Object.keys(
+    apiDataInitColState
+  ).filter(
+    (key) =>
+      apiDataInitColState[key as keyof TApiDataColState] &&
+      ![...this.nonHideableCols].includes(key)
   ) as Partial<TColName>[];
   subscriptions = new Subscription();
   isDownloadAllCheckboxChecked = false;
@@ -94,8 +101,10 @@ export class Table1Component
     this.subscriptions.add(
       this.store$.select(selectTableCheckboxState).subscribe((colState) => {
         this.colState = colState;
-        this.shownCols = Object.keys(this.colState).filter(
-          (key) => this.colState[key as keyof TApiDataColState]
+        this.shownHideableCols = Object.keys(this.colState).filter(
+          (key) =>
+            this.colState[key as keyof TApiDataColState] &&
+            ![...this.nonHideableCols].includes(key)
         ) as TColName[];
         this.rerenderTable();
       })
@@ -196,13 +205,8 @@ export class Table1Component
   }
 
   getAllCols() {
-    if (!this.shownCols) return [];
-    return [
-      'download_checkboxes', // download_checkboxes
-      'preview_url',
-      'source_name',
-      ...this.shownCols,
-    ];
+    if (!this.shownHideableCols) return [];
+    return [...this.nonHideableCols, ...this.shownHideableCols];
   }
 
   keyPress(event: KeyboardEvent) {
@@ -324,5 +328,14 @@ export class Table1Component
   openSettingsDialog(e: MouseEvent) {
     e.stopPropagation();
     this.dialog.open<TableCheckboxesComponent>(TableCheckboxesComponent, {});
+  }
+
+  onClickPlotly(e: MouseEvent, xDataKey: Partial<TColName>) {
+    e.stopPropagation();
+
+    this.dialog.open<PlotlyGraphWrapperComponent, any>(
+      PlotlyGraphWrapperComponent,
+      { data: { xDataKey } }
+    );
   }
 }

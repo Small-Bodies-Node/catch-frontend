@@ -106,6 +106,9 @@ export class TableCheckboxesComponent implements OnInit {
       newColState[key as keyof TApiDataColState] = true;
     });
     this.isSpinner = true;
+
+    console.log('>>> ', newColState);
+
     setTimeout(() => {
       this.$store.dispatch(
         TableCheckboxAction_SetState({

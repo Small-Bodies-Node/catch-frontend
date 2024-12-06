@@ -49,9 +49,6 @@ export class TableThumbnailComponent implements OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     // Update the size of the thumbnail
     const trans = this.getSurveyScaleTransform();
-    if (this.apiDatum?.source === 'skymapper_dr4') {
-      console.log('???', trans, this.apiDatum.source);
-    }
     this.imgStyles = {
       //
       ...this.imgStyles,
@@ -118,6 +115,9 @@ export class TableThumbnailComponent implements OnChanges {
       });
   }
 
+  /**
+   * Some surveys need to be flipped, etc. to have ra and dec increase +ve in consistent dirn
+   */
   getSurveyScaleTransform() {
     // console.log('>>>', !this.apiDatum);
     if (!this.apiDatum) return 'scale(1, 1)';
