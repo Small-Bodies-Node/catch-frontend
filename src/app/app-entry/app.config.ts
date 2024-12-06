@@ -27,9 +27,9 @@ export const appConfig: ApplicationConfig = {
     provideRouterStore(), // Add this line
     provideClientHydration(),
     provideAnimationsAsync(),
-    // provideHttpClient(withFetch()),
+    provideHttpClient(withFetch()),
     // provideHttpClient(),
-    provideHttpClient(withInterceptors([pipelineInterceptor])),
+    // provideHttpClient(withInterceptors([pipelineInterceptor])),
 
     // NGRX
     provideStore(reducers),

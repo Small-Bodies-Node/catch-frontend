@@ -1,4 +1,6 @@
 <div class="search-field-container">
+  <h1>WTF?</h1>
+  <button mat-raised-button>Basic</button>
   <form
     class="basic-search-form"
     [formGroup]="basicSearchForm"
@@ -49,14 +51,12 @@
       <button
         class="search-button shift"
         *ngIf="!!latestInputText.trim()"
-        mat-raised-button
+        mat-button
         matSuffix
         aria-label="Button to start searching names"
         (click)="submitObjectNameMatch($event)"
       >
         <span style="font-size: 12px">START</span>
-
-        <!-- START -->
       </button>
     </mat-form-field>
     <div class="advanced-controls-button-wrapper">
