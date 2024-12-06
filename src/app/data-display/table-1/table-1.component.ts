@@ -3,11 +3,14 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  ElementRef,
   OnChanges,
   OnDestroy,
   OnInit,
+  QueryList,
   SimpleChanges,
   ViewChild,
+  ViewChildren,
 } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { Store } from '@ngrx/store';
@@ -37,6 +40,7 @@ import { TDownloadRowsState } from '../../../models/TDownloadRowsState';
 import { TableCheckboxesComponent } from '../table-checkboxes/table-checkboxes.component';
 import { ImageFetchService } from '../../core/services/fetch-image/fetch-image.service';
 import { PlotlyGraphWrapperComponent } from '../plotly-graph/plotly-graph.component';
+import { SelectTableRowsDirective } from '../../shared/directives/select-table-rows.directive';
 
 type TColName = keyof IApiDatum;
 
@@ -51,6 +55,12 @@ export class Table1Component
 {
   @ViewChild(MatPaginator) paginator?: MatPaginator;
   @ViewChild(MatSort) sort?: MatSort;
+
+  @ViewChild('tableContainerDiv')
+  tableContainerDiv?: ElementRef<HTMLDivElement>;
+
+  @ViewChildren(SelectTableRowsDirective)
+  tableRows?: QueryList<SelectTableRowsDirective>;
 
   nonHideableCols = ['download_checkboxes', 'preview_url', 'source_name'];
 
@@ -96,6 +106,27 @@ export class Table1Component
         .subscribe((apiSelectedDatum) => {
           this.apiSelectedDatum = apiSelectedDatum;
           this.rerenderTable();
+
+          // Determine position Scroll to selected row in table
+          const sortedApiData = this.getSortedApiData();
+          if (!sortedApiData || !apiSelectedDatum) return;
+          const rowOfApiSelectedDatum: number =
+            sortedApiData
+              .map((apiDatum) => apiDatum.product_id)
+              .indexOf(apiSelectedDatum.product_id) -
+            this.pageIndex * this.pageSize;
+
+          if (this.isScrolling && this.tableRows && this.tableContainerDiv) {
+            const rowHeight = this.tableRows.get(1)?.nativeElement.offsetHeight;
+            const offset = this.tableContainerDiv.nativeElement.clientHeight;
+            if (rowHeight && offset) {
+              const top = rowOfApiSelectedDatum * rowHeight - offset * 0.4;
+              this.tableContainerDiv.nativeElement.scroll({
+                top,
+                behavior: 'smooth',
+              });
+            }
+          }
         })
     );
     this.subscriptions.add(
@@ -212,8 +243,6 @@ export class Table1Component
 
   keyPress(event: KeyboardEvent) {
     // --->
-
-    console.log('>>>', event.key);
 
     // Extract pertinent info from event
     event.preventDefault();

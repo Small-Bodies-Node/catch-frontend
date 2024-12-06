@@ -122,6 +122,7 @@ export class TableThumbnailComponent implements OnChanges {
     // console.log('>>>', !this.apiDatum);
     if (!this.apiDatum) return 'scale(1, 1)';
     if (this.apiDatum.source === 'neat_palomar_tricam') {
+      // return 'scale(1, 1)';
       return 'scale(-1, -1)';
       // return 'rotate(-90deg)';
     }
@@ -135,6 +136,21 @@ export class TableThumbnailComponent implements OnChanges {
     if (this.apiDatum.source === 'skymapper_dr4') {
       // return 'scale(-1, -1)';
       return 'rotate(180deg)';
+    }
+    if (this.apiDatum.source === 'ps1dr2') {
+      return 'scale(-1, -1)';
+      // return 'rotate(180deg)';
+    }
+    if (
+      [
+        //
+        'catalina_bigelow',
+        'catalina_lemmon',
+        'catalina_bokneosurvey',
+      ].includes(this.apiDatum.source)
+    ) {
+      return 'scale(-1, 1)';
+      // return 'rotate(180deg)';
     }
 
     return 'scale(1, 1)';
