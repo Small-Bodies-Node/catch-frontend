@@ -161,6 +161,7 @@ export class Table1Component
     this.pageIndex = event.pageIndex;
     this.pageSize = event.pageSize;
     this.fetchImageService.resetQueue();
+    this.selectRowDatum(0);
     this.rerenderTable();
   }
 
@@ -320,7 +321,9 @@ export class Table1Component
     // Determine location of selectedDatum within sorted table data
     const sortedApiData = this.getSortedApiData();
     if (!sortedApiData) return;
-    const apiDatum = sortedApiData[i];
+
+    const paginatedRowIndex = i + this.pageIndex * this.pageSize;
+    const apiDatum = sortedApiData[paginatedRowIndex];
     // If found then update
     this.store$.dispatch(ApiDataAction_SetSelectedDatum({ apiDatum }));
   }
