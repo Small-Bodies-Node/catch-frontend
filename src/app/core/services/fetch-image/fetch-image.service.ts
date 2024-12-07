@@ -48,7 +48,11 @@ export class ImageFetchService {
 
   async fetchImage(url: string, options?: IOptions): Promise<string> {
     // Decide if this URL can skip queue
-    const isQueueNeeded = url.includes('catalina') || url.includes('neat');
+    const isQueueNeeded =
+      url.includes('catalina') ||
+      url.includes('neat') ||
+      url.includes('spacewatch');
+
     if (!isQueueNeeded) {
       return fetch(url)
         .then((response) => response.blob())
@@ -62,7 +66,8 @@ export class ImageFetchService {
     }
 
     // Test if Catalina image is cached in S3
-    const isFetchableFromS3 = url.includes('catalina');
+    const isFetchableFromS3 =
+      url.includes('catalina') || url.includes('spacewatch');
     if (isFetchableFromS3) {
       const fileUrlInS3Bucket = await this.getCatalinaImageCachedInS3(url);
       if (fileUrlInS3Bucket) {

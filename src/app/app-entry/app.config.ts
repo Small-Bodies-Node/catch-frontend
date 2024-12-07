@@ -39,6 +39,6 @@ export const appConfig: ApplicationConfig = {
       ObjectNameMatchEffects,
       ScreenDeviceEffects,
       SiteSettingsEffects
-    ),
+    ), provideAnimationsAsync(),
   ],
 };

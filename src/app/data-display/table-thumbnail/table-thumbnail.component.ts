@@ -141,6 +141,10 @@ export class TableThumbnailComponent implements OnChanges {
       return 'scale(-1, -1)';
       // return 'rotate(180deg)';
     }
+    if (this.apiDatum.source === 'spacewatch') {
+      return 'scale(-1, 1)';
+      // return 'rotate(180deg)';
+    }
     if (
       [
         //
