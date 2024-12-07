@@ -17,7 +17,6 @@ export class PanstarrsOverlayComponent implements OnInit {
 
   apiSelectedDatum?: IApiDatum;
   subscriptions = new Subscription();
-  pansstarrsData?: any;
   raDecs: { ra: number; dec: number; raErr: number; decErr: number }[] = [];
 
   constructor(

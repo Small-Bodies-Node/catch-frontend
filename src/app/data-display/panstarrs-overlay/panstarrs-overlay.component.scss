@@ -22,5 +22,18 @@
     border: 1px solid red;
     // border: 1px solid blue;
     transform: translate(-50%, -50%);
+    overflow: show;
+
+    .object-info {
+      background-color: rgba(red, 0.5);
+      display: none;
+      min-width: 200px; // Or any specific width you want
+      width: max-content; // Allows content to determine width
+      cursor: pointer;
+      font-size: 8px;
+    }
+    &:hover .object-info {
+      display: block;
+    }
   }
 }
