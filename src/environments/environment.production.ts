@@ -1,12 +1,12 @@
 import { IEnvironment } from '../models/IEnvironment';
 
 export const environment: IEnvironment = {
-  //
-  envName: 'default',
-  production: false,
+  envName: 'prod',
+  production: true,
   // apiData: 'mock',
   apiData: 'catch-dev',
-  hmr: true,
+  // apiData: 'catch-prod',
+  hmr: false,
   emailerEndpoint: '',
   recaptchaSiteKey: '',
 };
