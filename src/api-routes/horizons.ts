@@ -33,6 +33,7 @@ export const horizons = async (req: Request, res: Response) => {
 
   // If file exists, return it:
   const filename = urlToFilename(horizons_url);
+  console.log('Checking for file:', filename);
   const cachedUrl = `https://sbn-ddarg-jpl-horizons-cache.s3.amazonaws.com/${filename}`;
   try {
     const cachedResponse = await fetch(cachedUrl, {
