@@ -221,6 +221,7 @@ export class Table1Component
     if (this.dataSource.paginator) {
       this.dataSource.paginator.firstPage();
     }
+    // this.onPaginateChange();
   }
 
   getSourceName(fullName: string) {
@@ -269,7 +270,15 @@ export class Table1Component
 
   getSortedApiData(): IApiDatum[] | undefined {
     if (!this.dataSource || !this.dataSource.sort) return undefined;
-    const data = [...this.dataSource.data];
+    let data = [...this.dataSource.data];
+
+    // Apply filtering first
+    if (this.dataSource && this.dataSource.filter) {
+      data = data.filter((item) =>
+        this.dataSource!.filterPredicate(item, this.dataSource!.filter)
+      );
+    }
+
     const sort = this.dataSource.sort;
     return this.dataSource.sortData(data, sort);
   }
