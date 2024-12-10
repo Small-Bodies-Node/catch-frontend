@@ -75,7 +75,7 @@ export const horizons = async (req: Request, res: Response) => {
             // ACL: 'public-read', // Make the file publicly accessible
           })
         );
-        console.log('File uploaded successfully:', data);
+        data.then((data2) => console.log('File uploaded successfully:', data2));
       } catch (err: any) {
         return res.status(500).send(`Error uploading file: ${err.message}`);
       }
