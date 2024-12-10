@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { Subscription } from 'rxjs';
+import { combineLatest, Subscription, take } from 'rxjs';
 
 import { SbnSolarViewer, dateToJulianDay } from 'sbn-solar-viewer';
 import { IApiDatum } from '../../../models/IApiDatum';
@@ -8,6 +8,7 @@ import { IAppState } from '../../ngrx/reducers';
 import {
   selectApiData,
   selectApiSelectedDatum,
+  selectApiStatus,
 } from '../../ngrx/selectors/api-data.selectors';
 
 @Component({
@@ -28,9 +29,14 @@ export class SolarViewerComponent implements OnInit {
 
   ngOnInit(): void {
     this.subscriptions.add(
-      this.store$.select(selectApiData).subscribe((apiData) => {
+      combineLatest([
+        this.store$.select(selectApiStatus).pipe(take(1)),
+        this.store$.select(selectApiData).pipe(take(1)),
+      ]).subscribe(([status, apiData]) => {
+        const target = status.query?.target;
+
         this.apiData = apiData;
-        if (this.apiData) {
+        if (this.apiData && target) {
           const timeStamps = this.apiData.map((data) => {
             return data.date;
           });
@@ -43,7 +49,7 @@ export class SolarViewerComponent implements OnInit {
               this.solarViewer = new SbnSolarViewer({
                 containerId: this.sbnSolarViewerId,
                 // asteroid: { target: '65P*', data: timeStampsJds },
-                asteroid: { target: '65P', data: timeStampsJds },
+                asteroid: { target, data: timeStampsJds },
                 isControlsShown: !true,
                 logScaleZoomingPositionAus: { x: 3, y: 0, z: 1 },
                 nonLogScaleZoomingPositionAus: { x: 0, y: 0, z: 10 },

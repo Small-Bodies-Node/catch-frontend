@@ -18,7 +18,7 @@ console.log(`Using API base URL: ${apiBaseUrl}`);
 /**
  * Limits time that can be spent listening for streaming results
  */
-export const apiStreamTimeoutSecs = 900;
+export const apiStreamTimeoutSecs = 60 * 20;
 
 /**
  * Layout Constants

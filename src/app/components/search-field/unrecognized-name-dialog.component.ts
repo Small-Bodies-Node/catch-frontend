@@ -28,6 +28,10 @@ import { MatFormFieldModule } from '@angular/material/form-field';
       * {
         /* background-color: green; */
         margin: 5px;
+        color: white;
+        button {
+          color: black;
+        }
       }
     `,
   ],
