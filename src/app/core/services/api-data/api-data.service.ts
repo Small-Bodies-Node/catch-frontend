@@ -71,9 +71,9 @@ export class ApiDataService implements IApiDataService {
     // Need this hack for now because API will refuse padding <= 0
     const effectivePadding = padding < 0.01 ? '' : `&padding=${padding}`;
 
-    console.log('padding', padding, typeof padding);
-    console.log('effectivePadding', effectivePadding, typeof effectivePadding);
-    console.log('sourceStr', sourceStr);
+    // console.log('padding', padding, typeof padding);
+    // console.log('effectivePadding', effectivePadding, typeof effectivePadding);
+    // console.log('sourceStr', sourceStr);
 
     let catchUrl =
       apiBaseUrl +
@@ -90,7 +90,7 @@ export class ApiDataService implements IApiDataService {
     //   .then((data) => console.log('Fetch succeeded:', data))
     //   .catch((error) => console.log('Fetch failed:', error));
 
-    console.log('catchUrl >>> ', catchUrl);
+    // console.log('catchUrl >>> ', catchUrl);
 
     return this.httpClient
       .get<IApiDataCatchResult>(catchUrl, {
@@ -102,7 +102,7 @@ export class ApiDataService implements IApiDataService {
       })
       .pipe(
         map((_) => {
-          console.log(_);
+          // console.log(_);
           return _;
         }),
         catchError((error) => {
@@ -288,8 +288,11 @@ export class ApiDataService implements IApiDataService {
 
       console.log('watchJobStream jobId', jobId);
       const streamUrl = apiBaseUrl + `/stream`;
+      console.log('streamUrl', streamUrl);
       const source = new EventSource(streamUrl);
       const start = new Date();
+
+      // Close shop after waiting long time
       const timer = setTimeout(() => {
         console.log(
           'Query taking too long; go to results...',
@@ -299,29 +302,30 @@ export class ApiDataService implements IApiDataService {
         source.close();
       }, apiStreamTimeoutSecs * 1000);
 
+      // Process streamed messages
       source.onmessage = function (msgEvent: MessageEvent) {
         try {
           const data: IApiServiceStream = JSON.parse(msgEvent.data);
           const { job_prefix, status, text } = data;
-          console.log('Data stream:', data);
 
-          if (
-            status !== 'error' &&
-            !!text &&
-            !text.includes('Obtained ephemeris')
-          ) {
+          const isThisJob = jobId.includes(job_prefix);
+
+          if (isThisJob) console.log('Data stream:', data);
+
+          if (isThisJob && status !== 'error' && !!text) {
             store$.dispatch(ApiDataAction_SetStatus({ message: text }));
           }
-          if (status === 'success' && jobId.includes(job_prefix)) {
+          if (isThisJob && status === 'success') {
             this.close(); // Sever connection to SSE route
             resolve({ status: 'success', job_id: jobId });
             console.log('timer', timer);
             clearTimeout(timer);
           }
-          if (status === 'error') {
+          if (isThisJob && status === 'error') {
             this.close();
-            let errMessage = 'Unknown error occurred while streaming from API';
-            if (text.includes('Unknown target')) errMessage = 'Unknown Target';
+            let errMessage = `Error from server: ${
+              text || 'No error message included'
+            }`;
             resolve({ status: 'error', message: errMessage });
             clearTimeout(timer);
           }

@@ -13,6 +13,8 @@ export const apiBaseUrl =
     ? `https://catch-dev-api.astro.umd.edu`
     : `https://catch-api.astro.umd.edu`;
 
+console.log(`Using API base URL: ${apiBaseUrl}`);
+
 /**
  * Limits time that can be spent listening for streaming results
  */

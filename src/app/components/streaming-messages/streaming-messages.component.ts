@@ -35,6 +35,7 @@ export class StreamingMessagesComponent implements OnInit {
 
     this.store$.select(selectApiStatus).subscribe((status) => {
       this.streamingMessage = status.message || '';
+      console.log('New streaming message:', this.streamingMessage);
       this.streamingCode = status.code;
 
       if (!status.query) return;
