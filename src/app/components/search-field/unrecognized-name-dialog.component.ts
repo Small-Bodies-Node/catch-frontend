@@ -1,5 +1,6 @@
 import { Component, HostListener, Inject, NgZone } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatFormFieldModule } from '@angular/material/form-field';
 
 @Component({
   selector: 'app-unrecognized-name-dialog',
@@ -27,10 +28,18 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
       * {
         /* background-color: green; */
         margin: 5px;
+        color: white;
+        button {
+          color: black;
+        }
       }
     `,
   ],
-  // standalone: true,
+  standalone: true,
+  imports: [
+    //
+    MatFormFieldModule,
+  ],
 })
 export class UnrecognizedNameDialogComponent {
   // --->>>
@@ -47,5 +56,10 @@ export class UnrecognizedNameDialogComponent {
     this.ngZone.run(() => {
       this.dialogRef.close(isSearchConfirmed);
     });
+  }
+
+  @HostListener('keydown.enter', ['$event'])
+  handleEnterKey(event: KeyboardEvent) {
+    event.preventDefault(); // Prevent ENTER key from triggering any actions
   }
 }

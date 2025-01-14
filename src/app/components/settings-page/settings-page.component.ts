@@ -1,23 +1,45 @@
+import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import { MatSlideToggleChange } from '@angular/material/slide-toggle';
-import { Store } from '@ngrx/store';
-import { Subscription } from 'rxjs';
-
-import { IAppState } from 'src/app/ngrx/reducers';
-import { permittedThemes, TPermittedTheme } from 'src/app/models/ISiteSettings';
 import {
-  SiteSettingsSetIsAutoNightMode,
-  SiteSettingsSetSiteTheme,
-} from 'src/app/ngrx/actions/site-settings.actions';
+  MatSlideToggleChange,
+  MatSlideToggleModule,
+} from '@angular/material/slide-toggle';
+import { Subscription } from 'rxjs';
+import { Store } from '@ngrx/store';
+
+import {
+  permittedThemes,
+  TPermittedTheme,
+} from '../../../models/ISiteSettings';
+import { IAppState } from '../../ngrx/reducers';
 import {
   selectSiteSettingsEffectiveTheme,
   selectSiteSettingsIsAutoNightMode,
-} from 'src/app/ngrx/selectors/site-settings.selectors';
+} from '../../ngrx/selectors/site-settings.selectors';
+import {
+  SiteSettingsAction_SetIsAutoNightMode,
+  SiteSettingsAction_SetSiteTheme,
+} from '../../ngrx/actions/site-settings.actions';
+import { MatCardModule } from '@angular/material/card';
+import { MatIconModule } from '@angular/material/icon';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
 
 @Component({
   selector: 'app-settings-page',
   templateUrl: './settings-page.component.html',
   styleUrls: ['./settings-page.component.scss'],
+  standalone: true,
+  imports: [
+    CommonModule,
+
+    //
+    MatCardModule,
+    MatIconModule,
+    MatFormFieldModule,
+    MatSelectModule,
+    MatSlideToggleModule,
+  ],
 })
 export class SettingsPageComponent implements OnInit {
   // --->>>
@@ -56,7 +78,9 @@ export class SettingsPageComponent implements OnInit {
   }
 
   onThemeSelect(choice: any) {
-    this.store$.dispatch(new SiteSettingsSetSiteTheme({ theme: choice.value }));
+    this.store$.dispatch(
+      SiteSettingsAction_SetSiteTheme({ theme: choice.value })
+    );
   }
 
   getIconStyle() {
@@ -66,9 +90,9 @@ export class SettingsPageComponent implements OnInit {
     return style;
   }
 
-  onAutoNightModeToggle(event: MatSlideToggleChange) {
+  onAutoNightModeToggle(event: any | MatSlideToggleChange) {
     this.store$.dispatch(
-      new SiteSettingsSetIsAutoNightMode({ isAutoNightMode: event.checked })
+      SiteSettingsAction_SetIsAutoNightMode({ isAutoNightMode: event.checked })
     );
   }
 }

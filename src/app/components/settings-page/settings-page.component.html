@@ -30,14 +30,17 @@
       <mat-icon color="accent">
         <fa-icon icon="lightbulb" [ngStyle]="getIconStyle()"></fa-icon>
       </mat-icon>
-      <mat-placeholder>
+
+      <!-- Removed <mat-placeholder> and directly used label and button -->
+      <div class="label-container">
         <label>
           {{ "Auto night mode" }}
         </label>
         <button mat-icon-button>
           <mat-icon matTooltip="From 19:00 to 7:00"> info </mat-icon>
         </button>
-      </mat-placeholder>
+      </div>
+
       <mat-slide-toggle
         color="accent"
         [checked]="isAutoNightMode"

@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
-import { IObjectNameMatchResult } from '../../../models/IObjectNameMatchResult';
+import { IObjectNameMatchResult } from '../../../../models/IObjectNameMatchResult';
 
 type TOONMR = Observable<IObjectNameMatchResult[]>;
 

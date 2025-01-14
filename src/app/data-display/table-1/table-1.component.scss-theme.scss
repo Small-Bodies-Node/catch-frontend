@@ -1,0 +1,25 @@
+@use "sass:map";
+@use "@angular/material" as mat;
+
+@mixin app-data-table-component-theme($theme) {
+  //
+
+  $accent: green;
+  $primary: mat.get-theme-color($theme, surface);
+
+  app-table-1 {
+    .highlighted-sticky-cell {
+      // background-color: red;
+      // background-color: rgba(mat-color($accent, 900), 1);
+      // background-color: rgba(mat-color($background, background), 0.5);
+      // background-color: mat-color($primary, default-contrast);
+      // background-color: $primary;
+
+      // background-color: rgba(green, 0.3);
+      background-color: rgb(1, 50, 32); // Dark green
+    }
+    .highlighted-non-sticky-cell {
+      // background-color: rgba(mat-color($accent, 800), 0.3);
+    }
+  }
+}

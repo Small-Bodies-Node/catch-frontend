@@ -1,57 +1,37 @@
-import { Action } from '@ngrx/store';
+import { createAction, props } from '@ngrx/store';
+import { TPermittedTheme } from '../../../models/ISiteSettings';
 import { ISiteSettingsSubstate } from '../reducers/site-settings.reducer';
-import { TPermittedTheme } from '../../models/ISiteSettings';
 
-export enum ESiteSettingsActionTypes {
-  SiteSettingsSetAll = '[SiteSettings] Set All',
-  SiteSettingsSetHour = '[SiteSettings] Set Hour',
-  SiteSettingsSetSiteTheme = '[SiteSettings] Set SiteTheme',
-  SiteSettingsSetIsPageAnimated = '[SiteSettings] Set IsPageAnimated',
-  SiteSettingsSetIsAutoNightMode = '[SiteSettings] Set IsAutoNightMode',
-  SiteSettingsSetIsHappyWithCookies = '[SiteSettings] Set IsHappyWithCookies',
-  SiteSettingsLoadAllFromLocalStorage = '[SiteSettings] Load All From LocalStorage',
-}
+export const SiteSettingsAction_SetAll = createAction(
+  'Site Settings Action: Set All',
+  props<{ siteSettings: ISiteSettingsSubstate }>()
+);
 
-export class SiteSettingsSetAll implements Action {
-  readonly type = ESiteSettingsActionTypes.SiteSettingsSetAll;
-  constructor(public payload: { siteSettings: ISiteSettingsSubstate }) {}
-}
+export const SiteSettingsAction_SetHour = createAction(
+  'Site Settings Action: Set Hour',
+  props<{ hour: number }>()
+);
 
-export class SiteSettingsSetHour implements Action {
-  readonly type = ESiteSettingsActionTypes.SiteSettingsSetHour;
-  constructor(public payload: { hour: number }) {}
-}
+export const SiteSettingsAction_SetSiteTheme = createAction(
+  'Site Settings Action: Set SiteTheme',
+  props<{ theme: TPermittedTheme }>()
+);
 
-export class SiteSettingsSetSiteTheme implements Action {
-  readonly type = ESiteSettingsActionTypes.SiteSettingsSetSiteTheme;
-  constructor(public payload: { theme: TPermittedTheme }) {}
-}
+export const SiteSettingsAction_SetIsPageAnimated = createAction(
+  'Site Settings Action: Set IsPageAnimated',
+  props<{ isPageAnimated: boolean }>()
+);
 
-export class SiteSettingsSetIsPageAnimated implements Action {
-  readonly type = ESiteSettingsActionTypes.SiteSettingsSetIsPageAnimated;
-  constructor(public payload: { isPageAnimated: boolean }) {}
-}
+export const SiteSettingsAction_SetIsAutoNightMode = createAction(
+  'Site Settings Action: Set IsAutoNightMode',
+  props<{ isAutoNightMode: boolean }>()
+);
 
-export class SiteSettingsSetIsAutoNightMode implements Action {
-  readonly type = ESiteSettingsActionTypes.SiteSettingsSetIsAutoNightMode;
-  constructor(public payload: { isAutoNightMode: boolean }) {}
-}
+export const SiteSettingsAction_SetIsHappyWithCookies = createAction(
+  'Site Settings Action: Set IsHappyWithCookies',
+  props<{ isHappyWithCookies: boolean }>()
+);
 
-export class SiteSettingsSetIsHappyWithCookies implements Action {
-  readonly type = ESiteSettingsActionTypes.SiteSettingsSetIsHappyWithCookies;
-  constructor(public payload: { isHappyWithCookies: boolean }) {}
-}
-
-export class SiteSettingsLoadAllFromLocalStorage implements Action {
-  readonly type = ESiteSettingsActionTypes.SiteSettingsLoadAllFromLocalStorage;
-  constructor() {}
-}
-
-export type SiteSettingsActions =
-  | SiteSettingsSetAll
-  | SiteSettingsSetHour
-  | SiteSettingsSetSiteTheme
-  | SiteSettingsSetIsPageAnimated
-  | SiteSettingsSetIsAutoNightMode
-  | SiteSettingsSetIsHappyWithCookies
-  | SiteSettingsLoadAllFromLocalStorage;
+export const SiteSettingsAction_LoadAllFromLocalStorage = createAction(
+  'Site Settings Action: Load All From LocalStorage'
+);

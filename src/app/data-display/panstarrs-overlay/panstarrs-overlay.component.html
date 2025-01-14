@@ -1,0 +1,42 @@
+<div #myContainer class="panstarrs-overlay-container">
+  <!-- Crosshair: Vertical Line -->
+  <div
+    style="
+      position: absolute;
+      top: 0px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 2px;
+      height: 100%;
+      background-color: green;
+    "
+  ></div>
+
+  <!-- Crosshair: Horizontal Line -->
+  <div
+    style="
+      position: absolute;
+      top: 50%;
+      left: 0px;
+      transform: translateY(-50%);
+      width: 100%;
+      height: 2px;
+      background-color: green;
+    "
+  ></div>
+  <!--  -->
+  @for (raDec of raDecs; track raDec) {
+  <div
+    [style.left.px]="getDivLeft(raDec.ra)"
+    [style.top.px]="getDivTop(raDec.dec)"
+    [style.width.px]="getDivWidth(raDec.raErr)"
+    [style.height.px]="getDivHeight(raDec.decErr)"
+    [style.opacity]="getOpacity(raDec.raErr)"
+    class="ra-dec-div"
+  >
+    <div class="object-info">
+      Panstarrs RA: {{ raDec.ra }}, DEC: {{ raDec.dec }}
+    </div>
+  </div>
+  }
+</div>

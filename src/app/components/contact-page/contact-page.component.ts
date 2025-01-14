@@ -1,22 +1,39 @@
+import { CommonModule } from '@angular/common';
 import { Component, OnInit, AfterViewInit, OnDestroy } from '@angular/core';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { Validators, FormBuilder } from '@angular/forms';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import {
+  Validators,
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+} from '@angular/forms'; // <-- Add ReactiveFormsModule
 import { Store } from '@ngrx/store';
 import { Subscription } from 'rxjs';
 
-import { TPermittedTheme } from 'src/app/models/ISiteSettings';
-import { IAppState } from 'src/app/ngrx/reducers';
-import { selectSiteSettingsEffectiveTheme } from 'src/app/ngrx/selectors/site-settings.selectors';
-
 import { EmailerService } from '../../core/services/emailer/emailer.service';
-import { environment } from 'src/environments/environment';
-
-// declare const grecaptcha: typeof grecaptcha;
+import { TPermittedTheme } from '../../../models/ISiteSettings';
+import { IAppState } from '../../ngrx/reducers';
+import { environment } from '../../../environments/environment';
+import { selectSiteSettingsEffectiveTheme } from '../../ngrx/selectors/site-settings.selectors';
+import { MatInputModule } from '@angular/material/input';
+import { MatButtonModule } from '@angular/material/button';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatCardModule } from '@angular/material/card';
 
 @Component({
   selector: 'app-contact-page',
   templateUrl: './contact-page.component.html',
   styleUrls: ['./contact-page.component.scss'],
+  standalone: true,
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    MatSnackBarModule, // <-- Add MatSnackBarModule
+    MatInputModule, // <-- Add MatInputModule
+    MatButtonModule, // <-- Add MatButtonModule
+    MatFormFieldModule, // <-- Add MatFormFieldModule
+    MatCardModule, // <-- Add MatCardModule
+  ], // <-- Add ReactiveFormsModule
 })
 export class ContactPageComponent implements OnInit, AfterViewInit, OnDestroy {
   // --->>>
@@ -27,18 +44,7 @@ export class ContactPageComponent implements OnInit, AfterViewInit, OnDestroy {
   // Require user to perform recaptcha for every new message
   isMessageSendable = false;
 
-  form = this.fb.group({
-    username: ['', [Validators.required]],
-    email: ['', [Validators.required, Validators.email]],
-    message: [
-      '',
-      [
-        Validators.required,
-        Validators.minLength(10),
-        Validators.maxLength(1000),
-      ],
-    ],
-  });
+  form: FormGroup;
 
   constructor(
     private fb: FormBuilder,
@@ -51,12 +57,26 @@ export class ContactPageComponent implements OnInit, AfterViewInit, OnDestroy {
         .select(selectSiteSettingsEffectiveTheme)
         .subscribe((theme) => (this.theme = theme))
     );
+
+    this.form = this.fb.group({
+      username: ['', [Validators.required]],
+      email: ['', [Validators.required, Validators.email]],
+      message: [
+        '',
+        [
+          Validators.required,
+          Validators.minLength(10),
+          Validators.maxLength(1000),
+        ],
+      ],
+    });
   }
 
   ngOnInit() {}
 
   ngAfterViewInit() {
     setTimeout(() => {
+      // @ts-ignore
       (grecaptcha as typeof grecaptcha).render('recaptcha-id', {
         sitekey: environment.recaptchaSiteKey,
         theme: this.theme!.toUpperCase().includes('LIGHT') ? 'light' : 'dark',
@@ -64,7 +84,7 @@ export class ContactPageComponent implements OnInit, AfterViewInit, OnDestroy {
         callback: (token: string) => {
           this.recaptchaToken = token;
           this.isMessageSendable = true;
-          setTimeout(() => this.form.updateValueAndValidity(), 0);
+          setTimeout(() => this.form?.updateValueAndValidity(), 0);
         },
         'expired-callback': () => {
           this.isMessageSendable = false;
@@ -85,9 +105,9 @@ export class ContactPageComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.isFormSubmittable()) {
       this.emailer
         .sendEmail(
-          this.form.get('username')?.value || '',
-          this.form.get('email')?.value || '',
-          this.form.get('message')?.value || '',
+          this.form?.get('username')?.value || '',
+          this.form?.get('email')?.value || '',
+          this.form?.get('message')?.value || '',
           this.recaptchaToken + ''
         )
         .subscribe((response) => {
@@ -108,16 +128,16 @@ export class ContactPageComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   reset() {
-    this.form.reset();
-    this.form.clearValidators();
-    this.form.clearAsyncValidators();
+    this.form?.reset();
+    this.form?.clearValidators();
+    this.form?.clearAsyncValidators();
   }
 
   isFormSubmittable() {
     const isFormValid =
       !!this.isMessageSendable &&
       !!this.recaptchaToken &&
-      !!this.form.get('username') &&
+      !!this.form?.get('username') &&
       !!this.form.get('email') &&
       !!this.form.get('message') &&
       !this.form.get('message')!.hasError('required') &&

@@ -5,6 +5,10 @@
   width: 100%;
 }
 
+.temp {
+  // background-color: red;
+}
+
 .comet-wrapper {
   height: 100%;
   width: 100%;
@@ -27,8 +31,10 @@
 
   &.host-dark-theme {
     // background-image: url('src/client/assets/images/jpgs/dark_sky_v0.jpg');
-    background-image: url("../../../assets/images/jpgs/dark_sky_v0.jpg");
+    // background-image: url("../../../assets/images/jpgs/dark_sky_v0.jpg");
     // background-image: url("../../../assets/images/pngs/dark_sky_v2.png");
+    // background-image: url("../../../../public/assets/images/jpgs/dark_sky_v0.jpg");
+    background-image: url("../../../../public/images/jpgs/dark_sky_v0.jpg");
   }
 
   &.host-light-theme {
@@ -53,7 +59,8 @@
   margin: 0;
   padding: 0;
   //
-  background-image: url("../../../assets/images/pngs/stars_v1.png");
+  // background-image: url("../../../assets/images/pngs/stars_v1.png");
+  background-image: url("../../../../public/images/pngs/stars_v1.png");
 }
 
 .images-wrapper,

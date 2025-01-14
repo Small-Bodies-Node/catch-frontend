@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { OverlayContainer } from '@angular/cdk/overlay';
-import { ILocalStorageState } from 'src/app/models/ILocalStorageState';
+import { ILocalStorageState } from '../../../../models/ILocalStorageState';
 
 type LSKey = keyof ILocalStorageState; // Define type for 'LocalStorageKeys'
 
@@ -22,41 +22,52 @@ export class LocalStorageService {
   constructor(private overlayContainer: OverlayContainer) {}
 
   getLocalStorageState(): ILocalStorageState {
-    // Use default values for testing
-    if (!localStorage) {
+    try {
+      // Build copy of localStorage as js object
+      return Object.keys(localStorage).reduce(
+        (accumState: any, key: string) => {
+          accumState[key] = this.getItem(key as LSKey);
+          return accumState;
+        },
+        {}
+      );
+    } catch (e) {
       return { ...this.defaultPermittedLocalStorageState };
     }
-    // Build copy of localStorage as js object
-    return Object.keys(localStorage).reduce((accumState: any, key: string) => {
-      accumState[key] = this.getItem(key as LSKey);
-      return accumState;
-    }, {});
   }
 
   getItem(key: LSKey) {
-    // Use default values for testing
-    if (!localStorage) {
-      return this.defaultPermittedLocalStorageState[key];
-    }
-    // Retrieve parsed individual item
-    const item = localStorage.getItem(key);
     try {
-      return !!item ? JSON.parse(item) : 'NO_ITEM_FOUND';
+      // Retrieve parsed individual item
+      const item = localStorage.getItem(key);
+      try {
+        return !!item ? JSON.parse(item) : 'NO_ITEM_FOUND';
+      } catch (e) {
+        console.error(e);
+        return 'NO_ITEM_FOUND';
+      }
     } catch (e) {
-      console.error(e);
-      return 'NO_ITEM_FOUND';
+      return this.defaultPermittedLocalStorageState[key];
     }
   }
 
   setItem(key: LSKey, value: any) {
-    // Set individual key-value pair in localStorage
-    window.localStorage.setItem(key, JSON.stringify(value));
-    if (key === 'siteTheme') this.updateCdkOverlayClass(value);
+    try {
+      // Set individual key-value pair in localStorage
+      window.localStorage.setItem(key, JSON.stringify(value));
+      if (key === 'siteTheme') this.updateCdkOverlayClass(value);
+    } catch (e) {
+      //
+    }
   }
 
   removeItem(key: string) {
-    // Remove individual key-value pair from localStorage
-    window.localStorage.removeItem(key);
+    try {
+      // Remove individual key-value pair from localStorage
+      window.localStorage.removeItem(key);
+    } catch (e) {
+      //
+    }
   }
 
   /**
@@ -104,6 +115,7 @@ export class LocalStorageService {
   }
 
   setLocalStorageState(newState: Partial<ILocalStorageState>) {
+    if (!newState) return;
     // Update multiple key-value pairs in localStorage from object with subset of key-value pairs
     (Object.keys(newState) as LSKey[]).forEach((key: LSKey) => {
       this.setItem(key, newState[key]);

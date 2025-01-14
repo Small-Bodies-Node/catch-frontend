@@ -12,7 +12,7 @@
 ></div>
 
 <div class="comet-wrapper" [ngClass]="isBackgroundShown ? '' : 'fade-out'">
-  <app-comet-animations></app-comet-animations>
+  <!-- <app-comet-animations></app-comet-animations> -->
 </div>
 
 <div
@@ -23,5 +23,6 @@
     *ngFor="let imageName of imageNames; let imageIndex = index"
     [ngClass]="'animated-image' + (!isBackgroundShown ? '' : ' show-image ')"
     [ngStyle]="getAnimatedImageStyle(imageName, imageIndex)"
+    class="temp"
   ></div>
 </div>

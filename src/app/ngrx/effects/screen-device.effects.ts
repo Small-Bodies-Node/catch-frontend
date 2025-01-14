@@ -1,52 +1,59 @@
-import { Injectable } from '@angular/core';
-import { createEffect, Effect } from '@ngrx/effects';
-import { Action } from '@ngrx/store';
-import { Observable, of, BehaviorSubject, concat } from 'rxjs';
+import { createEffect } from '@ngrx/effects';
+import { of, BehaviorSubject, concat } from 'rxjs';
 import { distinctUntilChanged, debounceTime, switchMap } from 'rxjs/operators';
-import { IScreenDevice } from 'src/app/models/IScreenDevice';
-import { getDevice } from 'src/app/utils/get-device';
-
+import { IScreenDevice } from '../../../models/IScreenDevice';
+import { getDevice } from '../../../utils/getDevice';
 import {
-  ScreenDeviceSetDevice,
-  ScreenDeviceSetScreenWidth,
-  ScreenDeviceActions,
-  ScreenDeviceSetScreenHeight,
+  ScreenDeviceAction_SetDevice,
+  ScreenDeviceAction_SetScreenWidth,
+  ScreenDeviceAction_SetScreenHeight,
 } from '../actions/screen-device.actions';
+import { winHeight, winWidth } from '../../../utils/animation-constants';
 
-@Injectable()
-export class ScreenDeviceEffects {
-  // --->>>
+const resizeEvent$ = new BehaviorSubject<Partial<IScreenDevice>>({
+  device: getDevice(),
+  screenWidthPxls: winWidth,
+  screenHeightPxls: winHeight,
+});
 
-  resizeEvent$ = new BehaviorSubject<Partial<IScreenDevice>>({
-    device: getDevice(),
-    screenWidthPxls: window.innerWidth,
-    screenHeightPxls: window.innerHeight,
-  });
-
-  constructor() {
-    window.addEventListener('resize', () => {
-      console.log('Resize!!!');
-      setTimeout(() => {
-        this.resizeEvent$.next({
-          device: getDevice(),
-          screenWidthPxls: window.innerWidth,
-          screenHeightPxls: window.innerHeight,
-        });
-      }, 500);
+const handleResize = () => {
+  console.log('Screen Resize!!!');
+  setTimeout(() => {
+    resizeEvent$.next({
+      device: getDevice(),
+      screenWidthPxls: winWidth,
+      screenHeightPxls: winHeight,
     });
-  }
+  }, 500);
+};
 
-  checkScreen$: Observable<ScreenDeviceActions> = createEffect(() => {
-    return this.resizeEvent$.asObservable().pipe(
+try {
+  window.addEventListener('resize', handleResize);
+} catch (err) {
+  console.log('Nope: window aint here');
+}
+
+export const checkScreen$ = createEffect(
+  () => {
+    return resizeEvent$.asObservable().pipe(
       debounceTime(1000),
       distinctUntilChanged(),
-      switchMap((_) => {
+      switchMap((screenDevice) => {
         return concat(
-          of(new ScreenDeviceSetDevice({ device: _.device! })),
-          of(new ScreenDeviceSetScreenWidth({ width: _.screenWidthPxls! })),
-          of(new ScreenDeviceSetScreenHeight({ height: _.screenHeightPxls! }))
+          of(ScreenDeviceAction_SetDevice({ device: screenDevice.device! })),
+          of(
+            ScreenDeviceAction_SetScreenWidth({
+              width: screenDevice.screenWidthPxls!,
+            })
+          ),
+          of(
+            ScreenDeviceAction_SetScreenHeight({
+              height: screenDevice.screenHeightPxls!,
+            })
+          )
         );
       })
     );
-  });
-}
+  },
+  { functional: true }
+);

@@ -1,21 +1,34 @@
+import { CommonModule } from '@angular/common';
 import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
-import { FormGroup, FormControl } from '@angular/forms';
-import { MatAutocompleteTrigger } from '@angular/material/autocomplete';
+import { FormGroup, FormControl, ReactiveFormsModule } from '@angular/forms';
+import {
+  MatAutocompleteModule,
+  MatAutocompleteTrigger,
+} from '@angular/material/autocomplete';
 import { Subject, Subscription } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { Store } from '@ngrx/store';
 
-import { IObjectNameMatchResult } from 'src/app/models/IObjectNameMatchResult';
-import { IAppState } from 'src/app/ngrx/reducers';
-import { selectObjectNameMatchResults } from 'src/app/ngrx/selectors/object-name-match.selectors';
-import { selectApiStatus } from 'src/app/ngrx/selectors/api.selectors';
-import { ObjectNameMatchFetchResults } from 'src/app/ngrx/actions/object-name-match.actions';
-import { UnrecognizedNameDialogComponent } from './unrecognized-name-dialog.component';
-import { ApiFetchResult, ApiSetStatus } from 'src/app/ngrx/actions/api.actions';
-import { sourcesNamesDict } from 'src/app/utils/sourcesNamesDict';
-import { TSources } from 'src/app/models/TSources';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { TSources } from '../../../models/TSources';
+import { sourcesNamesDict } from '../../../utils/sourcesNamesDict';
+import { IObjectNameMatchResult } from '../../../models/IObjectNameMatchResult';
+import { IAppState } from '../../ngrx/reducers';
+import { selectObjectNameMatchResults } from '../../ngrx/selectors/object-name-match.selectors';
+import { selectApiStatus } from '../../ngrx/selectors/api-data.selectors';
+import { ObjectNameMatchAction_FetchResults } from '../../ngrx/actions/object-name-match.actions';
+import { UnrecognizedNameDialogComponent } from './unrecognized-name-dialog.component';
+import {
+  ApiDataAction_FetchResult,
+  ApiDataAction_SetStatus,
+} from '../../ngrx/actions/api-data.actions';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatOptionModule } from '@angular/material/core';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatInputModule } from '@angular/material/input';
 
 type TFormControlKeys =
   | TSources
@@ -45,6 +58,19 @@ type TControlsForm = {
   selector: 'app-search-field',
   templateUrl: './search-field.component.html',
   styleUrls: ['./search-field.component.scss'],
+  standalone: true,
+  imports: [
+    CommonModule,
+    //
+    ReactiveFormsModule,
+    MatFormFieldModule,
+    MatAutocompleteModule,
+    MatOptionModule,
+    MatIconModule,
+    MatTooltipModule,
+    MatCheckboxModule,
+    MatInputModule,
+  ],
 })
 export class SearchFieldComponent implements OnInit, OnDestroy {
   // --->>>
@@ -87,7 +113,7 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
       [formControlLabels.catalina_bokneosurvey]: new FormControl(true),
       [formControlLabels.catalina_lemmon]: new FormControl(true),
       [formControlLabels.ps1dr2]: new FormControl(true),
-      [formControlLabels.skymapper]: new FormControl(true),
+      [formControlLabels.skymapper_dr4]: new FormControl(true),
       [formControlLabels.spacewatch]: new FormControl(true),
       //
       [formControlLabels.use_cached_results_control]: new FormControl(true),
@@ -124,7 +150,7 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
         .subscribe((latestInputText) => {
           this.latestInputText = latestInputText;
           this.store$.dispatch(
-            new ObjectNameMatchFetchResults({ searchTerm: latestInputText })
+            ObjectNameMatchAction_FetchResults({ searchTerm: latestInputText })
           );
         })
     );
@@ -209,7 +235,7 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
         this.subscriptions.add(
           dialogRef.afterClosed().subscribe((isSearchConfirmed) => {
             console.log(
-              'Request received: >>>',
+              'Request received from dialog: >>>',
               isSearchConfirmed,
               '<<<',
               typeof isSearchConfirmed
@@ -238,7 +264,7 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
     //
     this.autocomplete.closePanel();
     this.store$.dispatch(
-      new ApiSetStatus({
+      ApiDataAction_SetStatus({
         query: {
           target,
           isCached,
@@ -251,7 +277,7 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
       })
     );
     this.store$.dispatch(
-      new ApiFetchResult({
+      ApiDataAction_FetchResult({
         target,
         isCached,
         padding,

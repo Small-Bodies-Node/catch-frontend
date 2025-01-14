@@ -3,14 +3,11 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "catch-frontend": {
+    "catch-frontend-ng18": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
           "style": "scss"
-        },
-        "@schematics/angular:application": {
-          "strict": true
         }
       },
       "root": "",
@@ -18,15 +15,19 @@
       "prefix": "app",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:browser",
+          "builder": "@angular-devkit/build-angular:application",
           "options": {
-            "outputPath": "dist/catch-gui-prod",
+            "outputPath": "dist/catch-frontend-ng18",
             "index": "src/index.html",
-            "main": "src/main.ts",
-            "polyfills": "src/polyfills.ts",
+            "browser": "src/main.ts",
+            "polyfills": ["zone.js"],
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
             "assets": [
+              {
+                "glob": "**/*",
+                "input": "public"
+              },
               "src/favicon.ico",
               "src/assets",
               "src/assets/fits",
@@ -39,128 +40,112 @@
                 "output": "/socket.io/"
               }
             ],
-            "styles": ["src/styles/styles.scss"],
+            "styles": [
+              "@angular/material/prebuilt-themes/azure-blue.css",
+              "src/styles/styles.scss",
+              "src/assets/js9-to-be-served/js9support.css",
+              "src/assets/js9-to-be-served/js9.css"
+            ],
             "scripts": [
               "src/assets/js9-to-be-compiled/js9prefs.js",
               "src/assets/js9-to-be-compiled/js9support.min.js",
               "src/assets/js9-to-be-compiled/js9.js",
               "src/assets/js9-to-be-compiled/js9plugins.js"
             ],
-            "allowedCommonJsDependencies": ["stream", "assert"]
-          },
-          "configurations": {
-            "catch-prod": {
-              "index": {
-                "input": "src/index.prod.html",
-                "output": "index.html"
-              },
-              "budgets": [
-                {
-                  "type": "initial",
-                  "maximumWarning": "1000kb",
-                  "maximumError": "3mb"
-                },
-                {
-                  "type": "anyComponentStyle",
-                  "maximumWarning": "2kb",
-                  "maximumError": "4kb"
-                }
-              ],
-              "fileReplacements": [
-                {
-                  "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.catch-prod.ts"
-                }
-              ],
-              "outputHashing": "all",
-              "outputPath": "dist/catch-gui-prod"
-            },
-            "catch-dev": {
-              "buildOptimizer": false,
-              "optimization": false,
-              "vendorChunk": true,
-              "extractLicenses": false,
-              "sourceMap": true,
-              "namedChunks": true,
-              "budgets": [
-                {
-                  "type": "initial",
-                  "maximumWarning": "1000kb",
-                  "maximumError": "40mb"
-                },
-                {
-                  "type": "anyComponentStyle",
-                  "maximumWarning": "2kb",
-                  "maximumError": "16kb"
-                }
-              ],
-              "fileReplacements": [
-                {
-                  "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.catch-dev.ts"
-                }
-              ],
-              "outputHashing": "all",
-              "outputPath": "dist/catch-gui-dev"
-            },
-            "catch-github": {
-              "budgets": [
-                {
-                  "type": "initial",
-                  "maximumWarning": "1000kb",
-                  "maximumError": "3mb"
-                },
-                {
-                  "type": "anyComponentStyle",
-                  "maximumWarning": "2kb",
-                  "maximumError": "4kb"
-                }
-              ],
-              "fileReplacements": [
-                {
-                  "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.catch-github.ts"
-                }
-              ],
-              "outputHashing": "all",
-              "outputPath": "dist/catch-gui-github",
-              "baseHref": "/catch-frontend/"
+            "server": "src/main.server.ts",
+            "prerender": false,
+            "ssr": {
+              "entry": "server.ts"
             }
           },
-          "defaultConfiguration": "catch-prod"
+          "configurations": {
+            "production": {
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "500kB",
+                  "maximumError": "10MB"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "2kB",
+                  "maximumError": "40kB"
+                }
+              ],
+              "outputHashing": "all",
+              "outputPath": "dist/catch-gui-prod",
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.production.ts"
+                }
+              ]
+            },
+            "development": {
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true,
+              "outputPath": "dist/catch-gui-dev",
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.development.ts"
+                }
+              ]
+            }
+          },
+          "defaultConfiguration": "production"
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
-            "catch-prod": {
-              "browserTarget": "catch-frontend:build:catch-prod"
+            "production": {
+              "buildTarget": "catch-frontend-ng18:build:production"
             },
-            "catch-dev": {
-              "browserTarget": "catch-frontend:build:catch-dev"
+            "development": {
+              "buildTarget": "catch-frontend-ng18:build:development"
             }
           },
-          "defaultConfiguration": "catch-dev"
+          "defaultConfiguration": "development"
         },
         "extract-i18n": {
-          "builder": "@angular-devkit/build-angular:extract-i18n",
-          "options": {
-            "browserTarget": "catch-frontend:build"
-          }
+          "builder": "@angular-devkit/build-angular:extract-i18n"
         },
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "src/test.ts",
-            "polyfills": "src/polyfills.ts",
+            "polyfills": ["zone.js", "zone.js/testing"],
             "tsConfig": "tsconfig.spec.json",
-            "karmaConfig": "karma.conf.js",
             "inlineStyleLanguage": "scss",
-            "assets": ["src/favicon.ico", "src/assets"],
-            "styles": [
-              "./node_modules/@angular/material/prebuilt-themes/deeppurple-amber.css",
-              "src/styles.scss"
+            "assets": [
+              {
+                "glob": "**/*",
+                "input": "public"
+              },
+              "src/favicon.ico",
+              "src/assets",
+              "src/assets/fits",
+              "src/assets/js9-to-be-served",
+              "src/assets/js9-to-be-compiled",
+              "src/assets/socket.io",
+              {
+                "glob": "**/*",
+                "input": "src/assets/socket.io/",
+                "output": "/socket.io/"
+              }
             ],
-            "scripts": []
+            "styles": [
+              "@angular/material/prebuilt-themes/azure-blue.css",
+              "src/styles/styles.scss",
+              "src/assets/js9-to-be-served/js9support.css",
+              "src/assets/js9-to-be-served/js9.css"
+            ],
+            "scripts": [
+              "src/assets/js9-to-be-compiled/js9prefs.js",
+              "src/assets/js9-to-be-compiled/js9support.min.js",
+              "src/assets/js9-to-be-compiled/js9.js",
+              "src/assets/js9-to-be-compiled/js9plugins.js"
+            ]
           }
         }
       }
@@ -177,21 +162,20 @@
             "project": "projects/ngx-js9/ng-package.json"
           },
           "configurations": {
-            "catch-prod": {
+            "production": {
               "tsConfig": "projects/ngx-js9/tsconfig.lib.prod.json"
             },
-            "catch-dev": {
+            "development": {
               "tsConfig": "projects/ngx-js9/tsconfig.lib.json"
             }
           },
-          "defaultConfiguration": "catch-prod"
+          "defaultConfiguration": "production"
         },
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "projects/ngx-js9/src/test.ts",
             "tsConfig": "projects/ngx-js9/tsconfig.spec.json",
-            "karmaConfig": "projects/ngx-js9/karma.conf.js"
+            "polyfills": ["zone.js", "zone.js/testing"]
           }
         }
       }

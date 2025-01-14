@@ -17,6 +17,11 @@
 
   .label-row {
     margin-bottom: 5px;
+    color: #7e8bff;
+    max-width: 100%;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
   }
   .progress-bar-wrapper {
     margin: 15px 0px;

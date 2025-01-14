@@ -11,7 +11,7 @@ import { Observable, throwError } from 'rxjs';
 import { timeout, map, catchError } from 'rxjs/operators';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
-import { apiDefaultTimeoutMs } from 'src/app/utils/constants';
+import { apiDefaultTimeoutMs } from '../../../utils/constants';
 
 /**
  * Single interceptor to handle all http requests

@@ -12,11 +12,11 @@
   </p>
 
   <p>
-    <em
-      >Use CATCH to help identify pre-discovery detections, to examine past
+    <em>
+      Use CATCH to help identify pre-discovery detections, to examine past
       cometary activity, or to help you understand why a survey did not detect
-      or report observations of an object.</em
-    >
+      or report observations of an object.
+    </em>
   </p>
 
   <p>
@@ -43,12 +43,12 @@
       the query target (when available).
     </li>
 
-    <li>Backed by a publicly accessible API.</li>
+    <li>Backed by a <a href="apis">publicly accessible API</a>.</li>
 
     <li>
       Searches all near-Earth object survey data archived with NASA's Planetary
-      Data System, and potentially any publicly hosted data archive could be
-      included.
+      Data System, and a few other survey data sets. Potentially any publicly
+      hosted data archive could be included.
     </li>
 
     <li>
@@ -63,47 +63,64 @@
     </li>
 
     <li>
-      Pixel-level precision is possible, depending on the metadata quality of
-      the survey data or observation in question.
+      CATCH is designed to have arcsecond-level precision, but identifying
+      targets may be limited by the astrometric accuracy of survey metadata.
+    </li>
+
+    <li>
+      Fixed-target (celestial objects) are currently searchable
+      <a href="apis">via the API</a>.
     </li>
   </ul>
 
-  <p>
-    For a summary of CATCH's techniques, see
-    <a href="https://youtu.be/wkqoUXds26U?si=frwAyeF8RAxuCQwa&t=18830"
-      ><em>CATCHing Near-Earth Objects in Archival Survey Data</em></a
-    >
-    a talk given by M.&nbsp;Kelley, D.&nbsp;Darg, and J.&nbsp;Bauer to the 7th
-    IAA Planetary Defense Conference (2021 Apr 27):
-  </p>
+  <h2>Figures and Videos</h2>
 
-  <p>
-    <iframe
-      frameborder="0"
-      width="560"
-      height="315"
-      src="https://www.youtube.com/embed/wkqoUXds26U?start=18824"
-      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-      title="CATCH-ing near-earth objects in archival survey data"
-    ></iframe>
-  </p>
-
-  <p>
-    <!--  -->
-    For a talk that focusses on the indexing techniques used in CATCH, see:
-  </p>
-
-  <p>
-    <iframe
-      width="560"
-      height="315"
-      title="CATCH: Finding Celestial Objects with Google’s Spatial Indexing Library “S2”"
-      frameborder="0"
-      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-      allowfullscreen
-      src="https://www.youtube.com/embed/_m62kWoRsfk?si=SNk4XQwNhISA15Zp"
-    ></iframe>
-  </p>
+  <mat-grid-list cols="2" rowHeight="1.2:1">
+    <mat-grid-tile>
+      <figure class="about-figure">
+        <iframe
+          frameborder="0"
+          src="https://www.youtube.com/embed/wkqoUXds26U?start=18824"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          title="CATCH-ing near-earth objects in archival survey data"
+        ></iframe>
+        <p>
+          A video summary of CATCH's techniques,
+          <a href="https://youtu.be/wkqoUXds26U?si=frwAyeF8RAxuCQwa&t=18830"
+            ><em>CATCHing Near-Earth Objects in Archival Survey Data</em></a
+          >, given by M.&nbsp;Kelley, D.&nbsp;Darg, and J.&nbsp;Bauer to the 7th
+          IAA Planetary Defense Conference (2021 Apr 27).
+        </p>
+      </figure>
+    </mat-grid-tile>
+    <mat-grid-tile>
+      <figure class="about-figure">
+        <iframe
+          title="CATCH: Finding Celestial Objects with Google’s Spatial Indexing Library “S2”"
+          frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowfullscreen
+          src="https://www.youtube.com/embed/_m62kWoRsfk?si=SNk4XQwNhISA15Zp"
+        ></iframe>
+        <p>A video that focuses on the indexing techniques used in CATCH.</p>
+      </figure>
+    </mat-grid-tile>
+    <mat-grid-tile>
+      <figure class="about-figure">
+        <a [href]="allSkyCoverage">
+          <img
+            [src]="allSkyCoverage"
+            alt="CATCH database depth of coverage across the sky"
+          />
+        </a>
+        <figcaption>
+          CATCH database depth of coverage for all data sources in a Mollweide
+          projection. Cell sizes are 1.3 degrees across. The cell color scale
+          indicates the number of images that have any overlap with it.
+        </figcaption>
+      </figure>
+    </mat-grid-tile>
+  </mat-grid-list>
 
   <h2>Data sources</h2>
 
@@ -130,11 +147,66 @@
       </thead>
       <tbody>
         <tr>
+          <td>Asteroid Terrestrial-impact Last Alert System (ATLAS)</td>
+          <td>Haleakala Observatory, Hawaii, USA (T05)</td>
+          <td><sup>c</sup></td>
+          <td><sup>c</sup></td>
+          <td><sup>c</sup></td>
+          <td>1.86</td>
+          <td>28</td>
+          <td>o, c</td>
+          <td></td>
+          <td>PDS SBN</td>
+          <td>Denneau et al. 2024</td>
+        </tr>
+        <tr>
+          <td>Asteroid Terrestrial-impact Last Alert System (ATLAS)</td>
+          <td>Mauna Loa Observatory, Hawaii, USA (T08)</td>
+          <td><sup>c</sup></td>
+          <td><sup>c</sup></td>
+          <td><sup>c</sup></td>
+          <td>1.86</td>
+          <td>28</td>
+          <td>o, c</td>
+          <td></td>
+          <td>PDS SBN</td>
+          <td>Denneau et al. 2024</td>
+        </tr>
+        <tr>
+          <td>Asteroid Terrestrial-impact Last Alert System (ATLAS)</td>
+          <td>El Sauce Observatory, Rio Hurtado, Chile (W68)</td>
+          <td><sup>c</sup></td>
+          <td><sup>c</sup></td>
+          <td><sup>c</sup></td>
+          <td>1.86</td>
+          <td>28</td>
+          <td>o, c</td>
+          <td></td>
+          <td>PDS SBN</td>
+          <td>Denneau et al. 2024</td>
+        </tr>
+        <tr>
+          <td>Asteroid Terrestrial-impact Last Alert System (ATLAS)</td>
+          <td>
+            South African Astronomical Observatory, Sutherland Station, South
+            Africa (M22)
+          </td>
+          <td><sup>c</sup></td>
+          <td><sup>c</sup></td>
+          <td><sup>c</sup></td>
+          <td>1.86</td>
+          <td>28</td>
+          <td>o, c</td>
+          <td></td>
+          <td>PDS SBN</td>
+          <td>Denneau et al. 2024</td>
+        </tr>
+        <tr>
           <td>Catalina Sky Survey</td>
-          <td>Mt. Bigelow (703, V06)</td>
-          <td>January 2020 &ndash; December 2022<sup>c</sup></td>
-          <td>717<sup>c</sup></td>
-          <td>635,557<sup>c</sup></td>
+          <td>Mt. Bigelow, Arizona, USA (703, V06)</td>
+          <td>January 2020 &ndash; October 2024<sup>c</sup></td>
+          <td>1102<sup>c</sup></td>
+          <td>1,076,578<sup>c</sup></td>
           <td>2.5 or 3.0 (703), 0.6 (V06)</td>
           <td>8.1 or 19.4 (703), 0.03 (V06)</td>
           <td>None</td>
@@ -148,10 +220,10 @@
         </tr>
         <tr>
           <td>Catalina Sky Survey</td>
-          <td>Mt. Lemmon (G96, I52)</td>
+          <td>Mt. Lemmon, Arizona, USA (G96, I52)</td>
           <td>January 2020 &ndash; December 2022<sup>c</sup></td>
-          <td>764<sup>c</sup></td>
-          <td>958,451<sup>c</sup></td>
+          <td>1169<sup>c</sup></td>
+          <td>1,421,508<sup>c</sup></td>
           <td>1.0 or 1.5 (G96), 1.0 (I51)</td>
           <td>1.2 or 5.0 (G96), 0.3 (I52)</td>
           <td>None</td>
@@ -164,8 +236,27 @@
           </td>
         </tr>
         <tr>
-          <td>NEAT GEODSS</td>
-          <td>Haleakala Observatory (566)</td>
+          <td>Lowell Observatory Near-Earth Objects Survey (LONEOS)</td>
+          <td>Lowell Observatory, Anderson Mesa, Arizona, USA (699)</td>
+          <td>August 2003 &ndash; March 2008</td>
+          <td>560</td>
+          <td>290,593</td>
+          <td>2.53</td>
+          <td>4.1</td>
+          <td>None</td>
+          <td>V~18–19</td>
+          <td>
+            <a href="https://sbn.psi.edu/pds/resource/loneos.html">PDS SBN</a>
+          </td>
+          <td>
+            <a href="https://doi.org/10.26033/ms2j-v867"
+              >Tedesco and Davis 2024</a
+            >
+          </td>
+        </tr>
+        <tr>
+          <td>Near Earth Asteroid Tracking (NEAT) GEODSS</td>
+          <td>Haleakala Observatory, Hawaii, USA (566)</td>
           <td>April 1996 &ndash; May 1998</td>
           <td>147</td>
           <td>36,099</td>
@@ -186,11 +277,11 @@
           </td>
         </tr>
         <tr>
-          <td>NEAT Palomar Tri-Cam</td>
-          <td>Palomar Observatory (644)</td>
+          <td>Near Earth Asteroid Tracking (NEAT) Palomar Tri-Cam</td>
+          <td>Palomar Observatory, California, USA (644)</td>
           <td>November 2001 &ndash; March 2003</td>
           <td>150</td>
-          <td>131,389</td>
+          <td>128,164</td>
           <td>1.01</td>
           <td>1.3</td>
           <td>None</td>
@@ -209,7 +300,7 @@
         </tr>
         <tr>
           <td>Pan-STARRS 1 (DR2)</td>
-          <td>Haleakala Observatory (F51)</td>
+          <td>Haleakala Observatory, Hawaii, USA (F51)</td>
           <td>June 2009 &ndash; February 2015</td>
           <td>1438</td>
           <td>17,558,049<sup>b</sup></td>
@@ -236,11 +327,11 @@
           </td>
         </tr>
         <tr>
-          <td>SkyMapper Southern Survey (DR2)</td>
-          <td>Siding Spring Observatory (413)</td>
-          <td>March 2014 &ndash; March 2018</td>
-          <td>799</td>
-          <td>3,727,026</td>
+          <td>SkyMapper Southern Survey (DR4)</td>
+          <td>Siding Spring Observatory, New South Wales, Australia (413)</td>
+          <td>March 2014 &ndash; September 2021</td>
+          <td>1934</td>
+          <td>12,630,515</td>
           <td>0.5</td>
           <td>0.16</td>
           <td>uvgriz</td>
@@ -264,11 +355,11 @@
           </td>
         </tr>
         <tr>
-          <td>Spacewatch 0.9-m Mosaic Camera Survey</td>
-          <td>Steward Observatory, Kitt Peak (691)</td>
+          <td>Spacewatch 0.9-m Mosaic Camera Survey (v3)</td>
+          <td>Steward Observatory, Kitt Peak, Tohono O'odham Nation (691)</td>
           <td>March 2003 &ndash; December 2016</td>
           <td>2413</td>
-          <td>1,808,157</td>
+          <td>1,808,188</td>
           <td>1.0</td>
           <td>0.35</td>
           <td>Schott OG-515</td>
@@ -297,10 +388,12 @@
         </tr>
         <tr>
           <td colspan="11">
-            <sup>c</sup>This archive is accumulating data with time. Archive
-            statistics were updated on 2023 Mar 01.
-            <a href="#">Current statistics for CATCH holdings</a> are available
-            via the CATCH API.
+            <sup>c</sup>These archives are accumulating data with time. Archive
+            statistics were updated on 2024 Nov 26.
+            <a href="https://catch-api.astro.umd.edu/status/sources"
+              >Current statistics for CATCH holdings</a
+            >
+            are available via the CATCH API.
           </td>
         </tr>
       </tfoot>
@@ -322,12 +415,7 @@
 
   <h3>Known issues</h3>
   <ol>
-    <li>NEAT astrometric solutions are typically 10s of arcsec off.</li>
-
-    <li>
-      Cutout services are not yet available for NEAT, Catalina Sky Survey, or
-      Spacewatch.
-    </li>
+    <li>NEAT and LONEOS astrometric solutions are up to ~3 arcmin off.</li>
 
     <li>
       Target name resolution: our name resolution service is incomplete. Some
@@ -346,17 +434,71 @@
       predicted by the ephemeris generator. Contact us if this limit is
       affecting your work.
     </li>
+
+    <li>
+      Owing to some mounting inconsistencies in earlier surveys, the catalog
+      stars may not be oriented (e.g. may be flipped) with respect to the
+      displayed fields.
+    </li>
   </ol>
 
   <h3>Updates</h3>
   <ul>
     <li>
-      <b>2023 Mar 15</b>: (v2) A new search technique enables areal searches
-      (padding or uncertainty ellipse). Search by source now allowed. New data
-      sources: Spacewatch, Catalina Sky Survey Archive, PanSTARRS1 DR2. API
-      updated to v2.
+      v3.0 (2024 Nov 26):
+      <ul>
+        <li>New features:</li>
+        <ul>
+          <li>
+            Solar System viewer showing the orientation of the Sun, Earth,
+            target, and other objects at the time of each observation.
+          </li>
+          <li>Image cutout services for all PDS-hosted data.</li>
+          <li>
+            Added Lowell Observatory Near-Earth Objects Survey (LONEOS) data
+            collection.
+          </li>
+          <li>
+            Added Asteroid Terrestrial-impact Last Alert System (ATLAS) data
+            collections. The ATLAS collections will be continuously updated with
+            new and previously obtained data.
+          </li>
+          <li>Fixed-target (celestial) searches are available via the API.</li>
+          <li>Date-range searches are available via the API.</li>
+        </ul>
+        <li>Other updates:</li>
+        <ul>
+          <li>
+            improved web app responsiveness for large numbers of observations.
+          </li>
+          <li>
+            Updated Spacewatch 0.9m Mosaic Camera Survey data from v1.0 to v3.0.
+          </li>
+          <li>Updated SkyMapper Southern Sky Survey Data Release 2 to 4.</li>
+          <li>
+            Updated the size of NEAT cutouts to accommodate images with large
+            WCS errors.
+          </li>
+        </ul>
+      </ul>
     </li>
-    <li><b>2020 Nov 12</b>: (v1) First release to the public.</li>
+    <li>
+      v2.0 (2023 Mar 15):
+      <ul>
+        <li>New features:</li>
+        <ul>
+          <li>
+            A new search technique enables areal searches (padding or
+            uncertainty ellipse).
+          </li>
+          <li>Search by source now allowed.</li>
+          <li>Added Spacewatch 0.9m Mosaic Camera Survey</li>
+          <li>Added Catalina Sky Survey Archive</li>
+          <li>Added PanSTARRS1 DR2</li>
+        </ul>
+      </ul>
+    </li>
+    <li>v1.0 (2020 Nov 12): First release to the public.</li>
   </ul>
 
   <h3>Acknowledgements</h3>
@@ -367,7 +509,8 @@
     for his assistance in integrating it into this
     <a href="https://en.wikipedia.org/wiki/Angular_(web_framework)">angular</a>
     {{ " " }}
-    <a href="https://en.wikipedia.org/wiki/Single-page_application">SPA</a>.
+    <a href="https://en.wikipedia.org/wiki/Single-page_application">SPA</a>, and
+    Rick White (STScI) for help with the PanSTARRS 1 metadata.
   </p>
 
   <h3>Acceptable Usage of Site</h3>

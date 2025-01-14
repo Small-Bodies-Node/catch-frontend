@@ -1,0 +1,15 @@
+<div class="container">
+  <h1>js9-dev works!</h1>
+
+  <lib-ngx-js9
+    [widthPxls]="450"
+    [heightPxls]="400"
+    [siteTheme]="'DARK-THEME'"
+    [fitsUrl]="fitsUrl"
+    [globalOpts]="{
+      menuBar: ['view', 'zoom', 'scale', 'color', 'region'],
+      alerts: !true
+    }"
+    (fitsLoadStatus)="onFitsLoadStatusUpdate($event)"
+  ></lib-ngx-js9>
+</div>

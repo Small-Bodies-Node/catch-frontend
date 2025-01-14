@@ -1,49 +1,39 @@
+import { createReducer, on } from '@ngrx/store';
 import {
-  ScreenDeviceActions,
-  EScreenDeviceActionTypes,
+  ScreenDeviceAction_SetDevice,
+  ScreenDeviceAction_SetLayout,
+  ScreenDeviceAction_SetScreenWidth,
+  ScreenDeviceAction_SetScreenHeight,
 } from '../actions/screen-device.actions';
-import { IScreenDevice } from '../../models/IScreenDevice';
-import { getDevice } from '../../utils/get-device';
+import { IScreenDevice } from '../../../models/IScreenDevice';
+import { getDevice } from '../../../utils/getDevice';
+import { winHeight, winWidth } from '../../../utils/animation-constants';
 
 export interface IScreenDeviceSubstate extends IScreenDevice {}
 
 export const initialState: IScreenDeviceSubstate = {
   device: getDevice(),
   layout: 'auto',
-  screenWidthPxls: window.innerWidth,
-  screenHeightPxls: window.innerHeight,
+  screenWidthPxls: winWidth,
+  screenHeightPxls: winHeight,
 };
 
-export function ScreenDeviceReducer(
-  state = initialState,
-  action: ScreenDeviceActions
-): IScreenDeviceSubstate {
-  switch (action.type) {
-    case EScreenDeviceActionTypes.ScreenDeviceSetDevice:
-      return {
-        ...state,
-        device: action.payload.device,
-      };
-
-    case EScreenDeviceActionTypes.ScreenDeviceSetLayout:
-      return {
-        ...state,
-        layout: action.payload.layout,
-      };
-
-    case EScreenDeviceActionTypes.ScreenDeviceSetScreenWidth:
-      return {
-        ...state,
-        screenWidthPxls: action.payload.width,
-      };
-
-    case EScreenDeviceActionTypes.ScreenDeviceSetScreenHeight:
-      return {
-        ...state,
-        screenHeightPxls: action.payload.height,
-      };
-
-    default:
-      return state;
-  }
-}
+export const screenDeviceReducer = createReducer(
+  initialState,
+  on(ScreenDeviceAction_SetDevice, (state, { device }) => ({
+    ...state,
+    device,
+  })),
+  on(ScreenDeviceAction_SetLayout, (state, { layout }) => ({
+    ...state,
+    layout,
+  })),
+  on(ScreenDeviceAction_SetScreenWidth, (state, { width }) => ({
+    ...state,
+    screenWidthPxls: width,
+  })),
+  on(ScreenDeviceAction_SetScreenHeight, (state, { height }) => ({
+    ...state,
+    screenHeightPxls: height,
+  }))
+);

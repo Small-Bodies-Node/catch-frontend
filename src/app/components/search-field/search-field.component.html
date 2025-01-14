@@ -49,14 +49,12 @@
       <button
         class="search-button shift"
         *ngIf="!!latestInputText.trim()"
-        mat-raised-button
+        mat-button
         matSuffix
         aria-label="Button to start searching names"
         (click)="submitObjectNameMatch($event)"
       >
         <span style="font-size: 12px">START</span>
-
-        <!-- START -->
       </button>
     </mat-form-field>
     <div class="advanced-controls-button-wrapper">
@@ -136,8 +134,8 @@
                 >info</mat-icon
               >
             </span>
-            <mat-checkbox [formControlName]="formControlLabels.skymapper">{{
-              formControlLabels.skymapper
+            <mat-checkbox [formControlName]="formControlLabels.skymapper_dr4">{{
+              formControlLabels.skymapper_dr4
             }}</mat-checkbox>
           </div>
         </div>
@@ -258,7 +256,7 @@
 
       <div class="padding-field-wrapper">
         <div style="width: 100%">
-          <mat-form-field appearance="standard">
+          <mat-form-field appearance="fill">
             <mat-label>Extra Padding </mat-label>
             <input
               matInput

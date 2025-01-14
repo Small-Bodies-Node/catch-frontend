@@ -1,6 +1,7 @@
+import { createReducer, on } from '@ngrx/store';
 import {
-  NavigationActions,
-  ENavigationActionTypes,
+  NavigationAction_SetIsNewRouteScheduled,
+  NavigationAction_SetRouteRecords,
 } from '../actions/navigation.actions';
 
 export interface INavigationSubstate {
@@ -15,26 +16,14 @@ export const initialState: INavigationSubstate = {
   presentRoute: undefined,
 };
 
-export function NavigationReducer(
-  state = initialState,
-  action: NavigationActions
-): INavigationSubstate {
-  // ---------------->>>
-
-  switch (action.type) {
-    case ENavigationActionTypes.NavigationSetIsNewRouteScheduled:
-      return {
-        ...state,
-        ...action.payload,
-      };
-
-    case ENavigationActionTypes.NavigationSetRouteRecords:
-      return {
-        ...state,
-        ...action.payload,
-      };
-
-    default:
-      return state;
-  }
-}
+export const navigationReducer = createReducer(
+  initialState,
+  on(NavigationAction_SetIsNewRouteScheduled, (state, payload) => ({
+    ...state,
+    ...payload,
+  })),
+  on(NavigationAction_SetRouteRecords, (state, payload) => ({
+    ...state,
+    ...payload,
+  }))
+);

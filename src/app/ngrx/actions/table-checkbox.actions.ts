@@ -1,16 +1,7 @@
-import { Action } from '@ngrx/store';
+import { createAction, props } from '@ngrx/store';
+import { TApiDataColState } from '../../../models/TApiDataColState';
 
-import { TApiDataColState } from 'src/app/models/TApiDataColState';
-
-export enum ETableCheckboxActionTypes {
-  SetTableCheckboxState = '[TableCheckbox] Set Table Checkbox State',
-}
-
-export class TableCheckboxSetState implements Action {
-  readonly type = ETableCheckboxActionTypes.SetTableCheckboxState;
-  constructor(
-    public payload: { newTableCheckboxState: Partial<TApiDataColState> }
-  ) {}
-}
-
-export type TableCheckboxActions = TableCheckboxSetState;
+export const TableCheckboxAction_SetState = createAction(
+  'Table Checkbox Action: Set Table Checkbox State',
+  props<{ newTableCheckboxState: Partial<TApiDataColState> }>()
+);

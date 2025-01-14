@@ -1,56 +1,41 @@
-import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { withLatestFrom, map } from 'rxjs/operators';
-import { Store, Action } from '@ngrx/store';
-import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
-
-import {
-  ENavigationActionTypes,
-  NavigationSetRouteRecords,
-} from '../actions/navigation.actions';
+import { createEffect, ofType, Actions } from '@ngrx/effects';
+import { withLatestFrom, map, tap } from 'rxjs/operators';
+import { Store } from '@ngrx/store';
+import { inject } from '@angular/core';
 import { IAppState } from '../reducers';
 
-@Injectable()
-export class NavigationEffects {
-  // --->>>
+import {
+  NavigationAction_SetRouteRecords,
+  NavigationAction_UpdateRouteRecords,
+} from '../actions/navigation.actions';
 
-  constructor(
-    private actions$: Actions<any>,
-    private store$: Store<IAppState>
-  ) {}
-
-  updateNavigationRecords$: Observable<Action> = createEffect(() => {
-    return this.actions$.pipe(
-      map((action) => {
-        // console.log('action', action);
-
+export const updateNavigationRecords$ = createEffect(
+  (actions$ = inject(Actions), store$ = inject(Store<IAppState>)) => {
+    return actions$.pipe(
+      tap((action) => {
+        // console.log('action:', action);
         if (action.type === '@ngrx/router-store/request') {
           setTimeout(() => {
-            // console.log('>>>', document.location.href, action.payload);
-            gtag('event', 'page_view', {
-              page_location: document.location.href,
-              // page_title: document.title,
-            });
+            try {
+              // gtag('event', 'page_view', {
+              //   page_location: document.location.href,
+              // });
+            } catch (e) {
+              console.log('Error:', e);
+            }
           }, 1000);
         }
-        return action;
       }),
-      // Allow only actions of type NavigationCollectRouteRecords
-      ofType(ENavigationActionTypes.NavigationUpdateRouteRecords),
-
-      // Take the last observable (the action), take the store state,
-      // and emit an observable of form Observable<[Action,StoreState]>
-      withLatestFrom(this.store$.select((state) => state.navigation)),
-
-      // Map two received observables to single new observable action
-      // that will pass through and trigger SetRouteRecords reducer
-      map(([action, navState]) => {
-        return new NavigationSetRouteRecords({
-          presentRoute: action.payload.newPresentRoute,
+      ofType(NavigationAction_UpdateRouteRecords),
+      withLatestFrom(store$.select((state) => state.navigation)),
+      map(([action, navState]) =>
+        NavigationAction_SetRouteRecords({
+          presentRoute: action.newPresentRoute,
           previousRoute: navState.presentRoute,
           isNewRouteScheduled: false,
-        });
-      })
+        })
+      )
     );
-  });
-}
+  },
+  { dispatch: true, functional: true }
+);

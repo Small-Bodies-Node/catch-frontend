@@ -1,14 +1,27 @@
+import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Store } from '@ngrx/store';
-import { IAppState } from 'src/app/ngrx/reducers';
-import { selectSiteSettingsIsHappyWithCookies } from 'src/app/ngrx/selectors/site-settings.selectors';
-import { SiteSettingsSetIsHappyWithCookies } from 'src/app/ngrx/actions/site-settings.actions';
+
+import { IAppState } from '../../ngrx/reducers';
+import { SiteSettingsAction_SetIsHappyWithCookies } from '../../ngrx/actions/site-settings.actions';
+import { selectSiteSettingsIsHappyWithCookies } from '../../ngrx/selectors/site-settings.selectors';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatIconModule } from '@angular/material/icon';
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 
 @Component({
   selector: 'app-footer',
   templateUrl: './footer.component.html',
   styleUrls: ['./footer.component.scss'],
+  standalone: true,
+  imports: [
+    CommonModule,
+    //
+    MatToolbarModule,
+    MatIconModule,
+    FontAwesomeModule,
+  ],
 })
 export class FooterComponent {
   // --->>>
@@ -22,6 +35,11 @@ export class FooterComponent {
   isHappyWithCookie$: Observable<boolean>;
 
   constructor(private store$: Store<IAppState>) {
+    // witch off for now
+    this.store$.dispatch(
+      SiteSettingsAction_SetIsHappyWithCookies({ isHappyWithCookies: true })
+    );
+
     this.isHappyWithCookie$ = this.store$.select(
       selectSiteSettingsIsHappyWithCookies
     );
@@ -33,7 +51,7 @@ export class FooterComponent {
 
   acceptTerms() {
     this.store$.dispatch(
-      new SiteSettingsSetIsHappyWithCookies({ isHappyWithCookies: true })
+      SiteSettingsAction_SetIsHappyWithCookies({ isHappyWithCookies: true })
     );
   }
 }

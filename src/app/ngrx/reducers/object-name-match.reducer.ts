@@ -1,8 +1,9 @@
+import { createReducer, on } from '@ngrx/store';
 import {
-  ObjectNameMatchActions,
-  EObjectNameMatchActionTypes,
+  ObjectNameMatchAction_SetResults,
+  ObjectNameMatchAction_SetIsSearching,
 } from '../actions/object-name-match.actions';
-import { IObjectNameMatchResult } from '../../models/IObjectNameMatchResult';
+import { IObjectNameMatchResult } from '../../../models/IObjectNameMatchResult';
 
 export interface IObjectNameMatchSubstate {
   results: IObjectNameMatchResult[];
@@ -14,24 +15,14 @@ export const initialState: IObjectNameMatchSubstate = {
   isSearching: false,
 };
 
-export function ObjectNameMatchReducer(
-  state = initialState,
-  action: ObjectNameMatchActions
-): IObjectNameMatchSubstate {
-  switch (action.type) {
-    case EObjectNameMatchActionTypes.ObjectNameMatchSetResults:
-      return {
-        ...state,
-        results: [...action.payload.results],
-      };
-
-    case EObjectNameMatchActionTypes.ObjectNameMatchSetIsSearching:
-      return {
-        ...state,
-        isSearching: action.payload.value,
-      };
-
-    default:
-      return state;
-  }
-}
+export const objectNameMatchReducer = createReducer(
+  initialState,
+  on(ObjectNameMatchAction_SetResults, (state, { results }) => ({
+    ...state,
+    results: [...results],
+  })),
+  on(ObjectNameMatchAction_SetIsSearching, (state, { isSearching }) => ({
+    ...state,
+    isSearching,
+  }))
+);
