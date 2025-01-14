@@ -71,7 +71,10 @@ var JS9 = (function () {
   JS9.IDFMT = "  (%s)"; // format for light window id
   JS9.MINZOOM = 0.125; // min zoom using scroll wheel
   JS9.MAXZOOM = 32.0; // max zoom using scroll wheel
-  JS9.ADDZOOM = 0.1; // add/subtract amount per mouse wheel click
+  // --- DWD modified: ---
+  // JS9.ADDZOOM = 0.1; // add/subtract amount per mouse wheel click
+  JS9.ADDZOOM = 1.0; // add/subtract amount per mouse wheel click
+  // ---------------------
   JS9.MODZOOM = 2; // skip factor with wheel to avoid pileup
   JS9.DIRZOOM = 1; // sign (+/-) determines zoom direction
   JS9.CHROMEFILEWARNING = true; // whether to alert chrome users about file URI
@@ -290,7 +293,10 @@ var JS9 = (function () {
       rightArrow: "move region/position right",
       downArrow: "move region/position down",
     }, // keyboard actions
-    mousetouchZoom: false, // use mouse wheel, pinch to zoom?
+    // --- DWD modified: ---
+    // mousetouchZoom: false, // use mouse wheel, pinch to zoom?
+    mousetouchZoom: true, // use mouse wheel, pinch to zoom?
+    // ---------------------
     mousetouchLimit: true, // limit zoom-out to size of image?
     metaClickPan: true, // metaKey + click pans to mouse position?
     // statusBar: "$mag; $scale($scaleclipping); $img(images/voyager/color_$colormap.png) $colormap; $wcssys; $image",  // status display
