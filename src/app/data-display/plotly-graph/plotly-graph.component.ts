@@ -14,9 +14,10 @@ import { apiDataLabels } from '../../../utils/apiDataLabels';
 import { julianToDate } from '../../../utils/julianToDate';
 
 @Component({
-  selector: 'app-plotly-graph',
-  templateUrl: './plotly-graph.component.html',
-  styleUrls: ['./plotly-graph.component.scss'],
+    selector: 'app-plotly-graph',
+    templateUrl: './plotly-graph.component.html',
+    styleUrls: ['./plotly-graph.component.scss'],
+    standalone: false
 })
 export class PlotlyGraphComponent implements OnInit {
   // --->>>
@@ -268,13 +269,14 @@ export class PlotlyGraphComponent implements OnInit {
 }
 
 @Component({
-  selector: 'app-plotly-graph-wrapper',
-  template: `
+    selector: 'app-plotly-graph-wrapper',
+    template: `
     <app-plotly-graph
       [inputPlotlyParams]="inputPlotlyParams"
     ></app-plotly-graph>
   `,
-  styles: [``],
+    styles: [``],
+    standalone: false
 })
 export class PlotlyGraphWrapperComponent implements OnInit {
   constructor(

@@ -1,76 +1,66 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
-import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
-import { FormGroup, FormControl, ReactiveFormsModule } from '@angular/forms';
 import {
-  MatAutocompleteModule,
-  MatAutocompleteTrigger,
-} from '@angular/material/autocomplete';
+  Component,
+  OnInit,
+  OnDestroy,
+  ViewChild,
+  ChangeDetectorRef,
+} from '@angular/core';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { MatAutocompleteTrigger } from '@angular/material/autocomplete';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { Subject, Subscription } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { Store } from '@ngrx/store';
 
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { TSources } from '../../../models/TSources';
-import { sourcesNamesDict } from '../../../utils/sourcesNamesDict';
-import { IObjectNameMatchResult } from '../../../models/IObjectNameMatchResult';
 import { IAppState } from '../../ngrx/reducers';
+import { IObjectNameMatchResult } from '../../../models/IObjectNameMatchResult';
 import { selectObjectNameMatchResults } from '../../ngrx/selectors/object-name-match.selectors';
-import { selectApiStatus } from '../../ngrx/selectors/api-data.selectors';
+import { selectApiDataStatus } from '../../ngrx/selectors/api-data.selectors';
 import { ObjectNameMatchAction_FetchResults } from '../../ngrx/actions/object-name-match.actions';
 import { UnrecognizedNameDialogComponent } from './unrecognized-name-dialog.component';
 import {
   ApiDataAction_FetchResult,
   ApiDataAction_SetStatus,
 } from '../../ngrx/actions/api-data.actions';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatOptionModule } from '@angular/material/core';
-import { MatIconModule } from '@angular/material/icon';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatCheckboxModule } from '@angular/material/checkbox';
-import { MatInputModule } from '@angular/material/input';
-
-type TFormControlKeys =
-  | TSources
-  | 'use_cached_results_control'
-  | 'uncertainty_ellipse_control'
-  | 'padding_input_control'
-  | 'target_input_control';
-
-const formControlLabels: {
-  [K in TFormControlKeys]: string;
-} = {
-  target_input_control: 'Target Input',
-  ...sourcesNamesDict,
-  use_cached_results_control: 'Use Cached Results',
-  uncertainty_ellipse_control: 'Uncertainty Ellipse',
-  padding_input_control: 'Extra Padding',
-};
-
-type TControlsForm = {
-  [K in (typeof formControlLabels)[TFormControlKeys]]:
-    | FormControl<boolean | null>
-    | FormControl<number | null>
-    | FormControl<string | null>;
-};
+import {
+  controlLabelsDictForLowerForm,
+  lowerFormControlDict,
+  TControlKeyForLowerForm,
+} from '../../../models/TControlKeyForLowerForm';
+import { SharedModule } from '../../shared/shared.module';
+import {
+  controlLabelsDictForMiddleForm,
+  middleFormControlDict,
+  TControlKeyForMiddleForm,
+} from '../../../models/TControlKeyForMiddleForm';
+import {
+  controlLabelsDictForUpperForm,
+  TControlKeyForUpperForm,
+  upperFormControlDict,
+} from '../../../models/TControlKeyForUpperSearchForm';
+import {
+  controlKeysForSources,
+  TControlKeyForSources,
+} from '../../../models/TControlKeyForSources';
+import { toolTipTextDict } from '../../../utils/toolTipTextDict';
+import {
+  intersectionTypeLabels,
+  intersectionTypes,
+} from '../../../models/TIntersectionType';
+import { fixedTargets } from '../../../utils/fixedTargets';
+import { pastelGreen, pastelPink } from '../../../utils/constants';
+import {
+  ApiFixedAction_FetchResult,
+  ApiFixedAction_SetStatus,
+} from '../../ngrx/actions/api-fixed.actions';
 
 @Component({
   selector: 'app-search-field',
   templateUrl: './search-field.component.html',
   styleUrls: ['./search-field.component.scss'],
-  standalone: true,
-  imports: [
-    CommonModule,
-    //
-    ReactiveFormsModule,
-    MatFormFieldModule,
-    MatAutocompleteModule,
-    MatOptionModule,
-    MatIconModule,
-    MatTooltipModule,
-    MatCheckboxModule,
-    MatInputModule,
-  ],
+  imports: [CommonModule, ReactiveFormsModule, SharedModule],
 })
 export class SearchFieldComponent implements OnInit, OnDestroy {
   // --->>>
@@ -78,9 +68,22 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
   @ViewChild(MatAutocompleteTrigger)
   autocomplete!: MatAutocompleteTrigger;
 
-  basicSearchForm: FormGroup;
-  advancedSearchForm: FormGroup;
-  formControlLabels = formControlLabels;
+  intersectionTypes = intersectionTypes;
+  intersectionTypeLabels = intersectionTypeLabels;
+
+  formControlLabels = {
+    ...controlLabelsDictForUpperForm,
+    ...controlLabelsDictForMiddleForm,
+    ...controlLabelsDictForLowerForm,
+  };
+
+  formControlDict = {
+    ...upperFormControlDict,
+    ...middleFormControlDict,
+    ...lowerFormControlDict,
+  };
+
+  formGroup: FormGroup<typeof this.formControlDict>;
 
   objectNameMatchResults: IObjectNameMatchResult[] = [];
   searchMessage = 'Search For Object';
@@ -88,39 +91,32 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
   latestInputText = '';
   successColor = '#689F38'; // mat-green
   searchTermChangeSubject: Subject<string> = new Subject<string>();
+  errorMessage = '';
 
   isAdvancedControls = false;
+  isMovingTarget = true;
+  isAllSourcesSelected = true;
 
   subscriptions = new Subscription();
+
+  sources = controlKeysForSources;
+  toolTipText = toolTipTextDict;
+
+  fixedTargets = fixedTargets;
 
   constructor(
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
-    private store$: Store<IAppState>
+    private store$: Store<IAppState>,
+    private changeDetectorRef: ChangeDetectorRef
   ) {
     // --->>>
 
-    // Define form groups
-    this.basicSearchForm = new FormGroup<TControlsForm>({
-      [formControlLabels.target_input_control]: new FormControl(
-        this.latestInputText
-      ),
-    });
-    this.advancedSearchForm = new FormGroup<TControlsForm>({
-      [formControlLabels.neat_palomar_tricam]: new FormControl(true),
-      [formControlLabels.neat_maui_geodss]: new FormControl(true),
-      [formControlLabels.catalina_bigelow]: new FormControl(true),
-      [formControlLabels.catalina_bokneosurvey]: new FormControl(true),
-      [formControlLabels.catalina_lemmon]: new FormControl(true),
-      [formControlLabels.ps1dr2]: new FormControl(true),
-      [formControlLabels.skymapper_dr4]: new FormControl(true),
-      [formControlLabels.spacewatch]: new FormControl(true),
-      //
-      [formControlLabels.use_cached_results_control]: new FormControl(true),
-      [formControlLabels.uncertainty_ellipse_control]: new FormControl(false),
-      //
-      [formControlLabels.padding_input_control]: new FormControl(0),
-    });
+    upperFormControlDict.search_field_control.setValidators([
+      // this.searchFieldValidator,
+    ]);
+
+    this.formGroup = new FormGroup(this.formControlDict);
 
     this.subscriptions.add(
       this.store$.select(selectObjectNameMatchResults).subscribe((results) => {
@@ -135,23 +131,39 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
     );
 
     this.subscriptions.add(
-      this.store$.select(selectApiStatus).subscribe((status) => {
-        // this.isWaitingForData = !!status && status.code === 'searching';
+      this.store$.select(selectApiDataStatus).subscribe((status) => {
         if (status.code === 'searching') {
           this.isAdvancedControls = false;
         }
       })
     );
 
-    // When the text of the input field updates, call the name-search api
     this.subscriptions.add(
-      this.searchTermChangeSubject
+      this.formGroup.valueChanges
         .pipe(debounceTime(200), distinctUntilChanged())
-        .subscribe((latestInputText) => {
-          this.latestInputText = latestInputText;
-          this.store$.dispatch(
-            ObjectNameMatchAction_FetchResults({ searchTerm: latestInputText })
-          );
+        .subscribe((value) => {
+          // Moving-vs-fixed-checkbox logic
+          if (value['toggle_moving_vs_fixed_control'] === 'moving') {
+            this.isMovingTarget = true;
+          } else {
+            this.isMovingTarget = false;
+          }
+
+          // Sources-checkbox logic
+          this.updateSourcesCheckboxes(!!value['select_all_sources_control']);
+
+          // Search-field-dropdown logic
+          if (this.latestInputText !== value['search_field_control']) {
+            this.latestInputText = value['search_field_control'] as string;
+            if (this.isMovingTarget) {
+              this.store$.dispatch(
+                ObjectNameMatchAction_FetchResults({
+                  searchTerm: this.latestInputText,
+                })
+              );
+            }
+            this.updateSearchFieldErrors();
+          }
         })
     );
   }
@@ -166,45 +178,85 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
    * Check to see if the text entered into the search box is a target within
    * 'objectNameMatchResults'
    */
-  isTargetMatched() {
+  isTargetMatched(inputText: string) {
     const match = this.objectNameMatchResults.find(
-      (el) => el.target === this.latestInputText.trim()
+      (el) => el.target === inputText.trim()
     );
     return !!match;
   }
 
+  updateSourcesCheckboxes(isSelectAllSources: boolean) {
+    /**
+     * Check if change to select-all-sources checkbox;
+     * change all sources accordingly
+     */
+    if (isSelectAllSources !== this.isAllSourcesSelected) {
+      this.isAllSourcesSelected = isSelectAllSources;
+      controlKeysForSources.forEach((controlKeyForSources) => {
+        this.formGroup.controls[controlKeyForSources].setValue(
+          isSelectAllSources,
+          { emitEvent: false }
+        );
+      });
+    }
+
+    this.updateSearchFieldErrors();
+  }
+
+  isAtleastOneSourceSelected() {
+    return controlKeysForSources.some((controlKeyForSources) => {
+      return !!this.formGroup.controls[controlKeyForSources].value;
+    });
+  }
+
+  getSelectAllSourcesLabel() {
+    const isSelected =
+      !!this.formGroup.controls.select_all_sources_control.value;
+    return isSelected ? 'Deselect All Sources' : 'Select All Sources';
+  }
+
+  getSelectAllSourcesLabelColor() {
+    const isSelected =
+      !!this.formGroup.controls.select_all_sources_control.value;
+    return isSelected ? '#FFD1DC' : '#77DD77';
+  }
+
   submitObjectNameMatch(e: MouseEvent) {
     e.stopPropagation();
-    this.tryLaunchingObjectQuery();
+    if (this.isMovingTarget) {
+      this.tryLaunchingMovingObjectQuery();
+    } else {
+      this.tryLaunchingFixedObjectQuery();
+    }
   }
 
   getSearchMessageText() {
     if (this.latestInputText.length === 0) {
-      return 'Search for Astronomical Object';
+      return this.isMovingTarget
+        ? 'Search for moving object'
+        : 'Search for fixed target';
     }
 
-    const target = this.latestInputText.trim();
-    const match = this.objectNameMatchResults.find(
-      (el) => el.target === target
-    );
-    if (!!match) return 'Match: ' + match.display_text;
+    if (this.isMovingTarget) {
+      const target = this.latestInputText.trim();
+      const match = this.objectNameMatchResults.find(
+        (el) => el.target === target
+      );
+      if (!!match) return 'Match: ' + match.display_text;
 
-    return 'Object Not Recognized (But Still Searchable)';
+      return this.isAtleastOneSourceSelected()
+        ? 'Unrecognized. Search anyway?'
+        : 'Unrecognized.';
+    } else {
+      return 'Search for fixed target';
+    }
   }
 
-  getFormColor(): 'primary' | 'accent' | 'warn' {
-    if (!this.latestInputText.length || !this.objectNameMatchResults.length)
-      return 'primary';
-    if (this.isTargetMatched()) return 'accent';
-    return 'warn';
-  }
-
-  tryLaunchingObjectQuery() {
+  tryLaunchingMovingObjectQuery() {
     // Ensure at least one source is selected
-    const sources: TSources[] = [];
-    Object.keys(sourcesNamesDict).forEach((key) => {
-      const val = sourcesNamesDict[key as keyof typeof sourcesNamesDict];
-      if (this.advancedSearchForm.get(val)?.value) {
+    const sources: TControlKeyForSources[] = [];
+    controlKeysForSources.forEach((key) => {
+      if (this.formGroup.get(key)?.value) {
         sources.push(key as any);
       }
     });
@@ -218,9 +270,8 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
 
     // Ensure a name is selected
     const target = this.latestInputText.trim();
-
-    if (this.isTargetMatched()) {
-      this.launchObjectQuery(target, sources);
+    if (this.isTargetMatched(target)) {
+      this.launchMovingObjectQuery(target, sources);
       return;
     }
 
@@ -234,14 +285,8 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
 
         this.subscriptions.add(
           dialogRef.afterClosed().subscribe((isSearchConfirmed) => {
-            console.log(
-              'Request received from dialog: >>>',
-              isSearchConfirmed,
-              '<<<',
-              typeof isSearchConfirmed
-            );
             if (!!isSearchConfirmed) {
-              this.launchObjectQuery(target, sources);
+              this.launchMovingObjectQuery(target, sources);
             }
           })
         );
@@ -249,29 +294,45 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
     }
   }
 
-  launchObjectQuery(target: string, sources: TSources[]) {
-    // Isolate optional params
-    const isCached = this.advancedSearchForm.get(
-      formControlLabels.use_cached_results_control
-    )?.value;
-    const isUncertaintyEllipse = this.advancedSearchForm.get(
-      formControlLabels.uncertainty_ellipse_control
-    )?.value;
-    const padding =
-      this.advancedSearchForm.get(formControlLabels.padding_input_control)
-        ?.value || 0;
+  tryLaunchingFixedObjectQuery() {
+    // Ensure at least one source is selected
+    const sources: TControlKeyForSources[] = [];
+    controlKeysForSources.forEach((key) => {
+      if (this.formGroup.get(key)?.value) {
+        sources.push(key as any);
+      }
+    });
+    if (!sources.length) {
+      this.snackBar.open(`You must select at least one Data Source`, 'Close', {
+        duration: 5000,
+      });
+      this.isAdvancedControls = true;
+      return;
+    }
 
-    //
+    // Check ra dec is splittable
+    const raDec = this.latestInputText.trim();
+    const raDecSplit = raDec.split(' ');
+    const ra = raDecSplit[0];
+    const dec = raDecSplit[1];
+    if (raDecSplit.length === 2 && ra.length > 0 && dec.length > 0) {
+      this.launchFixedObjectQuery(ra, dec, sources);
+      return;
+    }
+
+    // !Add some logic to explain to use that ra-dec is malformed
+  }
+
+  launchMovingObjectQuery(target: string, sources: TControlKeyForSources[]) {
+    const isCached = this.formGroup.controls.use_cached_results_control.value;
+    const isUncertaintyEllipse =
+      this.formGroup.controls.uncertainty_ellipse_control.value;
+    const padding = this.formGroup.controls.padding_input_control.value;
+
     this.autocomplete.closePanel();
     this.store$.dispatch(
       ApiDataAction_SetStatus({
-        query: {
-          target,
-          isCached,
-          isUncertaintyEllipse,
-          padding,
-          sources,
-        },
+        query: { target, isCached, isUncertaintyEllipse, padding, sources },
         message: 'Starting search....',
         code: 'searching',
       })
@@ -287,7 +348,48 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
     );
   }
 
-  keyDownOnInputText(event: KeyboardEvent) {
+  launchFixedObjectQuery(
+    ra: string,
+    dec: string,
+    sources: TControlKeyForSources[]
+  ) {
+    const radius = this.formGroup.controls.padding_input_control.value;
+    const intersectionType =
+      this.formGroup.controls.intersection_type_input_control.value;
+    const startDate = this.formGroup.controls.start_time_input_control.value;
+    const stopDate = this.formGroup.controls.stop_time_input_control.value;
+
+    this.autocomplete.closePanel();
+    this.store$.dispatch(
+      ApiFixedAction_SetStatus({
+        query: {
+          ra,
+          dec,
+          intersectionType,
+          radius,
+          startTime: startDate,
+          stopTime: stopDate,
+          sources,
+        },
+        message: 'Starting fixed-target search....',
+        code: 'searching',
+      })
+    );
+    this.store$.dispatch(
+      ApiFixedAction_FetchResult({
+        ra,
+        dec,
+        intersectionType,
+        radius,
+        startTime: startDate,
+        stopTime: stopDate,
+        sources,
+      })
+    );
+  }
+
+  keyDownOnUpperFormInputText(event: KeyboardEvent) {
+    if (this.isSearchFieldError()) return;
     // Handle browser inconsistency on keystrokes
     // Advised here: https://stackoverflow.com/a/35395154/8620332
     let keyCode;
@@ -298,9 +400,11 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
     } else if ((event as any).keyCode !== undefined) {
       keyCode = (event as any).keyCode;
     }
-
     if (keyCode === 'Enter') {
-      this.tryLaunchingObjectQuery();
+      if (this.isMovingTarget) {
+        return this.tryLaunchingMovingObjectQuery();
+      }
+      return this.tryLaunchingFixedObjectQuery();
     }
   }
 
@@ -319,12 +423,10 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
   }
 
   getInputTextColor() {
+    const searchValue = this.formGroup.controls.search_field_control.value;
     const match = this.objectNameMatchResults.find(
-      (el) =>
-        el.display_text ===
-        this.basicSearchForm.get(formControlLabels.target_input_control)?.value
+      ({ display_text }) => display_text === searchValue
     );
-
     if (!!match) return { color: this.successColor };
     return null;
   }
@@ -333,7 +435,78 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
     this.isAdvancedControls = !this.isAdvancedControls;
   }
 
-  getSearchButtonIconText() {
-    return 'search';
+  getPlaceholderText() {
+    return this.isMovingTarget ? 'E.g. 65P' : 'E.g. Crab Nebula';
+  }
+
+  getFormControlKey(
+    input:
+      | TControlKeyForUpperForm
+      | TControlKeyForMiddleForm
+      | TControlKeyForLowerForm
+  ) {
+    // Used for type safety in HTML template
+    return input;
+  }
+
+  isSearchButtonDisabled() {
+    const isAtleastOneSourceSelected = this.isAtleastOneSourceSelected();
+    const isInputEmpty = this.latestInputText.trim().length === 0;
+    return isInputEmpty || !isAtleastOneSourceSelected;
+  }
+
+  getSearchButtonStyle() {
+    const isInputEmpty = this.latestInputText.trim().length === 0;
+    const isTargetMatched = this.isTargetMatched(this.latestInputText);
+    if ((!isInputEmpty && isTargetMatched) || !this.isMovingTarget) {
+      return { 'background-color': pastelGreen, color: 'black' };
+    }
+    return { backgroundColor: pastelPink, color: 'black' };
+  }
+
+  isSearchFieldError() {
+    const isTargetUnrecognized =
+      !!this.formGroup.controls.search_field_control.errors?.[
+        'isTargetUnrecognized'
+      ];
+    const isSourceNeeded =
+      !!this.formGroup.controls.search_field_control.errors?.['isSourceNeeded'];
+    const output = !!isTargetUnrecognized || !!isSourceNeeded;
+    return output;
+  }
+
+  updateSearchFieldErrors() {
+    /**
+     * For now, do not attempt to constrain fixed-target formatting
+     */
+    if (!this.isMovingTarget) {
+      this.formGroup.controls.search_field_control.setErrors(null);
+      return;
+    }
+
+    const isAtleastOneSourceSelected = this.isAtleastOneSourceSelected();
+    const isTargetMatched = this.isTargetMatched(this.latestInputText);
+    const isInputEmpty = this.latestInputText.trim().length === 0;
+
+    if (isInputEmpty) {
+      this.formGroup.controls.search_field_control.setErrors(null);
+    } else {
+      if (!isAtleastOneSourceSelected) {
+        this.errorMessage = 'You must select at least one Data Source';
+        this.formGroup.controls.search_field_control.setErrors({
+          isSourceNeeded: true,
+        });
+      } else {
+        this.errorMessage = '';
+      }
+      if (!isTargetMatched) {
+        this.formGroup.controls.search_field_control.setErrors({
+          isTargetUnrecognized: true,
+        });
+      } else {
+        this.formGroup.controls.search_field_control.setErrors(null);
+      }
+    }
+    this.changeDetectorRef.detectChanges();
   }
 }

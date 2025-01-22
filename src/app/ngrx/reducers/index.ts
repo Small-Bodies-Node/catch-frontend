@@ -20,9 +20,11 @@ import {
   IObjectNameMatchSubstate,
   objectNameMatchReducer,
 } from './object-name-match.reducer';
+import { apiFixedReducer, IApiFixedSubstate } from './api-fixed.reducer';
 
 export interface IAppState {
   apiData: IApiDataSubstate;
+  apiFixed: IApiFixedSubstate;
   navigation: INavigationSubstate;
   objectNameMatch: IObjectNameMatchSubstate;
   screenDevice: IScreenDeviceSubstate;
@@ -34,6 +36,7 @@ export interface IAppState {
 
 export const reducers: ActionReducerMap<IAppState, any> = {
   apiData: apiDataReducer,
+  apiFixed: apiFixedReducer,
   navigation: navigationReducer,
   objectNameMatch: objectNameMatchReducer,
   screenDevice: screenDeviceReducer,

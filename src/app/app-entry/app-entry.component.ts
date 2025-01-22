@@ -18,7 +18,7 @@ import {
   selectNavigationRecords,
 } from '../ngrx/selectors/navigation.selectors';
 import { selectSiteSettingsEffectiveTheme } from '../ngrx/selectors/site-settings.selectors';
-import { selectApiStatus } from '../ngrx/selectors/api-data.selectors';
+import { selectApiDataStatus } from '../ngrx/selectors/api-data.selectors';
 import { footerHeightPx, headerHeightPx } from '../../utils/constants';
 import { SharedModule } from '../shared/shared.module';
 import { CoreModule } from '../core/core.module';
@@ -44,12 +44,12 @@ import {
   RouterOutlet,
 } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
+import { selectApiFixedStatus } from '../ngrx/selectors/api-fixed.selectors';
 
 @Component({
   selector: 'app-entry',
   templateUrl: './app-entry.component.html',
   styleUrls: ['./app-entry.component.scss'],
-  standalone: true,
   imports: [
     SharedModule,
     CoreModule,
@@ -179,10 +179,21 @@ export class AppEntryComponent implements OnInit {
 
     // Monitor API Status
     this.store$
-      .select(selectApiStatus)
+      .select(selectApiDataStatus)
       .pipe(takeUntil(this.destroy$))
       .subscribe((status) => {
         const newIsStreaming = status.code === 'searching';
+        if (this.isStreamingMessage !== newIsStreaming) {
+          this.isStreamingMessage = newIsStreaming;
+          this.cdr.detectChanges();
+        }
+      });
+
+    this.store$
+      .select(selectApiFixedStatus)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((fixedStatus) => {
+        const newIsStreaming = fixedStatus.code === 'searching';
         if (this.isStreamingMessage !== newIsStreaming) {
           this.isStreamingMessage = newIsStreaming;
           this.cdr.detectChanges();

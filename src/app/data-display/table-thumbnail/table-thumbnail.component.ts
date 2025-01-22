@@ -8,19 +8,27 @@ import {
   Output,
   SimpleChanges,
 } from '@angular/core';
-import { IApiDatum } from '../../../models/IApiDatum';
 import { ImageFetchService } from '../../core/services/fetch-image/fetch-image.service';
+
+export interface ITableThumbnailInput {
+  product_id: string;
+  ra: string | number;
+  dec: string | number;
+  preview_url: string;
+  source: string;
+}
 
 @Component({
   selector: 'app-table-thumbnail',
   templateUrl: './table-thumbnail.component.html',
   styleUrls: ['./table-thumbnail.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class TableThumbnailComponent implements OnChanges {
   // --->>>
 
-  @Input() apiDatum?: IApiDatum;
+  @Input() input?: ITableThumbnailInput;
   @Input() size: string = '60px';
   @Input() width: string = '60px';
   @Input() height: string = '60px';
@@ -47,6 +55,7 @@ export class TableThumbnailComponent implements OnChanges {
   ) {}
 
   ngOnChanges(changes: SimpleChanges): void {
+    console.log('changes', changes);
     // Update the size of the thumbnail
     const trans = this.getSurveyScaleTransform();
     this.imgStyles = {
@@ -60,19 +69,18 @@ export class TableThumbnailComponent implements OnChanges {
     // Repeat request to image queue if isPriority changes
     if (changes['isPriority']?.currentValue) {
       this.isImageInQueue = false;
-      if (this.apiDatum) this.loadImage(this.apiDatum);
+      if (this.input) this.loadImage(this.input);
     }
 
     // On component initialization, load the image
-    if (changes['apiDatum']?.currentValue) {
-      // if (this.label.includes('T1')) console.log(changes);
+    if (changes['input']?.currentValue) {
       this.isImageLoaded = false;
       this.isImageInQueue = false;
-      this.loadImage(changes['apiDatum'].currentValue);
+      this.loadImage(changes['input'].currentValue);
     }
   }
 
-  private loadImage(apiDatum: IApiDatum): void {
+  private loadImage(input: ITableThumbnailInput): void {
     //
 
     // Prevent multiple calls to fetchImage
@@ -80,7 +88,7 @@ export class TableThumbnailComponent implements OnChanges {
     if (this.isImageInQueue) return;
     this.isImageInQueue = true;
 
-    const { product_id, ra, dec, preview_url } = apiDatum;
+    const { product_id, ra, dec, preview_url } = input;
     const catalinaUrl =
       // `https://5ub5yo2kmj.execute-api.us-east-1.amazonaws.com/api/images/` +
       `https://uxzqjwo0ye.execute-api.us-west-1.amazonaws.com/api/images/` +
@@ -119,29 +127,28 @@ export class TableThumbnailComponent implements OnChanges {
    * Some surveys need to be flipped, etc. to have ra and dec increase +ve in consistent dirn
    */
   getSurveyScaleTransform() {
-    // console.log('>>>', !this.apiDatum);
-    if (!this.apiDatum) return 'scale(1, 1)';
-    if (this.apiDatum.source === 'neat_palomar_tricam') {
+    if (!this.input) return 'scale(1, 1)';
+    if (this.input.source === 'neat_palomar_tricam') {
       // return 'scale(1, 1)';
       return 'scale(-1, -1)';
       // return 'rotate(-90deg)';
     }
-    if (this.apiDatum.source === 'neat_maui_geodss') {
+    if (this.input.source === 'neat_maui_geodss') {
       return 'scale(1, -1)';
       // return 'rotate(90deg)';
     }
-    if (this.apiDatum.source === 'loneos') {
+    if (this.input.source === 'loneos') {
       return 'scale(-1, -1)';
     }
-    if (this.apiDatum.source === 'skymapper_dr4') {
+    if (this.input.source === 'skymapper_dr4') {
       // return 'scale(-1, -1)';
       return 'rotate(180deg)';
     }
-    if (this.apiDatum.source === 'ps1dr2') {
+    if (this.input.source === 'ps1dr2') {
       return 'scale(-1, -1)';
       // return 'rotate(180deg)';
     }
-    if (this.apiDatum.source === 'spacewatch') {
+    if (this.input.source === 'spacewatch') {
       return 'scale(-1, 1)';
       // return 'rotate(180deg)';
     }
@@ -151,9 +158,9 @@ export class TableThumbnailComponent implements OnChanges {
         'catalina_bigelow',
         'catalina_lemmon',
         'catalina_bokneosurvey',
-      ].includes(this.apiDatum.source)
+      ].includes(this.input.source)
     ) {
-      return 'scale(-1, 1)';
+      return 'scale(-1, -1)';
       // return 'rotate(180deg)';
     }
 

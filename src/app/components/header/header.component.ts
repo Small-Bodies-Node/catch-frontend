@@ -3,18 +3,13 @@ import { Component, OnInit, Output, EventEmitter } from '@angular/core';
 
 import { DelayedRouterService } from '../../core/services/delayed-router/delayed-router.service';
 import { headerHeightPx } from '../../../utils/constants';
-import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { SharedModule } from '../../shared/shared.module';
 
 @Component({
   selector: 'app-header',
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.scss'],
-  standalone: true,
-  imports: [
-    CommonModule,
-    //
-    FontAwesomeModule,
-  ],
+  imports: [CommonModule, SharedModule],
 })
 export class HeaderComponent implements OnInit {
   // --->>>

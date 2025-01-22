@@ -1,5 +1,7 @@
 mat-list-item {
   span {
+    display: inline-block;
     padding-left: 10px;
+    transform: translate(0px, -6px);
   }
 }

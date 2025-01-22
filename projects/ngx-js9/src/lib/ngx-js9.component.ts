@@ -63,6 +63,7 @@ interface IGlobalOpts {
   templateUrl: './ngx-js9.component.html',
   styleUrls: ['./ngx-js9.component.scss'],
   encapsulation: ViewEncapsulation.None,
+  standalone: false,
 })
 export class NgxJs9Component implements OnInit, OnDestroy, OnChanges {
   // --->>
@@ -216,7 +217,7 @@ export class NgxJs9Component implements OnInit, OnDestroy, OnChanges {
             onload: () => {
               setTimeout(() => {
                 JS9.SetScale('zscale', { display: 'JS9' });
-                // JS9.SetZoom('toFit', { display: 'JS9' });
+                JS9.SetZoom('toFit', { display: 'JS9' });
 
                 // Draw Ellipse
                 if (true) {

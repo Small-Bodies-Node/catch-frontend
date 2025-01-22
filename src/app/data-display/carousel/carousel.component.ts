@@ -13,11 +13,10 @@ import { PanstarrsOverlayComponent } from '../panstarrs-overlay/panstarrs-overla
 const placeholderUrl = 'assets/images/pngs/sbn_logo_v0.png';
 
 @Component({
-  selector: 'app-carousel',
-  templateUrl: './carousel.component.html',
-  styleUrls: ['./carousel.component.scss'],
-  // standalone: true,
-  // imports: [PanstarrsOverlayComponent],
+    selector: 'app-carousel',
+    templateUrl: './carousel.component.html',
+    styleUrls: ['./carousel.component.scss'],
+    standalone: false
 })
 export class CarouselComponent implements OnInit {
   // --->>>

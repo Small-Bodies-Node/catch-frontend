@@ -9,19 +9,18 @@ import {
 } from '@angular/router';
 
 @Component({
-  selector: 'app-about-page',
-  templateUrl: './about-page.component.html',
-  styleUrls: ['./about-page.component.scss'],
-  standalone: true,
-  imports: [
-    CommonModule,
-    MatGridListModule,
-    //
-    RouterModule,
-    RouterLink,
-    RouterOutlet,
-    RouterLinkActive,
-  ],
+    selector: 'app-about-page',
+    templateUrl: './about-page.component.html',
+    styleUrls: ['./about-page.component.scss'],
+    imports: [
+        CommonModule,
+        MatGridListModule,
+        //
+        RouterModule,
+        RouterLink,
+        RouterOutlet,
+        RouterLinkActive,
+    ]
 })
 export class AboutPageComponent implements OnInit {
   allSkyCoverage = 'assets/images/pngs/sky-coverage-20241127.png';

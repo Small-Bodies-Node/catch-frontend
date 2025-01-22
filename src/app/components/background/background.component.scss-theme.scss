@@ -1,4 +1,4 @@
-@import '~@angular/material/theming';
+@import "~@angular/material/theming";
 
 @mixin app-background-graphic-component-theme($theme) {
   $primary: map-get($theme, primary);
@@ -8,7 +8,7 @@
 
   app-background-graphic {
     .tint-overlay {
-      background-color: rgba(mat-color($background, background), 0.5);
+      // background-color: rgba(mat-color($background, background), 0.5);
     }
   }
 }

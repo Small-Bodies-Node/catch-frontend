@@ -5,8 +5,8 @@ import { Store } from '@ngrx/store';
 
 import { IApiDataService } from '../../../../models/IApiDataService';
 import { IAppState } from '../../../ngrx/reducers';
-import { TSources } from '../../../../models/TSources';
-import { TApiDataResult } from '../../../../models/TApiResult';
+import { TControlKeyForSources } from '../../../../models/TControlKeyForSources';
+import { TApiDataResult } from '../../../../models/TApiDataResult';
 import { TJobStreamResult } from '../../../../models/TJobStreamResult';
 import { IApiServiceStream } from '../../../../models/IApiServiceStream';
 import { ApiDataAction_SetStatus } from '../../../ngrx/actions/api-data.actions';

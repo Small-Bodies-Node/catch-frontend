@@ -135,8 +135,8 @@
               }
             ],
             "styles": [
-              "@angular/material/prebuilt-themes/azure-blue.css",
               "src/styles/styles.scss",
+              "@angular/material/prebuilt-themes/orange-cyan.css",
               "src/assets/js9-to-be-served/js9support.css",
               "src/assets/js9-to-be-served/js9.css"
             ],

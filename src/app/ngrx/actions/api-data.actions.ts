@@ -1,42 +1,44 @@
 import { createAction, props } from '@ngrx/store';
-import { TSources } from '../../../models/TSources';
+import { TControlKeyForSources } from '../../../models/TControlKeyForSources';
 import { IApiDatum } from '../../../models/IApiDatum';
 import { IApiDataStatus } from '../../../models/IApiDataStatus';
 
 export const ApiDataAction_FetchResult = createAction(
-  'Api Action: Fetch Result',
+  'Api Action: Fetch Moving Object Result',
   props<{
     target: string;
     isCached: boolean;
     padding: number;
     isUncertaintyEllipse: boolean;
-    sources: TSources[];
+    sources: TControlKeyForSources[];
   }>()
 );
 
 export const ApiDataAction_SetSelectedDatum = createAction(
-  'Api Action: Set Selected Datum',
+  'Api Action: Set Selected Moving Object Datum',
   props<{ apiDatum?: IApiDatum }>()
 );
 
 export const ApiDataAction_SetData = createAction(
-  'Api Action: Set Data',
+  'Api Action: Set Moving Object Data',
   props<{ apiData: IApiDatum[] }>()
 );
 
 export const ApiDataAction_SetStatus = createAction(
-  'Api Action: Set Status',
+  'Api Action: Set Moving Object Status',
   props<Partial<IApiDataStatus>>()
 );
 
 export const ApiDataAction_SetJobId = createAction(
-  'Api Action: Set JobId',
+  'Api Action: Set Moving Object JobId',
   props<{ jobId: string }>()
 );
 
-export const ApiDataAction_DataLoaded = createAction('Api Action: Data Loaded');
+export const ApiDataAction_DataLoaded = createAction(
+  'Api Action: Moving Object Data Loaded'
+);
 
 export const ApiDataAction_SetDownloadRowState = createAction(
-  'Api Action: Set Download Row State',
+  'Api Action: Set Moving Object Download Row State',
   props<{ newDownloadRowState: { [productId: string]: boolean } }>()
 );

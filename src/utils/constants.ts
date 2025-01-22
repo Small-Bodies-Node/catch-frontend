@@ -25,3 +25,9 @@ export const apiStreamTimeoutSecs = 60 * 20;
  */
 export const headerHeightPx = 60;
 export const footerHeightPx = 60;
+
+/**
+ * Color Constants
+ */
+export const pastelGreen = '#77DD77';
+export const pastelPink = '#FFDAD6';

@@ -9,10 +9,16 @@ import { ITableCheckboxSubstate } from '../reducers/table-checkbox.reducer';
  *
  */
 
-export const selectTableCheckboxState = createSelector(
+export const selectTableDataCheckboxState = createSelector(
   (state: IAppState) => state.tableCheckbox,
   (substate: ITableCheckboxSubstate) => {
-    console.log('Date 1', new Date());
-    return substate.tableCheckboxState;
+    return substate.tableDataCheckboxState;
+  }
+);
+
+export const selectTableFixedCheckboxState = createSelector(
+  (state: IAppState) => state.tableCheckbox,
+  (substate: ITableCheckboxSubstate) => {
+    return substate.tableFixedCheckboxState;
   }
 );

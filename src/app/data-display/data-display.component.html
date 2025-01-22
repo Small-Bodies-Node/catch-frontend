@@ -1,4 +1,4 @@
-<ng-container *ngIf="device === 'desktop'">
+<!-- <ng-container *ngIf="device === 'desktop'">
   <app-desktop-view-2></app-desktop-view-2>
 </ng-container>
 
@@ -8,5 +8,16 @@
 
 <ng-container *ngIf="device === 'mobile'">
   <app-mobile-view></app-mobile-view>
-  <!-- Mobile -->
-</ng-container>
+</ng-container> -->
+
+@if(isDataReady){
+<!--  -->
+@if(isMovingRoute) {
+<!--  -->
+<app-moving-view></app-moving-view>
+} @else {
+<!--  -->
+<app-fixed-view></app-fixed-view>
+}
+<!--  -->
+}

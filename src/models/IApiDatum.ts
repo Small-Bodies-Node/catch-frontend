@@ -1,4 +1,4 @@
-import { TSources } from './TSources';
+import { TControlKeyForSources } from './TControlKeyForSources';
 
 /**
  * ps1:frame_id
@@ -41,7 +41,7 @@ export interface IApiDatum {
   'skymapper:image_type'?: any;
   'skymapper:sb_mag'?: any;
   'skymapper:zpapprox'?: any;
-  source: TSources;
+  source: TControlKeyForSources;
   source_name: string;
   thumbnail_url?: string | null;
   tmtp?: number;

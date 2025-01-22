@@ -1,8 +1,4 @@
-<mat-toolbar
-  class="main-mat-toolbar"
-  color="primary"
-  [ngStyle]="getMatToolbarStyles()"
->
+<mat-toolbar class="main-mat-toolbar" [ngStyle]="getMatToolbarStyles()">
   <div class="nav-menu-in-header">
     <ul class="links-in-header">
       <li (click)="delayedRouting('home')">
@@ -21,13 +17,13 @@
     </div>
 
     <!-- <button mat-icon-button (click)="delayedRouting('settings')">
-      <fa-icon icon="cog" [fixedWidth]="true"></fa-icon>
+      <mat-icon mat-list-icon> settings </mat-icon>
     </button> -->
   </div>
 
   <div class="nav-menu-in-side-nav">
     <button matRipple mat-icon-button (click)="_openSidenav()">
-      <fa-icon icon="bars" [fixedWidth]="true"></fa-icon>
+      <!-- <fa-icon icon="bars" [fixedWidth]="true"></fa-icon> -->
     </button>
 
     <div class="spacer">
@@ -43,7 +39,7 @@
     </div>
 
     <!-- <button mat-icon-button (click)="delayedRouting('settings')">
-      <fa-icon icon="cog" [fixedWidth]="true"></fa-icon>
+      <mat-icon mat-list-icon> settings </mat-icon>
     </button> -->
   </div>
 </mat-toolbar>

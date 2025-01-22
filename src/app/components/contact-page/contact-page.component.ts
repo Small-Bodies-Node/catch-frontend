@@ -21,19 +21,18 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatCardModule } from '@angular/material/card';
 
 @Component({
-  selector: 'app-contact-page',
-  templateUrl: './contact-page.component.html',
-  styleUrls: ['./contact-page.component.scss'],
-  standalone: true,
-  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    MatSnackBarModule, // <-- Add MatSnackBarModule
-    MatInputModule, // <-- Add MatInputModule
-    MatButtonModule, // <-- Add MatButtonModule
-    MatFormFieldModule, // <-- Add MatFormFieldModule
-    MatCardModule, // <-- Add MatCardModule
-  ], // <-- Add ReactiveFormsModule
+    selector: 'app-contact-page',
+    templateUrl: './contact-page.component.html',
+    styleUrls: ['./contact-page.component.scss'],
+    imports: [
+        CommonModule,
+        ReactiveFormsModule,
+        MatSnackBarModule, // <-- Add MatSnackBarModule
+        MatInputModule, // <-- Add MatInputModule
+        MatButtonModule, // <-- Add MatButtonModule
+        MatFormFieldModule, // <-- Add MatFormFieldModule
+        MatCardModule, // <-- Add MatCardModule
+    ]
 })
 export class ContactPageComponent implements OnInit, AfterViewInit, OnDestroy {
   // --->>>

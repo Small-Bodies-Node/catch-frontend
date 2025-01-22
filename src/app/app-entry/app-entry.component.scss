@@ -25,7 +25,7 @@ mat-sidenav-content {
     width: 100%;
     display: flex;
     flex: 1; // child will set to an equal size inside the container
-    background-color: rgba(255, 0, 0, 0);
+    // background-color: rgba(255, 0, 0, 0);
     opacity: 0; // Increased by animations below
   }
 

@@ -15,11 +15,10 @@ import { selectSiteSettingsTheme } from '../../ngrx/selectors/site-settings.sele
 import { simpleUid } from '../../../utils/simpleUid';
 
 @Component({
-  selector: 'app-comet-animations',
-  templateUrl: './comet-animations.component.html',
-  styleUrls: ['./comet-animations.component.scss'],
-  standalone: true,
-  imports: [CommonModule],
+    selector: 'app-comet-animations',
+    templateUrl: './comet-animations.component.html',
+    styleUrls: ['./comet-animations.component.scss'],
+    imports: [CommonModule]
 })
 export class CometAnimationsComponent implements OnInit, AfterViewInit {
   // --->>>

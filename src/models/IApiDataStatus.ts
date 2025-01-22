@@ -1,5 +1,5 @@
 import { TApiStatusCode } from './TApiStatusCode';
-import { TSources } from './TSources';
+import { TControlKeyForSources } from './TControlKeyForSources';
 
 export interface IApiDataStatus {
   // Query params
@@ -8,7 +8,7 @@ export interface IApiDataStatus {
     isCached: boolean;
     isUncertaintyEllipse: boolean;
     padding: number;
-    sources: TSources[];
+    sources: TControlKeyForSources[];
   };
   //
   message: string;

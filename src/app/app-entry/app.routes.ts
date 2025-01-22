@@ -53,6 +53,13 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'fixed',
+    loadChildren: () =>
+      import('../data-display/data-display.module').then(
+        (m) => m.DataDisplayModule
+      ),
+  },
+  {
     path: '**',
     redirectTo: '',
   },

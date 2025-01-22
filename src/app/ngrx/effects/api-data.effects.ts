@@ -15,7 +15,7 @@ import {
 } from '../actions/api-data.actions';
 import { ApiDataService } from '../../core/services/api-data/api-data.service';
 import { DelayedRouterService } from '../../core/services/delayed-router/delayed-router.service';
-import { TApiDataResult } from '../../../models/TApiResult';
+import { TApiDataResult } from '../../../models/TApiDataResult';
 import { IApiDatum } from '../../../models/IApiDatum';
 import { ApiDataMockService } from '../../core/services/api-data/api-data-mock.service';
 import { environment } from '../../../environments/environment';

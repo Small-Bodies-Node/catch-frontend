@@ -20,10 +20,11 @@ import {
 const placeholderUrl = 'assets/images/pngs/sbn_logo_v0.png';
 
 @Component({
-  selector: 'app-image-wheel',
-  templateUrl: './image-wheel.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  styleUrls: ['./image-wheel.component.scss'],
+    selector: 'app-image-wheel',
+    templateUrl: './image-wheel.component.html',
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    styleUrls: ['./image-wheel.component.scss'],
+    standalone: false
 })
 export class ImageWheelComponent implements OnInit {
   // --->>>

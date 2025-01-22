@@ -25,17 +25,17 @@ import { MatFormFieldModule } from '@angular/material/form-field';
   `,
   styles: [
     `
-      * {
-        /* background-color: green; */
-        margin: 5px;
-        color: white;
-        button {
-          color: black;
-        }
-      }
+      // * {
+      //   border-radius: 4px !important;
+      //   /* background-color: green; */
+      //   margin: 5px;
+      //   // color: white;
+      //   button {
+      //     // color: black;
+      //   }
+      // }
     `,
   ],
-  standalone: true,
   imports: [
     //
     MatFormFieldModule,

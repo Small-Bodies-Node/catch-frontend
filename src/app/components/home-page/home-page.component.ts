@@ -4,7 +4,7 @@ import { Store } from '@ngrx/store';
 
 import { TApiStatusCode } from '../../../models/TApiStatusCode';
 import { IAppState } from '../../ngrx/reducers';
-import { selectApiStatus } from '../../ngrx/selectors/api-data.selectors';
+import { selectApiDataStatus } from '../../ngrx/selectors/api-data.selectors';
 import { footerHeightPx, headerHeightPx } from '../../../utils/constants';
 import { SearchFieldComponent } from '../search-field/search-field.component';
 
@@ -12,7 +12,6 @@ import { SearchFieldComponent } from '../search-field/search-field.component';
   selector: 'app-home-page',
   templateUrl: './home-page.component.html',
   styleUrls: ['./home-page.component.scss'],
-  standalone: true,
   imports: [
     CommonModule,
     //
@@ -33,7 +32,7 @@ export class HomePageComponent implements OnInit {
   constructor(private store$: Store<IAppState>) {
     //--->>
 
-    this.store$.select(selectApiStatus).subscribe((status) => {
+    this.store$.select(selectApiDataStatus).subscribe((status) => {
       this.streamingMessage = status.message || '';
       this.streamingCode = status.code;
       this.isStreamingMessage = this.streamingCode === 'searching';

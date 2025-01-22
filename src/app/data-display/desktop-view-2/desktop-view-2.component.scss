@@ -11,17 +11,16 @@
 
   display: grid;
   grid-template-rows: 1fr 6fr auto;
-  // grid-template-columns: 3fr 1fr;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: 1fr auto;
   grid-gap: 5px;
   grid-template-areas:
-    "title fitsjpgtoggler     "
-    "table fitsjpgtoggler     "
-    "table solarviewer  ";
+    "fitsjpgtoggler   title   "
+    "fitsjpgtoggler   table   "
+    "solarviewer      table   ";
 
   //
   grid-auto-flow: dense;
-  overflow: hidden;
+  // overflow: hidden;
 
   .title-wrapper,
   .table-wrapper,
@@ -51,7 +50,7 @@
 
   .fits-jpg-toggler-wrapper {
     grid-area: fitsjpgtoggler;
-    background-color: $bgcolor;
+    // background-color: $bgcolor;
     aspect-ratio: 1 / 1;
     // min-width: 300px;
     // min-height: 300px;
@@ -62,7 +61,7 @@
   }
 
   .solar-viewer-wrapper {
-    background-color: red;
+    // background-color: red;
     grid-area: solarviewer;
     // background-color: black;
     // max-height: 400px;

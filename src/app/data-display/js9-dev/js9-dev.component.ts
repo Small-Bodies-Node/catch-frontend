@@ -1,11 +1,12 @@
 import { Component } from '@angular/core';
 
 @Component({
-  selector: 'app-js9-dev',
-  // standalone: true,
-  // imports: [],
-  templateUrl: './js9-dev.component.html',
-  styleUrl: './js9-dev.component.scss',
+    selector: 'app-js9-dev',
+    // standalone: true,
+    // imports: [],
+    templateUrl: './js9-dev.component.html',
+    styleUrl: './js9-dev.component.scss',
+    standalone: false
 })
 export class Js9DevComponent {
   fitsUrl =

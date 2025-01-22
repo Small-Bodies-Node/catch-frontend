@@ -8,13 +8,14 @@ import { IAppState } from '../../ngrx/reducers';
 import {
   selectApiData,
   selectApiSelectedDatum,
-  selectApiStatus,
+  selectApiDataStatus,
 } from '../../ngrx/selectors/api-data.selectors';
 
 @Component({
   selector: 'app-solar-viewer',
   templateUrl: './solar-viewer.component.html',
   styleUrls: ['./solar-viewer.component.scss'],
+  standalone: false,
 })
 export class SolarViewerComponent implements OnInit {
   // --->>>
@@ -30,7 +31,7 @@ export class SolarViewerComponent implements OnInit {
   ngOnInit(): void {
     this.subscriptions.add(
       combineLatest([
-        this.store$.select(selectApiStatus).pipe(take(1)),
+        this.store$.select(selectApiDataStatus).pipe(take(1)),
         this.store$.select(selectApiData).pipe(take(1)),
       ]).subscribe(([status, apiData]) => {
         const target = status.query?.target;

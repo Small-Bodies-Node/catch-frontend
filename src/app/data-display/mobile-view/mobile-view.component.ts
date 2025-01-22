@@ -7,7 +7,7 @@ import { distinctUntilChanged, map } from 'rxjs/operators';
 import { IAppState } from '../../ngrx/reducers';
 import {
   selectApiData,
-  selectApiStatus,
+  selectApiDataStatus,
 } from '../../ngrx/selectors/api-data.selectors';
 import {
   ApiDataAction_FetchResult,
@@ -16,13 +16,16 @@ import {
 import { IApiDataStatus } from '../../../models/IApiDataStatus';
 import { IApiDatum } from '../../../models/IApiDatum';
 import { headerHeightPx } from '../../../utils/constants';
-import { sourcesNamesDict } from '../../../utils/sourcesNamesDict';
-import { TSources } from '../../../models/TSources';
+import {
+  controlKeysForSources,
+  TControlKeyForSources,
+} from '../../../models/TControlKeyForSources';
 
 @Component({
   selector: 'app-mobile-view',
   templateUrl: './mobile-view.component.html',
   styleUrls: ['./mobile-view.component.scss'],
+  standalone: false,
 })
 export class MobileViewComponent implements OnInit {
   // --->>>
@@ -48,7 +51,7 @@ export class MobileViewComponent implements OnInit {
     this.subscriptions.add(
       combineLatest([
         this.store$.select(selectApiData),
-        this.store$.select(selectApiStatus),
+        this.store$.select(selectApiDataStatus),
         this.route.queryParams.pipe(
           map((params) => {
             //
@@ -64,10 +67,10 @@ export class MobileViewComponent implements OnInit {
             const isUncertaintyEllipse =
               params['uncertainty_ellipse'] === 'true' || false;
             const padding = +(params['padding'] || 0) || 0;
-            let sources: TSources[] = params['sources'] || [];
+            let sources: TControlKeyForSources[] = params['sources'] || [];
             if (!Array.isArray(sources)) sources = [sources];
             if (!sources.length) {
-              sources = [...Object.keys(sourcesNamesDict)] as any;
+              sources = controlKeysForSources;
             }
 
             return {

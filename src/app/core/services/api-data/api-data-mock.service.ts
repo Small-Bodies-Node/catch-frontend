@@ -16,9 +16,9 @@ import {
 import { IApiDataService } from '../../../../models/IApiDataService';
 import { IApiServiceStream } from '../../../../models/IApiServiceStream';
 import { TJobStreamResult } from '../../../../models/TJobStreamResult';
-import { TSources } from '../../../../models/TSources';
+import { TControlKeyForSources } from '../../../../models/TControlKeyForSources';
 import { IAppState } from '../../../ngrx/reducers';
-import { TApiDataResult } from '../../../../models/TApiResult';
+import { TApiDataResult } from '../../../../models/TApiDataResult';
 import { IApiDataCatchResult } from '../../../../models/IApiDataCatchResult';
 import { IApiDataCaughtResult } from '../../../../models/IApiDataCaughtResult';
 import { mockStreamMessages } from '../../../../utils/mockStreamMessages';
@@ -43,7 +43,7 @@ export class ApiDataMockService implements IApiDataService {
     isCached: boolean,
     isUncertaintyEllipse: boolean,
     padding: number,
-    sources: TSources[]
+    sources: TControlKeyForSources[]
   ): Observable<TApiDataResult> {
     // --->>
 
@@ -65,7 +65,7 @@ export class ApiDataMockService implements IApiDataService {
       });
     }
 
-    return this.getPanstarrsData(
+    return this.launchCatchJob(
       target,
       isCached,
       isUncertaintyEllipse,
@@ -141,12 +141,12 @@ export class ApiDataMockService implements IApiDataService {
     );
   }
 
-  getPanstarrsData(
+  launchCatchJob(
     target: string,
     isCached: boolean,
     isUncertaintyEllipse: boolean,
     padding: number,
-    sources: TSources[]
+    sources: TControlKeyForSources[]
   ): Observable<IApiDataCatchResult> {
     // --->>
 

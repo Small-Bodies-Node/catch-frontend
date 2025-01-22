@@ -1,20 +1,37 @@
 import { createReducer, on } from '@ngrx/store';
-import { TableCheckboxAction_SetState } from '../actions/table-checkbox.actions';
+import {
+  TableDataCheckboxAction_SetState,
+  TableFixedCheckboxAction_SetState,
+} from '../actions/table-checkbox.actions';
 import { TApiDataColState } from '../../../models/TApiDataColState';
 import { apiDataInitColState } from '../../../utils/apiDataInitColState';
+import { TApiFixedColState } from '../../../models/TApiFixedColState';
+import { apiFixedInitColState } from '../../../utils/apiFixedInitColState';
 
 export interface ITableCheckboxSubstate {
-  tableCheckboxState: Partial<TApiDataColState>;
+  tableDataCheckboxState: Partial<TApiDataColState>;
+  tableFixedCheckboxState: Partial<TApiFixedColState>;
 }
 
 export const initialState: ITableCheckboxSubstate = {
-  tableCheckboxState: { ...apiDataInitColState },
+  tableDataCheckboxState: { ...apiDataInitColState },
+  tableFixedCheckboxState: { ...apiFixedInitColState },
 };
 
 export const tableCheckboxReducer = createReducer(
   initialState,
-  on(TableCheckboxAction_SetState, (state, { newTableCheckboxState }) => ({
-    ...state,
-    tableCheckboxState: { ...newTableCheckboxState },
-  }))
+  on(
+    TableDataCheckboxAction_SetState,
+    (state, { newTableDataCheckboxState }) => ({
+      ...state,
+      tableDataCheckboxState: { ...newTableDataCheckboxState },
+    })
+  ),
+  on(
+    TableFixedCheckboxAction_SetState,
+    (state, { newTableFixedCheckboxState }) => ({
+      ...state,
+      tableFixedCheckboxState: { ...newTableFixedCheckboxState },
+    })
+  )
 );

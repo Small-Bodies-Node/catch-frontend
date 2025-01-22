@@ -5,6 +5,7 @@
   "compilerOptions": {
     "outDir": "./dist/out-tsc",
     "strict": true,
+    "strictNullChecks": true,
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": true,
     "noImplicitReturns": true,
@@ -23,9 +24,7 @@
     "importHelpers": true,
     "target": "ES2022",
     "module": "ES2022",
-    "lib": ["ES2022", "dom"],
-    //
-    "allowSyntheticDefaultImports": true
+    "lib": ["ES2022", "dom"]
     // "typeRoots": ["node_modules/@types", "node_modules/sbn-solar-viewer"]
   },
   "angularCompilerOptions": {

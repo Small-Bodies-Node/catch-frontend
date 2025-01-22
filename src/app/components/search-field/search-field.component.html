@@ -1,84 +1,114 @@
-<div class="search-field-container">
-  <form
-    class="basic-search-form"
-    [formGroup]="basicSearchForm"
-    (keydown)="keyDownOnInputText($event)"
-  >
-    <mat-form-field
-      [color]="getFormColor()"
-      appearance="outline"
-      class="search-full-width"
-    >
+<div class="search-field-container" [formGroup]="formGroup">
+  <!-- Layout consists of 3 form-wrapping rows: upper, middle, lower -->
+
+  <div class="upper-form-wrapper">
+    <mat-form-field appearance="outline" class="search-full-width">
       <mat-label>{{ getSearchMessageText() }}</mat-label>
 
       <input
         matInput
         type="text"
-        placeholder="E.g. 65P"
+        [placeholder]="getPlaceholderText()"
         aria-label="Name of the object to be matched"
-        [formControlName]="formControlLabels.target_input_control"
+        [formControlName]="getFormControlKey('search_field_control')"
         [matAutocomplete]="auto"
         #trigger="matAutocompleteTrigger"
         [ngStyle]="getInputTextColor()"
-        (ngModelChange)="searchTermChangeSubject.next($event)"
+        (keydown)="keyDownOnUpperFormInputText($event)"
       />
       <mat-autocomplete #auto="matAutocomplete">
-        <mat-option
-          *ngFor="let option of objectNameMatchResults"
-          [value]="option.target"
-        >
+        @if(isMovingTarget){
+        <!--  -->
+        @for (option of objectNameMatchResults; track option) {
+        <mat-option [value]="option.target">
           <span class="name-search-result">
             {{ optionToText(option) + "" }}
           </span>
         </mat-option>
+        }
+        <!--  -->
+        }@else{
+        <!--  -->
+        @for (fixedTarget of fixedTargets; track fixedTarget) {
+        <mat-option [value]="fixedTarget.coords">
+          <span class="name-search-result">
+            {{ fixedTarget.text }}
+          </span>
+        </mat-option>
+        }
+        <!--  -->
+        }
       </mat-autocomplete>
 
+      @if(isSearchFieldError()){
+      <mat-error>{{ errorMessage }}</mat-error>
+      }
+
+      <!--  -->
+
+      @if(!isMovingTarget){
+      <mat-hint>
+        {{ "'HH:MM:SS DD:MM:SS'" }}
+      </mat-hint>
+      }
+
+      <!--  -->
+
+      @if(isSearchButtonDisabled()){
+      <mat-icon matSuffix>search</mat-icon>
+      } @else {
       <button
         class="search-button"
-        *ngIf="!latestInputText.trim()"
-        disabled
+        [disabled]="isSearchButtonDisabled()"
         mat-raised-button
-        mat-icon-button
         matSuffix
         aria-label="Button to start searching names"
         (click)="submitObjectNameMatch($event)"
-      >
-        <mat-icon matSuffix>search</mat-icon>
-      </button>
-
-      <button
-        class="search-button shift"
-        *ngIf="!!latestInputText.trim()"
-        mat-button
-        matSuffix
-        aria-label="Button to start searching names"
-        (click)="submitObjectNameMatch($event)"
+        [ngStyle]="getSearchButtonStyle()"
       >
         <span style="font-size: 12px">START</span>
       </button>
+      }
     </mat-form-field>
-    <div class="advanced-controls-button-wrapper">
+  </div>
+
+  <!--  -->
+
+  <div class="middle-form-wrapper">
+    <div class="toggle-group-wrapper">
+      <mat-button-toggle-group
+        name="fontStyle"
+        aria-label="Font Style"
+        [formControlName]="getFormControlKey('toggle_moving_vs_fixed_control')"
+      >
+        <mat-button-toggle
+          value="moving"
+          [checked]="isMovingTarget"
+          appearance="legacy"
+          >Moving Target</mat-button-toggle
+        >
+        <mat-button-toggle value="fixed" [checked]="!isMovingTarget"
+          >Fixed Target</mat-button-toggle
+        >
+      </mat-button-toggle-group>
+    </div>
+
+    <div class="show-advanced-controls-button-wrapper">
       <button
-        class="advanced-controls-button"
-        [disabled]="false"
-        mat-raised-button
-        mat-icon-button
+        class="show-advanced-controls-button"
+        mat-fab
         matSuffix
         aria-label="Button to start searching names"
         (click)="toggleAdvancedControls()"
       >
-        <mat-icon matSuffix>tune</mat-icon>
+        <mat-icon>tune</mat-icon>
       </button>
     </div>
-  </form>
+  </div>
 
   <!--  -->
 
-  <form
-    class="advanced-search-form"
-    [formGroup]="advancedSearchForm"
-    (keydown)="keyDownOnInputText($event)"
-  >
+  <div class="lower-form-wrapper">
     <div
       class="advanced-search-controls"
       *ngIf="true || isAdvancedControls"
@@ -92,188 +122,142 @@
       <div class="data-sources-title">Data Sources</div>
 
       <div class="checkbox-grid">
-        <div>
-          <div class="info-checkbox-wrapper">
-            <span class="icon-wrapper">
-              <mat-icon
-                [matTooltip]="
-                  'Near-Earth Asteroid Tracking (NEAT) was a program run by NASA and the Jet Propulsion Laboratory, surveying the sky for near-Earth objects from December 1995 until April 2007. These are the images taken at the Palomar Observatory in California'
-                "
-                >info</mat-icon
-              >
-            </span>
-            <mat-checkbox
-              [formControlName]="formControlLabels.neat_palomar_tricam"
-              >{{ formControlLabels.neat_palomar_tricam }}</mat-checkbox
-            >
-          </div>
+        @for (source of sources; track source) {
+        <div class="icon-checkbox-wrapper">
+          <mat-icon [matTooltip]="toolTipText[source]">info</mat-icon>
+          <mat-checkbox [formControlName]="getFormControlKey(source)">{{
+            formControlLabels[source]
+          }}</mat-checkbox>
         </div>
-        <div>
-          <div class="info-checkbox-wrapper">
-            <span class="icon-wrapper">
-              <mat-icon
-                [matTooltip]="
-                  'Near-Earth Asteroid Tracking (NEAT) was a program run by NASA and the Jet Propulsion Laboratory, surveying the sky for near-Earth objects from December 1995 until April 2007. These are the images taken at GEODSS on Maui in Hawaii'
-                "
-                >info</mat-icon
-              >
+        }
+
+        <div class="icon-checkbox-wrapper">
+          <mat-icon [matTooltip]="toolTipText['select_all_sources_control']"
+            >info</mat-icon
+          >
+          <mat-checkbox
+            class="select-all-sources-checkbox"
+            [formControlName]="getFormControlKey('select_all_sources_control')"
+          >
+            <span [ngStyle]="{ color: getSelectAllSourcesLabelColor() }">
+              {{ getSelectAllSourcesLabel() }}
             </span>
-            <mat-checkbox
-              [formControlName]="formControlLabels.neat_maui_geodss"
-              >{{ formControlLabels.neat_maui_geodss }}</mat-checkbox
-            >
-          </div>
-        </div>
-        <div>
-          <div class="info-checkbox-wrapper">
-            <span class="icon-wrapper">
-              <mat-icon
-                [matTooltip]="
-                  'SkyMapper is a fully automated 1.35 m (4.4 ft) wide-angle optical telescope at Siding Spring Observatory in northern New South Wales, Australia'
-                "
-                >info</mat-icon
-              >
-            </span>
-            <mat-checkbox [formControlName]="formControlLabels.skymapper_dr4">{{
-              formControlLabels.skymapper_dr4
-            }}</mat-checkbox>
-          </div>
-        </div>
-        <div>
-          <div class="info-checkbox-wrapper">
-            <span class="icon-wrapper">
-              <mat-icon
-                [matTooltip]="
-                  'Pan-STARRS1 Data Release 2. The Panoramic Survey Telescope and Rapid Response System (Pan-STARRS1) are located at Haleakala Observatory, Hawaii'
-                "
-                >info</mat-icon
-              >
-            </span>
-            <mat-checkbox [formControlName]="formControlLabels.ps1dr2">{{
-              formControlLabels.ps1dr2
-            }}</mat-checkbox>
-          </div>
-        </div>
-        <div>
-          <div class="info-checkbox-wrapper">
-            <span class="icon-wrapper">
-              <mat-icon
-                [matTooltip]="
-                  'Catalina Sky Survey images taken from Mount Bigelow Observatory near Tucson, Arizona'
-                "
-                >info</mat-icon
-              >
-            </span>
-            <mat-checkbox
-              [formControlName]="formControlLabels.catalina_bigelow"
-              >{{ formControlLabels.catalina_bigelow }}</mat-checkbox
-            >
-          </div>
-        </div>
-        <div>
-          <div class="info-checkbox-wrapper">
-            <span class="icon-wrapper">
-              <mat-icon
-                [matTooltip]="
-                  'Catalina Sky Survey images taken from Mount Lemmon Observatory near Tucson, Arizona'
-                "
-                >info</mat-icon
-              >
-            </span>
-            <mat-checkbox
-              [formControlName]="formControlLabels.catalina_lemmon"
-              >{{ formControlLabels.catalina_lemmon }}</mat-checkbox
-            >
-          </div>
-        </div>
-        <div>
-          <div class="info-checkbox-wrapper">
-            <span class="icon-wrapper">
-              <mat-icon
-                [matTooltip]="
-                  'Catalina Sky Survey images taken from Mount Kitt Peak near Tuscon Arizona'
-                "
-                >info</mat-icon
-              >
-            </span>
-            <mat-checkbox
-              [formControlName]="formControlLabels.catalina_bokneosurvey"
-              >{{ formControlLabels.catalina_bokneosurvey }}</mat-checkbox
-            >
-          </div>
-        </div>
-        <div>
-          <div class="info-checkbox-wrapper">
-            <span class="icon-wrapper">
-              <mat-icon
-                [matTooltip]="
-                  'The Spacewatch Project is an astronomical survey that specializes in the study of minor planets, including various types of asteroids and comets at University of Arizona telescopes on Kitt Peak near Tucson, Arizona'
-                "
-                >info</mat-icon
-              >
-            </span>
-            <mat-checkbox [formControlName]="formControlLabels.spacewatch">{{
-              formControlLabels.spacewatch
-            }}</mat-checkbox>
-          </div>
+          </mat-checkbox>
         </div>
       </div>
 
       <hr />
 
       <div class="checkbox-grid">
-        <div>
-          <div class="info-checkbox-wrapper">
-            <span class="icon-wrapper">
-              <mat-icon
-                matTooltip="If this query has been performed in the past then return the most recently computed results"
-                >info</mat-icon
-              >
-            </span>
-            <mat-checkbox
-              [formControlName]="formControlLabels.use_cached_results_control"
-              >Use Cached Results</mat-checkbox
-            >
-          </div>
+        <div class="icon-checkbox-wrapper">
+          <mat-icon [matTooltip]="toolTipText['use_cached_results_control']"
+            >info</mat-icon
+          >
+          <mat-checkbox
+            [formControlName]="getFormControlKey('use_cached_results_control')"
+            >Use Cached Results</mat-checkbox
+          >
         </div>
-        <div>
-          <div class="info-checkbox-wrapper">
-            <span class="icon-wrapper">
-              <mat-icon
-                matTooltip="Enable searches to account for an uncertainty ellipse using a polygonal approximation"
-                >info</mat-icon
-              >
-            </span>
-            <mat-checkbox
-              [formControlName]="formControlLabels.uncertainty_ellipse_control"
-              >Uncertainty Ellipse</mat-checkbox
-            >
-          </div>
+
+        <div class="icon-checkbox-wrapper">
+          <mat-icon [matTooltip]="toolTipText['uncertainty_ellipse_control']"
+            >info</mat-icon
+          >
+          <mat-checkbox
+            [formControlName]="getFormControlKey('uncertainty_ellipse_control')"
+            >Uncertainty Ellipse</mat-checkbox
+          >
         </div>
       </div>
 
       <hr />
 
-      <div class="padding-field-wrapper">
-        <div style="width: 100%">
-          <mat-form-field appearance="fill">
-            <mat-label>Extra Padding </mat-label>
-            <input
-              matInput
-              placeholder="0"
-              value="0"
-              [formControlName]="formControlLabels.padding_input_control"
-            />
-            <mat-icon
-              matSuffix
-              matTooltip="Increase the search area by padding the ephemeris by this amount, in units of arcmin"
-              >info</mat-icon
-            >
-            <mat-hint>arcsecs</mat-hint>
-          </mat-form-field>
-        </div>
+      @if(!isMovingTarget){
+
+      <div class="intersection-type-wrapper input-wrapper" style="width: 100%">
+        <mat-form-field appearance="outline" style="width: 100%">
+          <mat-label>Select</mat-label>
+          <mat-select
+            [formControlName]="
+              getFormControlKey('intersection_type_input_control')
+            "
+          >
+            @for (intersectionType of intersectionTypes; track intersectionType)
+            {
+            <mat-option [value]="intersectionType">{{
+              intersectionTypeLabels[intersectionType]
+            }}</mat-option>
+            }
+          </mat-select>
+          <mat-icon
+            matSuffix
+            [matTooltip]="toolTipText['intersection_type_input_control']"
+            >info</mat-icon
+          >
+        </mat-form-field>
       </div>
+
+      <div class="start-time-wrapper input-wrapper" style="width: 100%">
+        <mat-form-field appearance="outline" style="width: 100%">
+          <mat-label>Start Time </mat-label>
+          <input
+            matInput
+            appearance="outline"
+            placeholder=""
+            value=""
+            [formControlName]="getFormControlKey('start_time_input_control')"
+          />
+          <mat-icon
+            matSuffix
+            [matTooltip]="toolTipText['start_time_input_control']"
+            >info</mat-icon
+          >
+        </mat-form-field>
+      </div>
+
+      <div class="stop-time-wrapper input-wrapper" style="width: 100%">
+        <mat-form-field appearance="outline" style="width: 100%">
+          <mat-label>Stop Time </mat-label>
+          <input
+            matInput
+            appearance="outline"
+            placeholder=""
+            value=""
+            [formControlName]="getFormControlKey('stop_time_input_control')"
+          />
+          <mat-icon
+            matSuffix
+            [matTooltip]="toolTipText['stop_time_input_control']"
+            >info</mat-icon
+          >
+          <mat-hint>{{
+            "Date format: YYYY-MM-DD HH:MM:SS.sss, all fields
+            optional"
+          }}</mat-hint>
+        </mat-form-field>
+      </div>
+
+      }
+
+      <div class="padding-field-wrapper input-wrapper" style="width: 100%">
+        <mat-form-field appearance="outline" style="width: 100%">
+          <mat-label>Extra Padding </mat-label>
+          <input
+            matInput
+            placeholder="0"
+            value="0"
+            [formControlName]="getFormControlKey('padding_input_control')"
+          />
+          <mat-icon
+            matSuffix
+            matTooltip="Increase the search area by padding the ephemeris by this amount, in units of arcmin"
+            >info</mat-icon
+          >
+          <mat-hint>arcsecs</mat-hint>
+        </mat-form-field>
+      </div>
+
       <!--  -->
     </div>
-  </form>
+  </div>
 </div>

@@ -13,16 +13,14 @@ import {
 import { CometAnimationsComponent } from '../comet-animations/comet-animations.component';
 
 @Component({
-  selector: 'app-background',
-  templateUrl: './background.component.html',
-  styleUrls: ['./background.component.scss'],
-  standalone: true,
-  imports: [
-    CommonModule,
-    //
-    CometAnimationsComponent,
-  ],
-  //
+    selector: 'app-background',
+    templateUrl: './background.component.html',
+    styleUrls: ['./background.component.scss'],
+    imports: [
+        CommonModule,
+        //
+        CometAnimationsComponent,
+    ]
 })
 export class BackgroundComponent implements OnInit {
   // --->>>

@@ -8,6 +8,7 @@ import {
   selectApiData,
   selectApiSelectedDatum,
 } from '../../ngrx/selectors/api-data.selectors';
+import { ITableThumbnailInput } from '../table-thumbnail/table-thumbnail.component';
 
 const placeholderUrl = 'assets/images/pngs/sbn_logo_v0.png';
 
@@ -15,6 +16,7 @@ const placeholderUrl = 'assets/images/pngs/sbn_logo_v0.png';
   selector: 'app-fits-jpg-toggler',
   templateUrl: './fits-jpg-toggler.component.html',
   styleUrls: ['./fits-jpg-toggler.component.scss'],
+  standalone: false,
 })
 export class FitsJpgTogglerComponent implements OnInit {
   // --->>>
@@ -92,9 +94,18 @@ export class FitsJpgTogglerComponent implements OnInit {
     return this.apiSelectedDatum?.preview_url || placeholderUrl;
   }
 
-  chooseApiDatum() {
+  getTableThumbnailInput(): ITableThumbnailInput | undefined {
     // console.log('>>>>> ????');
-    return this.apiSelectedDatum;
+    if (!this.apiSelectedDatum) return;
+
+    const { ra, dec, preview_url, source, product_id } = this.apiSelectedDatum;
+    return {
+      ra,
+      dec,
+      preview_url: preview_url || placeholderUrl,
+      source,
+      product_id,
+    };
   }
 
   toggleFits() {

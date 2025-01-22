@@ -1,68 +1,44 @@
-// Include the common styles for Angular Material
 @use "@angular/material" as mat;
+@import "@angular/material/prebuilt-themes/cyan-orange.css";
 
-@include mat.core();
-
-// .mat-tooltip-trigger {
-//   touch-action: auto !important;
-//   background-color: pink;
-// }
-
-/* 3rd PARTY IMPORTS */
-
-@import "normalize-scss/sass/normalize";
-
-/* GLOBAL IMPORTS */
-
-@import "styles-variables";
-// @use "styles-variables" as *;
-@import "styles-hack";
-@import "styles-reset";
-@import "styles-reset.scss-theme";
-@import "styles-router-children";
-
-/* MATERIAL THEMING */
-/* MATERIAL THEMING */
-
-// Import theme-dependent mixins for customizing components
-@import "./styles-reset.scss-theme";
-// @import "../app/components/app-entry/app-entry.component.scss-theme";
-@import "../app/app-entry/app-entry.component.scss-theme.scss";
-@import "../app/components/header/header.component.scss-theme";
-@import "../app/components/search-field/search-field.component.scss-theme";
-@import "../app/data-display/table-1/table-1.component.scss-theme.scss";
-
-// Define mixin that implements all custom-component theme-dependent mixins
-@mixin custom-components-theme($theme) {
-  @include app-styles-reset-theme($theme);
-  @include app-entry-component-theme($theme);
-  @include app-header-component-theme($theme);
-  @include app-search-field-component-theme($theme);
-  @include app-data-table-component-theme($theme);
+:root {
+  @include mat.toolbar-overrides(
+    (
+      container-text-color: white,
+      container-background-color: var(--mat-sys-primary-container),
+    )
+  );
 }
 
-// Import individual $theme maps
-@import "themes/dark-theme"; // $app-dark-theme
-@import "themes/light-theme"; // $app-light-theme
+html,
+body {
+  height: 100%;
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
 
-// Apply themes
-.dark-theme {
-  @include mat.all-component-themes($app-dark-theme);
-  @include custom-components-theme($app-dark-theme);
+  a:link,
+  a:visited,
+  a:hover,
+  a {
+    text-decoration: none;
+    color: blue;
+  }
+
+  code {
+    white-space: nowrap;
+    border-radius: 10px;
+    padding: 0 8px 1px 8px;
+  }
+
+  .content-wrapper {
+    > *:not(router-outlet) {
+      flex: 1; // child will set to an equal size inside the container
+      width: 100%;
+      display: block;
+      position: relative;
+    }
+  }
 }
-
-.light-theme {
-  @include mat.all-component-themes($app-light-theme);
-  @include custom-components-theme($app-light-theme);
-}
-
-////////////////////////////////
-////////////////////////////////
-////////////////////////////////
-// GLOBAL ANIMATIONS ///////////
-////////////////////////////////
-////////////////////////////////
-////////////////////////////////
 
 @keyframes pageFadeIn {
   0% {
@@ -91,6 +67,3 @@
     transform: translateY(-25px);
   }
 }
-
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }

@@ -5,16 +5,15 @@ import { Subscription } from 'rxjs';
 
 import { TApiStatusCode } from '../../../models/TApiStatusCode';
 import { IAppState } from '../../ngrx/reducers';
-import { selectApiStatus } from '../../ngrx/selectors/api-data.selectors';
-import { sourcesNamesDict } from '../../../utils/sourcesNamesDict';
+import { selectApiDataStatus } from '../../ngrx/selectors/api-data.selectors';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { IApiDataStatus } from '../../../models/IApiDataStatus';
+import { controlLabelsDictForSources } from '../../../models/TControlKeyForSources';
 
 @Component({
   selector: 'app-streaming-messages',
   templateUrl: './streaming-messages.component.html',
   styleUrls: ['./streaming-messages.component.scss'],
-  standalone: true,
   imports: [CommonModule, MatProgressBarModule],
 })
 export class StreamingMessagesComponent implements OnInit, OnDestroy {
@@ -35,7 +34,7 @@ export class StreamingMessagesComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.apiStatusSubscription = this.store$
-      .select(selectApiStatus)
+      .select(selectApiDataStatus)
       .subscribe((status) => {
         // Use runOutsideAngular if the updates are extremely frequent
         this.updateStreamingMessage(status);
@@ -57,7 +56,7 @@ export class StreamingMessagesComponent implements OnInit, OnDestroy {
     this.padding = padding;
 
     // Convert sources to user-presentable names
-    this.sources = sources.map((source) => sourcesNamesDict[source]);
+    this.sources = sources.map((source) => controlLabelsDictForSources[source]);
 
     // Explicitly trigger change detection
     this.cdr.detectChanges();

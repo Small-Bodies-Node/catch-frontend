@@ -8,9 +8,10 @@ import { IApiDatum } from '../../../models/IApiDatum';
 import { PanstarrsApiService } from '../../core/services/panstarrs-api/panstarrs-api';
 
 @Component({
-  selector: 'app-panstarrs-overlay',
-  templateUrl: './panstarrs-overlay.component.html',
-  styleUrls: ['./panstarrs-overlay.component.scss'],
+    selector: 'app-panstarrs-overlay',
+    templateUrl: './panstarrs-overlay.component.html',
+    styleUrls: ['./panstarrs-overlay.component.scss'],
+    standalone: false
 })
 export class PanstarrsOverlayComponent implements OnInit {
   @ViewChild('myContainer') myDiv!: ElementRef;
