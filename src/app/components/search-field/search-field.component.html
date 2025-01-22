@@ -236,9 +236,10 @@
           }}</mat-hint>
         </mat-form-field>
       </div>
-
       }
 
+      <!--  -->
+      @if(isMovingTarget){
       <div class="padding-field-wrapper input-wrapper" style="width: 100%">
         <mat-form-field appearance="outline" style="width: 100%">
           <mat-label>Extra Padding </mat-label>
@@ -250,12 +251,32 @@
           />
           <mat-icon
             matSuffix
-            matTooltip="Increase the search area by padding the ephemeris by this amount, in units of arcmin"
+            [matTooltip]="toolTipText['padding_input_control']"
             >info</mat-icon
           >
-          <mat-hint>arcsecs</mat-hint>
+          <mat-hint>arcmins</mat-hint>
         </mat-form-field>
       </div>
+      } @else{
+      <!--  -->
+
+      <div class="radius-field-wrapper input-wrapper" style="width: 100%">
+        <mat-form-field appearance="outline" style="width: 100%">
+          <mat-label>Radius </mat-label>
+          <input
+            matInput
+            placeholder="0"
+            value="0"
+            [formControlName]="getFormControlKey('radius_input_control')"
+          />
+          <mat-icon matSuffix [matTooltip]="toolTipText['radius_input_control']"
+            >info</mat-icon
+          >
+          <mat-hint>arcmins</mat-hint>
+        </mat-form-field>
+      </div>
+      <!--  -->
+      }
 
       <!--  -->
     </div>

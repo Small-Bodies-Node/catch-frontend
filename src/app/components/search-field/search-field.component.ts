@@ -10,7 +10,7 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MatAutocompleteTrigger } from '@angular/material/autocomplete';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { Subject, Subscription } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { Store } from '@ngrx/store';
 
@@ -25,21 +25,11 @@ import {
   ApiDataAction_SetStatus,
 } from '../../ngrx/actions/api-data.actions';
 import {
-  controlLabelsDictForLowerForm,
-  lowerFormControlDict,
-  TControlKeyForLowerForm,
-} from '../../../models/TControlKeyForLowerForm';
+  formControlLabels,
+  formControlDict,
+  TControlKeyForGroupForm,
+} from '../../../models/TControlKeyForGroupForm';
 import { SharedModule } from '../../shared/shared.module';
-import {
-  controlLabelsDictForMiddleForm,
-  middleFormControlDict,
-  TControlKeyForMiddleForm,
-} from '../../../models/TControlKeyForMiddleForm';
-import {
-  controlLabelsDictForUpperForm,
-  TControlKeyForUpperForm,
-  upperFormControlDict,
-} from '../../../models/TControlKeyForUpperSearchForm';
 import {
   controlKeysForSources,
   TControlKeyForSources,
@@ -55,6 +45,7 @@ import {
   ApiFixedAction_FetchResult,
   ApiFixedAction_SetStatus,
 } from '../../ngrx/actions/api-fixed.actions';
+import { TMovingVsFixed } from '../../../models/TMovingVsFixed';
 
 @Component({
   selector: 'app-search-field',
@@ -70,27 +61,17 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
 
   intersectionTypes = intersectionTypes;
   intersectionTypeLabels = intersectionTypeLabels;
-
-  formControlLabels = {
-    ...controlLabelsDictForUpperForm,
-    ...controlLabelsDictForMiddleForm,
-    ...controlLabelsDictForLowerForm,
-  };
-
-  formControlDict = {
-    ...upperFormControlDict,
-    ...middleFormControlDict,
-    ...lowerFormControlDict,
-  };
-
-  formGroup: FormGroup<typeof this.formControlDict>;
+  sources = controlKeysForSources;
+  toolTipText = toolTipTextDict;
+  fixedTargets = fixedTargets;
+  formControlLabels = formControlLabels;
+  formGroup: FormGroup<typeof formControlDict>;
 
   objectNameMatchResults: IObjectNameMatchResult[] = [];
   searchMessage = 'Search For Object';
   lengthOfLongestDisplayText = 0;
   latestInputText = '';
-  successColor = '#689F38'; // mat-green
-  searchTermChangeSubject: Subject<string> = new Subject<string>();
+  latestMovingVsFixed: TMovingVsFixed = 'moving';
   errorMessage = '';
 
   isAdvancedControls = false;
@@ -98,11 +79,6 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
   isAllSourcesSelected = true;
 
   subscriptions = new Subscription();
-
-  sources = controlKeysForSources;
-  toolTipText = toolTipTextDict;
-
-  fixedTargets = fixedTargets;
 
   constructor(
     private dialog: MatDialog,
@@ -112,16 +88,11 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
   ) {
     // --->>>
 
-    upperFormControlDict.search_field_control.setValidators([
-      // this.searchFieldValidator,
-    ]);
-
-    this.formGroup = new FormGroup(this.formControlDict);
+    this.formGroup = new FormGroup(formControlDict);
 
     this.subscriptions.add(
       this.store$.select(selectObjectNameMatchResults).subscribe((results) => {
         this.objectNameMatchResults = results;
-        // Compute length of longest display text
         this.lengthOfLongestDisplayText = results
           .map((el) => el.display_text.length)
           .reduce((acc, el) => {
@@ -142,28 +113,16 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
       this.formGroup.valueChanges
         .pipe(debounceTime(200), distinctUntilChanged())
         .subscribe((value) => {
-          // Moving-vs-fixed-checkbox logic
-          if (value['toggle_moving_vs_fixed_control'] === 'moving') {
-            this.isMovingTarget = true;
-          } else {
-            this.isMovingTarget = false;
-          }
+          //
+
+          // Moving-vs-fixed logic
+          this.updateMovingVsFixed(value['toggle_moving_vs_fixed_control']);
 
           // Sources-checkbox logic
           this.updateSourcesCheckboxes(!!value['select_all_sources_control']);
 
           // Search-field-dropdown logic
-          if (this.latestInputText !== value['search_field_control']) {
-            this.latestInputText = value['search_field_control'] as string;
-            if (this.isMovingTarget) {
-              this.store$.dispatch(
-                ObjectNameMatchAction_FetchResults({
-                  searchTerm: this.latestInputText,
-                })
-              );
-            }
-            this.updateSearchFieldErrors();
-          }
+          this.updateSearchField(value['search_field_control']);
         })
     );
   }
@@ -178,9 +137,10 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
    * Check to see if the text entered into the search box is a target within
    * 'objectNameMatchResults'
    */
-  isTargetMatched(inputText: string) {
+  isTargetMatched(inputText?: string) {
+    const text = inputText || this.latestInputText.trim();
     const match = this.objectNameMatchResults.find(
-      (el) => el.target === inputText.trim()
+      (el) => el.target === text.trim()
     );
     return !!match;
   }
@@ -199,8 +159,37 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
         );
       });
     }
-
     this.updateSearchFieldErrors();
+  }
+
+  updateSearchField(inputText?: string) {
+    if (!inputText) return;
+
+    if (this.latestInputText !== inputText) {
+      this.latestInputText = inputText;
+      if (this.isMovingTarget) {
+        this.store$.dispatch(
+          ObjectNameMatchAction_FetchResults({
+            searchTerm: this.latestInputText,
+          })
+        );
+      }
+      this.updateSearchFieldErrors();
+    }
+  }
+
+  updateMovingVsFixed(movingVsFixed: TMovingVsFixed | undefined) {
+    if (!movingVsFixed || movingVsFixed === this.latestMovingVsFixed) return;
+
+    // Change moving-vs-fixed state
+    this.latestMovingVsFixed = movingVsFixed;
+    this.formGroup.controls.search_field_control.setValue('');
+
+    if (movingVsFixed === 'moving') {
+      this.isMovingTarget = true;
+    } else {
+      this.isMovingTarget = false;
+    }
   }
 
   isAtleastOneSourceSelected() {
@@ -423,11 +412,7 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
   }
 
   getInputTextColor() {
-    const searchValue = this.formGroup.controls.search_field_control.value;
-    const match = this.objectNameMatchResults.find(
-      ({ display_text }) => display_text === searchValue
-    );
-    if (!!match) return { color: this.successColor };
+    if (this.isTargetMatched()) return { color: pastelGreen };
     return null;
   }
 
@@ -439,12 +424,7 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
     return this.isMovingTarget ? 'E.g. 65P' : 'E.g. Crab Nebula';
   }
 
-  getFormControlKey(
-    input:
-      | TControlKeyForUpperForm
-      | TControlKeyForMiddleForm
-      | TControlKeyForLowerForm
-  ) {
+  getFormControlKey(input: TControlKeyForGroupForm) {
     // Used for type safety in HTML template
     return input;
   }
@@ -476,10 +456,17 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
   }
 
   updateSearchFieldErrors() {
-    /**
-     * For now, do not attempt to constrain fixed-target formatting
-     */
+    //
+
     if (!this.isMovingTarget) {
+      if (!this.isAtleastOneSourceSelected()) {
+        this.errorMessage = 'You must select at least one Data Source';
+        this.formGroup.controls.search_field_control.setErrors({
+          isSourceNeeded: true,
+        });
+        return;
+      }
+      // For now, no errors for fixed-target searches except for missing sources
       this.formGroup.controls.search_field_control.setErrors(null);
       return;
     }

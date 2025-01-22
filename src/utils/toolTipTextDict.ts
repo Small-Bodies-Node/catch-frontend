@@ -1,7 +1,7 @@
-import { TControlKeyForLowerForm } from '../models/TControlKeyForLowerForm';
+import { TControlKeyForGroupForm } from '../models/TControlKeyForGroupForm';
 
 type IToolTipDict = {
-  [K in TControlKeyForLowerForm]: string;
+  [K in TControlKeyForGroupForm]: string;
 };
 
 export const toolTipTextDict: IToolTipDict = {
@@ -53,4 +53,12 @@ export const toolTipTextDict: IToolTipDict = {
 
   intersection_type_input_control:
     'The type of intersection to use for the search',
+
+  radius_input_control: 'The radius of the search area in arcminutes',
+
+  search_field_control: 'The search field to use for the search',
+
+  show_advanced_options_control: 'Show advanced options',
+
+  toggle_moving_vs_fixed_control: 'Toggle between moving and fixed targets',
 };
