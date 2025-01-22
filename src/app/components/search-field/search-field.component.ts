@@ -163,7 +163,7 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
   }
 
   updateSearchField(inputText?: string) {
-    if (!inputText) return;
+    if (typeof inputText === 'undefined') return;
 
     if (this.latestInputText !== inputText) {
       this.latestInputText = inputText;

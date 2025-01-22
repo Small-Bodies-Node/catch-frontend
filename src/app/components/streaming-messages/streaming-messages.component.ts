@@ -68,8 +68,6 @@ export class StreamingMessagesComponent implements OnInit, OnDestroy {
       `Cached: ` + isCached,
       `Uncertainty ellipse: ` + isUncertaintyEllipse,
       `Padding: ` + padding,
-      `Sources: ` +
-        sources.map((source) => controlLabelsDictForSources[source]),
     ];
     this.sources = sources.map((source) => controlLabelsDictForSources[source]);
 
