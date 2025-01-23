@@ -23,7 +23,8 @@ export class FitsJpgTogglerComponent implements OnInit {
 
   subscriptions = new Subscription();
   apiData?: IApiDatum[];
-  apiSelectedDatum?: IApiDatum;
+  // apiSelectedDatum?: IApiDatum;
+  apiSelectedDatum?: any;
   // isFitsButtonDisabled = false;
   isButtonRaised = false;
   isFits = false;
@@ -95,6 +96,7 @@ export class FitsJpgTogglerComponent implements OnInit {
   }
 
   getTableThumbnailInput(): ITableThumbnailInput | undefined {
+    return this.apiSelectedDatum;
     // console.log('>>>>> ????');
     if (!this.apiSelectedDatum) return;
 

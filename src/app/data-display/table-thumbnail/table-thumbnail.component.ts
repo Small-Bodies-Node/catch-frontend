@@ -30,8 +30,8 @@ export class TableThumbnailComponent implements OnChanges {
 
   @Input() input?: ITableThumbnailInput;
   @Input() size: string = '60px';
-  @Input() width: string = '60px';
-  @Input() height: string = '60px';
+  @Input() width: string = '100%';
+  @Input() height: string = '100%';
   @Input() isPriority = false;
   @Input() label = '-';
   @Input() diameterPxls: number = 30;
@@ -55,16 +55,18 @@ export class TableThumbnailComponent implements OnChanges {
   ) {}
 
   ngOnChanges(changes: SimpleChanges): void {
-    console.log('changes', changes);
+    console.log('changes', JSON.stringify(changes));
     // Update the size of the thumbnail
-    const trans = this.getSurveyScaleTransform();
-    this.imgStyles = {
-      //
-      ...this.imgStyles,
-      width: this.width,
-      height: this.height,
-      transform: this.getSurveyScaleTransform(),
-    };
+    if (false) {
+      const trans = this.getSurveyScaleTransform();
+      this.imgStyles = {
+        //
+        ...this.imgStyles,
+        width: this.width,
+        height: this.height,
+        transform: this.getSurveyScaleTransform(),
+      };
+    }
 
     // Repeat request to image queue if isPriority changes
     if (changes['isPriority']?.currentValue) {

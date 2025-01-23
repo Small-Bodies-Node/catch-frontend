@@ -33,6 +33,12 @@ export const toolTipTextDict: IToolTipDict = {
   atlas_mauna_loa:
     'ATLAS is an asteroid impact early warning system being developed by the University of Hawaii and funded by NASA. The system consists of two telescopes, 100 miles apart, which automatically scan the whole sky several times every night looking for moving objects. One telescope is located at Haleakala Observatory on the island of Maui, and the other is on Mauna Loa on the Big Island of Hawaii.',
 
+  atlas_rio_hurtado:
+    'ATLAS is an asteroid impact early warning system being developed by the University of Hawaii and funded by NASA. The system consists of two telescopes, 100 miles apart, which automatically scan the whole sky several times every night looking for moving objects. One telescope is located at Haleakala Observatory on the island of Maui, and the other is on Mauna Loa on the Big Island of Hawaii.',
+
+  atlas_sutherland:
+    'ATLAS is an asteroid impact early warning system being developed by the University of Hawaii and funded by NASA. The system consists of two telescopes, 100 miles apart, which automatically scan the whole sky several times every night looking for moving objects. One telescope is located at Haleakala Observatory on the island of Maui, and the other is on Mauna Loa on the Big Island of Hawaii.',
+
   loneos:
     'Lowell Observatory Near-Earth-Object Search (LONEOS) was an astronomical survey for near-Earth objects. The project began in 1993 and ended in 2008. The project was funded by the United States Air Force and was run by the Lowell Observatory in Flagstaff, Arizona.',
 

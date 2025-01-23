@@ -17,6 +17,8 @@ export const sourceFormControlDict = {
   loneos: new FormControl<boolean>(true, nonNullable),
   atlas_haleakela: new FormControl<boolean>(true, nonNullable),
   atlas_mauna_loa: new FormControl<boolean>(true, nonNullable),
+  atlas_rio_hurtado: new FormControl<boolean>(true, nonNullable),
+  atlas_sutherland: new FormControl<boolean>(true, nonNullable),
 } as const;
 
 export const controlKeysForSources = Object.keys(
@@ -39,4 +41,6 @@ export const controlLabelsDictForSources: {
   loneos: 'LONEOS',
   atlas_haleakela: 'ATLAS Haleakela',
   atlas_mauna_loa: 'ATLAS Mauna Loa',
+  atlas_rio_hurtado: 'ATLAS Rio Hurtado',
+  atlas_sutherland: 'ATLAS Sutherland',
 } as const;

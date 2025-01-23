@@ -40,6 +40,7 @@ import { TableDataCheckboxesComponent } from '../table-data-checkboxes/table-dat
 import { ImageFetchService } from '../../core/services/fetch-image/fetch-image.service';
 import { PlotlyGraphWrapperComponent } from '../plotly-graph/plotly-graph.component';
 import { SelectTableRowsDirective } from '../../shared/directives/select-table-rows.directive';
+import { ITableThumbnailInput } from '../table-thumbnail/table-thumbnail.component';
 
 type TColName = keyof IApiDatum;
 
@@ -63,10 +64,11 @@ export class TableMovingComponent
   tableRows?: QueryList<SelectTableRowsDirective>;
 
   nonHideableCols = ['download_checkboxes', 'preview_url', 'source_name'];
+  allShownCols: string[] = [];
 
   dataSource?: MatTableDataSource<IApiDatum>;
   apiSelectedDatum?: IApiDatum;
-  allApiData?: IApiDatum[];
+  allApiData?: any[];
   paginatedApiData?: IApiDatum[];
   colState: Partial<TApiDataColState> = { ...apiDataInitColState };
   shownHideableCols: Partial<TColName>[] = Object.keys(
@@ -94,7 +96,24 @@ export class TableMovingComponent
   ) {
     this.subscriptions.add(
       this.store$.select(selectApiData).subscribe((apiData) => {
-        this.allApiData = apiData?.filter((_, ind) => ind < 70000000000);
+        console.log('Getting data');
+        this.allApiData = apiData
+          ?.filter((_, ind) => ind < 70000000000)
+          .map((apiDatum: any) => {
+            //
+            const { ra, dec, preview_url, source, product_id } = apiDatum;
+            const thumbnailDatum = {
+              ra,
+              dec,
+              preview_url: preview_url || 'placeholderUrl',
+              source,
+              product_id,
+            };
+            // @ts-ignore
+            // apiDatum.thumbnailDatum = thumbnailDatum;
+            return { ...apiDatum, thumbnailDatum };
+          });
+        console.log('???>>> ', this.allApiData);
         if (this.allApiData) {
           this.setPaginatorAndSort();
         }
@@ -137,6 +156,10 @@ export class TableMovingComponent
             this.colState[key as keyof TApiDataColState] &&
             ![...this.nonHideableCols].includes(key)
         ) as TColName[];
+        this.allShownCols = [
+          ...this.nonHideableCols,
+          ...this.shownHideableCols,
+        ];
         this.rerenderTable();
       })
     );
@@ -339,7 +362,7 @@ export class TableMovingComponent
   }
 
   rerenderTable() {
-    this.changeDetector.detectChanges();
+    // this.changeDetector.detectChanges();
   }
 
   getColLabel(key: string) {
@@ -383,7 +406,9 @@ export class TableMovingComponent
     );
   }
 
-  getTableThumbnailInput(apiDatum: IApiDatum) {
+  getTableThumbnailInput(apiDatum: IApiDatum): ITableThumbnailInput {
+    // @ts-ignore
+    return apiDatum.thumbnailDatum;
     const { ra, dec, preview_url, source, product_id } = apiDatum;
     return {
       ra,

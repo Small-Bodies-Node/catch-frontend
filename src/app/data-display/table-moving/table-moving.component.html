@@ -69,16 +69,16 @@
           [ngClass]="{ 'highlighted-sticky-cell': isRowSelected(element) }"
           (click)="selectRowDatum(i)"
         >
-          @if(isRowDisplayed(element)){
+          <!-- @if(isRowDisplayed(element)){ -->
           <app-table-thumbnail
             [input]="getTableThumbnailInput(element)"
             [isPriority]="isRowSelected(element)"
             [label]="(isRowSelected(element) ? '*' : '') + 'T' + i"
             (onLoadEventMessage)="rerenderTable()"
           ></app-table-thumbnail>
-          } @else {
-          <div>Placeholder</div>
-          }
+          <!-- } @else { -->
+          <!-- <div>Placeholder</div> -->
+          <!-- } -->
         </td>
       </ng-container>
 
@@ -146,10 +146,10 @@
       }
 
       <!-- These rows are needed; I assume that the above defns get injected into these rows somehow  -->
-      <tr mat-header-row *matHeaderRowDef="getAllCols(); sticky: true"></tr>
+      <tr mat-header-row *matHeaderRowDef="allShownCols; sticky: true"></tr>
       <tr
         mat-row
-        *matRowDef="let row; columns: getAllCols()"
+        *matRowDef="let row; columns: allShownCols"
         (keydown)="keyPress($event)"
         tabindex="0"
       ></tr>

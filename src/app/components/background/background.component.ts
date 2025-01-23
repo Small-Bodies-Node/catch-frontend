@@ -13,14 +13,10 @@ import {
 import { CometAnimationsComponent } from '../comet-animations/comet-animations.component';
 
 @Component({
-    selector: 'app-background',
-    templateUrl: './background.component.html',
-    styleUrls: ['./background.component.scss'],
-    imports: [
-        CommonModule,
-        //
-        CometAnimationsComponent,
-    ]
+  selector: 'app-background',
+  templateUrl: './background.component.html',
+  styleUrls: ['./background.component.scss'],
+  imports: [CommonModule, CometAnimationsComponent],
 })
 export class BackgroundComponent implements OnInit {
   // --->>>
@@ -40,9 +36,10 @@ export class BackgroundComponent implements OnInit {
 
       // Remove query params from url
       const urlPath = (navRecords.presentRoute || '').split('?')[0];
-      this.isBackgroundShown =
-        ['/', '/home'].includes(urlPath) || urlPath === '';
-      // this.isBackgroundShown = true;
+      if (!false) {
+        this.isBackgroundShown =
+          ['/', '/home'].includes(urlPath) || urlPath === '';
+      }
       this.varHostClassName = 'host-' + this.siteTheme.toLowerCase();
     });
 

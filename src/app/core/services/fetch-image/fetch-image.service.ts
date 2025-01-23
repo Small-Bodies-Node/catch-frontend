@@ -50,7 +50,7 @@ export class ImageFetchService {
     // Decide if this URL can skip queue
     const isQueueNeeded =
       url.includes('catalina') ||
-      url.includes('neat') ||
+      // url.includes('neat') ||
       url.includes('spacewatch');
     // url.includes('lon') // Add loneos!!!!
 

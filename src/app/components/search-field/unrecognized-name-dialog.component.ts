@@ -1,44 +1,45 @@
 import { Component, HostListener, Inject, NgZone } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatButton } from '@angular/material/button';
+import {
+  MatDialogRef,
+  MAT_DIALOG_DATA,
+  MatDialogContent,
+  MatDialogActions,
+  MatDialogClose,
+  MatDialogTitle,
+} from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 
 @Component({
   selector: 'app-unrecognized-name-dialog',
   template: `
-    <form
-      style="display: flex; flex-direction: column; justify-content: center; align-items: center; "
-    >
-      <mat-label> Warning! </mat-label>
-      <mat-label>
-        The target "{{ data.submittedText }}" is not recognized by our
-        name-resolution service
-      </mat-label>
-      <div>
-        <button mat-raised-button mat-dialog-close (click)="closeDialog(true)">
-          SEARCH ANYWAY
-        </button>
-        <button mat-raised-button mat-dialog-close (click)="closeDialog(false)">
-          CANCEL
-        </button>
-      </div>
-    </form>
+    <h2 mat-dialog-title>Warning!</h2>
+    <mat-dialog-content>
+      The target "{{ data.submittedText }}" is not recognized by our
+      name-resolution service.
+    </mat-dialog-content>
+    <mat-dialog-actions>
+      <button
+        mat-button
+        mat-dialog-close
+        cdkFocusInitial
+        (click)="closeDialog(true)"
+      >
+        SEARCH ANYWAY
+      </button>
+      <button mat-button mat-dialog-close (click)="closeDialog(false)">
+        CANCEL
+      </button>
+    </mat-dialog-actions>
   `,
-  styles: [
-    `
-      // * {
-      //   border-radius: 4px !important;
-      //   /* background-color: green; */
-      //   margin: 5px;
-      //   // color: white;
-      //   button {
-      //     // color: black;
-      //   }
-      // }
-    `,
-  ],
+  styles: [``],
   imports: [
-    //
     MatFormFieldModule,
+    MatDialogContent,
+    MatDialogActions,
+    MatDialogClose,
+    MatDialogTitle,
+    MatButton,
   ],
 })
 export class UnrecognizedNameDialogComponent {

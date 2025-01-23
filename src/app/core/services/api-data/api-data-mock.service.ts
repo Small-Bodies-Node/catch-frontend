@@ -191,7 +191,11 @@ export class ApiDataMockService implements IApiDataService {
             'catalina_lemmon',
             'catalina_bokneosurvey',
             'spacewatch',
-            // 'loneos',
+            'loneos',
+            'atlas_haleakela',
+            'atlas_mauna_loa',
+            'atlas_rio_hurtado',
+            'atlas_sutherland',
           ].includes(_.source);
         })
         .filter((_, ind) => ind < 10000000),
