@@ -4,25 +4,23 @@
   <h3>CATCH Overview</h3>
 
   <p>
-    The Comet-Asteroid Telescopic Catalog Hub (CATCH) is a moving-target search
-    tool for large astronomical data sets, such as time-domain or near-Earth
-    object surveys. CATCH solves the needle in the haystack problem: comets and
-    asteroids are the needles, and the archives of survey data are the
-    haystacks.
+    The Comet-Asteroid Telescopic Catalog Hub (CATCH) is a search tool for large
+    astronomical data sets. It was especially designed to find observations of
+    moving targets, i.e., comets and asteroids. Use CATCH to help identify
+    pre-discovery observations of a target, to examine past cometary activity,
+    or to help you understand why a survey did not detect or report observations
+    of an object.
   </p>
 
   <p>
     <em>
-      Use CATCH to help identify pre-discovery detections, to examine past
-      cometary activity, or to help you understand why a survey did not detect
-      or report observations of an object.
+      CATCH solves the needle in the haystack problem: your favorite comets and
+      asteroids are the needles, and the archives of survey data are the
+      haystacks.
     </em>
   </p>
 
-  <p>
-    Provide the name of an asteroid or comet, and for each indexed data set
-    CATCH will:
-  </p>
+  <p>Provide the name of an asteroid or comet, and CATCH will:</p>
   <ol>
     <li>
       Request an ephemeris for that object from NASA JPL's
@@ -31,16 +29,26 @@
 
     <li>Query the CATCH database for data near the ephemeris.</li>
 
-    <li>Test each approximate match for detailed intersection.</li>
+    <li>
+      Test each approximate match for detailed intersection with the ephemeris.
+    </li>
 
-    <li>Return all positive matches with target and observational metadata.</li>
+    <li>Return all results with both target and observational metadata.</li>
   </ol>
+
+  <p>
+    CATCH can also search for any fixed point on the sky, and up to 2 degrees in
+    radius about it. Three areal search options are available. Find
+    observations: (1) that intersect any part of the search area; (2) that are
+    fully contained within the search area; or, (3) that fully contain the
+    search area.
+  </p>
 
   <h3>Capabilities</h3>
   <ul>
     <li>
       Results are presented in the browser, complete with image cutouts around
-      the query target (when available).
+      the query target.
     </li>
 
     <li>Backed by a <a href="apis">publicly accessible API</a>.</li>
@@ -63,13 +71,8 @@
     </li>
 
     <li>
-      CATCH is designed to have arcsecond-level precision, but identifying
-      targets may be limited by the astrometric accuracy of survey metadata.
-    </li>
-
-    <li>
-      Fixed-target (celestial objects) are currently searchable
-      <a href="apis">via the API</a>.
+      CATCH is designed to have arcsecond-level precision, but searches will be
+      limited by the astrometric accuracy of survey metadata.
     </li>
   </ul>
 
@@ -445,7 +448,7 @@
   <h3>Updates</h3>
   <ul>
     <li>
-      v3.0 (2025 Jan 17):
+      v3.0beta (2025 Jan 24):
       <ul>
         <li>New features:</li>
         <ul>
@@ -469,15 +472,18 @@
         <li>Other updates:</li>
         <ul>
           <li>
-            Improved web app responsiveness for large numbers of observations.
+            Improved web app responsiveness for results with a large number of
+            observations.
           </li>
           <li>
             Updated Spacewatch 0.9m Mosaic Camera Survey data from v1.0 to v3.0.
           </li>
-          <li>Updated SkyMapper Southern Sky Survey Data Release 2 to 4.</li>
+          <li>
+            Updated SkyMapper Southern Sky Survey Data Release from 2 to 4.
+          </li>
           <li>
             Updated the size of NEAT cutouts to accommodate images with large
-            WCS errors.
+            astrometric errors.
           </li>
         </ul>
       </ul>
