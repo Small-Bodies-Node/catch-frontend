@@ -1,4 +1,4 @@
-import { TApiDataSearch } from '../models/TDataSearch';
+import { TApiDataSearch } from '../models/TApiDataSearch';
 import { getUrlForCatchRoute } from './getUrlForCatchRoute';
 import { getUrlForFixedRoute } from './getUrlForFixedRoute';
 

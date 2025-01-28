@@ -7,9 +7,9 @@ import {
   ApiDataAction_SetDownloadRowState,
 } from '../actions/api-data.actions';
 import {
-  IApiDataFetchStatus,
-  TApiDataFetchStatus,
-} from '../../../models/IApiDataStatus';
+  IApiDataSetStatus,
+  TApiDataSetStatus,
+} from '../../../models/TApiDataSetStatus';
 import { IApiMovum } from '../../../models/IApiMovum';
 import { TApiDataColState } from '../../../models/TApiDataColState';
 import { TDownloadRowsState } from '../../../models/TDownloadRowsState';
@@ -18,7 +18,7 @@ import { IApiFixum } from '../../../models/IApiFixum';
 
 export interface IApiDataSubstate {
   apiDataSelectedDatum?: IApiMovum | IApiFixum;
-  apiDataStatus: TApiDataFetchStatus;
+  apiDataStatus: TApiDataSetStatus;
   apiData?: IApiMovum[] | IApiFixum[];
   apiDataJobId?: string;
   apiDataColumnState: Partial<TApiDataColState>;
@@ -53,7 +53,7 @@ export const apiDataReducer = createReducer(
 
   on(ApiDataAction_SetData, (state, { apiData }) => ({
     ...state,
-    apiData: [...apiData],
+    apiData: apiData ? [...apiData] : undefined,
   })),
 
   on(ApiDataAction_SetJobId, (state, { job_id }) => ({

@@ -7,8 +7,11 @@ import { TApiStatusCode } from '../../../models/TApiStatusCode';
 import { IAppState } from '../../ngrx/reducers';
 import { selectApiDataStatus } from '../../ngrx/selectors/api-data.selectors';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { TApiDataFetchStatus } from '../../../models/IApiDataStatus';
-import { IApiFixedSearch, IApiMovingSearch } from '../../../models/TDataSearch';
+import { TApiDataSetStatus } from '../../../models/TApiDataSetStatus';
+import {
+  IApiFixedSearch,
+  IApiMovingSearch,
+} from '../../../models/TApiDataSearch';
 import { controlLabelsDictForSources } from '../../../models/TControlKeyForSources';
 
 @Component({
@@ -48,7 +51,7 @@ export class StreamingMessagesComponent implements OnDestroy {
     this.subscriptions.unsubscribe();
   }
 
-  updateStreamingMessage(status: TApiDataFetchStatus): void {
+  updateStreamingMessage(status: TApiDataSetStatus): void {
     const { search, code, message } = status;
     this.streamingMessage = message;
     this.streamingCode = code;

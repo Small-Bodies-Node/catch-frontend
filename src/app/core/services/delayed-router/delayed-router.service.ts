@@ -6,6 +6,8 @@ import { NavigationAction_SetIsNewRouteScheduled } from '../../../ngrx/actions/n
 import { IAppState } from '../../../ngrx/reducers';
 import { selectNavigationRecordsPresentRoute } from '../../../ngrx/selectors/navigation.selectors';
 import { pageFadeDurationMs } from '../../../../utils/animation-constants';
+import { routes, TPageLink } from '../../../app-entry/app.routes';
+import { ApiDataAction_SetStatus } from '../../../ngrx/actions/api-data.actions';
 
 @Injectable({
   providedIn: 'root',
@@ -23,10 +25,22 @@ export class DelayedRouterService {
       });
   }
 
-  delayedRouter(link: string, navigationExtras = {}) {
+  delayedRouter(link: TPageLink, navigationExtras = {}) {
     // Don't change to same page
     if (this.presentRoute && this.presentRoute.includes(link)) return;
     if (this.presentRoute === '/' && link === 'home') return;
+
+    // Reset data if navigating away from /data page
+    if (link !== 'data') {
+      console.log('Dispatching call to cancel fetching!');
+      this.store$.dispatch(
+        ApiDataAction_SetStatus({
+          code: 'unset',
+          message: 'Ready to fetch data',
+          search: undefined,
+        })
+      );
+    }
 
     // Signal that a route change will take place soon
     this.store$.dispatch(
@@ -35,7 +49,7 @@ export class DelayedRouterService {
 
     // Schedule change of route at end of page-fade-out animation
     setTimeout(() => {
-      this.router.navigate([link], navigationExtras);
+      this.router.navigate([`/${link}`], navigationExtras);
     }, pageFadeDurationMs);
   }
 }

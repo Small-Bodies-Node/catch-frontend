@@ -9,7 +9,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { headerHeightPx } from '../../utils/constants';
 import { IApiMovum } from '../../models/IApiMovum';
 import { IApiFixum } from '../../models/IApiFixum';
-import { TApiDataFetchStatus } from '../../models/IApiDataStatus';
+import { TApiDataSetStatus } from '../../models/TApiDataSetStatus';
 import {
   intersectionTypes,
   TIntersectionType,
@@ -19,7 +19,7 @@ import {
   selectApiDataStatus,
 } from '../ngrx/selectors/api-data.selectors';
 import { TControlKeyForSources } from '../../models/TControlKeyForSources';
-import { TApiDataSearch } from '../../models/TDataSearch';
+import { TApiDataSearch } from '../../models/TApiDataSearch';
 import { ApiDataAction_SetStatus } from '../ngrx/actions/api-data.actions';
 
 @Component({
@@ -34,9 +34,16 @@ export class DataDisplayComponent implements OnInit, OnDestroy {
   maxHeight = `calc(100vh - ${headerHeightPx}px)`;
 
   apiData?: IApiMovum[] | IApiFixum[];
-  apiDataStatus?: TApiDataFetchStatus;
-  isDataReady = false;
+  apiDataStatus?: TApiDataSetStatus;
   subscriptions = new Subscription();
+
+  /**
+   * Note: this flag is used to ensure that we only ever load data
+   * from query params ONCE per visit to /data. This is important because attempts to reset
+   * status/apiData on e.g. navigation events away from this page might retrigger
+   * the fetching of data without this flag.
+   */
+  isDataLoaded = false;
 
   // Moving Query Params
   target?: string;
@@ -82,18 +89,23 @@ export class DataDisplayComponent implements OnInit, OnDestroy {
           this.apiData = apiData;
           this.apiDataStatus = apiDataStatus;
 
-          if (!this.apiDataStatus) {
-            return;
-          }
+          /* Don't attempt to do anything until we have a status */
+          if (!this.apiDataStatus) return;
 
-          if (this.apiDataStatus.code !== 'unset') {
-            return;
-          }
+          /* If we have data, we don't need to fetch data */
+          if (this.apiData) this.isDataLoaded = true;
 
-          if (!queryParams) {
-            // Make sure we have query params
-            return;
-          }
+          /* We'll need params from the URL to fetch data */
+          if (!queryParams) return;
+
+          /* Only ever load data from query params ONCE per visit to /data */
+          if (this.isDataLoaded) return;
+          this.isDataLoaded = true;
+
+          /**
+           * OK, if you've made it this far, then the goal MUST be to fetch data
+           * from query params! So let's do it
+           */
 
           // Moving Query Params
           this.target =
@@ -171,6 +183,7 @@ export class DataDisplayComponent implements OnInit, OnDestroy {
                 },
               };
 
+          console.log('DEBUG A');
           this.store$.dispatch(
             ApiDataAction_SetStatus({
               code: 'initiated',

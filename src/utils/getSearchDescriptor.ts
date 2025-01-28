@@ -1,4 +1,4 @@
-import { TApiDataSearch } from '../models/TDataSearch';
+import { TApiDataSearch } from '../models/TApiDataSearch';
 
 /**
  * Returns a string describing the subject of the search:

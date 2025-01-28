@@ -5,10 +5,31 @@ import { ApisPageComponent } from '../components/apis-page/apis-page.component';
 import { ContactPageComponent } from '../components/contact-page/contact-page.component';
 import { SettingsPageComponent } from '../components/settings-page/settings-page.component';
 import { TermsPageComponent } from '../components/terms-page/terms-page.component';
-import { Js9DevComponent } from '../data-display/js9-dev/js9-dev.component';
+import { ComponentType } from '@angular/cdk/portal';
 
-export const routes: Routes = [
-  //
+const pageLinks = [
+  '',
+  'home',
+  'about',
+  'apis',
+  'contact',
+  'settings',
+  'terms',
+  'data',
+] as const;
+
+export type TPageLink = (typeof pageLinks)[number];
+
+interface ILinkedRoute {
+  path: TPageLink | '**';
+  component?: ComponentType<any>;
+  pathMatch?: 'full';
+  redirectTo?: string;
+  loadChildren?: () => Promise<any>;
+  data?: { preload: true };
+}
+
+export const routes: Routes | ILinkedRoute[] = [
   {
     path: '',
     component: HomePageComponent,
@@ -47,13 +68,6 @@ export const routes: Routes = [
   },
   {
     path: 'data',
-    loadChildren: () =>
-      import('../data-display/data-display.module').then(
-        (m) => m.DataDisplayModule
-      ),
-  },
-  {
-    path: 'fixed',
     loadChildren: () =>
       import('../data-display/data-display.module').then(
         (m) => m.DataDisplayModule

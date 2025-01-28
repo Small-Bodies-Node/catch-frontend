@@ -8,7 +8,7 @@ import JSZip from 'jszip';
 
 import { IAppState } from '../../ngrx/reducers';
 import { selectScreenDeviceEffectiveDevice } from '../../ngrx/selectors/screen-device.selectors';
-import { IApiDataFetchStatus } from '../../../models/IApiDataStatus';
+import { IApiDataSetStatus } from '../../../models/TApiDataSetStatus';
 import { IApiMovum } from '../../../models/IApiMovum';
 import { TApiDataLabels } from '../../../models/TApiDataLabels';
 import { apiDataLabels } from '../../../utils/apiDataLabels';
@@ -34,7 +34,7 @@ export class TitleDataComponent implements OnInit {
 
   searchDescriptor = '';
   subscriptions = new Subscription();
-  queryStatus?: IApiDataFetchStatus;
+  queryStatus?: IApiDataSetStatus;
   apiData?: IApiMovum[] | IApiFixum[];
   jobId?: string;
   dataLink?: string;

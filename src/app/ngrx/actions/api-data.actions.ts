@@ -1,8 +1,8 @@
 import { createAction, props } from '@ngrx/store';
 import { IApiMovum } from '../../../models/IApiMovum';
-import { TApiDataFetchStatus } from '../../../models/IApiDataStatus';
+import { TApiDataSetStatus } from '../../../models/TApiDataSetStatus';
 import { IApiFixum } from '../../../models/IApiFixum';
-import { TApiDataSearch } from '../../../models/TDataSearch';
+import { TApiDataSearch } from '../../../models/TApiDataSearch';
 
 enum ApiDataActionTypes {
   FetchData = '[ApiData] Fetch Data',
@@ -15,17 +15,17 @@ enum ApiDataActionTypes {
 
 export const ApiDataAction_FetchData = createAction(
   ApiDataActionTypes.FetchData,
-  props<TApiDataSearch>()
+  props<TApiDataSetStatus>()
 );
 
 export const ApiDataAction_SetStatus = createAction(
   ApiDataActionTypes.SetStatus,
-  props<TApiDataFetchStatus>()
+  props<TApiDataSetStatus>()
 );
 
 export const ApiDataAction_SetData = createAction(
   ApiDataActionTypes.SetData,
-  props<{ apiData: IApiMovum[] | IApiFixum[] }>()
+  props<{ apiData?: IApiMovum[] | IApiFixum[] }>()
 );
 
 export const ApiDataAction_SetSelectedDatum = createAction(

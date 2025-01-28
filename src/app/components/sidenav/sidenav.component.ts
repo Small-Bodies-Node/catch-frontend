@@ -5,6 +5,7 @@ import { DelayedRouterService } from '../../core/services/delayed-router/delayed
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatListModule } from '@angular/material/list';
 import { MatIconModule } from '@angular/material/icon';
+import { TPageLink } from '../../app-entry/app.routes';
 
 @Component({
   selector: 'app-sidenav',
@@ -32,7 +33,7 @@ export class SidenavComponent implements OnInit {
     this.closeSidenav.emit();
   }
 
-  _delayedRouting(link: string) {
+  _delayedRouting(link: TPageLink) {
     this.delayedRouter.delayedRouter(link);
   }
 }

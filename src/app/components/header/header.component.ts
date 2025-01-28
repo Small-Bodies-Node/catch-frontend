@@ -4,6 +4,7 @@ import { Component, OnInit, Output, EventEmitter } from '@angular/core';
 import { DelayedRouterService } from '../../core/services/delayed-router/delayed-router.service';
 import { headerHeightPx } from '../../../utils/constants';
 import { SharedModule } from '../../shared/shared.module';
+import { TPageLink } from '../../app-entry/app.routes';
 
 @Component({
   selector: 'app-header',
@@ -25,7 +26,7 @@ export class HeaderComponent implements OnInit {
     this.openSidenav.emit();
   }
 
-  delayedRouting(link: string) {
+  delayedRouting(link: TPageLink) {
     this.delayedRouter.delayedRouter(link);
   }
 

@@ -1,7 +1,7 @@
 import { createEffect, Actions, ofType } from '@ngrx/effects';
 import { inject } from '@angular/core';
 import { of, concat, EMPTY } from 'rxjs';
-import { map, switchMap, tap } from 'rxjs/operators';
+import { filter, map, switchMap, takeUntil, tap } from 'rxjs/operators';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import {
@@ -32,7 +32,8 @@ export const setApiStatus$ = createEffect(
         if (!true) {
           colog('<Action>', 'blue');
           colog(`TYPE: '${action.type}'`, 'blue');
-          colog(summarizeAction(action), 'green');
+          // colog(summarizeAction(action), 'green');
+          colog(JSON.stringify(action, null, 2), 'green');
           colog('</Action>', 'blue');
         }
         return action;
@@ -43,12 +44,12 @@ export const setApiStatus$ = createEffect(
        * the most recently received observable; we use this to prevent
        * multiple instigations of the API service
        */
-      switchMap((action) => {
-        const { code, message, search } = action;
+      switchMap((apiDataSetStatus) => {
+        const { code, message, search } = apiDataSetStatus;
 
         if (code === 'error') {
-          snackBar.open(`Error occurred: ${message}`, 'Close');
-          delayedRouter.delayedRouter('/');
+          snackBar.open(message, 'Close');
+          delayedRouter.delayedRouter('home');
           return of(
             ApiDataAction_SetStatus({
               search: undefined,
@@ -61,7 +62,7 @@ export const setApiStatus$ = createEffect(
             ...search.searchParams,
           };
           colog('Redirecting to /data with query params!', 'pink');
-          delayedRouter.delayedRouter('/data', { queryParams });
+          delayedRouter.delayedRouter('data', { queryParams });
         } else if (code === 'notfound') {
           const searchDescriptor = getSearchDescriptor(search);
           snackBar.open(
@@ -85,8 +86,10 @@ export const setApiStatus$ = createEffect(
                 code: 'searching',
               })
             ),
-            of(ApiDataAction_FetchData({ ...search }))
+            of(ApiDataAction_FetchData(apiDataSetStatus))
           );
+        } else if (code === 'unset') {
+          return of(ApiDataAction_FetchData(apiDataSetStatus));
         }
         return EMPTY;
       })
@@ -108,8 +111,17 @@ export const fetchApiDataResults$ = createEffect(
        * the most recently received observable; we use this to prevent
        * multiple instigations of the API service
        */
-      switchMap((action) => {
-        const { searchType, searchParams } = action;
+      switchMap((apiDataSetStatus) => {
+        const { search } = apiDataSetStatus;
+        if (!search) {
+          return of(
+            ApiDataAction_SetData({
+              apiData: undefined,
+            })
+          );
+        }
+
+        const { searchType, searchParams } = search;
 
         const dataFetchObservable =
           searchType === 'moving'
@@ -117,21 +129,14 @@ export const fetchApiDataResults$ = createEffect(
             : apiDataService.fetchApiDataFixed(searchParams);
 
         return dataFetchObservable.pipe(
-          map((wrappedApiDataResultOrError) => {
-            // console.log('Result received', apiResult);
-            return wrappedApiDataResultOrError;
-          }),
           switchMap((wrappedApiDataResultOrError) => {
+            // console.log('Result received', wrappedApiDataResultOrError);
             const { status, message, job_id } = wrappedApiDataResultOrError;
 
             // Handle error
             if (status === 'error') {
               return of(
-                ApiDataAction_SetStatus({
-                  search: { ...action },
-                  message: message,
-                  code: 'error',
-                } as const)
+                ApiDataAction_SetStatus({ search, message, code: 'error' })
               );
             }
 
@@ -157,13 +162,27 @@ export const fetchApiDataResults$ = createEffect(
               of(ApiDataAction_SetDownloadRowState({ newDownloadRowState })),
               of(
                 ApiDataAction_SetStatus({
-                  search: action,
+                  search,
                   message: message || 'N/A',
                   code: isDataFound ? 'found' : 'notfound',
                 })
               )
             );
-          })
+          }),
+          //
+
+          takeUntil(
+            actions$.pipe(
+              ofType(ApiDataAction_FetchData),
+              map((action) => {
+                console.log('Cancel Action ?:', !action.search);
+                return !action.search;
+              }),
+              filter(Boolean)
+            )
+          )
+
+          //
         );
       })
     );

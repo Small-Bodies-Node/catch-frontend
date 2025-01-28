@@ -27,6 +27,7 @@ import { apiMockResultMoving } from '../../../../utils/apiMockResultMoving';
 import { getMockCatchResultOrError } from '../../../../utils/getMockCatchResultOrError';
 import { apiMockResultFixed } from '../../../../utils/apiMockResultFixed';
 import { MockEventSource } from './MockEventSource';
+import { networkErrorMessage } from '../../../../utils/networkErrorMessage';
 
 const isMock = environment.apiData === 'mock';
 
@@ -68,9 +69,10 @@ export class ApiDataService implements IApiDataService {
           } as const;
         }),
         catchError((error) => {
+          console.error('Err:', JSON.stringify(error.message));
           return of({
             status: 'error',
-            message: JSON.stringify(error.message),
+            message: networkErrorMessage(),
             job_id: 'N/A',
           } as const);
         })
@@ -92,9 +94,10 @@ export class ApiDataService implements IApiDataService {
     return this.launchCatchJob(searchParamsMoving).pipe(
       switchMap((apiCatchResult) => {
         if (apiCatchResult.status === 'error') {
+          console.error('apiCatchResult', apiCatchResult);
           return of({
             status: 'error',
-            message: apiCatchResult.message,
+            message: networkErrorMessage(),
             job_id: 'N/A',
           } as const);
         }
@@ -113,9 +116,10 @@ export class ApiDataService implements IApiDataService {
           const caughtResult = this.apiCaughtRequest(job_id).pipe(
             map((apiCaughtRequest): TWrappedApiDataResultOrError => {
               if (apiCaughtRequest.status === 'error') {
+                console.error(`Err: ${apiCaughtRequest.message}`);
                 return {
                   status: 'error',
-                  message: apiCaughtRequest.message,
+                  message: networkErrorMessage(job_id),
                   job_id,
                 } as const;
               } else {
@@ -127,11 +131,11 @@ export class ApiDataService implements IApiDataService {
               }
             }),
             catchError((e: Error): Observable<TWrappedApiDataResultOrError> => {
-              console.log('apiCaughtRequest error:', e);
+              console.error('apiCaughtRequest error:', e);
               return of({
                 job_id,
                 status: 'error',
-                message: e.message,
+                message: networkErrorMessage(job_id),
               });
             })
           );
@@ -159,7 +163,7 @@ export class ApiDataService implements IApiDataService {
                   console.error('caughtResult', caughtResult);
                   return {
                     status: 'error',
-                    message: caughtResult.message,
+                    message: networkErrorMessage(job_id),
                     job_id,
                   } as const;
                 }
@@ -170,7 +174,7 @@ export class ApiDataService implements IApiDataService {
                   console.error('Error in apiCaughtRequest:', e.message);
                   return of({
                     status: 'error',
-                    message: e.message,
+                    message: networkErrorMessage(job_id),
                     job_id,
                   });
                 }
@@ -181,7 +185,7 @@ export class ApiDataService implements IApiDataService {
             console.error('Error in watchJobStream:', e.message);
             return of({
               status: 'error',
-              message: e.message,
+              message: networkErrorMessage(job_id),
               job_id,
             });
           })
@@ -191,7 +195,7 @@ export class ApiDataService implements IApiDataService {
         console.error('Error in fetchApiData:', e.message);
         return of({
           status: 'error',
-          message: e.message,
+          message: networkErrorMessage(),
           job_id: 'N/A',
         });
       })
@@ -221,7 +225,7 @@ export class ApiDataService implements IApiDataService {
           console.error('HTTP Error details:', error);
           return of({
             status: 'error',
-            message: JSON.stringify(error.message),
+            message: networkErrorMessage(),
           } as const);
         })
       );
@@ -248,10 +252,10 @@ export class ApiDataService implements IApiDataService {
           } as const;
         }),
         catchError((error) => {
-          console.error('HTTP Error details:', error);
+          console.error('HTTP Error details:', error.message);
           return of({
             status: 'error',
-            message: JSON.stringify(error.message),
+            message: networkErrorMessage(job_id),
             job_id,
           } as const);
         })
@@ -260,7 +264,7 @@ export class ApiDataService implements IApiDataService {
     } catch (e) {
       return of({
         status: 'error',
-        message: JSON.stringify(e),
+        message: networkErrorMessage(job_id),
         job_id,
       } as const);
     }
@@ -303,10 +307,13 @@ export class ApiDataService implements IApiDataService {
       }, apiStreamTimeoutSecs * 1000);
 
       source.onerror = function (errEvent: Event) {
+        console.error(
+          `Error handling message stream: ${JSON.stringify(errEvent)}`
+        );
         resolve({
           status: 'error',
           job_id: job_id,
-          message: `Error handling message stream: ${JSON.stringify(errEvent)}`,
+          message: networkErrorMessage(job_id),
         });
         clearTimeout(timer);
       };
@@ -314,7 +321,7 @@ export class ApiDataService implements IApiDataService {
       // Process streamed messages
       source.onmessage = function (msgEvent: MessageEvent) {
         try {
-          console.log('msgEvent', msgEvent);
+          // console.log('msgEvent', msgEvent);
           const data: IApiServiceStream = JSON.parse(msgEvent.data);
           const { job_prefix, status, text } = data;
 
@@ -330,7 +337,7 @@ export class ApiDataService implements IApiDataService {
                 search: {
                   searchType: 'moving',
                   searchParams: searchParamsMoving,
-                } as const,
+                },
               })
             );
           }
@@ -349,7 +356,7 @@ export class ApiDataService implements IApiDataService {
             clearTimeout(timer);
           }
         } catch (e: any) {
-          console.log('e message', e.message);
+          console.error('e message', e.message);
           this.close();
           reject(e.message);
           clearTimeout(timer);
