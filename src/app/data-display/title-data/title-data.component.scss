@@ -7,25 +7,40 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 20px; /* Adds spacing between the items */
-
+  gap: 20px;
   background-color: #101414;
-
   font-size: 16px;
+
+  span.unit {
+    margin-right: 5px;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    word-break: break-word;
+    max-width: 100%;
+    white-space: nowrap; // Keep content within each span together
+  }
 
   &.isMobile {
     font-size: 12px;
-    gap: 10px; /* Adjust spacing for mobile view */
+    gap: 10px;
   }
 
   div {
     flex: 1 1 auto;
-    padding: 10px; /* Adds padding inside each section */
+    padding: 10px;
+    overflow: hidden;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
   }
 
   .jobid {
     a {
       margin-left: 4px;
+      overflow-wrap: break-word;
+      word-wrap: break-word;
+      word-break: break-word;
     }
   }
 
@@ -35,8 +50,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    // padding: 5px 15px; /* Adds inner spacing for better readability */
-    // margin: 0 5px; /* Adds spacing between these specific elements */
+    flex-wrap: wrap;
+    min-width: 0;
     a {
       color: #004f4f;
     }
@@ -46,10 +61,10 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    // margin-top: 10px; /* Adds spacing above the download button */
+    flex-wrap: wrap;
     button {
-      // color: blue;
       color: #004f4f;
+      white-space: normal;
     }
   }
 }

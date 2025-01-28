@@ -40,7 +40,6 @@ import { TableDataCheckboxesComponent } from '../table-data-checkboxes/table-dat
 import { ImageFetchService } from '../../core/services/fetch-image/fetch-image.service';
 import { PlotlyGraphWrapperComponent } from '../plotly-graph/plotly-graph.component';
 import { SelectTableRowsDirective } from '../../shared/directives/select-table-rows.directive';
-import { ITableThumbnailInput } from '../table-thumbnail/table-thumbnail.component';
 import { IApiFixum } from '../../../models/IApiFixum';
 
 type TColName = keyof (IApiMovum | IApiFixum);
@@ -97,24 +96,7 @@ export class TableDataComponent
   ) {
     this.subscriptions.add(
       this.store$.select(selectApiData).subscribe((apiData) => {
-        console.log('Getting data');
-        this.allApiData = apiData
-          ?.filter((_, ind) => ind < 70000000000)
-          .map((apiDatum: any) => {
-            //
-            const { ra, dec, preview_url, source, product_id } = apiDatum;
-            const thumbnailDatum = {
-              ra,
-              dec,
-              preview_url: preview_url || 'placeholderUrl',
-              source,
-              product_id,
-            };
-            // @ts-ignore
-            // apiDatum.thumbnailDatum = thumbnailDatum;
-            return { ...apiDatum, thumbnailDatum };
-          });
-        console.log('???>>> ', this.allApiData);
+        this.allApiData = apiData?.filter((_, ind) => ind < 70000000000);
         if (this.allApiData) {
           this.setPaginatorAndSort();
         }
@@ -405,18 +387,5 @@ export class TableDataComponent
       PlotlyGraphWrapperComponent,
       { data: { xDataKey } }
     );
-  }
-
-  getTableThumbnailInput(apiDatum: IApiMovum): ITableThumbnailInput {
-    // @ts-ignore
-    return apiDatum.thumbnailDatum;
-    const { ra, dec, preview_url, source, product_id } = apiDatum;
-    return {
-      ra,
-      dec,
-      preview_url: preview_url || 'placeholderUrl',
-      source,
-      product_id,
-    };
   }
 }

@@ -44,6 +44,7 @@ export class TitleDataComponent implements OnInit {
   rowsInTable?: number;
 
   isMobile = false;
+  isMoving = true;
 
   jpgUrlsForDownload?: string[];
   fitsUrlsForDownload?: string[];
@@ -64,11 +65,12 @@ export class TitleDataComponent implements OnInit {
           if (!apiStatus.search || !apiData) return;
 
           const { search } = apiStatus;
+          this.isMoving = search.searchType === 'moving';
 
           this.apiData = apiData;
           this.rowsInTable = apiData.length;
           this.isMobile = device === 'mobile';
-          this.jobId = jobId;
+          this.jobId = this.isMoving ? jobId : 'API Link';
           this.queryStatus = apiStatus;
           this.dataDownloadRowState = dataDownloadRowState;
           this.dataLink = getUrlForCatchOrFixedRoute(search);

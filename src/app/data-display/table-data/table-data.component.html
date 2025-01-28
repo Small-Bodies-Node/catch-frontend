@@ -71,7 +71,7 @@
         >
           <!-- @if(isRowDisplayed(element)){ -->
           <app-table-thumbnail
-            [input]="getTableThumbnailInput(element)"
+            [input]="element"
             [isPriority]="isRowSelected(element)"
             [label]="(isRowSelected(element) ? '*' : '') + 'T' + i"
             (onLoadEventMessage)="rerenderTable()"

@@ -1,14 +1,7 @@
-<div
-  class="fits-jpg-toggler-container mat-elevation-z8"
-  #FitsJpgTogglerContainer
->
-  @if (apiData) {
-  <div
-    class="main-image"
-    [ngStyle]="{ border: (isFitsLoaded ? '3' : '0') + 'px solid red' }"
-    #mainImage
-  >
-    @if (isFits) {
+@if (apiData) {
+<div class="fits-jpg-toggler-container" #FitsJpgTogglerContainer>
+  @if (isFits) {
+  <div class="lib-ngx-js9-wrapper">
     <lib-ngx-js9
       [widthPxls]="widthPxls"
       [heightPxls]="heightPxls"
@@ -20,37 +13,40 @@
       }"
       (fitsLoadStatus)="onFitsLoadStatusUpdate($event)"
     ></lib-ngx-js9>
-    } @else {
-    <div
-      class="thumbnail-wrapper"
-      [ngStyle]="{ width: widthPxls + 'px', height: heightPxls + 'px' }"
-    >
-      <app-panstarrs-overlay></app-panstarrs-overlay>
-      <app-table-thumbnail
-        [input]="getTableThumbnailInput()"
-        [label]="getLabel()"
-        [size]="'100%'"
-        [width]="widthPxls + 'px'"
-        [height]="heightPxls + 'px'"
-        [diameterPxls]="150"
-        [isPriority]="true"
-      ></app-table-thumbnail>
-    </div>
-
-    }
-
-    <button
-      mat-fab
-      [disabled]="isFitsButtonDisabled()"
-      (click)="toggleFits()"
-      [ngClass]="{ 'raise-button': isButtonRaised }"
-    >
-      @if (isFits) {
-      <mat-icon>{{ "image" }}</mat-icon>
-      } @else {
-      <span style="font-weight: bold">{{ "FITS" }}</span>
-      }
-    </button>
   </div>
+  } @else {
+  <div
+    class="table-thumbnail-wrapper"
+    [ngStyle]="{ width: widthPxls + 'px', height: heightPxls + 'px' }"
+  >
+    <app-panstarrs-overlay></app-panstarrs-overlay>
+    <app-table-thumbnail
+      [input]="this.apiSelectedDatum"
+      [label]="getLabel()"
+      [size]="'100%'"
+      [width]="widthPxls + 'px'"
+      [height]="heightPxls + 'px'"
+      [diameterPxls]="150"
+      [isPriority]="true"
+    ></app-table-thumbnail>
+  </div>
+
   }
+
+  <button
+    mat-fab
+    [disabled]="isFitsButtonDisabled()"
+    (click)="toggleFits()"
+    [ngClass]="{ 'raise-button': isButtonRaised }"
+  >
+    @if (isFits) {
+    <mat-icon>{{ "image" }}</mat-icon>
+    } @else {
+    <span style="font-weight: bold">{{ "FITS" }}</span>
+    }
+  </button>
 </div>
+
+} @else {
+<mat-spinner></mat-spinner>
+}

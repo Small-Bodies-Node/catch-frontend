@@ -9,14 +9,8 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import { ImageFetchService } from '../../core/services/fetch-image/fetch-image.service';
-
-export interface ITableThumbnailInput {
-  product_id: string;
-  ra: string | number;
-  dec: string | number;
-  preview_url: string;
-  source: string;
-}
+import { IApiMovum } from '../../../models/IApiMovum';
+import { IApiFixum } from '../../../models/IApiFixum';
 
 @Component({
   selector: 'app-table-thumbnail',
@@ -28,7 +22,7 @@ export interface ITableThumbnailInput {
 export class TableThumbnailComponent implements OnChanges {
   // --->>>
 
-  @Input() input?: ITableThumbnailInput;
+  @Input() input?: IApiMovum | IApiFixum;
   @Input() size: string = '60px';
   // @Input() width: string = '100%';
   @Input() width: string = '60px';
@@ -82,35 +76,17 @@ export class TableThumbnailComponent implements OnChanges {
     }
   }
 
-  private loadImage(input: ITableThumbnailInput): void {
+  private loadImage({ preview_url }: IApiMovum | IApiFixum): void {
     //
 
     // Prevent multiple calls to fetchImage
     if (this.isImageLoaded) return;
     if (this.isImageInQueue) return;
+    if (!preview_url) return;
     this.isImageInQueue = true;
 
-    const { product_id, ra, dec, preview_url } = input;
-    const catalinaUrl =
-      // `https://5ub5yo2kmj.execute-api.us-east-1.amazonaws.com/api/images/` +
-      `https://uxzqjwo0ye.execute-api.us-west-1.amazonaws.com/api/images/` +
-      // `https://ik6nf5q3ybiigiqe3kxo2iz7pi0dzoxe.lambda-url.us-west-1.on.aws/api/images/` +
-      `${product_id}?dec=${dec}&ra=${ra}&size=5arcmin&format=jpeg`;
-    const url = preview_url || catalinaUrl;
-
-    // if (url.includes('skymapper')) {
-    //   // !Skymapper does not like serving too many images at once!
-    //   setTimeout(() => {
-    //     this.imageSrc = url;
-    //     this.isImageLoaded = true;
-    //     this.isImageInQueue = false;
-    //     this.changeDetector.detectChanges();
-    //   }, Math.random() * 3000);
-    //   return;
-    // }
-
     this.imageFetchService
-      .fetchImage(url, {
+      .fetchImage(preview_url, {
         isPriority: this.isPriority,
         label: this.label,
         minProcessTimeMs: 3000,
@@ -123,7 +99,7 @@ export class TableThumbnailComponent implements OnChanges {
           this.changeDetector.detectChanges();
         },
         (error) => {
-          console.error('The following image failed:', url);
+          console.error('The following image failed:', preview_url);
           console.error(' ... due to error:', error);
           this.isImageLoaded = true;
           this.isImageInQueue = false;
@@ -133,7 +109,7 @@ export class TableThumbnailComponent implements OnChanges {
       )
       .catch((_) => {
         // ...
-        console.log('The following URL failed:', url);
+        console.log('The following URL failed:', preview_url);
       });
   }
 

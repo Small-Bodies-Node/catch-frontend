@@ -8,8 +8,8 @@ import {
   selectApiData,
   selectApiSelectedDatum,
 } from '../../ngrx/selectors/api-data.selectors';
-import { ITableThumbnailInput } from '../table-thumbnail/table-thumbnail.component';
 import { IApiFixum } from '../../../models/IApiFixum';
+import { colog } from '../../../utils/colog';
 
 const placeholderUrl = 'assets/images/pngs/sbn_logo_v0.png';
 
@@ -24,9 +24,7 @@ export class FitsJpgTogglerComponent implements OnInit {
 
   subscriptions = new Subscription();
   apiData?: IApiMovum[] | IApiFixum[];
-  // apiSelectedDatum?: IApiDatum;
-  apiSelectedDatum?: any;
-  // isFitsButtonDisabled = false;
+  apiSelectedDatum?: IApiMovum | IApiFixum;
   isButtonRaised = false;
   isFits = false;
   fitsUrl = '';
@@ -36,10 +34,7 @@ export class FitsJpgTogglerComponent implements OnInit {
   apiDataWithProblematicFitsUrls: string[] = [];
 
   @ViewChild('FitsJpgTogglerContainer')
-  carouselContainerDiv?: ElementRef<HTMLDivElement>;
-
-  @ViewChild('mainImage')
-  mainImageDiv?: ElementRef<HTMLDivElement>;
+  fitsJpgTogglerContainer?: ElementRef<HTMLDivElement>;
 
   constructor(private store$: Store<IAppState>) {
     // --->>
@@ -49,6 +44,7 @@ export class FitsJpgTogglerComponent implements OnInit {
         this.apiData = apiData;
       })
     );
+
     this.subscriptions.add(
       this.store$
         .select(selectApiSelectedDatum)
@@ -57,29 +53,33 @@ export class FitsJpgTogglerComponent implements OnInit {
           this.isButtonRaised = false;
           this.apiSelectedDatum = apiSelectedDatum;
           this.fitsUrl = this.apiSelectedDatum?.cutout_url || '';
-          // console.log('fitsUrl', this.fitsUrl, ' <----> ', apiSelectedDatum);
         })
     );
 
-    if (!false)
-      this.subscriptions.add(
-        interval(1000)
-          .pipe(
-            map((_) => ({
-              width: this.mainImageDiv
-                ? this.mainImageDiv.nativeElement.clientWidth
-                : 100,
-              height: this.mainImageDiv
-                ? this.mainImageDiv.nativeElement.clientHeight
-                : 100,
-            })),
-            distinctUntilChanged()
-          )
-          .subscribe(({ width, height }) => {
+    this.subscriptions.add(
+      interval(1000)
+        .pipe(
+          map((_) => ({
+            width: this.fitsJpgTogglerContainer
+              ? this.fitsJpgTogglerContainer.nativeElement.clientWidth
+              : 100,
+            height: this.fitsJpgTogglerContainer
+              ? this.fitsJpgTogglerContainer.nativeElement.clientHeight
+              : 100,
+          })),
+          distinctUntilChanged()
+        )
+        .subscribe(({ width, height }) => {
+          // Make sure we have a square, contained fit
+          if (width < height) {
             this.widthPxls = width;
+            this.heightPxls = width;
+          } else {
+            this.widthPxls = height;
             this.heightPxls = height;
-          })
-      );
+          }
+        })
+    );
   }
 
   ngOnChanges() {
@@ -96,28 +96,13 @@ export class FitsJpgTogglerComponent implements OnInit {
     return this.apiSelectedDatum?.preview_url || placeholderUrl;
   }
 
-  getTableThumbnailInput(): ITableThumbnailInput | undefined {
-    return this.apiSelectedDatum;
-    // console.log('>>>>> ????');
-    if (!this.apiSelectedDatum) return;
-
-    const { ra, dec, preview_url, source, product_id } = this.apiSelectedDatum;
-    return {
-      ra,
-      dec,
-      preview_url: preview_url || placeholderUrl,
-      source,
-      product_id,
-    };
-  }
-
   toggleFits() {
     this.isFits = !this.isFits;
     if (!this.isFits) this.isButtonRaised = false;
   }
 
   onFitsLoadStatusUpdate(event: any) {
-    console.log('event', event);
+    console.error('Fits-loading event', event);
     if (event === 'error') {
       this.isFits = false;
       this.isButtonRaised = false;
@@ -126,7 +111,6 @@ export class FitsJpgTogglerComponent implements OnInit {
     } else if (event === 'success') {
       this.isButtonRaised = true;
     } else {
-      // this.isFits = false;
       this.isButtonRaised = false;
     }
   }

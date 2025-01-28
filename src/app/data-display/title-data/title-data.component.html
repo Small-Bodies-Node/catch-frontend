@@ -1,26 +1,37 @@
 <div class="title-bar-container" [ngClass]="{ isMobile: isMobile }">
-  <div class="title">{{ "TARGET: " + searchDescriptor }}</div>
+  <div class="title">
+    <span class="unit">{{ "TARGET: " }} </span>
+    <span class="unit">{{ searchDescriptor }}</span>
+  </div>
 
   <div class="results">
-    {{ "RESULTS: " + (rowsInTable ? rowsInTable : "") + " " }}
+    <span class="unit">{{ "RESULTS: " }}</span>
+    <span class="unit">{{ (rowsInTable ? rowsInTable : "") + " " }}</span>
   </div>
 
   <div class="jobid">
-    JOB: <a [href]="dataLink" target="_blank">{{ getJobId() }}</a>
+    <span class="unit">
+      {{ isMoving ? "JOB:" : "" }}
+    </span>
+    <span class="unit">
+      <a [href]="dataLink" target="_blank">{{ getJobId() }}</a>
+    </span>
   </div>
 
   <div class="download-button-wrapper">
-    <button
-      class="download-button"
-      mat-button
-      matTooltip="Download Selected Data"
-      (click)="downloadData()"
-      [disabled]="isDownloadButtonDisabled()"
-    >
-      <ng-container *ngIf="!!isDownloadButtonShown"> DOWNLOAD </ng-container>
-      <ng-container *ngIf="!isDownloadButtonShown">
-        <mat-spinner style="zoom: 0.2"></mat-spinner>
-      </ng-container>
-    </button>
+    <span class="unit">
+      <button
+        class="download-button"
+        mat-button
+        matTooltip="Download Selected Data"
+        (click)="downloadData()"
+        [disabled]="isDownloadButtonDisabled()"
+      >
+        <ng-container *ngIf="!!isDownloadButtonShown"> DOWNLOAD </ng-container>
+        <ng-container *ngIf="!isDownloadButtonShown">
+          <mat-spinner style="zoom: 0.2"></mat-spinner>
+        </ng-container>
+      </button>
+    </span>
   </div>
 </div>
