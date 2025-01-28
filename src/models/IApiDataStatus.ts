@@ -1,16 +1,16 @@
 import { TApiStatusCode } from './TApiStatusCode';
-import { TControlKeyForSources } from './TControlKeyForSources';
+import { TApiDataSearch } from './TDataSearch';
 
-export interface IApiDataStatus {
-  // Query params
-  query?: {
-    target: string;
-    isCached: boolean;
-    isUncertaintyEllipse: boolean;
-    padding: number;
-    sources: TControlKeyForSources[];
-  };
-  //
+export interface IApiDataFetchStatus {
+  search: TApiDataSearch;
   message: string;
   code: TApiStatusCode;
 }
+
+export type TApiDataFetchStatus =
+  | {
+      code: 'unset';
+      message: 'Ready to fetch data';
+      search: undefined;
+    }
+  | IApiDataFetchStatus;

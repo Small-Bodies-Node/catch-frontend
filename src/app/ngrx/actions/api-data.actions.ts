@@ -1,44 +1,44 @@
 import { createAction, props } from '@ngrx/store';
-import { TControlKeyForSources } from '../../../models/TControlKeyForSources';
-import { IApiDatum } from '../../../models/IApiDatum';
-import { IApiDataStatus } from '../../../models/IApiDataStatus';
+import { IApiMovum } from '../../../models/IApiMovum';
+import { TApiDataFetchStatus } from '../../../models/IApiDataStatus';
+import { IApiFixum } from '../../../models/IApiFixum';
+import { TApiDataSearch } from '../../../models/TDataSearch';
 
-export const ApiDataAction_FetchResult = createAction(
-  'Api Action: Fetch Moving Object Result',
-  props<{
-    target: string;
-    isCached: boolean;
-    padding: number;
-    isUncertaintyEllipse: boolean;
-    sources: TControlKeyForSources[];
-  }>()
-);
+enum ApiDataActionTypes {
+  FetchData = '[ApiData] Fetch Data',
+  SetData = '[ApiData] Set Data',
+  SetSelectedDatum = '[ApiData] Set Selected Datum',
+  SetStatus = '[ApiData] Set Status',
+  SetJobId = '[ApiData] Set JobId',
+  SetDownloadRowState = '[ApiData] Set Download Row State',
+}
 
-export const ApiDataAction_SetSelectedDatum = createAction(
-  'Api Action: Set Selected Moving Object Datum',
-  props<{ apiDatum?: IApiDatum }>()
-);
-
-export const ApiDataAction_SetData = createAction(
-  'Api Action: Set Moving Object Data',
-  props<{ apiData: IApiDatum[] }>()
+export const ApiDataAction_FetchData = createAction(
+  ApiDataActionTypes.FetchData,
+  props<TApiDataSearch>()
 );
 
 export const ApiDataAction_SetStatus = createAction(
-  'Api Action: Set Moving Object Status',
-  props<Partial<IApiDataStatus>>()
+  ApiDataActionTypes.SetStatus,
+  props<TApiDataFetchStatus>()
+);
+
+export const ApiDataAction_SetData = createAction(
+  ApiDataActionTypes.SetData,
+  props<{ apiData: IApiMovum[] | IApiFixum[] }>()
+);
+
+export const ApiDataAction_SetSelectedDatum = createAction(
+  ApiDataActionTypes.SetSelectedDatum,
+  props<{ apiDatum: IApiMovum | IApiFixum }>()
 );
 
 export const ApiDataAction_SetJobId = createAction(
-  'Api Action: Set Moving Object JobId',
-  props<{ jobId: string }>()
-);
-
-export const ApiDataAction_DataLoaded = createAction(
-  'Api Action: Moving Object Data Loaded'
+  ApiDataActionTypes.SetJobId,
+  props<{ job_id: string }>()
 );
 
 export const ApiDataAction_SetDownloadRowState = createAction(
-  'Api Action: Set Moving Object Download Row State',
-  props<{ newDownloadRowState: { [productId: string]: boolean } }>()
+  ApiDataActionTypes.SetDownloadRowState,
+  props<{ newDownloadRowState: { [index: string]: boolean } }>()
 );

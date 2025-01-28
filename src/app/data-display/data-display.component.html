@@ -10,14 +10,6 @@
   <app-mobile-view></app-mobile-view>
 </ng-container> -->
 
-@if(isDataReady){
-<!--  -->
-@if(isMovingRoute) {
-<!--  -->
-<app-moving-view></app-moving-view>
-} @else {
-<!--  -->
-<app-fixed-view></app-fixed-view>
-}
-<!--  -->
+@if(apiData) {
+<app-desktop-view></app-desktop-view>
 }

@@ -1,3 +1,3 @@
-import { IApiDatum } from './IApiDatum';
+import { IApiMovum } from './IApiMovum';
 
-export type TApiDataColName = keyof IApiDatum;
+export type TApiDataColName = keyof IApiMovum;

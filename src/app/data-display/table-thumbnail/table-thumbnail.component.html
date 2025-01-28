@@ -4,8 +4,6 @@
   *ngIf="!isImageLoaded; else imageTemplate"
 >
   <mat-spinner class="my-spinner" [diameter]="diameterPxls"></mat-spinner>
-  <!-- LOADING -->
-  <!-- <mat-spinner class="my-spinner"></mat-spinner> -->
 </div>
 <ng-template #imageTemplate>
   <img

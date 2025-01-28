@@ -19,12 +19,12 @@ import { IApiServiceStream } from '../../../../models/IApiServiceStream';
 import { TJobStreamResult } from '../../../../models/TJobStreamResult';
 import { TControlKeyForSources } from '../../../../models/TControlKeyForSources';
 import { IAppState } from '../../../ngrx/reducers';
-import { TApiDataResult } from '../../../../models/TApiDataResult';
+import { TApiDataResultOrError } from '../../../../models/TApiDataResultOrError';
 import { IApiDataCatchResult } from '../../../../models/IApiDataCatchResult';
-import { IApiDataCaughtResult } from '../../../../models/IApiDataCaughtResult';
+import { IApiDataResult } from '../../../../models/IApiDataResult';
 import { mockStreamMessages } from '../../../../utils/mockStreamMessages';
 import { ApiDataAction_SetStatus } from '../../../ngrx/actions/api-data.actions';
-import { apiDataMockResult } from '../../../../utils/apiDataMockResult';
+import { apiMockResultMoving } from '../../../../utils/apiMockResultMoving';
 import { IApiFixedService } from '../../../../models/IApiFixedService';
 import { TIntersectionType } from '../../../../models/TIntersectionType';
 import { TApiFixedResult } from '../../../../models/TApiFixedResult';
@@ -53,7 +53,7 @@ export class ApiFixedMockService implements IApiFixedService {
   ): Observable<TApiFixedResult> {
     return of({
       status: 'success',
-      apiFixedResult: apiDataMockResult,
+      apiFixedResult: apiMockResultMoving,
     } as any).pipe(delay(1000));
   }
 }

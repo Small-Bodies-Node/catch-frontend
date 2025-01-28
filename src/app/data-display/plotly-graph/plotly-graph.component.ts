@@ -4,20 +4,24 @@ import { Component, Inject, Input, OnInit } from '@angular/core';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { BehaviorSubject, combineLatest, map, Observable } from 'rxjs';
 
-import { IApiDatum } from '../../../models/IApiDatum';
+import { IApiMovum } from '../../../models/IApiMovum';
 import { IPlotlyGraphInput } from '../../../models/IPlotlyGraphInput';
 import { IPlotlySettings } from '../../../models/IPlotlySettings';
 import { IAppState } from '../../ngrx/reducers';
-import { selectApiData } from '../../ngrx/selectors/api-data.selectors';
+import {
+  selectApiData,
+  selectApiDataStatus,
+} from '../../ngrx/selectors/api-data.selectors';
 import { selectSiteSettingsTheme } from '../../ngrx/selectors/site-settings.selectors';
 import { apiDataLabels } from '../../../utils/apiDataLabels';
 import { julianToDate } from '../../../utils/julianToDate';
+import { IApiFixum } from '../../../models/IApiFixum';
 
 @Component({
-    selector: 'app-plotly-graph',
-    templateUrl: './plotly-graph.component.html',
-    styleUrls: ['./plotly-graph.component.scss'],
-    standalone: false
+  selector: 'app-plotly-graph',
+  templateUrl: './plotly-graph.component.html',
+  styleUrls: ['./plotly-graph.component.scss'],
+  standalone: false,
 })
 export class PlotlyGraphComponent implements OnInit {
   // --->>>
@@ -48,15 +52,15 @@ export class PlotlyGraphComponent implements OnInit {
       this.inputPlotlyParam$,
       this.store$.select(selectSiteSettingsTheme),
       this.store$.select(selectApiData),
-      // this.store$.select(select),
+      this.store$.select(selectApiDataStatus),
     ]).pipe(
-      map(([inputPlotlyParams, siteTheme, results]) => {
+      map(([inputPlotlyParams, siteTheme, apiData, apiStatus]) => {
         //
         // Combine siteTheme, input params, and data returned from server to
         // update `plotlySettings` that completely determines graph
         //
 
-        if (!inputPlotlyParams || !results) return;
+        if (!inputPlotlyParams || !apiData || !apiStatus.search) return;
 
         // Extract vars from observables
         const isLightTheme = !!siteTheme.includes('LIGHT');
@@ -67,19 +71,23 @@ export class PlotlyGraphComponent implements OnInit {
         const plotType = yDataKey ? 'scatter' : 'histogram';
 
         // Data
-        const xData = results.map((el) => el[xDataKey as keyof IApiDatum]);
+        const xData = apiData.map(
+          (el) => el[xDataKey as keyof (IApiMovum | IApiFixum)]
+        );
         const yData = !yDataKey
           ? undefined
-          : results.map((el) => el[yDataKey as keyof IApiDatum]);
-        const tooltipInfo = results
-          .map((el) => el.jd)
+          : apiData.map((el) => el[yDataKey as keyof (IApiMovum | IApiFixum)]);
+        const tooltipInfo = apiData
+          .map((el) => {
+            return 'jd' in el ? el.jd : el.mjd_start;
+          })
           .map((el) => 'Date: ' + julianToDate(el || -1));
         const effectivePlotTitle = isMiniMode
           ? ''
           : this.breakUpText(
               !!yDataKey
                 ? `${xDataKey.toUpperCase()} vs ${yDataKey.toUpperCase()}`
-                : apiDataLabels[xDataKey as keyof IApiDatum]?.description || ''
+                : apiDataLabels[xDataKey as keyof IApiMovum]?.description || ''
             );
 
         // Axes Config
@@ -269,14 +277,14 @@ export class PlotlyGraphComponent implements OnInit {
 }
 
 @Component({
-    selector: 'app-plotly-graph-wrapper',
-    template: `
+  selector: 'app-plotly-graph-wrapper',
+  template: `
     <app-plotly-graph
       [inputPlotlyParams]="inputPlotlyParams"
     ></app-plotly-graph>
   `,
-    styles: [``],
-    standalone: false
+  styles: [``],
+  standalone: false,
 })
 export class PlotlyGraphWrapperComponent implements OnInit {
   constructor(

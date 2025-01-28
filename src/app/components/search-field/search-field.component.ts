@@ -21,7 +21,7 @@ import { selectApiDataStatus } from '../../ngrx/selectors/api-data.selectors';
 import { ObjectNameMatchAction_FetchResults } from '../../ngrx/actions/object-name-match.actions';
 import { UnrecognizedNameDialogComponent } from './unrecognized-name-dialog.component';
 import {
-  ApiDataAction_FetchResult,
+  ApiDataAction_FetchData,
   ApiDataAction_SetStatus,
 } from '../../ngrx/actions/api-data.actions';
 import {
@@ -41,11 +41,9 @@ import {
 } from '../../../models/TIntersectionType';
 import { fixedTargets } from '../../../utils/fixedTargets';
 import { pastelGreen, pastelPink } from '../../../utils/constants';
-import {
-  ApiFixedAction_FetchResult,
-  ApiFixedAction_SetStatus,
-} from '../../ngrx/actions/api-fixed.actions';
 import { TMovingVsFixed } from '../../../models/TMovingVsFixed';
+
+const searchFormDebounceTimeMs = 200;
 
 @Component({
   selector: 'app-search-field',
@@ -82,7 +80,6 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
 
   constructor(
     private dialog: MatDialog,
-    private snackBar: MatSnackBar,
     private store$: Store<IAppState>,
     private changeDetectorRef: ChangeDetectorRef
   ) {
@@ -111,7 +108,7 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
 
     this.subscriptions.add(
       this.formGroup.valueChanges
-        .pipe(debounceTime(200), distinctUntilChanged())
+        .pipe(debounceTime(searchFormDebounceTimeMs), distinctUntilChanged())
         .subscribe((value) => {
           //
 
@@ -159,7 +156,10 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
         );
       });
     }
-    this.updateSearchFieldErrors();
+    // Update errors AFTER checkboxes get updated!
+    setTimeout(() => {
+      this.updateSearchFieldErrors();
+    }, 2 * searchFormDebounceTimeMs);
   }
 
   updateSearchField(inputText?: string) {
@@ -174,8 +174,10 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
           })
         );
       }
-      this.updateSearchFieldErrors();
     }
+    setTimeout(() => {
+      this.updateSearchFieldErrors();
+    }, 2 * searchFormDebounceTimeMs);
   }
 
   updateMovingVsFixed(movingVsFixed: TMovingVsFixed | undefined) {
@@ -242,137 +244,103 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
   }
 
   tryLaunchingMovingObjectQuery() {
-    // Ensure at least one source is selected
-    const sources: TControlKeyForSources[] = [];
-    controlKeysForSources.forEach((key) => {
-      if (this.formGroup.get(key)?.value) {
-        sources.push(key as any);
-      }
-    });
-    if (!sources.length) {
-      this.snackBar.open(`You must select at least one Data Source`, 'Close', {
-        duration: 5000,
-      });
-      this.isAdvancedControls = true;
-      return;
-    }
-
-    // Ensure a name is selected
     const target = this.latestInputText.trim();
     if (this.isTargetMatched(target)) {
-      this.launchMovingObjectQuery(target, sources);
+      this.launchMovingObjectQuery(target);
       return;
     }
 
+    // If target isn't matched, give user option to search anyway
     if (!this.dialog.openDialogs.length) {
-      setTimeout(() => {
-        // If target isn't matched, give user option to search anyway
-        const dialogRef = this.dialog.open<
-          UnrecognizedNameDialogComponent,
-          any
-        >(UnrecognizedNameDialogComponent, { data: { submittedText: target } });
-
-        this.subscriptions.add(
-          dialogRef.afterClosed().subscribe((isSearchConfirmed) => {
-            if (!!isSearchConfirmed) {
-              this.launchMovingObjectQuery(target, sources);
-            }
-          })
-        );
-      }, 0);
+      const dialogRef = this.dialog.open<UnrecognizedNameDialogComponent, any>(
+        UnrecognizedNameDialogComponent,
+        { data: { submittedText: target } }
+      );
+      this.subscriptions.add(
+        dialogRef.afterClosed().subscribe((isSearchConfirmed) => {
+          if (!!isSearchConfirmed) {
+            this.launchMovingObjectQuery(target);
+          }
+        })
+      );
     }
   }
 
-  tryLaunchingFixedObjectQuery() {
-    // Ensure at least one source is selected
-    const sources: TControlKeyForSources[] = [];
+  getSelectedSources() {
+    const selectedSources: TControlKeyForSources[] = [];
     controlKeysForSources.forEach((key) => {
-      if (this.formGroup.get(key)?.value) {
-        sources.push(key as any);
+      if (!!this.formGroup.get(key)?.value) {
+        selectedSources.push(key as any);
       }
     });
-    if (!sources.length) {
-      this.snackBar.open(`You must select at least one Data Source`, 'Close', {
-        duration: 5000,
-      });
-      this.isAdvancedControls = true;
-      return;
-    }
+    return selectedSources;
+  }
 
-    // Check ra dec is splittable
+  tryLaunchingFixedObjectQuery() {
+    // Check ra dec is split-able
     const raDec = this.latestInputText.trim();
     const raDecSplit = raDec.split(' ');
     const ra = raDecSplit[0];
     const dec = raDecSplit[1];
     if (raDecSplit.length === 2 && ra.length > 0 && dec.length > 0) {
-      this.launchFixedObjectQuery(ra, dec, sources);
+      this.launchFixedObjectQuery(ra, dec);
       return;
     }
-
-    // !Add some logic to explain to use that ra-dec is malformed
+    // !Add some logic to explain to user that ra-dec is malformed
   }
 
-  launchMovingObjectQuery(target: string, sources: TControlKeyForSources[]) {
-    const isCached = this.formGroup.controls.use_cached_results_control.value;
-    const isUncertaintyEllipse =
-      this.formGroup.controls.uncertainty_ellipse_control.value;
-    const padding = this.formGroup.controls.padding_input_control.value;
-
+  launchMovingObjectQuery(target: string) {
     this.autocomplete.closePanel();
+    const sources = this.getSelectedSources();
+    const controls = this.formGroup.controls;
+    const cached = controls.use_cached_results_control.value;
+    const uncertainty_ellipse = controls.uncertainty_ellipse_control.value;
+    const padding = controls.padding_input_control.value;
+    const start_date = controls.start_time_input_control.value;
+    const stop_date = controls.stop_time_input_control.value;
     this.store$.dispatch(
       ApiDataAction_SetStatus({
-        query: { target, isCached, isUncertaintyEllipse, padding, sources },
+        search: {
+          searchType: 'moving',
+          searchParams: {
+            target,
+            cached,
+            uncertainty_ellipse,
+            padding,
+            sources,
+            start_date,
+            stop_date,
+          },
+        },
         message: 'Starting search....',
-        code: 'searching',
-      })
-    );
-    this.store$.dispatch(
-      ApiDataAction_FetchResult({
-        target,
-        isCached,
-        padding,
-        isUncertaintyEllipse,
-        sources,
+        code: 'initiated',
       })
     );
   }
 
-  launchFixedObjectQuery(
-    ra: string,
-    dec: string,
-    sources: TControlKeyForSources[]
-  ) {
-    const radius = this.formGroup.controls.padding_input_control.value;
-    const intersectionType =
-      this.formGroup.controls.intersection_type_input_control.value;
-    const startDate = this.formGroup.controls.start_time_input_control.value;
-    const stopDate = this.formGroup.controls.stop_time_input_control.value;
-
+  launchFixedObjectQuery(ra: string, dec: string) {
     this.autocomplete.closePanel();
+    const controls = this.formGroup.controls;
+    const radius = controls.padding_input_control.value;
+    const intersection_type = controls.intersection_type_input_control.value;
+    const start_date = controls.start_time_input_control.value;
+    const stop_date = controls.stop_time_input_control.value;
+
     this.store$.dispatch(
-      ApiFixedAction_SetStatus({
-        query: {
-          ra,
-          dec,
-          intersectionType,
-          radius,
-          startTime: startDate,
-          stopTime: stopDate,
-          sources,
+      ApiDataAction_SetStatus({
+        search: {
+          searchType: 'fixed',
+          searchParams: {
+            ra,
+            dec,
+            intersection_type,
+            radius,
+            start_date,
+            stop_date,
+          },
         },
         message: 'Starting fixed-target search....',
-        code: 'searching',
-      })
-    );
-    this.store$.dispatch(
-      ApiFixedAction_FetchResult({
-        ra,
-        dec,
-        intersectionType,
-        radius,
-        startTime: startDate,
-        stopTime: stopDate,
-        sources,
+        code: 'initiated',
       })
     );
   }
@@ -478,20 +446,20 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
     if (isInputEmpty) {
       this.formGroup.controls.search_field_control.setErrors(null);
     } else {
-      if (!isAtleastOneSourceSelected) {
+      if (isAtleastOneSourceSelected) {
+        this.errorMessage = '';
+        if (isTargetMatched) {
+          this.formGroup.controls.search_field_control.setErrors(null);
+        } else {
+          this.formGroup.controls.search_field_control.setErrors({
+            isTargetUnrecognized: true,
+          });
+        }
+      } else {
         this.errorMessage = 'You must select at least one Data Source';
         this.formGroup.controls.search_field_control.setErrors({
           isSourceNeeded: true,
         });
-      } else {
-        this.errorMessage = '';
-      }
-      if (!isTargetMatched) {
-        this.formGroup.controls.search_field_control.setErrors({
-          isTargetUnrecognized: true,
-        });
-      } else {
-        this.formGroup.controls.search_field_control.setErrors(null);
       }
     }
     this.changeDetectorRef.detectChanges();

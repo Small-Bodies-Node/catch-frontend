@@ -28,7 +28,7 @@ export const formControlDict = {
   stop_time_input_control: new FormControl<string>('', nonNullable),
   select_all_sources_control: new FormControl<boolean>(true, nonNullable),
   intersection_type_input_control: new FormControl<TIntersectionType>(
-    'image_intersects_area',
+    'ImageIntersectsArea',
     nonNullable
   ),
 } as const;

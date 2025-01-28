@@ -10,13 +10,12 @@ import {
   backgroundSwipeIntervalMs as intervalMs,
   backgroundSwipeDurationMs as durationMs,
 } from '../../../utils/animation-constants';
-import { CometAnimationsComponent } from '../comet-animations/comet-animations.component';
 
 @Component({
   selector: 'app-background',
   templateUrl: './background.component.html',
   styleUrls: ['./background.component.scss'],
-  imports: [CommonModule, CometAnimationsComponent],
+  imports: [CommonModule],
 })
 export class BackgroundComponent implements OnInit {
   // --->>>

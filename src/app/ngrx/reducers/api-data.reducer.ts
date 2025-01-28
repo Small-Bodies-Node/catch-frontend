@@ -4,19 +4,22 @@ import {
   ApiDataAction_SetData,
   ApiDataAction_SetStatus,
   ApiDataAction_SetJobId,
-  ApiDataAction_DataLoaded,
   ApiDataAction_SetDownloadRowState,
 } from '../actions/api-data.actions';
-import { IApiDataStatus } from '../../../models/IApiDataStatus';
-import { IApiDatum } from '../../../models/IApiDatum';
+import {
+  IApiDataFetchStatus,
+  TApiDataFetchStatus,
+} from '../../../models/IApiDataStatus';
+import { IApiMovum } from '../../../models/IApiMovum';
 import { TApiDataColState } from '../../../models/TApiDataColState';
 import { TDownloadRowsState } from '../../../models/TDownloadRowsState';
 import { apiDataInitColState } from '../../../utils/apiDataInitColState';
+import { IApiFixum } from '../../../models/IApiFixum';
 
 export interface IApiDataSubstate {
-  apiDataStatus: IApiDataStatus;
-  apiDataSelectedDatum?: IApiDatum;
-  apiData?: IApiDatum[];
+  apiDataSelectedDatum?: IApiMovum | IApiFixum;
+  apiDataStatus: TApiDataFetchStatus;
+  apiData?: IApiMovum[] | IApiFixum[];
   apiDataJobId?: string;
   apiDataColumnState: Partial<TApiDataColState>;
   apiDataDownloadRowState: TDownloadRowsState;
@@ -26,7 +29,11 @@ export const initialState: IApiDataSubstate = {
   apiDataSelectedDatum: undefined,
   apiData: undefined,
   apiDataJobId: undefined,
-  apiDataStatus: { code: 'unknown', message: '' },
+  apiDataStatus: {
+    code: 'unset',
+    message: 'Ready to fetch data',
+    search: undefined,
+  },
   apiDataColumnState: { ...apiDataInitColState },
   apiDataDownloadRowState: {},
 };
@@ -36,7 +43,7 @@ export const apiDataReducer = createReducer(
 
   on(ApiDataAction_SetSelectedDatum, (state, { apiDatum }) => ({
     ...state,
-    apiDataSelectedDatum: apiDatum,
+    apiDataSelectedDatum: { ...apiDatum },
   })),
 
   on(ApiDataAction_SetDownloadRowState, (state, { newDownloadRowState }) => ({
@@ -49,20 +56,17 @@ export const apiDataReducer = createReducer(
     apiData: [...apiData],
   })),
 
-  on(ApiDataAction_SetJobId, (state, { jobId }) => ({
+  on(ApiDataAction_SetJobId, (state, { job_id }) => ({
     ...state,
-    apiDataJobId: jobId,
+    apiDataJobId: job_id,
   })),
 
   on(ApiDataAction_SetStatus, (state, newStatus) => ({
     ...state,
     apiDataStatus: {
+      /* We do not always want to overwrite the entirety of the last status! */
       ...state.apiDataStatus,
       ...newStatus,
     },
-  })),
-
-  on(ApiDataAction_DataLoaded, (state) => ({
-    ...state,
   }))
 );

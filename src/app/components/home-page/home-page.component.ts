@@ -21,7 +21,7 @@ import { SearchFieldComponent } from '../search-field/search-field.component';
 export class HomePageComponent implements OnInit {
   //--->>>
 
-  streamingCode: TApiStatusCode = 'unknown';
+  streamingCode: TApiStatusCode | 'unset' = 'unset';
   streamingMessage = '';
   isStreamingMessage = false;
 

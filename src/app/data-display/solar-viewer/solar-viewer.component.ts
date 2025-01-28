@@ -3,13 +3,14 @@ import { Store } from '@ngrx/store';
 import { combineLatest, Subscription, take } from 'rxjs';
 
 import { SbnSolarViewer, dateToJulianDay } from 'sbn-solar-viewer';
-import { IApiDatum } from '../../../models/IApiDatum';
+import { IApiMovum } from '../../../models/IApiMovum';
 import { IAppState } from '../../ngrx/reducers';
 import {
   selectApiData,
   selectApiSelectedDatum,
   selectApiDataStatus,
 } from '../../ngrx/selectors/api-data.selectors';
+import { IApiFixum } from '../../../models/IApiFixum';
 
 @Component({
   selector: 'app-solar-viewer',
@@ -22,9 +23,11 @@ export class SolarViewerComponent implements OnInit {
 
   sbnSolarViewerId = 'sbn-solar-viewer-id';
   solarViewer?: SbnSolarViewer;
-  apiData?: IApiDatum[];
-  apiSelectedDatum?: IApiDatum;
+  apiData?: IApiMovum[] | IApiFixum[];
+  apiSelectedDatum?: IApiMovum | IApiFixum;
   subscriptions = new Subscription();
+
+  target?: string;
 
   constructor(private store$: Store<IAppState>) {}
 
@@ -34,10 +37,13 @@ export class SolarViewerComponent implements OnInit {
         this.store$.select(selectApiDataStatus).pipe(take(1)),
         this.store$.select(selectApiData).pipe(take(1)),
       ]).subscribe(([status, apiData]) => {
-        const target = status.query?.target;
+        if (!status || !status.search) return;
+        if (status.search.searchType === 'fixed') return;
+
+        this.target = status.search.searchParams.target;
 
         this.apiData = apiData;
-        if (this.apiData && target) {
+        if (this.apiData && this.target) {
           const timeStamps = this.apiData.map((data) => {
             return data.date;
           });
@@ -50,7 +56,7 @@ export class SolarViewerComponent implements OnInit {
               this.solarViewer = new SbnSolarViewer({
                 containerId: this.sbnSolarViewerId,
                 // asteroid: { target: '65P*', data: timeStampsJds },
-                asteroid: { target, data: timeStampsJds },
+                asteroid: { target: this.target!, data: timeStampsJds },
                 isControlsShown: !true,
                 logScaleZoomingPositionAus: { x: 3, y: 0, z: 1 },
                 nonLogScaleZoomingPositionAus: { x: 0, y: 0, z: 10 },

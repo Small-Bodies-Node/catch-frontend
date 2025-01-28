@@ -25,4 +25,11 @@ export const apiFixedInitColState: Readonly<TApiFixedColState> = {
   seeing: true,
   source: true,
   source_name: true, // permanent col
+  //
+  diff_url: false,
+  fov: false,
+  'css:telescope': false,
+  'ps1:frame_id': false,
+  'ps1:projection_id': false,
+  'ps1:skycell_id': false,
 };

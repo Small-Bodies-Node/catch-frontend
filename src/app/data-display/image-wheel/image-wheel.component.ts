@@ -9,7 +9,7 @@ import {
 import { Store } from '@ngrx/store';
 import { distinctUntilChanged, interval, map, Subscription, take } from 'rxjs';
 
-import { IApiDatum } from '../../../models/IApiDatum';
+import { IApiMovum } from '../../../models/IApiMovum';
 import { ApiDataAction_SetSelectedDatum } from '../../ngrx/actions/api-data.actions';
 import { IAppState } from '../../ngrx/reducers';
 import {
@@ -20,11 +20,11 @@ import {
 const placeholderUrl = 'assets/images/pngs/sbn_logo_v0.png';
 
 @Component({
-    selector: 'app-image-wheel',
-    templateUrl: './image-wheel.component.html',
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    styleUrls: ['./image-wheel.component.scss'],
-    standalone: false
+  selector: 'app-image-wheel',
+  templateUrl: './image-wheel.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  styleUrls: ['./image-wheel.component.scss'],
+  standalone: false,
 })
 export class ImageWheelComponent implements OnInit {
   // --->>>
@@ -32,8 +32,8 @@ export class ImageWheelComponent implements OnInit {
   @ViewChild('imageWheelContainer')
   imageWheelContainerDiv?: ElementRef<HTMLDivElement>;
 
-  apiData?: IApiDatum[];
-  apiSelectedDatum?: IApiDatum;
+  apiData?: IApiMovum[];
+  apiSelectedDatum?: IApiMovum;
   subscriptions = new Subscription();
 
   height = 100;
@@ -105,7 +105,7 @@ export class ImageWheelComponent implements OnInit {
     return imageUrls;
   }
 
-  getStyleObject(apiDatum: IApiDatum) {
+  getStyleObject(apiDatum: IApiMovum) {
     const imageUrl = apiDatum.preview_url || placeholderUrl;
     return {
       // backgroundImage: `url('${imageUrl || placeholderUrl}')`,
@@ -114,12 +114,12 @@ export class ImageWheelComponent implements OnInit {
     };
   }
 
-  isImageSelected(apiDatum: IApiDatum) {
+  isImageSelected(apiDatum: IApiMovum) {
     if (!apiDatum || !this.apiSelectedDatum) return false;
     return apiDatum.product_id === this.apiSelectedDatum.product_id;
   }
 
-  setSelectedDatum(apiDatum: IApiDatum) {
+  setSelectedDatum(apiDatum: IApiMovum) {
     this.store$.dispatch(ApiDataAction_SetSelectedDatum({ apiDatum }));
     this.changeDetector.detectChanges();
   }

@@ -18,12 +18,12 @@ import { IApiServiceStream } from '../../../../models/IApiServiceStream';
 import { TJobStreamResult } from '../../../../models/TJobStreamResult';
 import { TControlKeyForSources } from '../../../../models/TControlKeyForSources';
 import { IAppState } from '../../../ngrx/reducers';
-import { TApiDataResult } from '../../../../models/TApiDataResult';
+import { TApiDataResultOrError } from '../../../../models/TApiDataResultOrError';
 import { IApiDataCatchResult } from '../../../../models/IApiDataCatchResult';
-import { IApiDataCaughtResult } from '../../../../models/IApiDataCaughtResult';
+import { IApiDataResult } from '../../../../models/IApiDataResult';
 import { mockStreamMessages } from '../../../../utils/mockStreamMessages';
 import { ApiDataAction_SetStatus } from '../../../ngrx/actions/api-data.actions';
-import { apiDataMockResult } from '../../../../utils/apiDataMockResult';
+import { apiMockResultMoving } from '../../../../utils/apiMockResultMoving';
 
 const mockTime1 = 0;
 const mockTime2 = 0;
@@ -44,7 +44,7 @@ export class PanstarrsApiMockService implements IApiDataService {
     isUncertaintyEllipse: boolean,
     padding: number,
     sources: TControlKeyForSources[]
-  ): Observable<TApiDataResult> {
+  ): Observable<TApiDataResultOrError> {
     // --->>
 
     false &&
@@ -83,10 +83,10 @@ export class PanstarrsApiMockService implements IApiDataService {
 
         if (!queued) {
           return this.apiCaughtRequest(job_id).pipe(
-            map(({ data }): TApiDataResult => {
+            map(({ data }): TApiDataResultOrError => {
               return { data, jobId: job_id, status: 'success' };
             }),
-            catchError((e: Error): Observable<TApiDataResult> => {
+            catchError((e: Error): Observable<TApiDataResultOrError> => {
               return of({
                 status: 'error',
                 message: e.message,
@@ -106,14 +106,14 @@ export class PanstarrsApiMockService implements IApiDataService {
             }
 
             return this.apiCaughtRequest(job_id).pipe(
-              map(({ data }): TApiDataResult => {
+              map(({ data }): TApiDataResultOrError => {
                 return {
                   data,
                   jobId: job_id,
                   status: 'success',
                 };
               }),
-              catchError((e: Error): Observable<TApiDataResult> => {
+              catchError((e: Error): Observable<TApiDataResultOrError> => {
                 return of({
                   status: 'error',
                   message: e.message,
@@ -122,7 +122,7 @@ export class PanstarrsApiMockService implements IApiDataService {
               })
             );
           }),
-          catchError((e: Error): Observable<TApiDataResult> => {
+          catchError((e: Error): Observable<TApiDataResultOrError> => {
             return of({
               status: 'error',
               message: e.message,
@@ -131,7 +131,7 @@ export class PanstarrsApiMockService implements IApiDataService {
           })
         );
       }),
-      catchError((e: Error): Observable<TApiDataResult> => {
+      catchError((e: Error): Observable<TApiDataResultOrError> => {
         return of({
           status: 'error',
           message: e.message,
@@ -172,14 +172,14 @@ export class PanstarrsApiMockService implements IApiDataService {
     return result;
   }
 
-  apiCaughtRequest(jobId: string): Observable<IApiDataCaughtResult> {
+  apiCaughtRequest(jobId: string): Observable<IApiDataResult> {
     // --->>
 
     console.log(' << MOCK CAUGHT REQUEST >> ');
     return of({
       count: 10,
       job_id: jobId,
-      data: apiDataMockResult.data
+      data: apiMockResultMoving.data
         .filter((_, ind) => {
           return true;
           return [
@@ -189,7 +189,7 @@ export class PanstarrsApiMockService implements IApiDataService {
           ].includes(_.source);
         })
         .filter((_, ind) => ind < numResults),
-    }).pipe(delay<IApiDataCaughtResult>(mockTime1));
+    }).pipe(delay<IApiDataResult>(mockTime1));
   }
 
   watchJobStream(jobId: string): Promise<TJobStreamResult> {

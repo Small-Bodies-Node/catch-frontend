@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Store } from '@ngrx/store';
 import { Subscription } from 'rxjs';
@@ -7,10 +7,9 @@ import { TApiStatusCode } from '../../../models/TApiStatusCode';
 import { IAppState } from '../../ngrx/reducers';
 import { selectApiDataStatus } from '../../ngrx/selectors/api-data.selectors';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { IApiDataStatus } from '../../../models/IApiDataStatus';
+import { TApiDataFetchStatus } from '../../../models/IApiDataStatus';
+import { IApiFixedSearch, IApiMovingSearch } from '../../../models/TDataSearch';
 import { controlLabelsDictForSources } from '../../../models/TControlKeyForSources';
-import { IApiFixedStatus } from '../../../models/IApiFixedStatus';
-import { selectApiFixedStatus } from '../../ngrx/selectors/api-fixed.selectors';
 
 @Component({
   selector: 'app-streaming-messages',
@@ -18,14 +17,14 @@ import { selectApiFixedStatus } from '../../ngrx/selectors/api-fixed.selectors';
   styleUrls: ['./streaming-messages.component.scss'],
   imports: [CommonModule, MatProgressBarModule],
 })
-export class StreamingMessagesComponent implements OnInit, OnDestroy {
-  streamingCode: TApiStatusCode = 'unknown';
+export class StreamingMessagesComponent implements OnDestroy {
+  streamingCode: TApiStatusCode | 'unset' = 'unset';
   streamingMessage = '';
   target = '';
   isCached = true;
   isUncertaintyEllipse = false;
   padding = 0;
-  sources: string[] = [];
+  sources?: string[] = [];
 
   msgs: string[] = [];
 
@@ -37,63 +36,77 @@ export class StreamingMessagesComponent implements OnInit, OnDestroy {
   ) {
     this.subscriptions.add(
       this.store$.select(selectApiDataStatus).subscribe((status) => {
-        this.updateMovingStreamingMessage(status);
-      })
-    );
-
-    this.subscriptions.add(
-      this.store$.select(selectApiFixedStatus).subscribe((status) => {
-        this.updateFixedStreamingMessage(status);
+        this.updateStreamingMessage(status);
+        setTimeout(() => {
+          this.cdr.detectChanges();
+        }, 200);
       })
     );
   }
-
-  ngOnInit(): void {}
 
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();
   }
 
-  private updateMovingStreamingMessage(status: IApiDataStatus): void {
-    this.streamingMessage = status.message || '';
-    this.streamingCode = status.code;
+  updateStreamingMessage(status: TApiDataFetchStatus): void {
+    const { search, code, message } = status;
+    this.streamingMessage = message;
+    this.streamingCode = code;
+    if (!search) return;
+    if (search.searchType === 'moving') {
+      this.updateMovingStreamingMessage(search);
+    } else {
+      this.updateFixedStreamingMessage(search);
+    }
+  }
 
-    if (!status.query) return;
-
-    const { target, isCached, isUncertaintyEllipse, padding, sources } =
-      status.query;
+  private updateMovingStreamingMessage({
+    searchParams,
+  }: IApiMovingSearch): void {
+    const {
+      target,
+      cached,
+      uncertainty_ellipse,
+      padding,
+      sources,
+      start_date,
+      stop_date,
+    } = searchParams;
 
     this.msgs = [
       `Target: ` + target,
-      `Cached: ` + isCached,
-      `Uncertainty ellipse: ` + isUncertaintyEllipse,
+      `Cached: ` + cached,
+      `Uncertainty ellipse: ` + uncertainty_ellipse,
       `Padding: ` + padding,
+      `StartTime: ` + (start_date || 'null'),
+      `StopTime: ` + (stop_date || 'null'),
     ];
-    this.sources = sources.map((source) => controlLabelsDictForSources[source]);
-
-    // Explicitly trigger change detection
-    this.cdr.detectChanges();
+    this.sources = sources?.map(
+      (source) => controlLabelsDictForSources[source]
+    );
   }
 
-  private updateFixedStreamingMessage(status: IApiFixedStatus): void {
-    this.streamingMessage = status.message || '';
-    this.streamingCode = status.code;
-    if (!status.query) return;
-
-    const { ra, dec, intersectionType, radius, startTime, stopTime, sources } =
-      status.query;
+  private updateFixedStreamingMessage({ searchParams }: IApiFixedSearch): void {
+    const {
+      ra,
+      dec,
+      intersection_type,
+      radius,
+      sources,
+      start_date,
+      stop_date,
+    } = searchParams;
 
     this.msgs = [
       `ra: ` + ra,
       `dec: ` + dec,
-      `IntersectionType: ` + intersectionType,
+      `IntersectionType: ` + intersection_type,
       `Radius: ` + radius,
-      `StartTime: ` + (startTime || 'N/A'),
-      `StopTime: ` + (stopTime || 'N/A'),
+      `StartTime: ` + (start_date || 'N/A'),
+      `StopTime: ` + (stop_date || 'N/A'),
     ];
-    this.sources = sources.map((source) => controlLabelsDictForSources[source]);
-
-    // Explicitly trigger change detection
-    this.cdr.detectChanges();
+    this.sources = sources?.map(
+      (source) => controlLabelsDictForSources[source]
+    );
   }
 }

@@ -58,4 +58,7 @@ export const apiDataInitColState: Readonly<TApiDataColState> = {
   unc_b: false,
   unc_theta: false,
   vangle: false,
+  //
+  // diff_url: false,
+  // fov: false,
 };

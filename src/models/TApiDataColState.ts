@@ -1,5 +1,7 @@
-import { IApiDatum } from './IApiDatum';
+import { IApiFixum } from './IApiFixum';
+import { IApiMovum } from './IApiMovum';
 
 export type TApiDataColState = {
-  [Key in keyof IApiDatum]: boolean;
+  // [Key in keyof IApiMovum]: boolean;
+  [Key in keyof (IApiMovum & IApiFixum)]: boolean;
 };

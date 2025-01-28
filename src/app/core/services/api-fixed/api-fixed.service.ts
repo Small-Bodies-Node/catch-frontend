@@ -12,7 +12,7 @@ import {
 } from '../../../../models/TIntersectionType';
 import { IApiFixedResult } from '../../../../models/IApiFixedResult';
 import { TApiFixedResult } from '../../../../models/TApiFixedResult';
-import { getFixedTargetUrl } from '../../../../utils/getFixedTargetUrl';
+import { getUrlForFixedRoute } from '../../../../utils/getUrlForFixedRoute';
 
 @Injectable({ providedIn: 'root' })
 export class ApiFixedService implements IApiFixedService {
@@ -29,7 +29,7 @@ export class ApiFixedService implements IApiFixedService {
     startDate?: string,
     stopDate?: string
   ): Observable<TApiFixedResult> {
-    const catchFixedUrl = getFixedTargetUrl(
+    const catchFixedUrl = getUrlForFixedRoute(
       ra,
       dec,
       sources,

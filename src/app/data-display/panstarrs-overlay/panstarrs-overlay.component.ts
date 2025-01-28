@@ -3,20 +3,27 @@ import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
 import { distinctUntilChanged, map } from 'rxjs/operators';
 import { IAppState } from '../../ngrx/reducers';
-import { selectApiSelectedDatum } from '../../ngrx/selectors/api-data.selectors';
-import { IApiDatum } from '../../../models/IApiDatum';
+import {
+  selectApiDataStatus,
+  selectApiSelectedDatum,
+} from '../../ngrx/selectors/api-data.selectors';
+import { IApiMovum } from '../../../models/IApiMovum';
 import { PanstarrsApiService } from '../../core/services/panstarrs-api/panstarrs-api';
+import { IApiFixum } from '../../../models/IApiFixum';
+import { convertToDecimal } from '../../../utils/convertToDecimal';
 
 @Component({
-    selector: 'app-panstarrs-overlay',
-    templateUrl: './panstarrs-overlay.component.html',
-    styleUrls: ['./panstarrs-overlay.component.scss'],
-    standalone: false
+  selector: 'app-panstarrs-overlay',
+  templateUrl: './panstarrs-overlay.component.html',
+  styleUrls: ['./panstarrs-overlay.component.scss'],
+  standalone: false,
 })
 export class PanstarrsOverlayComponent implements OnInit {
   @ViewChild('myContainer') myDiv!: ElementRef;
 
-  apiSelectedDatum?: IApiDatum;
+  apiSelectedDatum?: IApiMovum | IApiFixum;
+  ra: number | string = 0;
+  dec: number | string = 0;
   subscriptions = new Subscription();
   raDecs: { ra: number; dec: number; raErr: number; decErr: number }[] = [];
 
@@ -25,29 +32,43 @@ export class PanstarrsOverlayComponent implements OnInit {
     private pansstarrsApiService: PanstarrsApiService
   ) {
     this.subscriptions.add(
-      combineLatest([this.store$.select(selectApiSelectedDatum)])
-        .pipe(
-          distinctUntilChanged(),
-          map(([apiSelectedDatum]) => apiSelectedDatum)
-        )
-        .subscribe((apiSelectedDatum) => {
+      combineLatest([
+        this.store$.select(selectApiSelectedDatum),
+        this.store$.select(selectApiDataStatus),
+      ])
+        .pipe(distinctUntilChanged())
+        .subscribe(([apiSelectedDatum, apiDataStatus]) => {
+          if (!apiSelectedDatum) return;
+          if (!apiDataStatus) return;
+          if (!apiDataStatus.search) return;
+
           this.apiSelectedDatum = apiSelectedDatum;
 
-          if (this.apiSelectedDatum) {
-            const ra = this.apiSelectedDatum.ra;
-            const dec = this.apiSelectedDatum.dec;
+          this.ra =
+            'ra' in this.apiSelectedDatum
+              ? this.apiSelectedDatum.ra
+              : 'ra' in apiDataStatus.search.searchParams
+              ? apiDataStatus.search.searchParams.ra
+              : 0;
+          this.dec =
+            'dec' in this.apiSelectedDatum
+              ? this.apiSelectedDatum.ra
+              : 'dec' in apiDataStatus.search.searchParams
+              ? apiDataStatus.search.searchParams.ra
+              : 0;
 
-            this.pansstarrsApiService
-              .getPanstarrsData(ra, dec, 50, 0.03)
-              .subscribe((apiPayload) => {
-                this.raDecs = apiPayload.data.map((datum: any) => ({
-                  ra: datum.raMean,
-                  dec: datum.decMean,
-                  raErr: datum.raMeanErr,
-                  decErr: datum.decMeanErr,
-                }));
-              });
-          }
+          console.log('this.ra', this.ra, 'this.dec', this.dec);
+
+          this.pansstarrsApiService
+            .getPanstarrsData(this.ra, this.dec, 50, 0.03)
+            .subscribe((apiPayload) => {
+              this.raDecs = apiPayload.data.map((datum: any) => ({
+                ra: datum.raMean,
+                dec: datum.decMean,
+                raErr: datum.raMeanErr,
+                decErr: datum.decMeanErr,
+              }));
+            });
         })
     );
   }
@@ -67,8 +88,8 @@ export class PanstarrsOverlayComponent implements OnInit {
    * First-pass attempt
    */
   getDivLeftOld(ra: number): number {
-    const ra0 = this.apiSelectedDatum?.ra;
-    if (!ra0) return -1000;
+    const ra0 = convertToDecimal(this.ra);
+    if (!ra0 && ra0 !== 0) return -1000;
     const angularWidth = 0.0833;
     const width = this.myDiv.nativeElement.offsetWidth || 0;
     const res = ((ra - ra0) / angularWidth) * width + width / 2;
@@ -79,11 +100,11 @@ export class PanstarrsOverlayComponent implements OnInit {
    * Claude-determined solution with cosine correction
    */
   getDivLeft(ra: number): number {
-    const ra0 = this.apiSelectedDatum?.ra;
-    if (!ra0) return -1000;
+    const ra0 = convertToDecimal(this.ra);
+    if (!ra0 && ra0 !== 0) return -1000;
 
-    const dec0 = this.apiSelectedDatum?.dec;
-    if (dec0 === undefined) return -1000;
+    const dec0 = convertToDecimal(this.dec);
+    if (!dec0 && dec0 !== 0) return -1000;
 
     const angularWidth = 0.0833;
     const width = this.myDiv.nativeElement.offsetWidth || 0;
@@ -99,8 +120,8 @@ export class PanstarrsOverlayComponent implements OnInit {
   }
 
   getDivTop(dec: number): number {
-    const dec0 = this.apiSelectedDatum?.dec;
-    if (!dec0) return -1000;
+    const dec0 = convertToDecimal(this.dec);
+    if (!dec0 && dec0 !== 0) return -1000;
     const angularWidth = 0.0833;
     const width = this.myDiv.nativeElement.offsetWidth || 0;
     const res = ((dec - dec0) / angularWidth) * width + width / 2;

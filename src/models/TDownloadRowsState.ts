@@ -2,12 +2,14 @@
  * Type for object of the form:
  *
  * {
- *  "PRODUCTID1": true,
- *  "PRODUCTID2": false,
+ *  "[product_id1]": true,
+ *  "[product_id2]": true,
  *  ...
  *
  * }
  *
- * ... used to track whether the row of an apiDatum has had its checkbox selected or not
+ * ... used to track whether the row of an apiDatum
+ * has had its checkbox selected or not. For any apiDatum
+ * we use its unique product_id as the key to the dict
  */
-export type TDownloadRowsState = { [productId: string]: boolean };
+export type TDownloadRowsState = { [product_id: string]: boolean };

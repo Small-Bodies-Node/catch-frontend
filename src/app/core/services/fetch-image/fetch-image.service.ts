@@ -19,7 +19,7 @@ interface IOptions {
 const defaultOptions: IOptions = {
   isPriority: false,
   label: '-',
-  minProcessTimeMs: 200,
+  minProcessTimeMs: 300,
 };
 
 @Injectable({
@@ -50,6 +50,7 @@ export class ImageFetchService {
     // Decide if this URL can skip queue
     const isQueueNeeded =
       url.includes('catalina') ||
+      url.includes('skymapper') ||
       // url.includes('neat') ||
       url.includes('spacewatch');
     // url.includes('lon') // Add loneos!!!!

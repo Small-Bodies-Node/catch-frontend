@@ -1,7 +1,8 @@
 import { IApiServiceStream } from '../models/IApiServiceStream';
+import { mockJobId } from './mockJobId';
 
 const status = 'running';
-const job_prefix = '8eb80273';
+const job_prefix = mockJobId.substring(0, 8);
 
 /**
  * Array of objects used to mock streaming of messages from SSE API

@@ -1,233 +1,276 @@
-import { Injectable } from '@angular/core';
-import { Store } from '@ngrx/store';
-import {
-  Observable,
-  of,
-  delay,
-  switchMap,
-  map,
-  catchError,
-  from,
-  concatAll,
-  concatMap,
-  Subscription,
-} from 'rxjs';
+// import { Injectable } from '@angular/core';
+// import { Store } from '@ngrx/store';
+// import {
+//   Observable,
+//   of,
+//   delay,
+//   switchMap,
+//   map,
+//   catchError,
+//   from,
+//   concatAll,
+//   concatMap,
+//   Subscription,
+// } from 'rxjs';
 
-import { IApiDataService } from '../../../../models/IApiDataService';
-import { IApiServiceStream } from '../../../../models/IApiServiceStream';
-import { TJobStreamResult } from '../../../../models/TJobStreamResult';
-import { TControlKeyForSources } from '../../../../models/TControlKeyForSources';
-import { IAppState } from '../../../ngrx/reducers';
-import { TApiDataResult } from '../../../../models/TApiDataResult';
-import { IApiDataCatchResult } from '../../../../models/IApiDataCatchResult';
-import { IApiDataCaughtResult } from '../../../../models/IApiDataCaughtResult';
-import { mockStreamMessages } from '../../../../utils/mockStreamMessages';
-import { ApiDataAction_SetStatus } from '../../../ngrx/actions/api-data.actions';
-import { apiDataMockResult } from '../../../../utils/apiDataMockResult';
+// import { IApiDataService } from '../../../../models/IApiDataService';
+// import { IApiServiceStream } from '../../../../models/IApiServiceStream';
+// import { TJobStreamResult } from '../../../../models/TJobStreamResult';
+// import { IAppState } from '../../../ngrx/reducers';
+// import { mockStreamMessages } from '../../../../utils/mockStreamMessages';
+// import { ApiDataAction_SetStatus } from '../../../ngrx/actions/api-data.actions';
+// import { apiMockResultMoving } from '../../../../utils/apiMockResultMoving';
+// import { ISearchParamsMoving } from '../../../../models/ISearchParamsMoving';
+// import { ISearchParamsFixed } from '../../../../models/ISearchParamsFixed';
+// import { TWrappedApiDataResultOrError } from '../../../../models/TApiDataResultOrError';
+// import { TApiDataCatchResultOrError } from '../../../../models/TApiDataCatchResultOrError';
 
-const mockTime1 = 0;
-const mockTime2 = 0;
+// const mockTime1 = 0;
+// const mockTime2 = 0;
 
-const numResults = 100;
+// @Injectable({
+//   providedIn: 'root',
+// })
+// export class ApiDataMockService implements IApiDataService {
+//   // --->>>
 
-@Injectable({
-  providedIn: 'root',
-})
-export class ApiDataMockService implements IApiDataService {
-  // --->>>
+//   constructor(private store$: Store<IAppState>) {}
 
-  constructor(private store$: Store<IAppState>) {}
+//   fetchApiDataMoving(
+//     searchParamsMoving: ISearchParamsMoving
+//   ): Observable<TWrappedApiDataResultOrError> {
+//     // --->>
 
-  fetchApiData(
-    target: string,
-    isCached: boolean,
-    isUncertaintyEllipse: boolean,
-    padding: number,
-    sources: TControlKeyForSources[]
-  ): Observable<TApiDataResult> {
-    // --->>
+//     const { target } = searchParamsMoving;
 
-    false &&
-      console.log(
-        '<< FETCHING MOCK DATA >>',
-        target,
-        isCached,
-        isUncertaintyEllipse,
-        padding,
-        sources
-      );
+//     if (!target) {
+//       return of({
+//         status: 'error',
+//         message: 'You must provide a target',
+//         jobId: 'N/A',
+//       });
+//     }
 
-    if (!target) {
-      return of({
-        status: 'error',
-        message: 'You must provide a target',
-        jobId: 'N/A',
-      });
-    }
+//     return this.launchCatchJob(searchParamsMoving).pipe(
+//       switchMap((apiCatchResultOrError) => {
+//         // --->>
 
-    return this.launchCatchJob(
-      target,
-      isCached,
-      isUncertaintyEllipse,
-      padding,
-      sources
-    ).pipe(
-      switchMap((apiCatchResult) => {
-        // --->>
+//         const { status } = apiCatchResultOrError;
+//         if (status === 'error') {
+//           throw new Error(apiCatchResultOrError.message);
+//         }
+//         const { apiDataCatchResult } = apiCatchResultOrError;
+//         const { job_id, queued } = apiDataCatchResult;
 
-        false && console.log(' << MOCK CATCH REQUEST >> ', apiCatchResult);
-        const { job_id, queued } = apiCatchResult;
-        if (!job_id) {
-          throw new Error('No valid job_id was returned');
-        }
+//         if (!queued) {
+//           return this.apiCaughtRequest(job_id).pipe(
+//             map((wrappedApiDataResultOrError): TWrappedApiDataResultOrError => {
+//               const { status } = wrappedApiDataResultOrError;
+//               if (status === 'error') {
+//                 throw new Error(wrappedApiDataResultOrError.message);
+//               }
+//               const { apiDataResult } = wrappedApiDataResultOrError;
+//               return {
+//                 apiDataResult,
+//                 status: 'success',
+//               };
+//             }),
+//             catchError((e: Error): Observable<TWrappedApiDataResultOrError> => {
+//               return of({
+//                 status: 'error',
+//                 message: e.message,
+//                 jobId: job_id,
+//               });
+//             })
+//           );
+//         }
 
-        if (!queued) {
-          return this.apiCaughtRequest(job_id).pipe(
-            map(({ data }): TApiDataResult => {
-              return { data, jobId: job_id, status: 'success' };
-            }),
-            catchError((e: Error): Observable<TApiDataResult> => {
-              return of({
-                status: 'error',
-                message: e.message,
-                jobId: job_id,
-              });
-            })
-          );
-        }
+//         // Else, listen to SSE stream and then grab data
+//         return from(this.watchJobStream(job_id, searchParamsMoving)).pipe(
+//           switchMap((jobStreamResult) => {
+//             // --->>
 
-        // Else, listen to SSE stream and then grab data
-        return from(this.watchJobStream(job_id)).pipe(
-          switchMap((jobStreamResult) => {
-            // --->>
+//             if (jobStreamResult.status === 'error') {
+//               throw new Error(jobStreamResult.message);
+//             }
 
-            if (jobStreamResult.status === 'error') {
-              throw new Error(jobStreamResult.message);
-            }
+//             return this.apiCaughtRequest(job_id).pipe(
+//               map(
+//                 (wrappedApiDataResultOrError): TWrappedApiDataResultOrError => {
+//                   const { status } = wrappedApiDataResultOrError;
+//                   if (status === 'error') {
+//                     throw new Error(wrappedApiDataResultOrError.message);
+//                   }
+//                   const { apiDataResult, job_id } = wrappedApiDataResultOrError;
+//                   return {
+//                     apiDataResult,
+//                     job_id: job_id,
+//                     status: 'success',
+//                   };
+//                 }
+//               ),
+//               catchError(
+//                 (e: Error): Observable<TWrappedApiDataResultOrError> => {
+//                   return of({
+//                     status: 'error',
+//                     message: e.message,
+//                     jobId: job_id,
+//                   });
+//                 }
+//               )
+//             );
+//           }),
+//           catchError((e: Error): Observable<TWrappedApiDataResultOrError> => {
+//             return of({
+//               status: 'error',
+//               message: e.message,
+//               jobId: job_id,
+//             });
+//           })
+//         );
+//       }),
+//       catchError((e: Error): Observable<TWrappedApiDataResultOrError> => {
+//         return of({
+//           status: 'error',
+//           message: e.message,
+//           jobId: 'N/A',
+//         });
+//       })
+//     );
+//   }
 
-            return this.apiCaughtRequest(job_id).pipe(
-              map(({ data }): TApiDataResult => {
-                return {
-                  data,
-                  jobId: job_id,
-                  status: 'success',
-                };
-              }),
-              catchError((e: Error): Observable<TApiDataResult> => {
-                return of({
-                  status: 'error',
-                  message: e.message,
-                  jobId: job_id,
-                });
-              })
-            );
-          }),
-          catchError((e: Error): Observable<TApiDataResult> => {
-            return of({
-              status: 'error',
-              message: e.message,
-              jobId: job_id,
-            });
-          })
-        );
-      }),
-      catchError((e: Error): Observable<TApiDataResult> => {
-        return of({
-          status: 'error',
-          message: e.message,
-          jobId: 'N/A',
-        });
-      })
-    );
-  }
+//   fetchApiDataFixed(
+//     input: ISearchParamsFixed
+//   ): Observable<TWrappedApiDataResultOrError> {
+//     console.log('<< FETCHING MOCK DATA >>', input);
+//     return of({
+//       status: 'success',
+//       apiFixedResult: apiMockResultMoving,
+//     } as any).pipe(delay(1000));
+//   }
 
-  launchCatchJob(
-    target: string,
-    isCached: boolean,
-    isUncertaintyEllipse: boolean,
-    padding: number,
-    sources: TControlKeyForSources[]
-  ): Observable<IApiDataCatchResult> {
-    // --->>
+//   launchCatchJob(
+//     input: ISearchParamsMoving
+//   ): Observable<TApiDataCatchResultOrError> {
+//     // --->>
 
-    const result = of({
-      job_id: 'e8c4f483ffd34552a58a315f8a65ef92',
-      message: isCached
-        ? 'Found cached data.  Retrieve from results URL.'
-        : `Enqueued search.  Listen to task messaging stream until job completed, then retrieve data from results URL.`,
-      message_stream: 'http://catch-dev-api.astro.umd.edu/stream',
-      query: {
-        cached: isCached,
-        padding: 0,
-        sources: sources,
-        target: '65P',
-        type: 'COMET',
-        uncertainty_ellipse: isUncertaintyEllipse,
-      },
-      queued: !isCached,
-      results:
-        'http://catch-dev-api.astro.umd.edu/caught/e8c4f483ffd34552a58a315f8a65ef92',
-      version: '2.0.0-dev0',
-    });
-    return result;
-  }
+//     const {
+//       target,
+//       cached,
+//       uncertainty_ellipse,
+//       padding,
+//       sources,
+//       start_date,
+//       stop_date,
+//     } = input;
 
-  apiCaughtRequest(jobId: string): Observable<IApiDataCaughtResult> {
-    // --->>
+//     const result = of<TApiDataCatchResultOrError>({
+//       status: 'success',
+//       apiDataCatchResult: {
+//         job_id: 'e8c4f483ffd34552a58a315f8a65ef92',
+//         message: 'Job has been queued',
+//         queued: cached,
+//         query: {
+//           cached,
+//           padding,
+//           sources,
+//           target,
+//           uncertainty_ellipse,
+//           start_date,
+//           stop_date,
+//           type: 'COMET',
+//         },
+//         results:
+//           'http://catch-dev-api.astro.umd.edu/caught/df37287908274e878751088e5aa55822',
+//         version: '3.0rc2',
+//       },
+//     } as TApiDataCatchResultOrError);
+//     return result;
+//   }
 
-    console.log(' << MOCK CAUGHT REQUEST >> ');
-    return of({
-      count: 10,
-      job_id: jobId,
-      data: apiDataMockResult.data
-        .filter((_, ind) => {
-          // return true;
-          return [
-            'neat_palomar_tricam',
-            'neat_maui_geodss',
-            'skymapper_dr4',
-            'ps1dr2',
-            'catalina_bigelow',
-            'catalina_lemmon',
-            'catalina_bokneosurvey',
-            'spacewatch',
-            'loneos',
-            'atlas_haleakela',
-            'atlas_mauna_loa',
-            'atlas_rio_hurtado',
-            'atlas_sutherland',
-          ].includes(_.source);
-        })
-        .filter((_, ind) => ind < 10000000),
-      // .filter((_, ind) => _.source.includes('catalina')),
-      parameters: '',
-      status: '',
-    }).pipe(delay<IApiDataCaughtResult>(mockTime1));
-  }
+//   apiCaughtRequest(jobId: string): Observable<TWrappedApiDataResultOrError> {
+//     // --->>
 
-  watchJobStream(jobId: string): Promise<TJobStreamResult> {
-    // --->>
+//     console.log(' << MOCK CAUGHT REQUEST >> ');
+//     return of({
+//       status: 'success' as const,
+//       message: 'Job has been completed',
+//       job_id: 'e8c4f483ffd34552a58a315f8a65ef92',
+//       apiDataResult: {
+//         count: 10,
+//         job_id: jobId,
+//         data: apiMockResultMoving.data
+//           .filter((_, ind) => {
+//             // return true;
+//             return [
+//               'neat_palomar_tricam',
+//               'neat_maui_geodss',
+//               'skymapper_dr4',
+//               'ps1dr2',
+//               'catalina_bigelow',
+//               'catalina_lemmon',
+//               'catalina_bokneosurvey',
+//               'spacewatch',
+//               'loneos',
+//               'atlas_haleakela',
+//               'atlas_mauna_loa',
+//               'atlas_rio_hurtado',
+//               'atlas_sutherland',
+//             ].includes(_.source);
+//           })
+//           .filter((_, ind) => ind < 10000000),
+//         // .filter((_, ind) => _.source.includes('catalina')),
+//         parameters: {
+//           cached: false,
+//           padding: 0,
+//           sources: ['neat_palomar_tricam', 'neat_maui_geodss'] as any,
+//           target: 'ZTF18abvkwla',
+//           type: 'COMET',
+//           uncertainty_ellipse: false,
+//           start_date: '2018-01-01',
+//           stop_date: '2021-01-01',
+//         },
+//         version: '3.0rc2',
+//         status: [],
+//       },
+//     }).pipe(delay(mockTime1));
+//   }
 
-    const store$ = this.store$;
-    let subscription: Subscription;
+//   watchJobStream(
+//     jobId: string,
+//     searchParamsMoving: ISearchParamsMoving
+//   ): Promise<TJobStreamResult> {
+//     // --->>
 
-    return new Promise<TJobStreamResult>((resolve, reject) => {
-      // --->>
+//     const store$ = this.store$;
+//     let subscription: Subscription;
 
-      subscription = of<IApiServiceStream[]>(mockStreamMessages)
-        .pipe(
-          concatAll(), // flatten the array into individual next notifications
-          concatMap((message) => of(message).pipe(delay(mockTime2)))
-        )
-        .subscribe(({ job_prefix, status, text }) => {
-          console.log('>>>>>', job_prefix, status, text);
-          store$.dispatch(ApiDataAction_SetStatus({ message: text }));
+//     return new Promise<TJobStreamResult>((resolve, reject) => {
+//       // --->>
 
-          if (status === 'success') {
-            resolve({ job_id: jobId, status });
-            subscription.unsubscribe();
-          }
-        });
-    });
-  }
-}
+//       subscription = of<IApiServiceStream[]>(mockStreamMessages)
+//         .pipe(
+//           concatAll(), // flatten the array into individual next notifications
+//           concatMap((message) => of(message).pipe(delay(mockTime2)))
+//         )
+//         .subscribe(({ job_prefix, status, text }) => {
+//           console.log('>>>>>', job_prefix, status, text);
+//           store$.dispatch(
+//             ApiDataAction_SetStatus({
+//               message: text,
+//               code: 'searching',
+//               search: {
+//                 searchType: 'moving',
+//                 searchParams: searchParamsMoving,
+//               },
+//             })
+//           );
+
+//           if (status === 'success') {
+//             resolve({ job_id: jobId, status });
+//             subscription.unsubscribe();
+//           }
+//         });
+//     });
+//   }
+// }

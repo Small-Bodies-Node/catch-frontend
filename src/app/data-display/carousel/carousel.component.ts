@@ -3,7 +3,7 @@ import { Store } from '@ngrx/store';
 import { distinctUntilChanged, interval, map, Subscription } from 'rxjs';
 
 import { IAppState } from '../../ngrx/reducers';
-import { IApiDatum } from '../../../models/IApiDatum';
+import { IApiMovum } from '../../../models/IApiMovum';
 import {
   selectApiData,
   selectApiSelectedDatum,
@@ -13,17 +13,17 @@ import { PanstarrsOverlayComponent } from '../panstarrs-overlay/panstarrs-overla
 const placeholderUrl = 'assets/images/pngs/sbn_logo_v0.png';
 
 @Component({
-    selector: 'app-carousel',
-    templateUrl: './carousel.component.html',
-    styleUrls: ['./carousel.component.scss'],
-    standalone: false
+  selector: 'app-carousel',
+  templateUrl: './carousel.component.html',
+  styleUrls: ['./carousel.component.scss'],
+  standalone: false,
 })
 export class CarouselComponent implements OnInit {
   // --->>>
 
   subscriptions = new Subscription();
-  apiData?: IApiDatum[];
-  apiSelectedDatum?: IApiDatum;
+  apiData?: IApiMovum[];
+  apiSelectedDatum?: IApiMovum;
   // isFitsButtonDisabled = false;
   isButtonRaised = false;
   isFits = false;

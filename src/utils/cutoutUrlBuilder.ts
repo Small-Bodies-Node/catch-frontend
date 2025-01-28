@@ -1,11 +1,11 @@
-import { IApiDatum } from '../models/IApiDatum';
+import { IApiMovum } from '../models/IApiMovum';
 
 import { decimalToSexagesimal } from 'geolib';
 
 /**
  * ...
  */
-export const cutoutUrlBuilder = (apiDatum: IApiDatum) => {
+export const cutoutUrlBuilder = (apiDatum: IApiMovum) => {
   //
 
   const { product_id, ra, dec } = apiDatum;

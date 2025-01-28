@@ -30,8 +30,10 @@ export class TableThumbnailComponent implements OnChanges {
 
   @Input() input?: ITableThumbnailInput;
   @Input() size: string = '60px';
-  @Input() width: string = '100%';
-  @Input() height: string = '100%';
+  // @Input() width: string = '100%';
+  @Input() width: string = '60px';
+  // @Input() height: string = '100%';
+  @Input() height: string = '60px';
   @Input() isPriority = false;
   @Input() label = '-';
   @Input() diameterPxls: number = 30;
@@ -55,12 +57,10 @@ export class TableThumbnailComponent implements OnChanges {
   ) {}
 
   ngOnChanges(changes: SimpleChanges): void {
-    console.log('changes', JSON.stringify(changes));
+    // console.log('changes', JSON.stringify(changes));
     // Update the size of the thumbnail
-    if (false) {
-      const trans = this.getSurveyScaleTransform();
+    if (!false) {
       this.imgStyles = {
-        //
         ...this.imgStyles,
         width: this.width,
         height: this.height,
@@ -98,6 +98,17 @@ export class TableThumbnailComponent implements OnChanges {
       `${product_id}?dec=${dec}&ra=${ra}&size=5arcmin&format=jpeg`;
     const url = preview_url || catalinaUrl;
 
+    // if (url.includes('skymapper')) {
+    //   // !Skymapper does not like serving too many images at once!
+    //   setTimeout(() => {
+    //     this.imageSrc = url;
+    //     this.isImageLoaded = true;
+    //     this.isImageInQueue = false;
+    //     this.changeDetector.detectChanges();
+    //   }, Math.random() * 3000);
+    //   return;
+    // }
+
     this.imageFetchService
       .fetchImage(url, {
         isPriority: this.isPriority,
@@ -117,6 +128,7 @@ export class TableThumbnailComponent implements OnChanges {
           this.isImageLoaded = true;
           this.isImageInQueue = false;
           this.imageSrc = 'assets/images/pngs/sbn_logo_v0.png';
+          this.imgStyles = { ...this.imgStyles, transform: 'scale(1, 1)' };
         }
       )
       .catch((_) => {
@@ -133,6 +145,11 @@ export class TableThumbnailComponent implements OnChanges {
     if (this.input.source === 'neat_palomar_tricam') {
       // return 'scale(1, 1)';
       return 'scale(-1, -1)';
+      // return 'rotate(-90deg)';
+    }
+    if (this.input.source.includes('atlas')) {
+      // return 'scale(1, 1)';
+      return 'scale(-1, 1)';
       // return 'rotate(-90deg)';
     }
     if (this.input.source === 'neat_maui_geodss') {

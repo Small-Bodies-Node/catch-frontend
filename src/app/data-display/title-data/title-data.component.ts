@@ -1,28 +1,27 @@
 import { Store } from '@ngrx/store';
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
 import { combineLatest, Subscription, take } from 'rxjs';
 
 import { saveAs } from 'file-saver';
-// import { parse } from 'json2csv';
 import { Parser } from '@json2csv/plainjs';
-
 import JSZip from 'jszip';
 
 import { IAppState } from '../../ngrx/reducers';
+import { selectScreenDeviceEffectiveDevice } from '../../ngrx/selectors/screen-device.selectors';
+import { IApiDataFetchStatus } from '../../../models/IApiDataStatus';
+import { IApiMovum } from '../../../models/IApiMovum';
+import { TApiDataLabels } from '../../../models/TApiDataLabels';
+import { apiDataLabels } from '../../../utils/apiDataLabels';
+import { TDownloadRowsState } from '../../../models/TDownloadRowsState';
+import { IApiFixum } from '../../../models/IApiFixum';
+import { getUrlForCatchOrFixedRoute } from '../../../utils/getUrlForCatchOrFixedRoute';
+import { getSearchDescriptor } from '../../../utils/getSearchDescriptor';
 import {
   selectApiData,
   selectApiDataDownloadRowState,
   selectApiDataJobId,
   selectApiDataStatus,
 } from '../../ngrx/selectors/api-data.selectors';
-import { apiBaseUrl } from '../../../utils/constants';
-import { selectScreenDeviceEffectiveDevice } from '../../ngrx/selectors/screen-device.selectors';
-import { IApiDataStatus } from '../../../models/IApiDataStatus';
-import { IApiDatum } from '../../../models/IApiDatum';
-import { TApiDataLabels } from '../../../models/TApiDataLabels';
-import { apiDataLabels } from '../../../utils/apiDataLabels';
-import { TDownloadRowsState } from '../../../models/TDownloadRowsState';
 
 @Component({
   selector: 'app-title-data',
@@ -33,13 +32,13 @@ import { TDownloadRowsState } from '../../../models/TDownloadRowsState';
 export class TitleDataComponent implements OnInit {
   // --->>>
 
-  target = '';
+  searchDescriptor = '';
   subscriptions = new Subscription();
-  queryStatus?: IApiDataStatus;
-  apiData?: IApiDatum[];
+  queryStatus?: IApiDataFetchStatus;
+  apiData?: IApiMovum[] | IApiFixum[];
   jobId?: string;
   dataLink?: string;
-  apiDataForDownload?: IApiDatum[];
+  apiDataForDownload?: IApiMovum[] | IApiFixum[];
   apiDataLabels: TApiDataLabels = apiDataLabels;
   dataDownloadRowState?: TDownloadRowsState;
   rowsInTable?: number;
@@ -50,13 +49,7 @@ export class TitleDataComponent implements OnInit {
   fitsUrlsForDownload?: string[];
   isDownloadButtonShown = true;
 
-  constructor(private route: ActivatedRoute, private store$: Store<IAppState>) {
-    // this.subscriptions.add(
-    //   this.route.queryParams.subscribe((params) => {
-    //     this.target = params['target'];
-    //   })
-    // );
-
+  constructor(private store$: Store<IAppState>) {
     this.subscriptions.add(
       combineLatest([
         this.store$.select(selectApiDataStatus).pipe(take(1)),
@@ -64,50 +57,43 @@ export class TitleDataComponent implements OnInit {
         this.store$.select(selectApiDataDownloadRowState),
         this.store$.select(selectApiDataJobId),
         this.store$.select(selectScreenDeviceEffectiveDevice),
-      ]).subscribe(([status, apiData, dataDownloadRowState, jobId, device]) => {
-        // --->>
+      ]).subscribe(
+        ([apiStatus, apiData, dataDownloadRowState, jobId, device]) => {
+          // --->>
 
-        this.isMobile = device === 'mobile';
+          if (!apiStatus.search || !apiData) return;
 
-        if (!status.query) return;
-        const {
-          //
-          target,
-          isCached,
-          isUncertaintyEllipse,
-          padding,
-          sources,
-        } = status.query;
+          const { search } = apiStatus;
 
-        this.target = target;
-        this.queryStatus = status;
-        this.dataDownloadRowState = dataDownloadRowState;
-        this.apiData = apiData;
-        this.jobId = jobId;
-        this.dataLink = apiBaseUrl + '/caught/' + jobId;
+          this.apiData = apiData;
+          this.rowsInTable = apiData.length;
+          this.isMobile = device === 'mobile';
+          this.jobId = jobId;
+          this.queryStatus = apiStatus;
+          this.dataDownloadRowState = dataDownloadRowState;
+          this.dataLink = getUrlForCatchOrFixedRoute(search);
+          this.searchDescriptor = getSearchDescriptor(search);
 
-        if (!this.apiData || !this.dataDownloadRowState) return;
-        if (!this.dataDownloadRowState) return;
+          if (!this.apiData) return;
+          if (!this.dataDownloadRowState) return;
 
-        //
-        this.rowsInTable = this.apiData.length;
+          this.rowsInTable = this.apiData.length;
 
-        // Filter data to be downloaded:
-        this.apiDataForDownload = this.apiData.filter((apiDatum) => {
-          if (!this.dataDownloadRowState) return false;
-          return this.dataDownloadRowState[apiDatum.product_id];
-        });
+          // Filter data to be downloaded:
+          this.apiDataForDownload = this.apiData.filter((apiDatum) => {
+            if (!this.dataDownloadRowState) return false;
+            return this.dataDownloadRowState[apiDatum.product_id];
+          });
 
-        // Choose image urls for download
-        this.jpgUrlsForDownload = this.apiDataForDownload
-          .map(
-            (apiDatum) => apiDatum.preview_url || apiDatum.thumbnail_url || ''
-          )
-          .filter(Boolean);
-        this.fitsUrlsForDownload = this.apiDataForDownload
-          .map((apiDatum) => apiDatum.cutout_url || '')
-          .filter(Boolean);
-      })
+          // Choose image urls for download
+          this.jpgUrlsForDownload = this.apiDataForDownload
+            .map((apiDatum) => apiDatum.preview_url || '')
+            .filter(Boolean);
+          this.fitsUrlsForDownload = this.apiDataForDownload
+            .map((apiDatum) => apiDatum.cutout_url || '')
+            .filter(Boolean);
+        }
+      )
     );
   }
 
@@ -120,17 +106,25 @@ export class TitleDataComponent implements OnInit {
     if (
       !this.jpgUrlsForDownload ||
       !this.apiDataForDownload ||
-      !this.queryStatus?.query?.target
+      !this.queryStatus?.search
     ) {
       return;
     }
     this.isDownloadButtonShown = false;
-    const target = this.queryStatus.query.target;
+
+    const { searchType, searchParams } = this.queryStatus.search;
+    const target =
+      searchType === 'moving'
+        ? searchParams.target
+        : `${searchParams.ra} ${searchParams.dec}`.replace(
+            /[\s!@#$%^&*()+={}\[\]|\\:;"'<>?,./`~]/g,
+            '_'
+          );
 
     const jpgUrls: { url: string; product_id: string }[] =
       this.apiDataForDownload
         .map((apiDatum) => {
-          const url = apiDatum.preview_url || apiDatum.thumbnail_url || '';
+          const url = apiDatum.preview_url || '';
           if (!url) return null;
           const { product_id } = apiDatum;
           return { url, product_id };

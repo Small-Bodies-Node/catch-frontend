@@ -3,12 +3,13 @@ import { Store } from '@ngrx/store';
 import { distinctUntilChanged, interval, map, Subscription } from 'rxjs';
 
 import { IAppState } from '../../ngrx/reducers';
-import { IApiDatum } from '../../../models/IApiDatum';
+import { IApiMovum } from '../../../models/IApiMovum';
 import {
   selectApiData,
   selectApiSelectedDatum,
 } from '../../ngrx/selectors/api-data.selectors';
 import { ITableThumbnailInput } from '../table-thumbnail/table-thumbnail.component';
+import { IApiFixum } from '../../../models/IApiFixum';
 
 const placeholderUrl = 'assets/images/pngs/sbn_logo_v0.png';
 
@@ -22,7 +23,7 @@ export class FitsJpgTogglerComponent implements OnInit {
   // --->>>
 
   subscriptions = new Subscription();
-  apiData?: IApiDatum[];
+  apiData?: IApiMovum[] | IApiFixum[];
   // apiSelectedDatum?: IApiDatum;
   apiSelectedDatum?: any;
   // isFitsButtonDisabled = false;

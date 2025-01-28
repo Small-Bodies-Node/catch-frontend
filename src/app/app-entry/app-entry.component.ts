@@ -44,7 +44,6 @@ import {
   RouterOutlet,
 } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
-import { selectApiFixedStatus } from '../ngrx/selectors/api-fixed.selectors';
 
 @Component({
   selector: 'app-entry',
@@ -54,23 +53,23 @@ import { selectApiFixedStatus } from '../ngrx/selectors/api-fixed.selectors';
     SharedModule,
     CoreModule,
     RouterModule,
-    RouterLink,
+    // RouterLink,
     RouterOutlet,
-    RouterLinkActive,
+    // RouterLinkActive,
     //
-    AboutPageComponent,
-    ApisPageComponent,
+    // AboutPageComponent,
+    // ApisPageComponent,
     BackgroundComponent,
-    CometAnimationsComponent,
-    ContactPageComponent,
+    // CometAnimationsComponent,
+    // ContactPageComponent,
     HeaderComponent,
-    HomePageComponent,
-    SettingsPageComponent,
+    // HomePageComponent,
+    // SettingsPageComponent,
     SidenavComponent,
-    TermsPageComponent,
+    // TermsPageComponent,
     FooterComponent,
-    SearchFieldComponent,
-    UnrecognizedNameDialogComponent,
+    // SearchFieldComponent,
+    // UnrecognizedNameDialogComponent,
     StreamingMessagesComponent,
   ],
 })
@@ -182,23 +181,23 @@ export class AppEntryComponent implements OnInit {
       .select(selectApiDataStatus)
       .pipe(takeUntil(this.destroy$))
       .subscribe((status) => {
-        const newIsStreaming = status.code === 'searching';
+        const newIsStreaming = ['initiated', 'searching'].includes(status.code);
         if (this.isStreamingMessage !== newIsStreaming) {
           this.isStreamingMessage = newIsStreaming;
           this.cdr.detectChanges();
         }
       });
 
-    this.store$
-      .select(selectApiFixedStatus)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((fixedStatus) => {
-        const newIsStreaming = fixedStatus.code === 'searching';
-        if (this.isStreamingMessage !== newIsStreaming) {
-          this.isStreamingMessage = newIsStreaming;
-          this.cdr.detectChanges();
-        }
-      });
+    // this.store$
+    //   .select(selectApiFixedStatus)
+    //   .pipe(takeUntil(this.destroy$))
+    //   .subscribe((fixedStatus) => {
+    //     const newIsStreaming = fixedStatus.code === 'searching';
+    //     if (this.isStreamingMessage !== newIsStreaming) {
+    //       this.isStreamingMessage = newIsStreaming;
+    //       this.cdr.detectChanges();
+    //     }
+    //   });
   }
 
   openSidenav(sidenav: MatSidenav) {

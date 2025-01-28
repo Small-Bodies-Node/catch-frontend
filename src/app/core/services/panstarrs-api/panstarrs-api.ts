@@ -1,32 +1,18 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Store } from '@ngrx/store';
 
-import { IApiDataService } from '../../../../models/IApiDataService';
-import { IAppState } from '../../../ngrx/reducers';
-import { TControlKeyForSources } from '../../../../models/TControlKeyForSources';
-import { TApiDataResult } from '../../../../models/TApiDataResult';
-import { TJobStreamResult } from '../../../../models/TJobStreamResult';
-import { IApiServiceStream } from '../../../../models/IApiServiceStream';
-import { ApiDataAction_SetStatus } from '../../../ngrx/actions/api-data.actions';
-import { IApiDataCatchResult } from '../../../../models/IApiDataCatchResult';
-import { IApiDataCaughtResult } from '../../../../models/IApiDataCaughtResult';
-import { apiBaseUrl, apiStreamTimeoutSecs } from '../../../../utils/constants';
 import { IPanstarrsApiResponse } from '../../../../models/IPanstarrsApiResponse';
 
 @Injectable({ providedIn: 'root' })
 export class PanstarrsApiService {
   // --->>>
 
-  constructor(
-    private httpClient: HttpClient,
-    private store$: Store<IAppState>
-  ) {}
+  constructor(private httpClient: HttpClient) {}
 
   getPanstarrsData(
-    ra: number,
-    dec: number,
+    ra: number | string, // Check: works only if panstarrs api receives XX:YY...
+    dec: number | string,
     nDetectionsMin = 10,
     raDecMaxErr = 0.007
   ): Observable<IPanstarrsApiResponse> {

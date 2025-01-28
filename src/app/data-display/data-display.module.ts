@@ -23,50 +23,36 @@ import { SolarViewerComponent } from './solar-viewer/solar-viewer.component';
 import { PanstarrsOverlayComponent } from './panstarrs-overlay/panstarrs-overlay.component';
 import { FitsJpgTogglerComponent } from './fits-jpg-toggler/fits-jpg-toggler.component';
 import { NgxJs9Module } from '../../../projects/ngx-js9/src/public-api';
-import { DesktopView2Component } from './desktop-view-2/desktop-view-2.component';
-import { TableMovingComponent } from './table-moving/table-moving.component';
-import { TableFixedComponent } from './table-fixed/table-fixed.component';
 import { Js9DevComponent } from './js9-dev/js9-dev.component';
-import { MovingViewComponent } from './moving-view/moving-view.component';
-import { FixedViewComponent } from './fixed-view/fixed-view.component';
 import { TitleDataComponent } from './title-data/title-data.component';
-import { TitleFixedComponent } from './title-fixed/title-fixed.component';
-import { FitsJpgTogglerFixedComponent } from './fits-jpg-toggler-fixed/fits-jpg-toggler-fixed.component';
+import { TableDataComponent } from './table-data/table-data.component';
+import { DesktopViewComponent } from './desktop-view/desktop-view.component';
 
 const routes: Routes = [
   { path: '', component: DataDisplayComponent },
-  //
   {
     path: 'js9',
     component: Js9DevComponent,
-    // pathMatch: 'full',
   },
 ];
 
 @NgModule({
   declarations: [
-    // CarouselComponent,
     DataDisplayComponent,
-    DesktopView2Component,
+    DesktopViewComponent,
     FitsJpgTogglerComponent,
-    FitsJpgTogglerFixedComponent,
-    FixedViewComponent,
-    // ImageWheelComponent,
     Js9DevComponent,
     MobileViewComponent,
-    MovingViewComponent,
     PanstarrsOverlayComponent,
     PlotlyGraphComponent,
     PlotlyGraphWrapperComponent,
     SolarViewerComponent,
     StarOverlayComponent,
     TableDataCheckboxesComponent,
-    TableFixedComponent,
-    TableMovingComponent,
+    TableDataComponent,
     TableThumbnailComponent,
     TempComponent,
     TitleDataComponent,
-    TitleFixedComponent,
   ],
   imports: [
     CommonModule,
