@@ -52,9 +52,9 @@ export class PanstarrsOverlayComponent implements OnInit {
               : 0;
           this.dec =
             'dec' in this.apiSelectedDatum
-              ? this.apiSelectedDatum.ra
+              ? this.apiSelectedDatum.dec
               : 'dec' in apiDataStatus.search.searchParams
-              ? apiDataStatus.search.searchParams.ra
+              ? apiDataStatus.search.searchParams.dec
               : 0;
 
           console.log('this.ra', this.ra, 'this.dec', this.dec);

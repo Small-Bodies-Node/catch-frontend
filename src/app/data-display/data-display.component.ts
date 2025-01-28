@@ -4,6 +4,8 @@ import { IAppState } from '../ngrx/reducers';
 import { ActivatedRoute, Router } from '@angular/router';
 import { combineLatest, Subscription } from 'rxjs';
 import { distinctUntilChanged, map } from 'rxjs/operators';
+import { MatSnackBar } from '@angular/material/snack-bar';
+
 import { headerHeightPx } from '../../utils/constants';
 import { IApiMovum } from '../../models/IApiMovum';
 import { IApiFixum } from '../../models/IApiFixum';
@@ -19,7 +21,6 @@ import {
 import { TControlKeyForSources } from '../../models/TControlKeyForSources';
 import { TApiDataSearch } from '../../models/TDataSearch';
 import { ApiDataAction_SetStatus } from '../ngrx/actions/api-data.actions';
-import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-data-display',
@@ -28,7 +29,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
   standalone: false,
 })
 export class DataDisplayComponent implements OnInit, OnDestroy {
-  //
+  // --->
 
   maxHeight = `calc(100vh - ${headerHeightPx}px)`;
 
@@ -98,11 +99,11 @@ export class DataDisplayComponent implements OnInit, OnDestroy {
           this.target =
             'target' in queryParams ? queryParams['target'] : undefined;
           this.cached =
-            'cached' in queryParams ? queryParams['cached'] : undefined;
+            'cached' in queryParams ? queryParams['cached'] === 'true' : true;
           this.uncertainty_ellipse =
             'uncertainty_ellipse' in queryParams
-              ? queryParams['uncertainty_ellipse']
-              : undefined;
+              ? queryParams['uncertainty_ellipse'] === 'true'
+              : false;
           this.padding =
             'padding' in queryParams ? queryParams['padding'] : undefined;
 

@@ -76,10 +76,10 @@ export class StreamingMessagesComponent implements OnDestroy {
     this.msgs = [
       `Target: ` + target,
       `Cached: ` + cached,
-      `Uncertainty ellipse: ` + uncertainty_ellipse,
+      `Uncertainty Ellipse: ` + uncertainty_ellipse,
       `Padding: ` + padding,
-      `StartTime: ` + (start_date || 'null'),
-      `StopTime: ` + (stop_date || 'null'),
+      `Start Date: ` + (start_date || 'null'),
+      `Stop Date: ` + (stop_date || 'null'),
     ];
     this.sources = sources?.map(
       (source) => controlLabelsDictForSources[source]
@@ -100,10 +100,10 @@ export class StreamingMessagesComponent implements OnDestroy {
     this.msgs = [
       `ra: ` + ra,
       `dec: ` + dec,
-      `IntersectionType: ` + intersection_type,
+      `Intersection Type: ` + intersection_type,
       `Radius: ` + radius,
-      `StartTime: ` + (start_date || 'N/A'),
-      `StopTime: ` + (stop_date || 'N/A'),
+      `Start Date: ` + (start_date || 'N/A'),
+      `Stop Date: ` + (stop_date || 'N/A'),
     ];
     this.sources = sources?.map(
       (source) => controlLabelsDictForSources[source]

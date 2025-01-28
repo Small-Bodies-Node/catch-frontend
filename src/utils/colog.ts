@@ -42,6 +42,6 @@ export function colog(...args: any[]): void {
 }
 
 // Usage examples:
-colog('This is a red message', 'red');
-colog('Multiple', 'values', 'are', 'here', 'blue');
-colog('This is a default black message');
+// colog('This is a red message', 'red');
+// colog('Multiple', 'values', 'are', 'here', 'blue');
+// colog('This is a default black message');

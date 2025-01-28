@@ -21,7 +21,7 @@ export function getUrlForCatchRoute(input: ISearchParamsMoving): string {
   const startDateStr = start_date ? `&start_date=${start_date}` : '';
   const stopDateStr = stop_date ? `&stop_date=${stop_date}` : '';
   const sourcesStr = sourcesToUrlString(sources);
-  const paddingStr = padding ? `&padding=${padding}` : '';
+  const paddingStr = padding ? `&padding=${padding}` : '&padding=0';
   const uncertaintyEllipseStr = uncertainty_ellipse
     ? `&uncertainty_ellipse=true`
     : '';
