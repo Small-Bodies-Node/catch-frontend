@@ -1,27 +1,26 @@
 import { createReducer, on } from '@ngrx/store';
+
 import {
   ApiDataAction_SetSelectedDatum,
   ApiDataAction_SetData,
   ApiDataAction_SetStatus,
   ApiDataAction_SetJobId,
   ApiDataAction_SetDownloadRowState,
+  ApiDataAction_SetShownColState,
 } from '../actions/api-data.actions';
-import {
-  IApiDataSetStatus,
-  TApiDataSetStatus,
-} from '../../../models/TApiDataSetStatus';
+import { TApiDataStatus } from '../../../models/TApiDataStatus';
 import { IApiMovum } from '../../../models/IApiMovum';
-import { TApiDataColState } from '../../../models/TApiDataColState';
+import { TColStateMoving } from '../../../models/TColStateMoving';
 import { TDownloadRowsState } from '../../../models/TDownloadRowsState';
-import { apiDataInitColState } from '../../../utils/apiDataInitColState';
 import { IApiFixum } from '../../../models/IApiFixum';
+import { TColStateFixed } from '../../../models/TColStateFixed';
 
 export interface IApiDataSubstate {
   apiDataSelectedDatum?: IApiMovum | IApiFixum;
-  apiDataStatus: TApiDataSetStatus;
+  apiDataStatus: TApiDataStatus;
   apiData?: IApiMovum[] | IApiFixum[];
   apiDataJobId?: string;
-  apiDataColumnState: Partial<TApiDataColState>;
+  apiDataShownColState?: TColStateMoving | TColStateFixed;
   apiDataDownloadRowState: TDownloadRowsState;
 }
 
@@ -34,11 +33,11 @@ export const initialState: IApiDataSubstate = {
     message: 'Ready to fetch data',
     search: undefined,
   },
-  apiDataColumnState: { ...apiDataInitColState },
+  apiDataShownColState: undefined,
   apiDataDownloadRowState: {},
 };
 
-export const apiDataReducer = createReducer(
+export const apiDataReducer = createReducer<IApiDataSubstate>(
   initialState,
 
   on(ApiDataAction_SetSelectedDatum, (state, { apiDatum }) => ({
@@ -50,6 +49,15 @@ export const apiDataReducer = createReducer(
     ...state,
     apiDataDownloadRowState: { ...newDownloadRowState },
   })),
+
+  on(ApiDataAction_SetShownColState, (state, { apiDataShownColState }) => {
+    console.log('apiShownColState', apiDataShownColState);
+    const updatedState: IApiDataSubstate = {
+      ...state,
+      apiDataShownColState: { ...apiDataShownColState },
+    };
+    return updatedState;
+  }),
 
   on(ApiDataAction_SetData, (state, { apiData }) => ({
     ...state,
@@ -63,10 +71,6 @@ export const apiDataReducer = createReducer(
 
   on(ApiDataAction_SetStatus, (state, newStatus) => ({
     ...state,
-    apiDataStatus: {
-      /* We do not always want to overwrite the entirety of the last status! */
-      ...state.apiDataStatus,
-      ...newStatus,
-    },
+    apiDataStatus: { ...newStatus },
   }))
 );

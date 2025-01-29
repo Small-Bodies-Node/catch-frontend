@@ -11,7 +11,7 @@ import {
 import { IApiMovum } from '../../../models/IApiMovum';
 import { headerHeightPx } from '../../../utils/constants';
 import { IApiFixum } from '../../../models/IApiFixum';
-import { TApiDataSetStatus } from '../../../models/TApiDataSetStatus';
+import { TApiDataStatus } from '../../../models/TApiDataStatus';
 
 @Component({
   selector: 'app-desktop-view',
@@ -24,7 +24,7 @@ export class DesktopViewComponent implements OnInit {
 
   maxHeight = `calc(100vh - ${headerHeightPx}px)`;
   apiData?: IApiMovum[] | IApiFixum[];
-  apiDataStatus?: TApiDataSetStatus;
+  apiDataStatus?: TApiDataStatus;
   movingOrFixed?: 'moving' | 'fixed';
 
   subscriptions = new Subscription();

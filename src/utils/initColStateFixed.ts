@@ -1,4 +1,4 @@
-import { TApiFixedColState } from '../models/TApiFixedColState';
+import { TColStateFixed } from '../models/TColStateFixed';
 
 /**
  * Determines whether a column is displayed and/or displayable in the table
@@ -6,8 +6,7 @@ import { TApiFixedColState } from '../models/TApiFixedColState';
  * in the checkbox dialog
  */
 
-// export const apiDataInitColState: Readonly<Partial<TApiDataColState>> = {
-export const apiFixedInitColState: Readonly<TApiFixedColState> = {
+export const initColStateFixed: Readonly<TColStateFixed> = {
   date: true,
   mjd_start: true,
   mjd_stop: true,

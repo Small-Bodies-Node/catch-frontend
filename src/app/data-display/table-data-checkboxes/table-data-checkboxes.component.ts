@@ -2,10 +2,10 @@ import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { MatCheckboxChange } from '@angular/material/checkbox';
 import { Store } from '@ngrx/store';
 import {
+  combineLatest,
   distinctUntilChanged,
   interval,
   map,
-  Observable,
   Subscription,
 } from 'rxjs';
 
@@ -13,13 +13,20 @@ import { IAppState } from '../../ngrx/reducers';
 import { apiDataLabels } from '../../../utils/apiDataLabels';
 import { TApiDataLabels } from '../../../models/TApiDataLabels';
 import { TApiDataColName } from '../../../models/TApiDataColName';
-import { TApiDataColState } from '../../../models/TApiDataColState';
 import { getOrderedColNames } from '../../../utils/getOrderedColNames';
-import { apiDataInitColState } from '../../../utils/apiDataInitColState';
-import { TableDataCheckboxAction_SetState } from '../../ngrx/actions/table-checkbox.actions';
-import { selectTableDataCheckboxState } from '../../ngrx/selectors/table-checkbox.selectors';
 import { MatDialogRef } from '@angular/material/dialog';
 import { selectScreenDeviceEffectiveDevice } from '../../ngrx/selectors/screen-device.selectors';
+import {
+  selectApiDataShownColState,
+  selectApiDataStatus,
+} from '../../ngrx/selectors/api-data.selectors';
+import { ApiDataAction_SetShownColState } from '../../ngrx/actions/api-data.actions';
+import { IApiMovum } from '../../../models/IApiMovum';
+import { IApiFixum } from '../../../models/IApiFixum';
+import { TColStateData } from '../../../models/TColStateData';
+import { TMovingVsFixed } from '../../../models/TMovingVsFixed';
+import { initColStateMoving } from '../../../utils/initColStateMoving';
+import { initColStateFixed } from '../../../utils/initColStateFixed';
 
 @Component({
   selector: 'app-table-data-checkboxes',
@@ -34,20 +41,16 @@ export class TableDataCheckboxesComponent implements OnInit {
   checkboxesContainer?: ElementRef<HTMLDivElement>;
 
   subscriptions = new Subscription();
-  colState: Partial<TApiDataColState> = { ...apiDataInitColState };
+  colState?: TColStateData;
   labels: Readonly<TApiDataLabels> = apiDataLabels;
-  containerWidth$: Observable<number>;
+  containerWidth: number = -1;
   isSpinner = true;
   isMobile = false;
+  searchType?: TMovingVsFixed;
 
-  allColNames: TApiDataColName[] = getOrderedColNames().filter(
-    (colName) =>
-      ![
-        //
-        'preview_url',
-        'source_name',
-      ].includes(colName)
-  );
+  // allColNames?: (keyof IApiMovum)[] | (keyof IApiFixum)[];
+  // allColNames?: (keyof IApiMovum | keyof IApiFixum)[];
+  allColNames?: (keyof TColStateData)[];
 
   constructor(
     private $store: Store<IAppState>,
@@ -56,12 +59,23 @@ export class TableDataCheckboxesComponent implements OnInit {
     // --->>
 
     this.subscriptions.add(
-      this.$store.select(selectTableDataCheckboxState).subscribe((colState) => {
-        this.colState = { ...colState };
-        setTimeout(() => {
-          this.isSpinner = false;
-        }, 1000);
-      })
+      combineLatest([
+        this.$store.select(selectApiDataShownColState),
+        this.$store.select(selectApiDataStatus),
+      ])
+        .pipe(distinctUntilChanged())
+        .subscribe(([colState, apiDataStatus]) => {
+          const { search } = apiDataStatus;
+          if (!search || !colState) return;
+          const { searchType } = search;
+          this.searchType = searchType;
+          const isMoving = searchType === 'moving';
+          this.allColNames = getOrderedColNames(isMoving);
+          this.colState = { ...colState };
+          setTimeout(() => {
+            this.isSpinner = false;
+          }, 1000);
+        })
     );
 
     this.subscriptions.add(
@@ -72,18 +86,18 @@ export class TableDataCheckboxesComponent implements OnInit {
         })
     );
 
-    this.containerWidth$ = interval(50).pipe(
-      map((_) => {
-        const w = this.checkboxesContainer
-          ? this.checkboxesContainer.nativeElement.offsetWidth
-          : 100;
-        return w;
-      }),
-      distinctUntilChanged()
-      /*       map((width): number => {
-        console.log('width', width);
-        return width;
-      }) */
+    this.subscriptions.add(
+      interval(50)
+        .pipe(
+          map((_) => {
+            const w = this.checkboxesContainer
+              ? this.checkboxesContainer.nativeElement.offsetWidth
+              : 100;
+            return w;
+          }),
+          distinctUntilChanged()
+        )
+        .subscribe((w) => (this.containerWidth = w))
     );
   }
 
@@ -92,19 +106,20 @@ export class TableDataCheckboxesComponent implements OnInit {
   ngOnDestroy() {}
 
   updateColState(e: MatCheckboxChange, colName: TApiDataColName) {
+    if (!this.colState || !this.searchType) return;
     this.colState = { ...this.colState, [colName]: e.checked };
-    console.log('>>> ColName', colName, this.colState);
     this.$store.dispatch(
-      TableDataCheckboxAction_SetState({
-        newTableDataCheckboxState: { ...this.colState },
+      ApiDataAction_SetShownColState({
+        apiDataShownColState: this.colState,
       })
     );
   }
 
   selectAll() {
+    if (!this.colState) return;
     const newColState = { ...this.colState };
     Object.keys(newColState).forEach((key: any) => {
-      newColState[key as keyof TApiDataColState] = true;
+      newColState[key as keyof TColStateData] = true;
     });
     this.isSpinner = true;
 
@@ -112,22 +127,29 @@ export class TableDataCheckboxesComponent implements OnInit {
 
     setTimeout(() => {
       this.$store.dispatch(
-        TableDataCheckboxAction_SetState({
-          newTableDataCheckboxState: { ...newColState },
+        // TableDataCheckboxAction_SetState({
+        //   newTableDataCheckboxState: { ...newColState },
+        // })
+        ApiDataAction_SetShownColState({
+          apiDataShownColState: newColState,
         })
       );
     }, 1000);
   }
 
   resetAll() {
+    if (!this.searchType) return;
     this.isSpinner = true;
     setTimeout(() => {
       this.$store.dispatch(
-        TableDataCheckboxAction_SetState({
-          newTableDataCheckboxState: apiDataInitColState,
+        ApiDataAction_SetShownColState({
+          apiDataShownColState:
+            this.searchType === 'moving'
+              ? initColStateMoving
+              : initColStateFixed,
         })
       );
-    }, 1000);
+    }, 500);
   }
 
   closeDialog() {
@@ -145,5 +167,20 @@ export class TableDataCheckboxesComponent implements OnInit {
       );
 
     return (labels && labels[colName] && labels[colName]?.label) || '';
+  }
+
+  isChecked(colName: keyof TColStateData) {
+    if (!this.colState) return false;
+    const x = this.colState;
+    return this.colState[colName];
+  }
+
+  getTooltip(colName: keyof TColStateData) {
+    //
+
+    if (!this.labels) return null;
+    return this.labels[colName]?.description || null;
+
+    // <!-- // (labels && labels[colName] && labels[colName]?.description) || '' -->
   }
 }

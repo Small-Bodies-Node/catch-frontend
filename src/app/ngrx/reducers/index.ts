@@ -13,10 +13,6 @@ import {
 } from './site-settings.reducer';
 import { IApiDataSubstate, apiDataReducer } from './api-data.reducer';
 import {
-  ITableCheckboxSubstate,
-  tableCheckboxReducer,
-} from './table-checkbox.reducer';
-import {
   IObjectNameMatchSubstate,
   objectNameMatchReducer,
 } from './object-name-match.reducer';
@@ -27,7 +23,6 @@ export interface IAppState {
   objectNameMatch: IObjectNameMatchSubstate;
   screenDevice: IScreenDeviceSubstate;
   siteSettingsSubstate: ISiteSettingsSubstate;
-  tableCheckbox: ITableCheckboxSubstate;
   // ---
   router: RouterReducerState;
 }
@@ -38,7 +33,6 @@ export const reducers: ActionReducerMap<IAppState, any> = {
   objectNameMatch: objectNameMatchReducer,
   screenDevice: screenDeviceReducer,
   siteSettingsSubstate: siteSettingsReducer,
-  tableCheckbox: tableCheckboxReducer,
   // ---
   router: routerReducer,
 };

@@ -6,10 +6,12 @@ import { IAppState } from '../../ngrx/reducers';
 import { IApiMovum } from '../../../models/IApiMovum';
 import {
   selectApiData,
+  selectApiDataStatus,
   selectApiSelectedDatum,
 } from '../../ngrx/selectors/api-data.selectors';
 import { IApiFixum } from '../../../models/IApiFixum';
 import { colog } from '../../../utils/colog';
+import { TApiDataStatus } from '../../../models/TApiDataStatus';
 
 const placeholderUrl = 'assets/images/pngs/sbn_logo_v0.png';
 
@@ -24,6 +26,7 @@ export class FitsJpgTogglerComponent implements OnInit {
 
   subscriptions = new Subscription();
   apiData?: IApiMovum[] | IApiFixum[];
+  apiDataStatus?: TApiDataStatus;
   apiSelectedDatum?: IApiMovum | IApiFixum;
   isButtonRaised = false;
   isFits = false;
@@ -32,6 +35,7 @@ export class FitsJpgTogglerComponent implements OnInit {
   heightPxls = 0;
   isFitsLoaded = false;
   apiDataWithProblematicFitsUrls: string[] = [];
+  isThumbnailReorientated = true;
 
   @ViewChild('FitsJpgTogglerContainer')
   fitsJpgTogglerContainer?: ElementRef<HTMLDivElement>;
@@ -42,6 +46,16 @@ export class FitsJpgTogglerComponent implements OnInit {
     this.subscriptions.add(
       this.store$.select(selectApiData).subscribe((apiData) => {
         this.apiData = apiData;
+      })
+    );
+
+    this.subscriptions.add(
+      this.store$.select(selectApiDataStatus).subscribe((apiDataStatus) => {
+        this.apiDataStatus = apiDataStatus;
+        const { search } = apiDataStatus;
+        if (!search) return;
+        const { searchType } = search;
+        this.isThumbnailReorientated = searchType === 'moving';
       })
     );
 
@@ -129,5 +143,16 @@ export class FitsJpgTogglerComponent implements OnInit {
       ?.map((apiDatum) => apiDatum.product_id)
       .indexOf(this.apiSelectedDatum?.product_id || '');
     return '*C' + i;
+  }
+
+  /**
+   * Switching off pansstarrs for fixed for now because too confusing with orientations of images being all over the place
+   */
+  isPanstarrsOverlay() {
+    if (!this.apiDataStatus) return false;
+    const { search } = this.apiDataStatus;
+    if (!search) return false;
+    const { searchType } = search;
+    return searchType === 'moving';
   }
 }

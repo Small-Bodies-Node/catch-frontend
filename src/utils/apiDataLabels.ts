@@ -13,6 +13,11 @@ export const apiDataLabels: Readonly<TApiDataLabels> = {
     description: 'Full frame image from data archive',
     label: 'Archive URL',
   },
+  'css:telescope': {
+    label: 'Telescope',
+    description: 'Telescope',
+  },
+
   cutout_url: {
     description: 'Cutout image around target ephemeris',
     label: 'Cutout URL',
@@ -38,6 +43,11 @@ export const apiDataLabels: Readonly<TApiDataLabels> = {
     fractionSize: 3,
     label: '\u0394',
   },
+  diff_url: {
+    label: 'Difference Image',
+    description: 'Difference image between cutout and reference images',
+  },
+
   dra: {
     description: 'Right Ascension rate of change: dRA/dt cos(Dec) (arcsec/hr)',
     fractionSize: 2,
@@ -67,10 +77,16 @@ export const apiDataLabels: Readonly<TApiDataLabels> = {
     description: 'Filter name',
     label: 'Filter',
   },
+  fov: {
+    label: 'FOV',
+    description: 'Field of View (arcsec)',
+  },
   instrument: {
-    description: 'XXX',
+    description: 'Telescope/instrument',
     label: 'Instrument',
   },
+  jd: { label: 'Julian Date', description: 'Julian date' },
+
   maglimit: {
     description: 'Detection limit (mag. Definition varies by survey.',
     label: 'magLimit',
@@ -97,14 +113,27 @@ export const apiDataLabels: Readonly<TApiDataLabels> = {
     description: 'Unique data product identifier, format varies by data source',
     label: 'Product ID',
   },
+  'ps1:frame_id': {
+    description: 'Pan-STARRS1 frame identifier',
+    label: 'frameID',
+  },
+  'ps1:projection_id': {
+    label: 'PS1 Projection ID',
+    description: 'Pan-STARRS1 image projection identifier',
+  },
+  'ps1:skycell_id': {
+    label: 'PS1 Skycell ID',
+    description: 'Pan-STARRS1 image skycell identifier',
+  },
+
   ra: {
     description: 'Object Right Ascension (deg)',
     fractionSize: 4,
     label: 'RA',
   },
   rdot: {
-    description: 'XXX',
-    // fractionSize: 4,
+    description: 'Rate of change of observer-target distance (km/s)',
+    fractionSize: 4,
     label: 'RDot',
   },
   retrieved: {
@@ -123,10 +152,28 @@ export const apiDataLabels: Readonly<TApiDataLabels> = {
     fractionSize: 0,
     label: 'PA(\u2299)',
   },
+
   seeing: {
     description: 'Point source FWHM (arcsec)',
     fractionSize: 0,
     label: 'Seeing',
+  },
+
+  'skymapper:field_id': {
+    label: 'SkyMapper Field ID',
+    description: 'SkyMapper Field ID',
+  },
+  'skymapper:image_type': {
+    description: 'SkyMapper image type',
+    label: 'SMIT',
+  },
+  'skymapper:sb_mag': {
+    label: 'SM SB mag',
+    description: 'SkyMapper Surface Brightness Magnitude',
+  },
+  'skymapper:zpapprox': {
+    description: 'SkyMapper approximate zero point',
+    label: 'SMZP',
   },
   source: {
     description: 'Observational data source key',
@@ -136,6 +183,11 @@ export const apiDataLabels: Readonly<TApiDataLabels> = {
     description: 'Observational data source name',
     label: 'Source Name',
   },
+  thumbnail_url: {
+    label: 'Thumbnail URL',
+    description: 'Thumbnail image around target ephemeris',
+  },
+
   tmtp: {
     description: 'XXX',
     // fractionSize: 1,

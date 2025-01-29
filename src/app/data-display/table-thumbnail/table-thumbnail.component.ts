@@ -31,6 +31,7 @@ export class TableThumbnailComponent implements OnChanges {
   @Input() isPriority = false;
   @Input() label = '-';
   @Input() diameterPxls: number = 30;
+  @Input() isReorientated = false;
 
   imageSrc: string | undefined;
   isImageLoaded: boolean = false; // Controls spinner
@@ -117,6 +118,7 @@ export class TableThumbnailComponent implements OnChanges {
    * Some surveys need to be flipped, etc. to have ra and dec increase +ve in consistent dirn
    */
   getSurveyScaleTransform() {
+    if (!this.isReorientated) return 'scale(1, 1)';
     if (!this.input) return 'scale(1, 1)';
     if (this.input.source === 'neat_palomar_tricam') {
       // return 'scale(1, 1)';

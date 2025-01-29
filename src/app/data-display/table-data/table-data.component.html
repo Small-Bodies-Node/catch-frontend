@@ -139,8 +139,15 @@
           *matCellDef="let row; let i = index"
           [ngClass]="{ 'highlighted-non-sticky-cell': isRowSelected(row) }"
           (click)="selectRowDatum(i)"
+          [matTooltip]="getTooltipForCell(row[key], key)"
         >
+          @if(isHttp(row[key]) ){
+          <a [href]="row[key]" target="_blank" rel="noopener noreferrer">
+            LINK
+          </a>
+          }@else{
           {{ formatCellEntry(key, row[key]) }}
+          }
         </td>
       </ng-container>
       }
@@ -156,7 +163,7 @@
 
       <!-- Row shown when there is no matching data. -->
       <tr class="mat-row" *matNoDataRow>
-        <td class="mat-cell" [attr.colspan]="shownHideableCols.length">
+        <td class="mat-cell" [attr.colspan]="shownHideableCols?.length || 0">
           <!-- No data matching the filter "{{ input.value }}" -->
           No data matching the filter
         </td>

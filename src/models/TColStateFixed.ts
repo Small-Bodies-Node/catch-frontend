@@ -1,5 +1,5 @@
 import { IApiFixum } from './IApiFixum';
 
-export type TApiFixedColState = {
+export type TColStateFixed = {
   [Key in keyof IApiFixum]: boolean;
 };

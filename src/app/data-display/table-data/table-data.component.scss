@@ -2,7 +2,7 @@
   // overflow: scroll;
   width: 100%;
   height: 100%;
-  overflow: auto; // Important: this is how non-sticky sections scroll
+  // overflow: auto; // Important: this is how non-sticky sections scroll
   // background-color: transparent;
 
   $footerHeight: 60px;
@@ -50,7 +50,7 @@
     align-items: flex-start; /* Align items to the top */
     // padding: 0 10px;
     height: $footerHeight;
-    overflow: hidden;
+    // overflow: hidden;
     background-color: black;
     // border-top: 1px solid #e0e0e0;
     // gap: 10px; /* Optional: Adds space between items */

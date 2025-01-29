@@ -33,3 +33,8 @@ export const selectApiDataDownloadRowState = createSelector(
   (state: IAppState) => state.apiData,
   (substate: IApiDataSubstate) => substate.apiDataDownloadRowState
 );
+
+export const selectApiDataShownColState = createSelector(
+  (state: IAppState) => state.apiData,
+  (substate: IApiDataSubstate) => substate.apiDataShownColState
+);

@@ -9,7 +9,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { headerHeightPx } from '../../utils/constants';
 import { IApiMovum } from '../../models/IApiMovum';
 import { IApiFixum } from '../../models/IApiFixum';
-import { TApiDataSetStatus } from '../../models/TApiDataSetStatus';
+import { TApiDataStatus } from '../../models/TApiDataStatus';
 import {
   intersectionTypes,
   TIntersectionType,
@@ -34,7 +34,7 @@ export class DataDisplayComponent implements OnInit, OnDestroy {
   maxHeight = `calc(100vh - ${headerHeightPx}px)`;
 
   apiData?: IApiMovum[] | IApiFixum[];
-  apiDataStatus?: TApiDataSetStatus;
+  apiDataStatus?: TApiDataStatus;
   subscriptions = new Subscription();
 
   /**

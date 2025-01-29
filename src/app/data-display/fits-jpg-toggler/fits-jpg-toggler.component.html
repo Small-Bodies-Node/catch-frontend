@@ -19,7 +19,9 @@
     class="table-thumbnail-wrapper"
     [ngStyle]="{ width: widthPxls + 'px', height: heightPxls + 'px' }"
   >
+    @if(isPanstarrsOverlay()){
     <app-panstarrs-overlay></app-panstarrs-overlay>
+    }
     <app-table-thumbnail
       [input]="this.apiSelectedDatum"
       [label]="getLabel()"
@@ -28,6 +30,7 @@
       [height]="heightPxls + 'px'"
       [diameterPxls]="150"
       [isPriority]="true"
+      [isReorientated]="isThumbnailReorientated"
     ></app-table-thumbnail>
   </div>
 

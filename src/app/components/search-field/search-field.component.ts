@@ -325,6 +325,7 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
     const intersection_type = controls.intersection_type_input_control.value;
     const start_date = controls.start_time_input_control.value;
     const stop_date = controls.stop_time_input_control.value;
+    const sources = this.getSelectedSources();
 
     this.store$.dispatch(
       ApiDataAction_SetStatus({
@@ -337,6 +338,7 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
             radius,
             start_date,
             stop_date,
+            sources,
           },
         },
         message: 'Starting fixed-target search....',

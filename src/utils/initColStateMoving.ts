@@ -1,4 +1,4 @@
-import { TApiDataColState } from '../models/TApiDataColState';
+import { TColStateMoving } from '../models/TColStateMoving';
 
 /**
  * Determines whether a column is displayed and/or displayable in the table
@@ -6,8 +6,7 @@ import { TApiDataColState } from '../models/TApiDataColState';
  * in the checkbox dialog
  */
 
-// export const apiDataInitColState: Readonly<Partial<TApiDataColState>> = {
-export const apiDataInitColState: Readonly<TApiDataColState> = {
+export const initColStateMoving: Readonly<TColStateMoving> = {
   // ================
   // Not shown at all
   // ================

@@ -23,13 +23,12 @@ import { MatSort } from '@angular/material/sort';
 import { IApiMovum } from '../../../models/IApiMovum';
 import { IAppState } from '../../ngrx/reducers';
 import { apiDataLabels } from '../../../utils/apiDataLabels';
-import { apiDataInitColState } from '../../../utils/apiDataInitColState';
-import { TApiDataColState } from '../../../models/TApiDataColState';
-import { selectTableDataCheckboxState } from '../../ngrx/selectors/table-checkbox.selectors';
+import { TColStateMoving } from '../../../models/TColStateMoving';
 import {
   selectApiDataDownloadRowState,
   selectApiData,
   selectApiSelectedDatum,
+  selectApiDataShownColState,
 } from '../../ngrx/selectors/api-data.selectors';
 import {
   ApiDataAction_SetDownloadRowState,
@@ -41,8 +40,12 @@ import { ImageFetchService } from '../../core/services/fetch-image/fetch-image.s
 import { PlotlyGraphWrapperComponent } from '../plotly-graph/plotly-graph.component';
 import { SelectTableRowsDirective } from '../../shared/directives/select-table-rows.directive';
 import { IApiFixum } from '../../../models/IApiFixum';
+import { TColStateFixed } from '../../../models/TColStateFixed';
+import { initColStateFixed } from '../../../utils/initColStateFixed';
+import { TColStateData } from '../../../models/TColStateData';
 
 type TColName = keyof (IApiMovum | IApiFixum);
+type TColState = keyof TColStateData;
 
 @Component({
   selector: 'app-table-data',
@@ -70,14 +73,9 @@ export class TableDataComponent
   apiSelectedDatum?: IApiMovum | IApiFixum;
   allApiData?: IApiMovum[] | IApiFixum[];
   paginatedApiData?: IApiMovum[] | IApiFixum[];
-  colState: Partial<TApiDataColState> = { ...apiDataInitColState };
-  shownHideableCols: Partial<TColName>[] = Object.keys(
-    apiDataInitColState
-  ).filter(
-    (key) =>
-      apiDataInitColState[key as keyof TApiDataColState] &&
-      ![...this.nonHideableCols].includes(key)
-  ) as Partial<TColName>[];
+  colState?: TColStateData;
+  shownHideableCols?: Partial<keyof TColStateData>[] = [];
+
   subscriptions = new Subscription();
   isDownloadAllCheckboxChecked = false;
   isDownloadAllCheckboxIndeterminate = false;
@@ -132,13 +130,19 @@ export class TableDataComponent
         })
     );
     this.subscriptions.add(
-      this.store$.select(selectTableDataCheckboxState).subscribe((colState) => {
+      this.store$.select(selectApiDataShownColState).subscribe((colState) => {
+        //
         this.colState = colState;
-        this.shownHideableCols = Object.keys(this.colState).filter(
+        if (!this.colState) return;
+
+        const x = Object.keys(this.colState) as (keyof TColStateData)[];
+        const y = x.filter(
           (key) =>
-            this.colState[key as keyof TApiDataColState] &&
-            ![...this.nonHideableCols].includes(key)
-        ) as TColName[];
+            this.colState![key as keyof TColStateData] &&
+            !this.nonHideableCols.includes(key)
+        );
+
+        this.shownHideableCols = y;
         this.allShownCols = [
           ...this.nonHideableCols,
           ...this.shownHideableCols,
@@ -387,5 +391,17 @@ export class TableDataComponent
       PlotlyGraphWrapperComponent,
       { data: { xDataKey } }
     );
+  }
+
+  isHttp(entry: any) {
+    if (typeof entry === 'string' && entry.includes('http')) {
+      return true;
+    }
+    return false;
+  }
+
+  getTooltipForCell(entry: any, key: string) {
+    if (key === 'product_id') return entry;
+    return null;
   }
 }

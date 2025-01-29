@@ -10,6 +10,7 @@ import {
   ApiDataAction_SetDownloadRowState,
   ApiDataAction_SetJobId,
   ApiDataAction_SetSelectedDatum,
+  ApiDataAction_SetShownColState,
   ApiDataAction_SetStatus,
 } from '../actions/api-data.actions';
 import { ApiDataService } from '../../core/services/api-data/api-data.service';
@@ -20,6 +21,8 @@ import { getNewDownloadState } from '../../../utils/getNewDownloadState';
 import { getSearchDescriptor } from '../../../utils/getSearchDescriptor';
 import { colog } from '../../../utils/colog';
 import { summarizeAction } from '../../../utils/summarizeAction';
+import { initColStateFixed } from '../../../utils/initColStateFixed';
+import { initColStateMoving } from '../../../utils/initColStateMoving';
 
 export const setApiStatus$ = createEffect(
   (
@@ -145,11 +148,20 @@ export const fetchApiDataResults$ = createEffect(
             const apiData = apiDataResult.data;
             const isDataFound = !!apiData.length;
             const newDownloadRowState = getNewDownloadState(apiData);
+            const apiDataShownColState =
+              searchType === 'moving' ? initColStateMoving : initColStateFixed;
+
+            // initColStateMoving : initColStateFixed;
 
             if (true) {
               colog('Summary of fetch:', 'cyan');
               colog('isDataFound:', isDataFound, 'cyan');
               colog('job_id:', job_id, 'cyan');
+              colog(
+                'newShownColState:',
+                JSON.stringify(apiDataShownColState, null, 2),
+                'cyan'
+              );
             }
 
             /**
@@ -160,6 +172,7 @@ export const fetchApiDataResults$ = createEffect(
               of(ApiDataAction_SetJobId({ job_id: job_id || 'N/A' })),
               of(ApiDataAction_SetSelectedDatum({ apiDatum: apiData[0] })),
               of(ApiDataAction_SetDownloadRowState({ newDownloadRowState })),
+              of(ApiDataAction_SetShownColState({ apiDataShownColState })),
               of(
                 ApiDataAction_SetStatus({
                   search,
@@ -169,8 +182,7 @@ export const fetchApiDataResults$ = createEffect(
               )
             );
           }),
-          //
-
+          // ...
           takeUntil(
             actions$.pipe(
               ofType(ApiDataAction_FetchData),
