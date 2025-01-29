@@ -12,6 +12,9 @@ import { ImageFetchService } from '../../core/services/fetch-image/fetch-image.s
 import { IApiMovum } from '../../../models/IApiMovum';
 import { IApiFixum } from '../../../models/IApiFixum';
 
+let instanceCount = 0;
+const instanceDelayMs = 500;
+
 @Component({
   selector: 'app-table-thumbnail',
   templateUrl: './table-thumbnail.component.html',
@@ -36,6 +39,7 @@ export class TableThumbnailComponent implements OnChanges {
   imageSrc: string | undefined;
   isImageLoaded: boolean = false; // Controls spinner
   isImageInQueue: boolean = false; // Prevents duplicate calls to fetchImage
+  placeholderImage: string = 'assets/images/placeholder.png';
 
   @Output() onLoadEventMessage = new EventEmitter<string>();
 
@@ -49,7 +53,9 @@ export class TableThumbnailComponent implements OnChanges {
   constructor(
     private imageFetchService: ImageFetchService,
     private changeDetector: ChangeDetectorRef
-  ) {}
+  ) {
+    instanceCount++;
+  }
 
   ngOnChanges(changes: SimpleChanges): void {
     // console.log('changes', JSON.stringify(changes));
@@ -63,17 +69,25 @@ export class TableThumbnailComponent implements OnChanges {
       };
     }
 
+    const delayMs = (instanceCount % 5) * instanceDelayMs;
+
     // Repeat request to image queue if isPriority changes
     if (changes['isPriority']?.currentValue) {
       this.isImageInQueue = false;
-      if (this.input) this.loadImage(this.input);
+      if (this.input) {
+        setTimeout(() => {
+          this.loadImage(changes['input'].currentValue);
+        }, delayMs);
+      }
     }
 
     // On component initialization, load the image
     if (changes['input']?.currentValue) {
       this.isImageLoaded = false;
       this.isImageInQueue = false;
-      this.loadImage(changes['input'].currentValue);
+      setTimeout(() => {
+        this.loadImage(changes['input'].currentValue);
+      }, delayMs);
     }
   }
 
@@ -81,10 +95,11 @@ export class TableThumbnailComponent implements OnChanges {
     //
 
     // Prevent multiple calls to fetchImage
-    if (this.isImageLoaded) return;
     if (this.isImageInQueue) return;
-    if (!preview_url) return;
     this.isImageInQueue = true;
+
+    if (this.isImageLoaded) return;
+    if (!preview_url) return;
 
     this.imageFetchService
       .fetchImage(preview_url, {
@@ -94,7 +109,7 @@ export class TableThumbnailComponent implements OnChanges {
       })
       .then(
         (objUrl) => {
-          this.imageSrc = objUrl;
+          this.imageSrc = objUrl || this.placeholderImage;
           this.isImageLoaded = true;
           this.isImageInQueue = false;
           this.changeDetector.detectChanges();
@@ -104,7 +119,7 @@ export class TableThumbnailComponent implements OnChanges {
           console.error(' ... due to error:', error);
           this.isImageLoaded = true;
           this.isImageInQueue = false;
-          this.imageSrc = 'assets/images/pngs/sbn_logo_v0.png';
+          this.imageSrc = this.placeholderImage;
           this.imgStyles = { ...this.imgStyles, transform: 'scale(1, 1)' };
         }
       )

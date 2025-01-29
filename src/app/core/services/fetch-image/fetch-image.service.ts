@@ -1,11 +1,12 @@
 import { Injectable } from '@angular/core';
 import { swapRaDecInFilename } from '../../../../utils/swapRaDecInFilename';
+import { colog } from '../../../../utils/colog';
 
 interface FetchTask {
   url: string;
   isPriority: boolean;
   minProcessTimeMs: number;
-  resolve: (value: string | PromiseLike<string>) => void; // Now resolves to an object URL string
+  resolve: (value: string | undefined) => void; // Now resolves to an object URL string
   reject: (reason?: any) => void;
   label: string;
 }
@@ -19,7 +20,7 @@ interface IOptions {
 const defaultOptions: IOptions = {
   isPriority: false,
   label: '-',
-  minProcessTimeMs: 300,
+  minProcessTimeMs: 100,
 };
 
 @Injectable({
@@ -27,9 +28,11 @@ const defaultOptions: IOptions = {
 })
 export class ImageFetchService {
   private queue: FetchTask[] = [];
-  private concurrentLimit: number = 2;
+  private concurrentLimit: number = 5;
   private activeRequests: number = 0;
   private imageCache: { [url: string]: string } = {}; // Cache object URLs
+
+  callCount: number = 0;
 
   constructor() {
     // Clear imageCache every hour
@@ -46,19 +49,27 @@ export class ImageFetchService {
     this.activeRequests = 0;
   }
 
-  async fetchImage(url: string, options?: IOptions): Promise<string> {
+  async fetchImage(
+    url: string,
+    options?: IOptions
+  ): Promise<string | undefined> {
+    // ): Promise<any> {
+    //
+
     // Decide if this URL can skip queue
     const isQueueNeeded =
+      url.includes('uxzqjwo0ye') ||
       url.includes('catalina') ||
       url.includes('skymapper') ||
-      // url.includes('neat') ||
-      url.includes('spacewatch');
-    // url.includes('lon') // Add loneos!!!!
+      url.includes('spacewatch') ||
+      url.includes('loneos');
+    // url.includes('neat') ||
 
     if (!isQueueNeeded) {
-      return fetch(url)
+      const objectUrl = fetch(url)
         .then((response) => response.blob())
         .then((blob) => URL.createObjectURL(blob));
+      return objectUrl;
     }
 
     // Check if image is already cached
@@ -68,9 +79,8 @@ export class ImageFetchService {
     }
 
     // Test if Catalina image is cached in S3
-    const isFetchableFromS3 =
-      url.includes('catalina') || url.includes('spacewatch');
-    // ||  add loneos
+    const isFetchableFromS3 = !false && url.includes('uxzqjwo0ye');
+
     if (isFetchableFromS3) {
       const fileUrlInS3Bucket = await this.getCatalinaImageCachedInS3(url);
       if (fileUrlInS3Bucket) {
@@ -89,25 +99,38 @@ export class ImageFetchService {
       ...defaultOptions,
       ...options,
     };
-    return new Promise((resolve, reject) => {
-      const task: FetchTask = {
-        url,
-        isPriority,
-        minProcessTimeMs,
-        resolve,
-        reject,
-        label,
-      };
 
-      // Add task to queue
-      if (isPriority) {
-        this.queue.unshift(task);
-      } else {
-        this.queue.push(task);
+    const promisedString = new Promise<string | undefined>(
+      (resolve, reject) => {
+        const task: FetchTask = {
+          url,
+          isPriority,
+          minProcessTimeMs,
+          resolve,
+          reject,
+          label,
+        };
+
+        // Add task to queue
+        if (isPriority) {
+          this.queue.unshift(task);
+        } else {
+          this.queue.push(task);
+        }
+
+        this.checkQueue();
       }
+    );
 
-      this.checkQueue();
-    });
+    return promisedString;
+
+    // if (typeof promisedString === 'string') {
+    //   return promisedString;
+    // } else {
+    //   // Recursion till we get it!
+    //   // return this.fetchImage(url, options);
+    //   return promisedString;
+    // }
   }
 
   private checkQueue() {
@@ -127,22 +150,51 @@ export class ImageFetchService {
     };
 
     try {
-      const response = await fetch(task.url);
-      const blob = await response.blob();
-      const objectUrl = URL.createObjectURL(blob);
+      this.callCount++;
+      if (!true) {
+        colog(
+          '>>> fetchImage Call Count',
+          this.callCount,
+          task.label,
+          'orange'
+        );
+      }
+      const objectUrl = await fetch(task.url)
+        .then((res) => res.blob())
+        .then((blob) => URL.createObjectURL(blob))
+        .catch((_) => {
+          console.log('Error fetching', task.url, _);
+          return undefined;
+        });
+      // const blob = await response.blob();
+      // const objectUrl = URL.createObjectURL(blob);
 
-      const processingTime = performance.now() - startTime;
-      if (processingTime < task.minProcessTimeMs) {
+      // const processingTime = performance.now() - startTime;
+
+      if (typeof objectUrl === 'string') {
         setTimeout(() => {
           onProcessCompletion();
           this.imageCache[task.url] = objectUrl;
           task.resolve(objectUrl);
-        }, task.minProcessTimeMs - processingTime);
+        }, task.minProcessTimeMs);
       } else {
-        onProcessCompletion();
-        this.imageCache[task.url] = objectUrl;
-        task.resolve(objectUrl);
+        setTimeout(() => {
+          onProcessCompletion();
+          task.resolve(objectUrl);
+        }, task.minProcessTimeMs * 3);
       }
+
+      // if (processingTime < task.minProcessTimeMs) {
+      //   setTimeout(() => {
+      //     onProcessCompletion();
+      //     this.imageCache[task.url] = objectUrl;
+      //     task.resolve(objectUrl);
+      //   }, task.minProcessTimeMs - processingTime);
+      // } else {
+      //   onProcessCompletion();
+      //   this.imageCache[task.url] = objectUrl;
+      //   task.resolve(objectUrl);
+      // }
     } catch (error) {
       onProcessCompletion();
       task.reject(error);

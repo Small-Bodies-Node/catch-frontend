@@ -23,7 +23,6 @@ import { MatSort } from '@angular/material/sort';
 import { IApiMovum } from '../../../models/IApiMovum';
 import { IAppState } from '../../ngrx/reducers';
 import { apiDataLabels } from '../../../utils/apiDataLabels';
-import { TColStateMoving } from '../../../models/TColStateMoving';
 import {
   selectApiDataDownloadRowState,
   selectApiData,
@@ -40,8 +39,6 @@ import { ImageFetchService } from '../../core/services/fetch-image/fetch-image.s
 import { PlotlyGraphWrapperComponent } from '../plotly-graph/plotly-graph.component';
 import { SelectTableRowsDirective } from '../../shared/directives/select-table-rows.directive';
 import { IApiFixum } from '../../../models/IApiFixum';
-import { TColStateFixed } from '../../../models/TColStateFixed';
-import { initColStateFixed } from '../../../utils/initColStateFixed';
 import { TColStateData } from '../../../models/TColStateData';
 
 type TColName = keyof (IApiMovum | IApiFixum);
@@ -403,5 +400,11 @@ export class TableDataComponent
   getTooltipForCell(entry: any, key: string) {
     if (key === 'product_id') return entry;
     return null;
+  }
+
+  getThumbnailLabel(entry: IApiMovum) {
+    // isRowSelected(element) ? '*' : '') + 'T' + i
+    const isRowSelected = this.isRowSelected(entry);
+    return (isRowSelected ? '*' : '') + entry.product_id;
   }
 }

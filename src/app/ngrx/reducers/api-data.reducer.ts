@@ -51,7 +51,6 @@ export const apiDataReducer = createReducer<IApiDataSubstate>(
   })),
 
   on(ApiDataAction_SetShownColState, (state, { apiDataShownColState }) => {
-    console.log('apiShownColState', apiDataShownColState);
     const updatedState: IApiDataSubstate = {
       ...state,
       apiDataShownColState: { ...apiDataShownColState },

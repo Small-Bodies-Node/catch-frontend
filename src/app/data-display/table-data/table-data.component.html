@@ -69,16 +69,16 @@
           [ngClass]="{ 'highlighted-sticky-cell': isRowSelected(element) }"
           (click)="selectRowDatum(i)"
         >
-          <!-- @if(isRowDisplayed(element)){ -->
+          @if(isRowDisplayed(element)){
           <app-table-thumbnail
             [input]="element"
             [isPriority]="isRowSelected(element)"
-            [label]="(isRowSelected(element) ? '*' : '') + 'T' + i"
+            [label]="getThumbnailLabel(element)"
             (onLoadEventMessage)="rerenderTable()"
           ></app-table-thumbnail>
-          <!-- } @else { -->
-          <!-- <div>Placeholder</div> -->
-          <!-- } -->
+          } @else {
+          <div>Placeholder</div>
+          }
         </td>
       </ng-container>
 

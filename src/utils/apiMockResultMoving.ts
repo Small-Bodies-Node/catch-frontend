@@ -1,11 +1,148 @@
 import { IApiMovingResult } from '../models/IApiDataResult';
+import { IApiMovum } from '../models/IApiMovum';
+
+const maxDataEntries = 3000;
+
+const data = getData()
+  .filter((apiMovum, ind) => {
+    return (
+      true ||
+      [
+        //
+        'catalina',
+        'spacewatch',
+      ].some((source) => apiMovum.cutout_url?.includes(source))
+    );
+  })
+  .filter((apiMovum, ind) => {
+    return ind < maxDataEntries;
+  });
 
 /**
  *
  */
 export const apiMockResultMoving: IApiMovingResult = {
   count: 134,
-  data: [
+  data: data,
+  job_id: '8bc01fd580d5473bb5a5201727e3bbb7',
+  parameters: {
+    padding: 0,
+    start_date: null,
+    stop_date: null,
+    target: '65P',
+    uncertainty_ellipse: false,
+  },
+  status: [
+    {
+      count: 330,
+      date: '2025-01-22 23:25:12.893',
+      execution_time: null,
+      source: 'atlas_haleakela',
+      source_name: 'ATLAS Hawaii, Haleakela',
+      status: 'finished',
+    },
+    {
+      count: 359,
+      date: '2025-01-22 23:25:13.088',
+      execution_time: null,
+      source: 'atlas_mauna_loa',
+      source_name: 'ATLAS Hawaii, Mauna Loa',
+      status: 'finished',
+    },
+    {
+      count: 0,
+      date: '2025-01-22 23:25:13.289',
+      execution_time: null,
+      source: 'atlas_rio_hurtado',
+      source_name: 'ATLAS Chile, Rio Hurtado',
+      status: 'finished',
+    },
+    {
+      count: 0,
+      date: '2025-01-22 23:25:13.358',
+      execution_time: null,
+      source: 'atlas_sutherland',
+      source_name: 'ATLAS South Africa, Sutherland',
+      status: 'finished',
+    },
+    {
+      count: 666,
+      date: '2025-01-22 23:25:13.430',
+      execution_time: null,
+      source: 'catalina_bigelow',
+      source_name: 'Catalina Sky Survey, Mt. Bigelow',
+      status: 'finished',
+    },
+    {
+      count: 136,
+      date: '2025-01-22 23:25:13.831',
+      execution_time: null,
+      source: 'catalina_lemmon',
+      source_name: 'Catalina Sky Survey, Mt. Lemmon',
+      status: 'finished',
+    },
+    {
+      count: 0,
+      date: '2025-01-22 23:25:13.954',
+      execution_time: null,
+      source: 'catalina_bokneosurvey',
+      source_name: 'Catalina Sky Survey Archive, Bok NEO Survey',
+      status: 'finished',
+    },
+    {
+      count: 64,
+      date: '2025-01-22 23:25:14.023',
+      execution_time: null,
+      source: 'loneos',
+      source_name: 'LONEOS',
+      status: 'finished',
+    },
+    {
+      count: 5,
+      date: '2025-01-22 23:25:14.123',
+      execution_time: null,
+      source: 'neat_palomar_tricam',
+      source_name: 'NEAT Palomar Tricam',
+      status: 'finished',
+    },
+    {
+      count: 9,
+      date: '2025-01-22 23:25:14.194',
+      execution_time: null,
+      source: 'neat_maui_geodss',
+      source_name: 'NEAT Maui GEODSS',
+      status: 'finished',
+    },
+    {
+      count: 74,
+      date: '2025-01-22 23:25:14.271',
+      execution_time: null,
+      source: 'ps1dr2',
+      source_name: 'PanSTARRS 1 DR2',
+      status: 'finished',
+    },
+    {
+      count: 16,
+      date: '2025-01-22 23:25:14.369',
+      execution_time: null,
+      source: 'skymapper_dr4',
+      source_name: 'SkyMapperDR4',
+      status: 'finished',
+    },
+    {
+      count: 40,
+      date: '2025-01-22 23:25:14.444',
+      execution_time: null,
+      source: 'spacewatch',
+      source_name: 'Spacewatch',
+      status: 'finished',
+    },
+  ],
+  version: '3.0.0.dev54+g902bdd3',
+};
+
+function getData() {
+  const data: IApiMovum[] = [
     {
       airmass: 1.055449,
       archive_url:
@@ -4920,122 +5057,6 @@ export const apiMockResultMoving: IApiMovingResult = {
       vangle: 62.855999999999995,
       vmag: 18.322,
     },
-  ],
-  job_id: '8bc01fd580d5473bb5a5201727e3bbb7',
-  parameters: {
-    padding: 0,
-    start_date: null,
-    stop_date: null,
-    target: '65P',
-    uncertainty_ellipse: false,
-  },
-  status: [
-    {
-      count: 330,
-      date: '2025-01-22 23:25:12.893',
-      execution_time: null,
-      source: 'atlas_haleakela',
-      source_name: 'ATLAS Hawaii, Haleakela',
-      status: 'finished',
-    },
-    {
-      count: 359,
-      date: '2025-01-22 23:25:13.088',
-      execution_time: null,
-      source: 'atlas_mauna_loa',
-      source_name: 'ATLAS Hawaii, Mauna Loa',
-      status: 'finished',
-    },
-    {
-      count: 0,
-      date: '2025-01-22 23:25:13.289',
-      execution_time: null,
-      source: 'atlas_rio_hurtado',
-      source_name: 'ATLAS Chile, Rio Hurtado',
-      status: 'finished',
-    },
-    {
-      count: 0,
-      date: '2025-01-22 23:25:13.358',
-      execution_time: null,
-      source: 'atlas_sutherland',
-      source_name: 'ATLAS South Africa, Sutherland',
-      status: 'finished',
-    },
-    {
-      count: 666,
-      date: '2025-01-22 23:25:13.430',
-      execution_time: null,
-      source: 'catalina_bigelow',
-      source_name: 'Catalina Sky Survey, Mt. Bigelow',
-      status: 'finished',
-    },
-    {
-      count: 136,
-      date: '2025-01-22 23:25:13.831',
-      execution_time: null,
-      source: 'catalina_lemmon',
-      source_name: 'Catalina Sky Survey, Mt. Lemmon',
-      status: 'finished',
-    },
-    {
-      count: 0,
-      date: '2025-01-22 23:25:13.954',
-      execution_time: null,
-      source: 'catalina_bokneosurvey',
-      source_name: 'Catalina Sky Survey Archive, Bok NEO Survey',
-      status: 'finished',
-    },
-    {
-      count: 64,
-      date: '2025-01-22 23:25:14.023',
-      execution_time: null,
-      source: 'loneos',
-      source_name: 'LONEOS',
-      status: 'finished',
-    },
-    {
-      count: 5,
-      date: '2025-01-22 23:25:14.123',
-      execution_time: null,
-      source: 'neat_palomar_tricam',
-      source_name: 'NEAT Palomar Tricam',
-      status: 'finished',
-    },
-    {
-      count: 9,
-      date: '2025-01-22 23:25:14.194',
-      execution_time: null,
-      source: 'neat_maui_geodss',
-      source_name: 'NEAT Maui GEODSS',
-      status: 'finished',
-    },
-    {
-      count: 74,
-      date: '2025-01-22 23:25:14.271',
-      execution_time: null,
-      source: 'ps1dr2',
-      source_name: 'PanSTARRS 1 DR2',
-      status: 'finished',
-    },
-    {
-      count: 16,
-      date: '2025-01-22 23:25:14.369',
-      execution_time: null,
-      source: 'skymapper_dr4',
-      source_name: 'SkyMapperDR4',
-      status: 'finished',
-    },
-    {
-      count: 40,
-      date: '2025-01-22 23:25:14.444',
-      execution_time: null,
-      source: 'spacewatch',
-      source_name: 'Spacewatch',
-      status: 'finished',
-    },
-  ],
-  version: '3.0.0.dev54+g902bdd3',
-};
-
-// console.log('>>>', apiDataMockResult.data.length);
+  ];
+  return data;
+}
