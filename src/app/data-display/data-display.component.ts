@@ -183,7 +183,6 @@ export class DataDisplayComponent implements OnInit, OnDestroy {
                 },
               };
 
-          console.log('DEBUG A');
           this.store$.dispatch(
             ApiDataAction_SetStatus({
               code: 'initiated',

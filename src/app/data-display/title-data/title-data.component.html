@@ -13,9 +13,15 @@
     <span class="unit" style="margin-right: 4px">
       {{ isMoving ? "JOB:" : "" }}
     </span>
+    @if(dataLink){
     <span class="unit">
       <a [href]="dataLink" target="_blank">{{ getJobId() }}</a>
     </span>
+    }@else{
+    <span class="unit">
+      {{ "N/A" }}
+    </span>
+    }
   </div>
 
   <div class="download-button-wrapper">

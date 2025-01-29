@@ -51,8 +51,9 @@ export const setApiStatus$ = createEffect(
         const { code, message, search } = apiDataSetStatus;
 
         if (code === 'error') {
+          console.log('An Error happened!');
           snackBar.open(message, 'Close');
-          delayedRouter.delayedRouter('home');
+          // delayedRouter.delayedRouter('home');
           return of(
             ApiDataAction_SetStatus({
               search: undefined,
@@ -138,6 +139,7 @@ export const fetchApiDataResults$ = createEffect(
 
             // Handle error
             if (status === 'error') {
+              console.log('Error received', wrappedApiDataResultOrError);
               return of(
                 ApiDataAction_SetStatus({ search, message, code: 'error' })
               );
@@ -153,7 +155,7 @@ export const fetchApiDataResults$ = createEffect(
 
             // initColStateMoving : initColStateFixed;
 
-            if (true) {
+            if (!true) {
               colog('Summary of fetch:', 'cyan');
               colog('isDataFound:', isDataFound, 'cyan');
               colog('job_id:', job_id, 'cyan');

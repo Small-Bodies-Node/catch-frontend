@@ -14,7 +14,7 @@ import { TApiDataLabels } from '../../../models/TApiDataLabels';
 import { apiDataLabels } from '../../../utils/apiDataLabels';
 import { TDownloadRowsState } from '../../../models/TDownloadRowsState';
 import { IApiFixum } from '../../../models/IApiFixum';
-import { getUrlForCatchOrFixedRoute } from '../../../utils/getUrlForCatchOrFixedRoute';
+import { getUrlForCaughtOrFixedRoute } from '../../../utils/getUrlForCaughtOrFixedRoute';
 import { getSearchDescriptor } from '../../../utils/getSearchDescriptor';
 import {
   selectApiData,
@@ -59,7 +59,7 @@ export class TitleDataComponent implements OnInit {
         this.store$.select(selectApiDataJobId),
         this.store$.select(selectScreenDeviceEffectiveDevice),
       ]).subscribe(
-        ([apiStatus, apiData, dataDownloadRowState, jobId, device]) => {
+        ([apiStatus, apiData, dataDownloadRowState, job_id, device]) => {
           // --->>
 
           if (!apiStatus.search || !apiData) return;
@@ -70,10 +70,12 @@ export class TitleDataComponent implements OnInit {
           this.apiData = apiData;
           this.rowsInTable = apiData.length;
           this.isMobile = device === 'mobile';
-          this.jobId = this.isMoving ? jobId : 'API Link';
+          this.jobId = this.isMoving ? job_id : 'API Link';
           this.queryStatus = apiStatus;
           this.dataDownloadRowState = dataDownloadRowState;
-          this.dataLink = getUrlForCatchOrFixedRoute(search);
+          this.dataLink = job_id
+            ? getUrlForCaughtOrFixedRoute(search, job_id)
+            : undefined;
           this.searchDescriptor = getSearchDescriptor(search);
 
           if (!this.apiData) return;
