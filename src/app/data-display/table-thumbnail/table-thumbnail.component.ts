@@ -13,7 +13,7 @@ import { IApiMovum } from '../../../models/IApiMovum';
 import { IApiFixum } from '../../../models/IApiFixum';
 
 let instanceCount = 0;
-const instanceDelayMs = 50;
+const instanceDelayMs = 20;
 
 @Component({
   selector: 'app-table-thumbnail',
@@ -69,7 +69,9 @@ export class TableThumbnailComponent implements OnChanges {
       };
     }
 
+    // const delayMs = instanceCount < 10 ? instanceCount * instanceDelayMs : 0;
     const delayMs = (instanceCount % 15) * instanceDelayMs;
+    // const delayMs = 0;
 
     // Repeat request to image queue if isPriority changes
     if (changes['isPriority']?.currentValue) {

@@ -80,7 +80,8 @@ export class TableDataComponent
   downloadRowState: TDownloadRowsState = {};
 
   pageSizeOptions = [25, 50, 100, 200];
-  pageSize = 25;
+  // pageSize = 25;
+  pageSize = 100;
   pageIndex = 0;
 
   constructor(

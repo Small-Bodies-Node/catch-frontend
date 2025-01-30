@@ -8,6 +8,7 @@ type Color =
   | 'yellow'
   | 'grey'
   | 'brown'
+  | 'purple'
   | 'black';
 
 export function colog(...args: any[]): void {
@@ -16,6 +17,7 @@ export function colog(...args: any[]): void {
     blue: 'color: blue',
     green: 'color: green',
     pink: 'color: pink',
+    purple: 'color: purple',
     orange: 'color: orange',
     cyan: 'color: cyan',
     yellow: 'color: yellow',

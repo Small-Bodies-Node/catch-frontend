@@ -2,11 +2,13 @@ import { Injectable } from '@angular/core';
 import { swapRaDecInFilename } from '../../../../utils/swapRaDecInFilename';
 import { colog } from '../../../../utils/colog';
 
+const isDebug = false;
+
 interface IFetchTask {
   url: string;
   isPriority: boolean;
-  resolve: (value: string | undefined) => void; // Now resolves to an object URL string
-  reject: (reason?: any) => void;
+  resolve: (value: string) => void; // value === objectUrl or 'retry'
+  reject: (value: 'retry') => void;
   label: string;
 }
 
@@ -25,19 +27,20 @@ const defaultOptions: IOptions = {
 })
 export class ImageFetchService {
   private queue: IFetchTask[] = [];
-  private concurrentLimit: number = 4;
-  private postFetchDelayMs: number = 100;
+  private concurrentLimit: number = 7;
   private activeRequests: number = 0;
   private imageCache: { [url: string]: string } = {}; // Cache object URLs
-  private taskCache: { [url: string]: IFetchTask } = {}; // Cache tasks
-  private lastTime = new Date();
   private retryLimit: number = 200;
   private retryCount: number = 0;
+  private mostRecentTaskErrorDate?: Date;
+  private mostRecentTaskFinishDate?: Date;
+  private mostRecentTaskStartDate?: Date;
+  private startDate?: Date;
 
   callCount: number = 0;
 
   constructor() {
-    console.log('Clearing imageCache every hour');
+    if (isDebug) console.log('Clearing imageCache every hour');
     // Clear imageCache every hour
     setInterval(() => {
       Object.values(this.imageCache).forEach((objectUrl) => {
@@ -45,8 +48,6 @@ export class ImageFetchService {
       });
       this.imageCache = {};
     }, 1000 * 60 * 60);
-
-    this.imageCache = {};
   }
 
   resetQueue() {
@@ -62,6 +63,8 @@ export class ImageFetchService {
     url: string,
     options?: IOptions
   ): Promise<string | undefined> {
+    if (!this.startDate) this.startDate = new Date();
+
     // Check if image is already cached
     if (this.imageCache[url]) {
       return this.imageCache[url];
@@ -79,18 +82,15 @@ export class ImageFetchService {
         .then((response) => response.blob())
         .then((blob) => URL.createObjectURL(blob))
         .catch((_) => {
-          console.log('Error fetching', url);
+          if (isDebug) console.log('Error fetching', url);
           return undefined;
         });
-      if (objectUrl) {
-        this.imageCache[url] = objectUrl;
-      }
+      if (objectUrl) this.imageCache[url] = objectUrl;
       return objectUrl;
     }
 
-    // Test if Catalina image is cached in S3
-    const isFetchableFromS3 = !false && url.includes('uxzqjwo0ye');
-
+    // Test if image is cached in S3
+    const isFetchableFromS3 = false && url.includes('uxzqjwo0ye');
     if (isFetchableFromS3) {
       const fileUrlInS3Bucket = await this.getCatalinaImageCachedInS3(url);
       if (fileUrlInS3Bucket) {
@@ -114,115 +114,127 @@ export class ImageFetchService {
       ...options,
     };
 
-    const promisedString = await new Promise<string | undefined>(
-      (resolve, reject) => {
-        const task: IFetchTask = {
-          url,
-          isPriority,
-          resolve,
-          reject,
-          label,
-        };
-
-        // Add task to queue
-        if (isPriority) {
-          this.queue.unshift(task);
-        } else {
-          this.queue.push(task);
-        }
-
-        this.checkQueue();
-      }
-    ).catch((_) => {
-      console.log('Aha!');
-      return undefined;
+    // Add task for url to queue
+    const queueResult = await new Promise<string>((resolve, reject) => {
+      const task: IFetchTask = { url, isPriority, resolve, reject, label };
+      isPriority ? this.queue.unshift(task) : this.queue.push(task);
+      this.checkQueue();
+    }).catch((_) => {
+      return 'retry';
     });
 
-    // return promisedString;
-
-    if (
-      typeof promisedString === 'string' ||
-      this.retryCount > this.retryLimit
-    ) {
-      return promisedString;
+    // Recursive retry logic
+    if (queueResult === 'retry') {
+      if (this.retryCount < this.retryLimit) {
+        console.log('Retrying fetchImage', this.retryCount, url, label);
+        this.retryCount++;
+        return this.fetchImage(url, options);
+      } else {
+        return undefined;
+      }
     } else {
-      // Recursion till we get it!
-      console.log('Retrying fetchImage', url, label);
-      this.retryCount++;
-      return this.fetchImage(url, options);
-      // return promisedString;
+      return queueResult;
     }
   }
 
   private checkQueue() {
-    if (this.activeRequests < this.concurrentLimit && this.queue.length > 0) {
-      this.activeRequests++;
-      const task = this.queue.shift()!;
+    if (this.activeRequests >= this.concurrentLimit) return;
+    if (this.queue.length === 0) return;
 
-      // Do not start next task until 1 second has passed since the last task started
-      const time = new Date();
-      const timeSinceLastTimeMs = time.getTime() - this.lastTime.getTime();
-      const delayMs = Math.max(0, 100 - timeSinceLastTimeMs);
+    this.activeRequests++;
+    const task = this.queue.shift()!;
 
-      setTimeout(() => {
-        this.lastTime = new Date();
-        this.processTask(task);
-      }, delayMs);
-    }
+    this.logTaskStart(-1);
+
+    /**
+     * Delay start of next task until these 3 conditions are met:
+     * - X ms have passed since the last error occurred
+     * - Y ms have passed since the last task finished
+     * - Z ms have passed since the last task started
+     */
+    const X = 100;
+    const Y = 100;
+    const Z = 1000;
+
+    const timeSinceLastErrorMs = this.mostRecentTaskErrorDate
+      ? new Date().getTime() - this.mostRecentTaskErrorDate.getTime()
+      : Z;
+    const timeSinceLastTaskFinishedMs = this.mostRecentTaskFinishDate
+      ? new Date().getTime() - this.mostRecentTaskFinishDate.getTime()
+      : Y;
+    const timeSinceLastTaskStartMs = this.mostRecentTaskStartDate
+      ? new Date().getTime() - this.mostRecentTaskStartDate.getTime()
+      : X;
+
+    const timeSinceStart = this.startDate
+      ? new Date().getTime() - this.startDate.getTime()
+      : 'N/A';
+    colog(
+      '>>> ',
+      timeSinceStart,
+      ' > ',
+      timeSinceLastTaskStartMs,
+      timeSinceLastTaskFinishedMs,
+      timeSinceLastErrorMs,
+      'red'
+    );
+
+    colog(
+      '>>> ',
+      timeSinceStart,
+      ' > ',
+      X - timeSinceLastTaskStartMs,
+      Y - timeSinceLastTaskFinishedMs,
+      Z - timeSinceLastErrorMs,
+      'orange'
+    );
+
+    const delayMs = Math.max(
+      Math.max(
+        Z - timeSinceLastErrorMs,
+        Y - timeSinceLastTaskFinishedMs,
+        X - timeSinceLastTaskStartMs
+      ),
+      0
+    );
+
+    const minDelayMs = (this.activeRequests % this.concurrentLimit) * 100;
+
+    setTimeout(() => {
+      this.processTask(task);
+    }, minDelayMs + delayMs * 0);
   }
 
   private async processTask(task: IFetchTask) {
     const onProcessCompletion = () => {
+      this.logTaskFinish();
       this.activeRequests--;
       this.checkQueue();
     };
 
     try {
       this.callCount++;
-      if (!true) {
-        colog(
-          '>>> fetchImage Call Count',
-          this.callCount,
-          task.label,
-          'orange'
-        );
+      if (true) {
+        colog('>>> fetchImage Call Count', this.callCount, task.label, 'green');
       }
       const objectUrl = await fetch(task.url)
         .then((res) => res.blob())
         .then((blob) => URL.createObjectURL(blob))
         .catch((_) => {
-          console.log('Error fetching', task.url, _);
-          return undefined;
+          if (isDebug) console.log('Error fetching', task.url, _);
+          this.logTaskError();
+          return 'retry';
         });
 
-      if (typeof objectUrl === 'string') {
-        setTimeout(() => {
-          onProcessCompletion();
-          this.imageCache[task.url] = objectUrl;
-          task.resolve(objectUrl);
-        }, this.postFetchDelayMs);
-      } else {
-        setTimeout(() => {
-          onProcessCompletion();
-          task.resolve(objectUrl);
-        }, this.postFetchDelayMs * 3);
-      }
+      if (objectUrl !== 'retry') this.imageCache[task.url] = objectUrl;
 
-      // if (processingTime < task.minProcessTimeMs) {
-      //   setTimeout(() => {
-      //     onProcessCompletion();
-      //     this.imageCache[task.url] = objectUrl;
-      //     task.resolve(objectUrl);
-      //   }, task.minProcessTimeMs - processingTime);
-      // } else {
-      //   onProcessCompletion();
-      //   this.imageCache[task.url] = objectUrl;
-      //   task.resolve(objectUrl);
-      // }
-    } catch (error) {
-      console.log('Error!');
       onProcessCompletion();
-      task.reject(error);
+      task.resolve(objectUrl);
+    } catch (_) {
+      if (isDebug) console.log('Error fetching', task.url, _);
+      this.logTaskError();
+      onProcessCompletion();
+      task.reject('retry');
     }
   }
 
@@ -235,7 +247,8 @@ export class ImageFetchService {
     try {
       const response = await fetch(fileUrlInS3Bucket, { method: 'HEAD' }).catch(
         (_) => {
-          console.log('Error fetching from S3', fileUrlInS3Bucket, _);
+          if (isDebug)
+            console.log('Error fetching from S3', fileUrlInS3Bucket, _);
         }
       );
       if (response?.status === 200) {
@@ -243,7 +256,7 @@ export class ImageFetchService {
       }
       return undefined;
     } catch (err) {
-      console.log('Caught error:', err);
+      if (isDebug) console.log('Caught error:', err);
       return Promise.reject(undefined);
     }
   }
@@ -261,5 +274,56 @@ export class ImageFetchService {
     }
 
     return swapRaDecInFilename(safeFilename);
+  }
+
+  logTaskStart(expectedDelayMs: number) {
+    const color = 'cyan';
+    const now = new Date();
+    this.mostRecentTaskStartDate = now;
+    const timeSinceStartMs =
+      this.mostRecentTaskStartDate.getTime() - this.startDate!.getTime();
+    const timeSinceMostRecentTaskFinishMs = this.mostRecentTaskFinishDate
+      ? now.getTime() - this.mostRecentTaskFinishDate.getTime()
+      : 'N/A';
+    const timeSinceMostRecentErrorMs = this.mostRecentTaskErrorDate
+      ? now.getTime() - this.mostRecentTaskErrorDate.getTime()
+      : 'N/A';
+    colog('>>> Task Start At :', timeSinceStartMs, expectedDelayMs, color);
+    colog('Most Recent Finish:', timeSinceMostRecentTaskFinishMs, color);
+    colog('Most Recent Error :', timeSinceMostRecentErrorMs, color);
+  }
+
+  logTaskFinish() {
+    const color = 'purple';
+    const now = new Date();
+    this.mostRecentTaskFinishDate = now;
+    const timeSinceStartMs =
+      this.mostRecentTaskFinishDate.getTime() - this.startDate!.getTime();
+    const timeSinceMostRecentTaskStartMs = this.mostRecentTaskStartDate
+      ? now.getTime() - this.mostRecentTaskStartDate.getTime()
+      : 'N/A';
+    const timeSinceMostRecentErrorMs = this.mostRecentTaskErrorDate
+      ? now.getTime() - this.mostRecentTaskErrorDate.getTime()
+      : 'N/A';
+    colog('>>> Task Finish At :', timeSinceStartMs, color);
+    colog('Most Recent Start  :', timeSinceMostRecentTaskStartMs, color);
+    colog('Most Recent Error  :', timeSinceMostRecentErrorMs, color);
+  }
+
+  logTaskError() {
+    const color = 'pink';
+    const now = new Date();
+    this.mostRecentTaskErrorDate = now;
+    const timeSinceStartMs =
+      this.mostRecentTaskErrorDate.getTime() - this.startDate!.getTime();
+    const timeSinceMostRecentTaskStartMs = this.mostRecentTaskStartDate
+      ? now.getTime() - this.mostRecentTaskStartDate.getTime()
+      : 'N/A';
+    const timeSinceMostRecentFinishMs = this.mostRecentTaskFinishDate
+      ? now.getTime() - this.mostRecentTaskFinishDate.getTime()
+      : 'N/A';
+    colog('>>> Task Error At :', timeSinceStartMs, color);
+    colog('Most Recent Start  :', timeSinceMostRecentTaskStartMs, color);
+    colog('Most Recent Error  :', timeSinceMostRecentFinishMs, color);
   }
 }
