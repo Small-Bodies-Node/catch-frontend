@@ -71,8 +71,8 @@
         >
           @if(isRowDisplayed(element)){
           <app-table-thumbnail
-            [input]="element"
-            [isPriority]="isRowSelected(element)"
+            [apiDatum]="element"
+            [priority]="isRowSelected(element) ? 'vip' : 'nip'"
             [label]="getThumbnailLabel(element)"
             (onLoadEventMessage)="rerenderTable()"
           ></app-table-thumbnail>

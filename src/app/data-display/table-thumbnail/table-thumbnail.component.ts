@@ -11,9 +11,7 @@ import {
 import { ImageFetchService } from '../../core/services/fetch-image/fetch-image.service';
 import { IApiMovum } from '../../../models/IApiMovum';
 import { IApiFixum } from '../../../models/IApiFixum';
-
-let instanceCount = 0;
-const instanceDelayMs = 20;
+import { colog } from '../../../utils/colog';
 
 @Component({
   selector: 'app-table-thumbnail',
@@ -25,107 +23,59 @@ const instanceDelayMs = 20;
 export class TableThumbnailComponent implements OnChanges {
   // --->>>
 
-  @Input() input?: IApiMovum | IApiFixum;
-  @Input() size: string = '60px';
-  // @Input() width: string = '100%';
+  // Required inputs
+  @Input() apiDatum!: IApiMovum | IApiFixum;
+  @Input() label!: string;
+  @Input() priority!: 'vip' | 'nip';
+
   @Input() width: string = '60px';
-  // @Input() height: string = '100%';
   @Input() height: string = '60px';
-  @Input() isPriority = false;
-  @Input() label = '-';
   @Input() diameterPxls: number = 30;
   @Input() isReorientated = false;
 
-  imageSrc: string | undefined;
-  isImageLoaded: boolean = false; // Controls spinner
-  isImageInQueue: boolean = false; // Prevents duplicate calls to fetchImage
-  placeholderImage: string = 'assets/images/placeholder.png';
-
   @Output() onLoadEventMessage = new EventEmitter<string>();
 
-  // Control size of thumbnail and loading spinner
-  imgStyles = {
-    width: `${this.width}`,
-    height: `${this.height}`,
-    transform: this.getSurveyScaleTransform(),
-  };
+  imageSrc?: string;
+  isImageInQueue: boolean = false;
+  readonly placeholderImage: string = 'assets/images/placeholder.png';
 
   constructor(
     private imageFetchService: ImageFetchService,
     private changeDetector: ChangeDetectorRef
-  ) {
-    instanceCount++;
-  }
+  ) {}
 
   ngOnChanges(changes: SimpleChanges): void {
-    // console.log('changes', JSON.stringify(changes));
-    // Update the size of the thumbnail
-    if (!false) {
-      this.imgStyles = {
-        ...this.imgStyles,
-        width: this.width,
-        height: this.height,
-        transform: this.getSurveyScaleTransform(),
-      };
-    }
-
-    // const delayMs = instanceCount < 10 ? instanceCount * instanceDelayMs : 0;
-    const delayMs = (instanceCount % 15) * instanceDelayMs;
-    // const delayMs = 0;
-
-    // Repeat request to image queue if isPriority changes
-    if (changes['isPriority']?.currentValue) {
-      this.isImageInQueue = false;
-      if (this.input) {
-        setTimeout(() => {
-          this.loadImage(changes['input'].currentValue);
-        }, delayMs);
+    if (changes['priority'] || changes['label'] || changes['apiDatum']) {
+      if (!this.priority || !this.label || !this.apiDatum) return;
+      if (!this.isImageInQueue || changes['priority']) {
+        this.isImageInQueue = true;
+        this.loadImage();
       }
-    }
-
-    // On component initialization, load the image
-    if (changes['input']?.currentValue) {
-      this.isImageLoaded = false;
-      this.isImageInQueue = false;
-      setTimeout(() => {
-        this.loadImage(changes['input'].currentValue);
-      }, delayMs);
     }
   }
 
-  private loadImage({ preview_url }: IApiMovum | IApiFixum): void {
-    //
-
-    // Prevent multiple calls to fetchImage
-    if (this.isImageInQueue) return;
-    this.isImageInQueue = true;
-
-    if (this.isImageLoaded) return;
+  private loadImage(): void {
+    const { preview_url } = this.apiDatum;
     if (!preview_url) return;
 
     this.imageFetchService
       .fetchImage(preview_url, {
-        isPriority: this.isPriority,
+        isPriority: this.priority === 'vip',
         label: this.label,
       })
       .then(
         (objUrl) => {
           this.imageSrc = objUrl || this.placeholderImage;
-          this.isImageLoaded = true;
+          // this.isImageLoaded = true;
           this.isImageInQueue = false;
           this.changeDetector.detectChanges();
         },
         (error) => {
-          // console.error('The following image failed:', preview_url);
-          // console.error(' ... due to error:', error);
-          this.isImageLoaded = true;
           this.isImageInQueue = false;
           this.imageSrc = this.placeholderImage;
-          this.imgStyles = { ...this.imgStyles, transform: 'scale(1, 1)' };
         }
       )
       .catch((_) => {
-        // ...
         console.log('The following URL failed:', preview_url);
       });
   }
@@ -135,33 +85,33 @@ export class TableThumbnailComponent implements OnChanges {
    */
   getSurveyScaleTransform() {
     if (!this.isReorientated) return 'scale(1, 1)';
-    if (!this.input) return 'scale(1, 1)';
-    if (this.input.source === 'neat_palomar_tricam') {
+    if (!this.apiDatum) return 'scale(1, 1)';
+    if (this.apiDatum.source === 'neat_palomar_tricam') {
       // return 'scale(1, 1)';
       return 'scale(-1, -1)';
       // return 'rotate(-90deg)';
     }
-    if (this.input.source.includes('atlas')) {
+    if (this.apiDatum.source.includes('atlas')) {
       // return 'scale(1, 1)';
       return 'scale(-1, 1)';
       // return 'rotate(-90deg)';
     }
-    if (this.input.source === 'neat_maui_geodss') {
+    if (this.apiDatum.source === 'neat_maui_geodss') {
       return 'scale(1, -1)';
       // return 'rotate(90deg)';
     }
-    if (this.input.source === 'loneos') {
+    if (this.apiDatum.source === 'loneos') {
       return 'scale(-1, -1)';
     }
-    if (this.input.source === 'skymapper_dr4') {
+    if (this.apiDatum.source === 'skymapper_dr4') {
       // return 'scale(-1, -1)';
       return 'rotate(180deg)';
     }
-    if (this.input.source === 'ps1dr2') {
+    if (this.apiDatum.source === 'ps1dr2') {
       return 'scale(-1, -1)';
       // return 'rotate(180deg)';
     }
-    if (this.input.source === 'spacewatch') {
+    if (this.apiDatum.source === 'spacewatch') {
       return 'scale(-1, 1)';
       // return 'rotate(180deg)';
     }
@@ -171,12 +121,20 @@ export class TableThumbnailComponent implements OnChanges {
         'catalina_bigelow',
         'catalina_lemmon',
         'catalina_bokneosurvey',
-      ].includes(this.input.source)
+      ].includes(this.apiDatum.source)
     ) {
       return 'scale(-1, -1)';
       // return 'rotate(180deg)';
     }
 
     return 'scale(1, 1)';
+  }
+
+  getStyles() {
+    return {
+      width: this.width,
+      height: this.height,
+      transform: this.getSurveyScaleTransform(),
+    };
   }
 }

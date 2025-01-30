@@ -1,5 +1,7 @@
 # Fetch Image Service
 
+## Overview
+
 Last Updated: Jan 30th 2025
 
 We have the challenge of not overloading the image-cutout server. In trying to find the best trade off between:
@@ -15,3 +17,11 @@ After playing around a lot DWD concluded that the best trade off of the 3 deside
 1. Use N=4 concurrent tasks for the server as of Jan 30th 2025.
 2. Re-try mechanism is essential; N=4 seems to be a stable value that almost never causes server overloads; however N=5+ causes steep increase in need to retries.
 3. Staggered start: introduce a minimum delay between the first batch of N tasks to that you do not spike the server all at once. After the first N tasks, don't bother with a variable delay because we can assume on average uniform spread of server resources
+
+## Benchmarks
+
+100 IMAGE LOAD WITH only simplified minDelayMs:
+Concurrency, Time, Retries
+3,23,0
+4,18,0
+5,16,23

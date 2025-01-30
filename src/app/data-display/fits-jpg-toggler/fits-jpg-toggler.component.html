@@ -22,16 +22,18 @@
     @if(isPanstarrsOverlay()){
     <app-panstarrs-overlay></app-panstarrs-overlay>
     }
+    <!--  -->
+    @if(apiSelectedDatum){
     <app-table-thumbnail
-      [input]="this.apiSelectedDatum"
+      [apiDatum]="apiSelectedDatum"
       [label]="getLabel()"
-      [size]="'100%'"
       [width]="widthPxls + 'px'"
       [height]="heightPxls + 'px'"
       [diameterPxls]="150"
-      [isPriority]="true"
+      priority="vip"
       [isReorientated]="isThumbnailReorientated"
     ></app-table-thumbnail>
+    }
   </div>
 
   }

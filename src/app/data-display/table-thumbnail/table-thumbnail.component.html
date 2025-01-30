@@ -1,17 +1,13 @@
-<div
-  class="spinner-wrapper"
-  [ngStyle]="imgStyles"
-  *ngIf="!isImageLoaded; else imageTemplate"
->
+@if(imageSrc){
+<img
+  [ngStyle]="getStyles()"
+  [src]="imageSrc"
+  alt="Loaded Image"
+  [width]="width"
+  [height]="height"
+/>
+}@else{
+<div class="spinner-wrapper" [ngStyle]="getStyles()">
   <mat-spinner class="my-spinner" [diameter]="diameterPxls"></mat-spinner>
 </div>
-<ng-template #imageTemplate>
-  <img
-    [ngStyle]="imgStyles"
-    *ngIf="imageSrc"
-    [src]="imageSrc"
-    alt="Loaded Image"
-    [width]="width"
-    [height]="height"
-  />
-</ng-template>
+}

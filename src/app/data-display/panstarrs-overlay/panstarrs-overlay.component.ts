@@ -57,7 +57,7 @@ export class PanstarrsOverlayComponent implements OnInit {
               ? apiDataStatus.search.searchParams.dec
               : 0;
 
-          console.log('this.ra', this.ra, 'this.dec', this.dec);
+          // console.log('this.ra', this.ra, 'this.dec', this.dec);
 
           this.pansstarrsApiService
             .getPanstarrsData(this.ra, this.dec, 50, 0.03)
