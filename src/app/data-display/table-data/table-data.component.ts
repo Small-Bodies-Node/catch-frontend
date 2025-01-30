@@ -195,11 +195,30 @@ export class TableDataComponent
   }
 
   onPaginateChange(event: PageEvent) {
-    console.log('Page event: ', event);
+    // console.log('Page event: ', event);
     this.pageIndex = event.pageIndex;
     this.pageSize = event.pageSize;
     this.fetchImageService.resetQueue();
-    this.selectRowDatum(0);
+
+    // Logic to rescroll to selected row after new pagination
+    const apiSelectedDatum = this.apiSelectedDatum;
+    const sortedApiData = this.getSortedApiData();
+    if (!sortedApiData) return;
+    if (!apiSelectedDatum) return;
+    let indexOfSelectedDatum = sortedApiData
+      .map((_) => _.product_id)
+      .indexOf(apiSelectedDatum.product_id);
+    // Make sure the selected datum is within the bounds of the current page
+    if (indexOfSelectedDatum < this.pageIndex * this.pageSize)
+      indexOfSelectedDatum = this.pageIndex * this.pageSize;
+    if (indexOfSelectedDatum >= (this.pageIndex + 1) * this.pageSize)
+      indexOfSelectedDatum = (this.pageIndex + 1) * this.pageSize - 1;
+    this.store$.dispatch(
+      ApiDataAction_SetSelectedDatum({
+        apiDatum: sortedApiData[indexOfSelectedDatum],
+      })
+    );
+    // this.selectRowDatum(indexOfSelectedDatum);
     this.rerenderTable();
   }
 
@@ -258,21 +277,37 @@ export class TableDataComponent
     const isArrowDown = arrowDirn === 'ArrowDown';
     const isArrowUp = arrowDirn === 'ArrowUp';
 
+    if (!isArrowUp && !isArrowDown) return;
+
     // Determine index of presently selected datum:
     const sortedApiData = this.getSortedApiData();
     const selectedDatum = this.apiSelectedDatum;
 
-    // Logic to select row above/below
-    if (selectedDatum && sortedApiData && (isArrowUp || isArrowDown)) {
-      const oldIndex = sortedApiData
-        .map((el) => el.product_id)
-        .indexOf(selectedDatum.product_id);
-      let newIndex = isArrowUp ? oldIndex - 1 : oldIndex + 1;
-      if (newIndex < 0) newIndex = 0;
-      if (newIndex >= sortedApiData.length) newIndex = sortedApiData.length - 1;
-      const apiDatum = sortedApiData[newIndex];
-      this.store$.dispatch(ApiDataAction_SetSelectedDatum({ apiDatum }));
-    }
+    if (!sortedApiData || !selectedDatum) return;
+
+    const indexOfFirstRowOfPage = this.pageIndex * this.pageSize;
+    const oldSortedIndex = sortedApiData
+      .map((apiDatum) => apiDatum.product_id)
+      .indexOf(selectedDatum.product_id);
+    const pageRowOfOldIndex: number = oldSortedIndex - indexOfFirstRowOfPage;
+
+    let pageRowOfNewIndex = isArrowUp
+      ? pageRowOfOldIndex - 1
+      : pageRowOfOldIndex + 1;
+
+    if (pageRowOfNewIndex < 0) pageRowOfNewIndex = 0;
+    if (pageRowOfNewIndex >= this.pageSize)
+      pageRowOfNewIndex = this.pageSize - 1;
+    if (pageRowOfNewIndex >= this.pageSize)
+      pageRowOfNewIndex = this.pageSize - 1;
+
+    let newSortedIndex = indexOfFirstRowOfPage + pageRowOfNewIndex;
+    if (newSortedIndex >= sortedApiData.length)
+      newSortedIndex = sortedApiData.length - 1;
+    const apiDatum = sortedApiData[newSortedIndex];
+    this.store$.dispatch(ApiDataAction_SetSelectedDatum({ apiDatum }));
+
+    // console.log('New index: ', newSortedIndex, sortedApiData.length);
   }
 
   getSortedApiData(): IApiMovum[] | IApiFixum[] | undefined {
@@ -361,7 +396,7 @@ export class TableDataComponent
 
   selectRowDatum(i: number) {
     // Flip flag to prevent scrolling on table clicks
-    this.isScrolling = false;
+    // this.isScrolling = false;
     setTimeout(() => (this.isScrolling = true), 300);
     // Determine location of selectedDatum within sorted table data
     const sortedApiData = this.getSortedApiData();
