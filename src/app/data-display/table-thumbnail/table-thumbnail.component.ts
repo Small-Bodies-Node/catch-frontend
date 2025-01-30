@@ -13,7 +13,7 @@ import { IApiMovum } from '../../../models/IApiMovum';
 import { IApiFixum } from '../../../models/IApiFixum';
 
 let instanceCount = 0;
-const instanceDelayMs = 500;
+const instanceDelayMs = 50;
 
 @Component({
   selector: 'app-table-thumbnail',
@@ -69,7 +69,7 @@ export class TableThumbnailComponent implements OnChanges {
       };
     }
 
-    const delayMs = (instanceCount % 5) * instanceDelayMs;
+    const delayMs = (instanceCount % 15) * instanceDelayMs;
 
     // Repeat request to image queue if isPriority changes
     if (changes['isPriority']?.currentValue) {
@@ -105,7 +105,6 @@ export class TableThumbnailComponent implements OnChanges {
       .fetchImage(preview_url, {
         isPriority: this.isPriority,
         label: this.label,
-        minProcessTimeMs: 3000,
       })
       .then(
         (objUrl) => {
@@ -115,8 +114,8 @@ export class TableThumbnailComponent implements OnChanges {
           this.changeDetector.detectChanges();
         },
         (error) => {
-          console.error('The following image failed:', preview_url);
-          console.error(' ... due to error:', error);
+          // console.error('The following image failed:', preview_url);
+          // console.error(' ... due to error:', error);
           this.isImageLoaded = true;
           this.isImageInQueue = false;
           this.imageSrc = this.placeholderImage;

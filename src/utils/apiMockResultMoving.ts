@@ -6,9 +6,10 @@ const maxDataEntries = 3000;
 const data = getData()
   .filter((apiMovum, ind) => {
     return (
-      true ||
+      !true ||
       [
         //
+        'uxzqjwo0ye',
         'catalina',
         'spacewatch',
       ].some((source) => apiMovum.cutout_url?.includes(source))

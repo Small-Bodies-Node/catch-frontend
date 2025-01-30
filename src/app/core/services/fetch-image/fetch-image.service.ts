@@ -2,10 +2,9 @@ import { Injectable } from '@angular/core';
 import { swapRaDecInFilename } from '../../../../utils/swapRaDecInFilename';
 import { colog } from '../../../../utils/colog';
 
-interface FetchTask {
+interface IFetchTask {
   url: string;
   isPriority: boolean;
-  minProcessTimeMs: number;
   resolve: (value: string | undefined) => void; // Now resolves to an object URL string
   reject: (reason?: any) => void;
   label: string;
@@ -14,27 +13,31 @@ interface FetchTask {
 interface IOptions {
   isPriority: boolean;
   label: string;
-  minProcessTimeMs: number;
 }
 
 const defaultOptions: IOptions = {
   isPriority: false,
   label: '-',
-  minProcessTimeMs: 100,
 };
 
 @Injectable({
   providedIn: 'root',
 })
 export class ImageFetchService {
-  private queue: FetchTask[] = [];
-  private concurrentLimit: number = 5;
+  private queue: IFetchTask[] = [];
+  private concurrentLimit: number = 4;
+  private postFetchDelayMs: number = 100;
   private activeRequests: number = 0;
   private imageCache: { [url: string]: string } = {}; // Cache object URLs
+  private taskCache: { [url: string]: IFetchTask } = {}; // Cache tasks
+  private lastTime = new Date();
+  private retryLimit: number = 200;
+  private retryCount: number = 0;
 
   callCount: number = 0;
 
   constructor() {
+    console.log('Clearing imageCache every hour');
     // Clear imageCache every hour
     setInterval(() => {
       Object.values(this.imageCache).forEach((objectUrl) => {
@@ -42,6 +45,8 @@ export class ImageFetchService {
       });
       this.imageCache = {};
     }, 1000 * 60 * 60);
+
+    this.imageCache = {};
   }
 
   resetQueue() {
@@ -49,33 +54,38 @@ export class ImageFetchService {
     this.activeRequests = 0;
   }
 
+  /**
+   * Return string => url of ready image
+   * Return undefined => try again later
+   */
   async fetchImage(
     url: string,
     options?: IOptions
   ): Promise<string | undefined> {
-    // ): Promise<any> {
-    //
+    // Check if image is already cached
+    if (this.imageCache[url]) {
+      return this.imageCache[url];
+    }
 
     // Decide if this URL can skip queue
     const isQueueNeeded =
       url.includes('uxzqjwo0ye') ||
-      url.includes('catalina') ||
       url.includes('skymapper') ||
-      url.includes('spacewatch') ||
-      url.includes('loneos');
+      url.includes('neat');
     // url.includes('neat') ||
 
     if (!isQueueNeeded) {
-      const objectUrl = fetch(url)
+      const objectUrl = await fetch(url)
         .then((response) => response.blob())
-        .then((blob) => URL.createObjectURL(blob));
+        .then((blob) => URL.createObjectURL(blob))
+        .catch((_) => {
+          console.log('Error fetching', url);
+          return undefined;
+        });
+      if (objectUrl) {
+        this.imageCache[url] = objectUrl;
+      }
       return objectUrl;
-    }
-
-    // Check if image is already cached
-    if (this.imageCache[url]) {
-      console.log('Image already in cache!');
-      return this.imageCache[url];
     }
 
     // Test if Catalina image is cached in S3
@@ -90,22 +100,25 @@ export class ImageFetchService {
             const objectUrl = URL.createObjectURL(blob);
             this.imageCache[url] = objectUrl;
             return objectUrl;
+          })
+          .catch((_) => {
+            console.error(`Error fetching from S3 bucket!`, _);
+            return undefined;
           });
       }
     }
 
     // Begin queue logic
-    const { isPriority, label, minProcessTimeMs } = {
+    const { isPriority, label } = {
       ...defaultOptions,
       ...options,
     };
 
-    const promisedString = new Promise<string | undefined>(
+    const promisedString = await new Promise<string | undefined>(
       (resolve, reject) => {
-        const task: FetchTask = {
+        const task: IFetchTask = {
           url,
           isPriority,
-          minProcessTimeMs,
           resolve,
           reject,
           label,
@@ -120,30 +133,45 @@ export class ImageFetchService {
 
         this.checkQueue();
       }
-    );
+    ).catch((_) => {
+      console.log('Aha!');
+      return undefined;
+    });
 
-    return promisedString;
+    // return promisedString;
 
-    // if (typeof promisedString === 'string') {
-    //   return promisedString;
-    // } else {
-    //   // Recursion till we get it!
-    //   // return this.fetchImage(url, options);
-    //   return promisedString;
-    // }
+    if (
+      typeof promisedString === 'string' ||
+      this.retryCount > this.retryLimit
+    ) {
+      return promisedString;
+    } else {
+      // Recursion till we get it!
+      console.log('Retrying fetchImage', url, label);
+      this.retryCount++;
+      return this.fetchImage(url, options);
+      // return promisedString;
+    }
   }
 
   private checkQueue() {
     if (this.activeRequests < this.concurrentLimit && this.queue.length > 0) {
       this.activeRequests++;
       const task = this.queue.shift()!;
-      this.processTask(task);
+
+      // Do not start next task until 1 second has passed since the last task started
+      const time = new Date();
+      const timeSinceLastTimeMs = time.getTime() - this.lastTime.getTime();
+      const delayMs = Math.max(0, 100 - timeSinceLastTimeMs);
+
+      setTimeout(() => {
+        this.lastTime = new Date();
+        this.processTask(task);
+      }, delayMs);
     }
   }
 
-  private async processTask(task: FetchTask) {
-    const startTime = performance.now();
-
+  private async processTask(task: IFetchTask) {
     const onProcessCompletion = () => {
       this.activeRequests--;
       this.checkQueue();
@@ -166,22 +194,18 @@ export class ImageFetchService {
           console.log('Error fetching', task.url, _);
           return undefined;
         });
-      // const blob = await response.blob();
-      // const objectUrl = URL.createObjectURL(blob);
-
-      // const processingTime = performance.now() - startTime;
 
       if (typeof objectUrl === 'string') {
         setTimeout(() => {
           onProcessCompletion();
           this.imageCache[task.url] = objectUrl;
           task.resolve(objectUrl);
-        }, task.minProcessTimeMs);
+        }, this.postFetchDelayMs);
       } else {
         setTimeout(() => {
           onProcessCompletion();
           task.resolve(objectUrl);
-        }, task.minProcessTimeMs * 3);
+        }, this.postFetchDelayMs * 3);
       }
 
       // if (processingTime < task.minProcessTimeMs) {
@@ -196,6 +220,7 @@ export class ImageFetchService {
       //   task.resolve(objectUrl);
       // }
     } catch (error) {
+      console.log('Error!');
       onProcessCompletion();
       task.reject(error);
     }
@@ -216,10 +241,11 @@ export class ImageFetchService {
       if (response?.status === 200) {
         return fileUrlInS3Bucket;
       }
+      return undefined;
     } catch (err) {
       console.log('Caught error:', err);
+      return Promise.reject(undefined);
     }
-    return undefined;
   }
 
   private convertUrlToFileNameInS3Bucket(fullUrl: string): string {

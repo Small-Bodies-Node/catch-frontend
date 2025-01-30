@@ -327,7 +327,7 @@ export class ApiDataService implements IApiDataService {
 
           const isThisJob = job_id.includes(job_prefix);
 
-          if (isThisJob) console.log('Data stream:', data);
+          // if (isThisJob) console.log('Data stream:', data);
 
           if (isThisJob && status !== 'error' && !!text) {
             store$.dispatch(
