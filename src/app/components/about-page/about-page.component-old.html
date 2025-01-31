@@ -413,7 +413,7 @@
     have observed a target, based on the target's ephemeris. This search also
     requires that the ephemeris correctly describes the target's motion on the
     sky, and that a potentially matching observation is correctly described by
-    its metadata.
+    its metadata. Known issues are given below.
   </p>
 
   <h3>Known issues</h3>
@@ -439,17 +439,16 @@
     </li>
 
     <li>
-      Images may not be correctly displayed in the image preview, which causes a
-      misalignment with the PanSTARRS catalog overlay. In such cases the image
-      will generally be flipped with respect to the catalog, even when the image
-      has an accurate astrometric solution.
+      Owing to some mounting inconsistencies in earlier surveys, the catalog
+      stars may not be oriented (e.g. may be flipped) with respect to the
+      displayed fields.
     </li>
   </ol>
 
   <h3>Updates</h3>
   <ul>
     <li>
-      v3.0-beta (2025 Jan 31):
+      v3.0beta (2025 Jan 24):
       <ul>
         <li>New features:</li>
         <ul>
@@ -469,7 +468,6 @@
           </li>
           <li>Fixed-target (celestial) searches.</li>
           <li>Date-range searches.</li>
-          <li>PanSTARRS DR2 catalog overlay in the image preview area.</li>
         </ul>
         <li>Other updates:</li>
         <ul>
