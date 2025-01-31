@@ -4,25 +4,23 @@
   <h3>CATCH Overview</h3>
 
   <p>
-    The Comet-Asteroid Telescopic Catalog Hub (CATCH) is a moving-target search
-    tool for large astronomical data sets, such as time-domain or near-Earth
-    object surveys. CATCH solves the needle in the haystack problem: comets and
-    asteroids are the needles, and the archives of survey data are the
-    haystacks.
+    The Comet-Asteroid Telescopic Catalog Hub (CATCH) is a search tool for large
+    astronomical data sets. It was especially designed to find observations of
+    moving targets, i.e., comets and asteroids. Use CATCH to help identify
+    pre-discovery observations of a target, to examine past cometary activity,
+    or to help you understand why a survey did not detect or report observations
+    of an object.
   </p>
 
   <p>
     <em>
-      Use CATCH to help identify pre-discovery detections, to examine past
-      cometary activity, or to help you understand why a survey did not detect
-      or report observations of an object.
+      CATCH solves the needle in the haystack problem: your favorite comets and
+      asteroids are the needles, and the archives of survey data are the
+      haystacks.
     </em>
   </p>
 
-  <p>
-    Provide the name of an asteroid or comet, and for each indexed data set
-    CATCH will:
-  </p>
+  <p>Provide the name of an asteroid or comet, and CATCH will:</p>
   <ol>
     <li>
       Request an ephemeris for that object from NASA JPL's
@@ -31,16 +29,26 @@
 
     <li>Query the CATCH database for data near the ephemeris.</li>
 
-    <li>Test each approximate match for detailed intersection.</li>
+    <li>
+      Test each approximate match for detailed intersection with the ephemeris.
+    </li>
 
-    <li>Return all positive matches with target and observational metadata.</li>
+    <li>Return all results with both target and observational metadata.</li>
   </ol>
+
+  <p>
+    CATCH can also search for any fixed point on the sky, and up to 2 degrees in
+    radius about it. Three areal search options are available. Find
+    observations: (1) that intersect any part of the search area; (2) that are
+    fully contained within the search area; or, (3) that fully contain the
+    search area.
+  </p>
 
   <h3>Capabilities</h3>
   <ul>
     <li>
       Results are presented in the browser, complete with image cutouts around
-      the query target (when available).
+      the query target.
     </li>
 
     <li>Backed by a <a href="apis">publicly accessible API</a>.</li>
@@ -63,13 +71,8 @@
     </li>
 
     <li>
-      CATCH is designed to have arcsecond-level precision, but identifying
-      targets may be limited by the astrometric accuracy of survey metadata.
-    </li>
-
-    <li>
-      Fixed-target (celestial objects) are currently searchable
-      <a href="apis">via the API</a>.
+      CATCH is designed to have arcsecond-level precision, but searches will be
+      limited by the astrometric accuracy of survey metadata.
     </li>
   </ul>
 
@@ -149,9 +152,9 @@
         <tr>
           <td>Asteroid Terrestrial-impact Last Alert System (ATLAS)</td>
           <td>Haleakala Observatory, Hawaii, USA (T05)</td>
-          <td><sup>c</sup></td>
-          <td><sup>c</sup></td>
-          <td><sup>c</sup></td>
+          <td>December 2018 &ndash; September 2021<sup>c</sup></td>
+          <td>848<sup>c</sup></td>
+          <td>594,688<sup>c</sup></td>
           <td>1.86</td>
           <td>28</td>
           <td>o, c</td>
@@ -162,9 +165,9 @@
         <tr>
           <td>Asteroid Terrestrial-impact Last Alert System (ATLAS)</td>
           <td>Mauna Loa Observatory, Hawaii, USA (T08)</td>
-          <td><sup>c</sup></td>
-          <td><sup>c</sup></td>
-          <td><sup>c</sup></td>
+          <td>December 2018 &ndash; September 2021<sup>c</sup></td>
+          <td>978<sup>c</sup></td>
+          <td>741,270<sup>c</sup></td>
           <td>1.86</td>
           <td>28</td>
           <td>o, c</td>
@@ -204,9 +207,9 @@
         <tr>
           <td>Catalina Sky Survey</td>
           <td>Mt. Bigelow, Arizona, USA (703, V06)</td>
-          <td>January 2020 &ndash; October 2024<sup>c</sup></td>
-          <td>1102<sup>c</sup></td>
-          <td>1,076,578<sup>c</sup></td>
+          <td>January 2020 &ndash; December 2024<sup>c</sup></td>
+          <td>1,085<sup>c</sup></td>
+          <td>1,149,463<sup>c</sup></td>
           <td>2.5 or 3.0 (703), 0.6 (V06)</td>
           <td>8.1 or 19.4 (703), 0.03 (V06)</td>
           <td>None</td>
@@ -221,9 +224,9 @@
         <tr>
           <td>Catalina Sky Survey</td>
           <td>Mt. Lemmon, Arizona, USA (G96, I52)</td>
-          <td>January 2020 &ndash; December 2022<sup>c</sup></td>
-          <td>1169<sup>c</sup></td>
-          <td>1,421,508<sup>c</sup></td>
+          <td>January 2020 &ndash; December 2024<sup>c</sup></td>
+          <td>1,154<sup>c</sup></td>
+          <td>1,493,143<sup>c</sup></td>
           <td>1.0 or 1.5 (G96), 1.0 (I51)</td>
           <td>1.2 or 5.0 (G96), 0.3 (I52)</td>
           <td>None</td>
@@ -236,10 +239,10 @@
           </td>
         </tr>
         <tr>
-          <td>Lowell Observatory Near-Earth Objects Survey (LONEOS)</td>
+          <td>Lowell Observatory Near-Earth-Object Search (LONEOS)</td>
           <td>Lowell Observatory, Anderson Mesa, Arizona, USA (699)</td>
           <td>August 2003 &ndash; March 2008</td>
-          <td>560</td>
+          <td>522</td>
           <td>290,593</td>
           <td>2.53</td>
           <td>4.1</td>
@@ -302,7 +305,7 @@
           <td>Pan-STARRS 1 (DR2)</td>
           <td>Haleakala Observatory, Hawaii, USA (F51)</td>
           <td>June 2009 &ndash; February 2015</td>
-          <td>1438</td>
+          <td>1,438</td>
           <td>17,558,049<sup>b</sup></td>
           <td>0.25<sup>b</sup></td>
           <td>24×24<sup>b</sup></td>
@@ -330,7 +333,7 @@
           <td>SkyMapper Southern Survey (DR4)</td>
           <td>Siding Spring Observatory, New South Wales, Australia (413)</td>
           <td>March 2014 &ndash; September 2021</td>
-          <td>1934</td>
+          <td>1,757</td>
           <td>12,630,515</td>
           <td>0.5</td>
           <td>0.16</td>
@@ -358,7 +361,7 @@
           <td>Spacewatch 0.9-m Mosaic Camera Survey (v3)</td>
           <td>Steward Observatory, Kitt Peak, Tohono O'odham Nation (691)</td>
           <td>March 2003 &ndash; December 2016</td>
-          <td>2413</td>
+          <td>2,256</td>
           <td>1,808,188</td>
           <td>1.0</td>
           <td>0.35</td>
@@ -389,7 +392,7 @@
         <tr>
           <td colspan="11">
             <sup>c</sup>These archives are accumulating data with time. Archive
-            statistics were updated on 2024 Nov 26.
+            statistics were updated on 2025 Jan 19.
             <a href="https://catch-api.astro.umd.edu/status/sources"
               >Current statistics for CATCH holdings</a
             >
@@ -410,7 +413,7 @@
     have observed a target, based on the target's ephemeris. This search also
     requires that the ephemeris correctly describes the target's motion on the
     sky, and that a potentially matching observation is correctly described by
-    its metadata. Known issues are given below.
+    its metadata.
   </p>
 
   <h3>Known issues</h3>
@@ -436,16 +439,17 @@
     </li>
 
     <li>
-      Owing to some mounting inconsistencies in earlier surveys, the catalog
-      stars may not be oriented (e.g. may be flipped) with respect to the
-      displayed fields.
+      Images may not be correctly displayed in the image preview, which causes a
+      misalignment with the PanSTARRS catalog overlay. In such cases the image
+      will generally be flipped with respect to the catalog, even when the image
+      has an accurate astrometric solution.
     </li>
   </ol>
 
   <h3>Updates</h3>
   <ul>
     <li>
-      v3.0 (2024 Nov 26):
+      v3.0-beta (2025 Jan 31):
       <ul>
         <li>New features:</li>
         <ul>
@@ -463,21 +467,25 @@
             collections. The ATLAS collections will be continuously updated with
             new and previously obtained data.
           </li>
-          <li>Fixed-target (celestial) searches are available via the API.</li>
-          <li>Date-range searches are available via the API.</li>
+          <li>Fixed-target (celestial) searches.</li>
+          <li>Date-range searches.</li>
+          <li>PanSTARRS DR2 catalog overlay in the image preview area.</li>
         </ul>
         <li>Other updates:</li>
         <ul>
           <li>
-            improved web app responsiveness for large numbers of observations.
+            Improved web app responsiveness for results with a large number of
+            observations.
           </li>
           <li>
             Updated Spacewatch 0.9m Mosaic Camera Survey data from v1.0 to v3.0.
           </li>
-          <li>Updated SkyMapper Southern Sky Survey Data Release 2 to 4.</li>
+          <li>
+            Updated SkyMapper Southern Sky Survey Data Release from 2 to 4.
+          </li>
           <li>
             Updated the size of NEAT cutouts to accommodate images with large
-            WCS errors.
+            astrometric errors.
           </li>
         </ul>
       </ul>
