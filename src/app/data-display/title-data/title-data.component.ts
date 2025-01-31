@@ -22,6 +22,7 @@ import {
   selectApiDataJobId,
   selectApiDataStatus,
 } from '../../ngrx/selectors/api-data.selectors';
+import { ImageFetchService } from '../../core/services/fetch-image/fetch-image.service';
 
 @Component({
   selector: 'app-title-data',
@@ -50,7 +51,10 @@ export class TitleDataComponent implements OnInit {
   fitsUrlsForDownload?: string[];
   isDownloadButtonShown = true;
 
-  constructor(private store$: Store<IAppState>) {
+  constructor(
+    private store$: Store<IAppState>,
+    private imageFetchService: ImageFetchService
+  ) {
     this.subscriptions.add(
       combineLatest([
         this.store$.select(selectApiDataStatus).pipe(take(1)),
@@ -125,7 +129,7 @@ export class TitleDataComponent implements OnInit {
             '_'
           );
 
-    const jpgUrls: { url: string; product_id: string }[] =
+    const jpegUrls: { url: string; product_id: string }[] =
       this.apiDataForDownload
         .map((apiDatum) => {
           const url = apiDatum.preview_url || '';
@@ -146,37 +150,50 @@ export class TitleDataComponent implements OnInit {
         .filter(Boolean) as any;
 
     // Convert urls to "image blobs"
-    const jpgImageBlobs = await Promise.all(
-      jpgUrls.map(async ({ url, product_id }) => ({
-        url,
-        product_id,
-        blob: await fetch(url).then((response) => response.blob()),
-      }))
+    const jpegImageBlobs = await Promise.all(
+      jpegUrls.map(async ({ url, product_id }) => {
+        const blob = await this.imageFetchService
+          .fetchImage(url, { isPriority: false, label: url })
+          .then((objectUrl) => {
+            if (!objectUrl) return null;
+            return fetch(objectUrl)
+              .then((r) => r.blob())
+              .catch((_) => null);
+          });
+        return { url, product_id, blob } as const;
+      })
     );
 
+    // Convert urls to "image blobs"
     const fitsImageBlobs = await Promise.all(
-      fitsUrls.map(async ({ url, product_id }) => ({
-        url,
-        product_id,
-        blob: await fetch(url).then((response) => response.blob()),
-      }))
+      fitsUrls.map(async ({ url, product_id }) => {
+        const blob = await this.imageFetchService
+          .fetchImage(url, { isPriority: false, label: url })
+          .then((objectUrl) => {
+            if (!objectUrl) return null;
+            return fetch(objectUrl)
+              .then((r) => r.blob())
+              .catch((_) => null);
+          });
+        return { url, product_id, blob };
+      })
     );
 
     // Convert blobs to 'File's with productid as name
-    const jpgImageFiles = jpgImageBlobs.map(
-      ({ blob, product_id, url }, ind) => ({
-        file: new File([blob], this.jpgUrlsForDownload![ind]),
+    const jpgImageFiles = jpegImageBlobs
+      .filter(({ blob }) => blob) // Juzstifies ! below
+      .map(({ blob, product_id, url }, ind) => ({
+        file: new File([blob!], this.jpgUrlsForDownload![ind]),
         product_id,
         url,
-      })
-    );
-    const fitsImageFiles = fitsImageBlobs.map(
-      ({ blob, product_id, url }, ind) => ({
-        file: new File([blob], this.fitsUrlsForDownload![ind]),
+      }));
+    const fitsImageFiles = fitsImageBlobs
+      .filter(({ blob }) => blob) // Juzstifies ! below
+      .map(({ blob, product_id, url }, ind) => ({
+        file: new File([blob!], this.fitsUrlsForDownload![ind]),
         product_id,
         url,
-      })
-    );
+      }));
 
     // Begin packaging products using JSZip library
     const zip = new JSZip();
