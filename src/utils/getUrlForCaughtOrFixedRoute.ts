@@ -1,4 +1,5 @@
 import { TApiDataSearch } from '../models/TApiDataSearch';
+import { apiBaseUrl } from './constants';
 import { getUrlForFixedRoute } from './getUrlForFixedRoute';
 
 export function getUrlForCaughtOrFixedRoute(
@@ -7,6 +8,6 @@ export function getUrlForCaughtOrFixedRoute(
 ): string {
   const { searchParams, searchType } = apiDataSearch;
   return searchType === 'moving'
-    ? `http://catch-dev-api.astro.umd.edu/caught/${job_id}`
+    ? apiBaseUrl + `/caught/${job_id}`
     : getUrlForFixedRoute(searchParams);
 }
