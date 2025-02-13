@@ -16,5 +16,6 @@ export const urlToFilename = (url: string) => {
   // const hash = crypto.createHash('sha256').update(url).digest('hex');
   // const filename = `${hash}.html`;
 
-  return filename; // Ensure the filename ends with .html
+  // Limit the length of the filename to 255 characters
+  return filename.slice(0, 500); // Ensure the filename ends with .html
 };

@@ -188,11 +188,12 @@ export const apiDataLabels: Readonly<TApiDataLabels> = {
     description: 'Thumbnail image around target ephemeris',
   },
 
-  tmtp: {
-    description: 'XXX',
-    // fractionSize: 1,
-    label: 'tmpt',
-  },
+  // tmtp: {
+  //   description: 'XXX',
+  //   // fractionSize: 1,
+  //   label: 'tmtp',
+  // },
+
   true_anomaly: {
     description: 'True anomaly angle (deg)',
     fractionSize: 1,

@@ -48,7 +48,8 @@ export interface IApiMovum extends IApiFixum {
   source: TControlKeyForSources;
   source_name: string;
   thumbnail_url?: string | null;
-  tmtp?: number;
+  // tmtp?: number;
+  // tmtp?: number;
   true_anomaly: number;
   unc_a: number;
   unc_b: number;
