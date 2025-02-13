@@ -36,9 +36,7 @@ export const horizons = async (req: Request, res: Response) => {
   console.log('Checking for file:', filename);
   const cachedUrl = `https://sbn-ddarg-jpl-horizons-cache.s3.amazonaws.com/${filename}`;
   try {
-    const cachedResponse = await fetch(cachedUrl, {
-      method: 'GET',
-    });
+    const cachedResponse = await fetch(cachedUrl, { method: 'GET' });
     if (cachedResponse.status === 200) {
       const data = await cachedResponse.text();
       return res.status(200).send(data || 'No data found');

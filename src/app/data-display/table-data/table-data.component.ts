@@ -31,6 +31,7 @@ import {
 } from '../../ngrx/selectors/api-data.selectors';
 import {
   ApiDataAction_SetDownloadRowState,
+  ApiDataAction_SetPaginatedApiData,
   ApiDataAction_SetSelectedDatum,
 } from '../../ngrx/actions/api-data.actions';
 import { TDownloadRowsState } from '../../../models/TDownloadRowsState';
@@ -195,16 +196,27 @@ export class TableDataComponent
   }
 
   onPaginateChange(event: PageEvent) {
-    // console.log('Page event: ', event);
+    console.log('Page event: ', event);
     this.pageIndex = event.pageIndex;
     this.pageSize = event.pageSize;
     this.fetchImageService.resetQueue();
 
-    // Logic to rescroll to selected row after new pagination
     const apiSelectedDatum = this.apiSelectedDatum;
     const sortedApiData = this.getSortedApiData();
     if (!sortedApiData) return;
     if (!apiSelectedDatum) return;
+
+    // Update paginated data
+    const dataOnThisPage = sortedApiData.slice(
+      this.pageIndex * this.pageSize,
+      (this.pageIndex + 1) * this.pageSize
+    );
+    this.paginatedApiData = dataOnThisPage;
+    this.store$.dispatch(
+      ApiDataAction_SetPaginatedApiData({ paginatedApiData: dataOnThisPage })
+    );
+
+    // Logic to rescroll to selected row after new pagination
     let indexOfSelectedDatum = sortedApiData
       .map((_) => _.product_id)
       .indexOf(apiSelectedDatum.product_id);

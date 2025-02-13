@@ -7,6 +7,7 @@ import {
   ApiDataAction_SetJobId,
   ApiDataAction_SetDownloadRowState,
   ApiDataAction_SetShownColState,
+  ApiDataAction_SetPaginatedApiData,
 } from '../actions/api-data.actions';
 import { TApiDataStatus } from '../../../models/TApiDataStatus';
 import { IApiMovum } from '../../../models/IApiMovum';
@@ -19,6 +20,7 @@ export interface IApiDataSubstate {
   apiDataSelectedDatum?: IApiMovum | IApiFixum;
   apiDataStatus: TApiDataStatus;
   apiData?: IApiMovum[] | IApiFixum[];
+  paginatedApiData?: IApiMovum[] | IApiFixum[];
   apiDataJobId?: string;
   apiDataShownColState?: TColStateMoving | TColStateFixed;
   apiDataDownloadRowState: TDownloadRowsState;
@@ -27,6 +29,7 @@ export interface IApiDataSubstate {
 export const initialState: IApiDataSubstate = {
   apiDataSelectedDatum: undefined,
   apiData: undefined,
+  paginatedApiData: undefined,
   apiDataJobId: undefined,
   apiDataStatus: {
     code: 'unset',
@@ -61,6 +64,11 @@ export const apiDataReducer = createReducer<IApiDataSubstate>(
   on(ApiDataAction_SetData, (state, { apiData }) => ({
     ...state,
     apiData: apiData ? [...apiData] : undefined,
+  })),
+
+  on(ApiDataAction_SetPaginatedApiData, (state, { paginatedApiData }) => ({
+    ...state,
+    paginatedApiData: paginatedApiData ? [...paginatedApiData] : undefined,
   })),
 
   on(ApiDataAction_SetJobId, (state, { job_id }) => ({

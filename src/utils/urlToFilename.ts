@@ -12,5 +12,9 @@ export const urlToFilename = (url: string) => {
     .replace(/[^a-z0-9]/gi, '_') // Replace non-alphanumeric characters with underscores
     .toLowerCase(); // Convert to lowercase for uniformity
 
-  return `${filename}.html`; // Ensure the filename ends with .html
+  // Implement alpha-numeric hash
+  // const hash = crypto.createHash('sha256').update(url).digest('hex');
+  // const filename = `${hash}.html`;
+
+  return filename; // Ensure the filename ends with .html
 };

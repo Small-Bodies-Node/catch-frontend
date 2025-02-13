@@ -9,6 +9,7 @@ import {
   selectApiData,
   selectApiSelectedDatum,
   selectApiDataStatus,
+  selectPaginatedApiData,
 } from '../../ngrx/selectors/api-data.selectors';
 import { IApiFixum } from '../../../models/IApiFixum';
 
@@ -43,8 +44,8 @@ export class SolarViewerComponent implements OnInit {
         this.target = status.search.searchParams.target;
 
         this.apiData = apiData;
-        if (this.apiData && this.target) {
-          const timeStamps = this.apiData.map((data) => {
+        if (apiData && this.target) {
+          const timeStamps = apiData.map((data) => {
             return data.date;
           });
           const timeStampsJds = timeStamps.map((date) =>
@@ -66,6 +67,9 @@ export class SolarViewerComponent implements OnInit {
               this.solarViewer.setTargetTime(timeStamps[0]);
               this.solarViewer.begin();
             }, 1000);
+          } else {
+            // Update the solar viewer with the new data
+            // this.solarViewer.setAsteroidObservationTimes(timeStampsJds);
           }
         }
       })

@@ -8,7 +8,8 @@ import { TColStateFixed } from '../../../models/TColStateFixed';
 
 enum ApiDataActionTypes {
   FetchData = '[ApiData] Fetch Data',
-  SetData = '[ApiData] Set Data',
+  SetApiData = '[ApiData] Set Api Data',
+  SetPaginatedApiData = '[ApiData] Set Paginated Api Data',
   SetSelectedDatum = '[ApiData] Set Selected Datum',
   SetStatus = '[ApiData] Set Status',
   SetJobId = '[ApiData] Set JobId',
@@ -27,13 +28,18 @@ export const ApiDataAction_SetStatus = createAction(
 );
 
 export const ApiDataAction_SetData = createAction(
-  ApiDataActionTypes.SetData,
+  ApiDataActionTypes.SetApiData,
   props<{ apiData?: IApiMovum[] | IApiFixum[] }>()
 );
 
 export const ApiDataAction_SetSelectedDatum = createAction(
   ApiDataActionTypes.SetSelectedDatum,
   props<{ apiDatum: IApiMovum | IApiFixum }>()
+);
+
+export const ApiDataAction_SetPaginatedApiData = createAction(
+  ApiDataActionTypes.SetPaginatedApiData,
+  props<{ paginatedApiData?: IApiMovum[] | IApiFixum[] }>()
 );
 
 export const ApiDataAction_SetJobId = createAction(
