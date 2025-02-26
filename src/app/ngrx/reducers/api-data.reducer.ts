@@ -7,7 +7,7 @@ import {
   ApiDataAction_SetJobId,
   ApiDataAction_SetDownloadRowState,
   ApiDataAction_SetShownColState,
-  ApiDataAction_SetPaginatedApiData,
+  ApiDataAction_SetSmallBodyType,
 } from '../actions/api-data.actions';
 import { TApiDataStatus } from '../../../models/TApiDataStatus';
 import { IApiMovum } from '../../../models/IApiMovum';
@@ -24,6 +24,7 @@ export interface IApiDataSubstate {
   apiDataJobId?: string;
   apiDataShownColState?: TColStateMoving | TColStateFixed;
   apiDataDownloadRowState: TDownloadRowsState;
+  apiSmallBodyType?: 'asteroid' | 'comet';
 }
 
 export const initialState: IApiDataSubstate = {
@@ -38,6 +39,7 @@ export const initialState: IApiDataSubstate = {
   },
   apiDataShownColState: undefined,
   apiDataDownloadRowState: {},
+  apiSmallBodyType: undefined,
 };
 
 export const apiDataReducer = createReducer<IApiDataSubstate>(
@@ -66,11 +68,6 @@ export const apiDataReducer = createReducer<IApiDataSubstate>(
     apiData: apiData ? [...apiData] : undefined,
   })),
 
-  on(ApiDataAction_SetPaginatedApiData, (state, { paginatedApiData }) => ({
-    ...state,
-    paginatedApiData: paginatedApiData ? [...paginatedApiData] : undefined,
-  })),
-
   on(ApiDataAction_SetJobId, (state, { job_id }) => ({
     ...state,
     apiDataJobId: job_id,
@@ -79,5 +76,10 @@ export const apiDataReducer = createReducer<IApiDataSubstate>(
   on(ApiDataAction_SetStatus, (state, newStatus) => ({
     ...state,
     apiDataStatus: { ...newStatus },
+  })),
+
+  on(ApiDataAction_SetSmallBodyType, (state, { smallBodyType }) => ({
+    ...state,
+    apiSmallBodyType: smallBodyType,
   }))
 );

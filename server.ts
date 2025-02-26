@@ -10,7 +10,7 @@ import bootstrap from './src/main.server';
 import { panstarrs } from './src/api-routes/panstarrs';
 import { hello } from './src/api-routes/hello';
 import { horizons } from './src/api-routes/horizons';
-
+import { horizons2 } from './src/api-routes/horizons2';
 // The Express app is exported so that it can be used by serverless Functions.
 export function app(): express.Express {
   const server = express();
@@ -32,6 +32,7 @@ export function app(): express.Express {
   server.get('/api/hello', hello);
   server.get('/api/stars', panstarrs);
   server.post('/api/horizons', cors(), horizons);
+  server.post('/api/horizons2', cors(), horizons2);
   server.get('/api/panstarrs', cors(), panstarrs);
 
   // Serve static files from /browser

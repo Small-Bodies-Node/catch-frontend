@@ -1,4 +1,7 @@
 <div #myContainer class="panstarrs-overlay-container">
+  @if (!isPanstarrsDataFound) {
+  <div class="no-data-found">No panstarrs data!</div>
+  }
   <!-- Crosshair: Vertical Line -->
   <div
     style="
@@ -25,7 +28,7 @@
     "
   ></div>
   <!--  -->
-  @for (raDec of raDecs; track raDec) {
+  @for (raDec of raDecs; track raDec ) {
   <div
     [style.left.px]="getDivLeft(raDec.ra)"
     [style.top.px]="getDivTop(raDec.dec)"

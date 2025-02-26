@@ -8,7 +8,10 @@ import { IAppState } from '../../../ngrx/reducers';
 import { IApiDataService } from '../../../../models/IApiDataService';
 import { TJobStreamResult } from '../../../../models/TJobStreamResult';
 import { IApiServiceStream } from '../../../../models/IApiServiceStream';
-import { ApiDataAction_SetStatus } from '../../../ngrx/actions/api-data.actions';
+import {
+  ApiDataAction_SetSmallBodyType,
+  ApiDataAction_SetStatus,
+} from '../../../ngrx/actions/api-data.actions';
 import { ISearchParamsMoving } from '../../../../models/ISearchParamsMoving';
 import { ISearchParamsFixed } from '../../../../models/ISearchParamsFixed';
 import { getUrlForFixedRoute } from '../../../../utils/getUrlForFixedRoute';
@@ -216,6 +219,12 @@ export class ApiDataService implements IApiDataService {
       .get<IApiDataCatchResult>(movingTargetUrl, { headers })
       .pipe(
         map((apiDataCatchResult) => {
+          const { type } = apiDataCatchResult.query;
+          this.store$.dispatch(
+            ApiDataAction_SetSmallBodyType({
+              smallBodyType: type === 'ASTEROID' ? 'asteroid' : 'comet',
+            })
+          );
           return {
             status: 'success',
             apiDataCatchResult,

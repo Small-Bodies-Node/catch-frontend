@@ -31,7 +31,6 @@ import {
 } from '../../ngrx/selectors/api-data.selectors';
 import {
   ApiDataAction_SetDownloadRowState,
-  ApiDataAction_SetPaginatedApiData,
   ApiDataAction_SetSelectedDatum,
 } from '../../ngrx/actions/api-data.actions';
 import { TDownloadRowsState } from '../../../models/TDownloadRowsState';
@@ -70,7 +69,6 @@ export class TableDataComponent
   dataSource?: MatTableDataSource<IApiMovum | IApiFixum>;
   apiSelectedDatum?: IApiMovum | IApiFixum;
   allApiData?: IApiMovum[] | IApiFixum[];
-  paginatedApiData?: IApiMovum[] | IApiFixum[];
   colState?: TColStateData;
   shownHideableCols?: Partial<keyof TColStateData>[] = [];
 
@@ -205,16 +203,6 @@ export class TableDataComponent
     const sortedApiData = this.getSortedApiData();
     if (!sortedApiData) return;
     if (!apiSelectedDatum) return;
-
-    // Update paginated data
-    const dataOnThisPage = sortedApiData.slice(
-      this.pageIndex * this.pageSize,
-      (this.pageIndex + 1) * this.pageSize
-    );
-    this.paginatedApiData = dataOnThisPage;
-    this.store$.dispatch(
-      ApiDataAction_SetPaginatedApiData({ paginatedApiData: dataOnThisPage })
-    );
 
     // Logic to rescroll to selected row after new pagination
     let indexOfSelectedDatum = sortedApiData

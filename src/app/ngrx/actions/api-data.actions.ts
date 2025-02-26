@@ -2,19 +2,18 @@ import { createAction, props } from '@ngrx/store';
 import { IApiMovum } from '../../../models/IApiMovum';
 import { TApiDataStatus } from '../../../models/TApiDataStatus';
 import { IApiFixum } from '../../../models/IApiFixum';
-import { TApiDataSearch } from '../../../models/TApiDataSearch';
 import { TColStateMoving } from '../../../models/TColStateMoving';
 import { TColStateFixed } from '../../../models/TColStateFixed';
 
 enum ApiDataActionTypes {
   FetchData = '[ApiData] Fetch Data',
   SetApiData = '[ApiData] Set Api Data',
-  SetPaginatedApiData = '[ApiData] Set Paginated Api Data',
   SetSelectedDatum = '[ApiData] Set Selected Datum',
   SetStatus = '[ApiData] Set Status',
   SetJobId = '[ApiData] Set JobId',
   SetDownloadRowState = '[ApiData] Set Download Row State',
   SetShownColState = '[ApiData] Set Shown Col State',
+  SetSmallBodyType = '[ApiData] Set Small Body Type',
 }
 
 export const ApiDataAction_FetchData = createAction(
@@ -37,11 +36,6 @@ export const ApiDataAction_SetSelectedDatum = createAction(
   props<{ apiDatum: IApiMovum | IApiFixum }>()
 );
 
-export const ApiDataAction_SetPaginatedApiData = createAction(
-  ApiDataActionTypes.SetPaginatedApiData,
-  props<{ paginatedApiData?: IApiMovum[] | IApiFixum[] }>()
-);
-
 export const ApiDataAction_SetJobId = createAction(
   ApiDataActionTypes.SetJobId,
   props<{ job_id: string }>()
@@ -55,4 +49,9 @@ export const ApiDataAction_SetDownloadRowState = createAction(
 export const ApiDataAction_SetShownColState = createAction(
   ApiDataActionTypes.SetShownColState,
   props<{ apiDataShownColState: TColStateMoving | TColStateFixed }>()
+);
+
+export const ApiDataAction_SetSmallBodyType = createAction(
+  ApiDataActionTypes.SetSmallBodyType,
+  props<{ smallBodyType: 'asteroid' | 'comet' }>()
 );

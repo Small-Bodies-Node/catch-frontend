@@ -11,6 +11,8 @@ import { IApiMovum } from '../../../models/IApiMovum';
 import { PanstarrsApiService } from '../../core/services/panstarrs-api/panstarrs-api';
 import { IApiFixum } from '../../../models/IApiFixum';
 import { convertToDecimal } from '../../../utils/convertToDecimal';
+import { IPanstarrsApiResponse } from '../../../models/IPanstarrsApiResponse';
+import { distToPanstarrsCenter } from '../../../utils/distToPanstarrsCenter';
 
 @Component({
   selector: 'app-panstarrs-overlay',
@@ -26,6 +28,7 @@ export class PanstarrsOverlayComponent implements OnInit {
   dec: number | string = 0;
   subscriptions = new Subscription();
   raDecs: { ra: number; dec: number; raErr: number; decErr: number }[] = [];
+  isPanstarrsDataFound = false;
 
   constructor(
     private store$: Store<IAppState>,
@@ -57,16 +60,24 @@ export class PanstarrsOverlayComponent implements OnInit {
               ? apiDataStatus.search.searchParams.dec
               : 0;
 
-          // console.log('this.ra', this.ra, 'this.dec', this.dec);
-
           this.pansstarrsApiService
             .getPanstarrsData(this.ra, this.dec, 50, 0.03)
             .subscribe((apiPayload) => {
-              this.raDecs = apiPayload.data.map((datum: any) => ({
+              const data = apiPayload.data
+                .sort(
+                  (a, b) =>
+                    distToPanstarrsCenter(a, this.ra, this.dec) -
+                    distToPanstarrsCenter(b, this.ra, this.dec)
+                )
+                .filter((_, ind) => ind < 500);
+              this.isPanstarrsDataFound = data.length > 0;
+              this.raDecs = data.map((datum: any, ind: number) => ({
+                id: ind,
                 ra: datum.raMean,
                 dec: datum.decMean,
                 raErr: datum.raMeanErr,
                 decErr: datum.decMeanErr,
+                rMeanPSFMag: datum.rMeanPSFMag,
               }));
             });
         })

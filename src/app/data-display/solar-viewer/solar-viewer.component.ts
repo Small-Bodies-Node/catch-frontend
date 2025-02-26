@@ -9,7 +9,7 @@ import {
   selectApiData,
   selectApiSelectedDatum,
   selectApiDataStatus,
-  selectPaginatedApiData,
+  selectApiSmallBodyType,
 } from '../../ngrx/selectors/api-data.selectors';
 import { IApiFixum } from '../../../models/IApiFixum';
 
@@ -37,17 +37,17 @@ export class SolarViewerComponent implements OnInit {
       combineLatest([
         this.store$.select(selectApiDataStatus).pipe(take(1)),
         this.store$.select(selectApiData).pipe(take(1)),
-      ]).subscribe(([status, apiData]) => {
+        this.store$.select(selectApiSmallBodyType).pipe(take(1)),
+      ]).subscribe(([status, apiData, smallBodyType]) => {
         if (!status || !status.search) return;
         if (status.search.searchType === 'fixed') return;
+        if (!smallBodyType) return;
 
         this.target = status.search.searchParams.target;
 
         this.apiData = apiData;
         if (apiData && this.target) {
-          const timeStamps = apiData.map((data) => {
-            return data.date;
-          });
+          const timeStamps = apiData.map((data) => data.date);
           const timeStampsJds = timeStamps.map((date) =>
             dateToJulianDay(new Date(date))
           );
@@ -57,7 +57,11 @@ export class SolarViewerComponent implements OnInit {
               this.solarViewer = new SbnSolarViewer({
                 containerId: this.sbnSolarViewerId,
                 // asteroid: { target: '65P*', data: timeStampsJds },
-                asteroid: { target: this.target!, data: timeStampsJds },
+                smallBody: {
+                  target: this.target!,
+                  data: timeStampsJds,
+                  bodyType: smallBodyType,
+                },
                 isControlsShown: !true,
                 logScaleZoomingPositionAus: { x: 3, y: 0, z: 1 },
                 nonLogScaleZoomingPositionAus: { x: 0, y: 0, z: 10 },
@@ -65,6 +69,7 @@ export class SolarViewerComponent implements OnInit {
                 isStarField: true,
               });
               this.solarViewer.setTargetTime(timeStamps[0]);
+              // this.solarViewer.setAsteroidObservationTimes(timeStamps);
               this.solarViewer.begin();
             }, 1000);
           } else {

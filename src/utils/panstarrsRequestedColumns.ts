@@ -30,7 +30,7 @@ export const panstarrsRequestedColumns = [
   // 'gMeanKronMagErr',
   // 'gFlags',
   // 'rQfPerfect',
-  // 'rMeanPSFMag',
+  'rMeanPSFMag',
   // 'rMeanPSFMagErr',
   // 'rMeanPSFMagStd',
   // 'rMeanPSFMagNpt',

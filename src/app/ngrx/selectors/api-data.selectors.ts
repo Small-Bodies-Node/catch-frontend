@@ -14,11 +14,6 @@ export const selectApiSelectedDatum = createSelector(
   (substate: IApiDataSubstate) => substate.apiDataSelectedDatum
 );
 
-export const selectPaginatedApiData = createSelector(
-  (state: IAppState) => state.apiData,
-  (substate: IApiDataSubstate) => substate.paginatedApiData
-);
-
 export const selectApiData = createSelector(
   (state: IAppState) => state.apiData,
   (substate: IApiDataSubstate) => substate.apiData
@@ -42,4 +37,9 @@ export const selectApiDataDownloadRowState = createSelector(
 export const selectApiDataShownColState = createSelector(
   (state: IAppState) => state.apiData,
   (substate: IApiDataSubstate) => substate.apiDataShownColState
+);
+
+export const selectApiSmallBodyType = createSelector(
+  (state: IAppState) => state.apiData,
+  (substate: IApiDataSubstate) => substate.apiSmallBodyType
 );
