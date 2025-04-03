@@ -3,6 +3,7 @@
 /* Apply layout/background styles to the component host */
 :host {
   margin: 0;
+  padding: 0;
   overflow: hidden; /* Might be better on a parent container if needed */
   background-color: #111;
   display: flex; /* Center the game container within the component area */
@@ -16,7 +17,8 @@
 
 #gameContainer {
   position: relative;
-  width: 95vw;
+  // width: 95vw;
+  width: 100%;
   height: 90vh;
   max-width: 1200px;
   /* Adjusted max-height calculation for maintainability */
