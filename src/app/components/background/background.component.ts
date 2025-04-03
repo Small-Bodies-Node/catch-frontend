@@ -69,7 +69,7 @@ export class BackgroundComponent implements OnInit {
       this.siteTheme.toLowerCase().replace('-theme', '') +
       '_' +
       imageLabel +
-      '_v1.png';
+      '_v2.png';
     const filePath = `images/pngs/${fileName}`;
 
     const delayBeforeTransitionMs = imageIndex * intervalMs;

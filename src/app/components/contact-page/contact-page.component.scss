@@ -42,12 +42,7 @@
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
 
-        #fullname {
-          // background-color: red;
-        }
-        #email {
-          // background-color: blue;
-        }
+        // Empty rulesets removed
       }
       #message {
         grid-area: message;
@@ -60,15 +55,24 @@
         justify-content: space-between;
         // grid-template-columns: minmax(320px, 1fr) minmax(50px, 1fr);
 
-        #recaptcha-wrapper {
-          // background-color: red;
+        #captcha-wrapper {
           min-width: 300px;
-          // min-height: 100px;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          
+          .captcha-loading {
+            margin: 10px 0;
+            font-style: italic;
+            opacity: 0.8;
+          }
+          
+          #aws-waf-captcha-container {
+            min-height: 70px;
+          }
         }
 
-        #submit-button-wrapper {
-          // background-color: pink;
-        }
+        // Empty ruleset removed
         .recaptcha-submit {
           display: flex;
           justify-content: space-between;
