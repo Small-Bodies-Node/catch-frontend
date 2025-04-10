@@ -9,5 +9,6 @@ export interface IEnvironment {
     webAclId: string;
     endpoint: string;
     apiKey: string;
+    captchaScriptUrl?: string; // The full URL for the AWS WAF CAPTCHA script from the AWS console
   };
 }

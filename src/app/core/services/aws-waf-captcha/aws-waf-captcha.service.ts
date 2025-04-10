@@ -44,27 +44,27 @@ export class AwsWafCaptchaService {
     // For testing purposes in development, we'll use a mock implementation
     if (environment.envName === 'default' || !environment.production) {
       console.log('Using mock AWS WAF Captcha implementation for development');
-      
+
       // Define a mock AWS WAF Captcha object
       (window as any).AwsWafCaptcha = {
         renderCaptcha: (config: any) => {
           console.log('Mock AWS WAF Captcha rendered', config);
-          
+
           // Create a visual mock captcha (this is important - we need to create something visible!)
           const container = document.getElementById(config.containerId);
           if (container) {
             container.innerHTML = `
               <div style="border: 1px solid #ccc; padding: 10px; text-align: center; border-radius: 4px; background-color: #f9f9f9;">
                 <p style="margin-bottom: 10px; font-weight: bold;">Mock AWS WAF Captcha (Development Mode)</p>
-                <button 
-                  id="mock-captcha-pass" 
-                  type="button" 
+                <button
+                  id="mock-captcha-pass"
+                  type="button"
                   style="padding: 8px 16px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;">
                   I'm not a robot (Click to pass)
                 </button>
               </div>
             `;
-            
+
             // Add click handler for the mock captcha button
             const captchaButton = document.getElementById('mock-captcha-pass');
             if (captchaButton) {
@@ -79,51 +79,54 @@ export class AwsWafCaptchaService {
               });
             }
           } else {
-            console.error(`Container with ID ${config.containerId} not found for mock AWS WAF Captcha`);
+            console.error(
+              `Container with ID ${config.containerId} not found for mock AWS WAF Captcha`
+            );
           }
           return true;
         },
         resetCaptcha: () => {
           console.log('Mock AWS WAF Captcha reset');
           return true;
-        }
+        },
       };
-      
+
       // Important: signal that captcha is loaded so the loading message disappears
       this.captchaLoaded = true;
       this.captchaLoadSubject.next(true);
-      
+
       return;
     }
 
     // In production, attempt to load the real AWS WAF Captcha script
     try {
       const script = document.createElement('script');
-      // AWS WAF Captcha is typically served from a region-specific endpoint
-      // Format: https://<region>.captcha.awswaf.com/api/v1/<webAclId>/captcha.js
-      const region = 'us-east-1'; // Assuming US East 1 as the region
-      script.src = `https://${region}.captcha.awswaf.com/api/v1/${environment.awsWafConfig.webAclId}/captcha.js`;
-      script.async = true;
       
+      // Use the configured script URL from environment
+      script.src = environment.awsWafConfig.captchaScriptUrl || 
+        `https://us-east-1.captcha.awswaf.com/api/v1/${environment.awsWafConfig.webAclId}/captcha.js`;
+      
+      script.async = true;
+
       script.onload = () => {
         console.log('AWS WAF Captcha script loaded successfully');
         this.captchaLoaded = true;
         this.captchaLoadSubject.next(true);
       };
-      
+
       script.onerror = (e) => {
         console.error('AWS WAF Captcha script failed to load', e);
         this.captchaLoadSubject.next(false);
-        
+
         // Fallback to mock implementation if script fails to load
         this.initMockImplementation();
       };
-      
+
       document.body.appendChild(script);
     } catch (error) {
       console.error('Error loading AWS WAF Captcha script:', error);
       this.captchaLoadSubject.next(false);
-      
+
       // Fallback to mock implementation if script fails to load
       this.initMockImplementation();
     }
@@ -134,27 +137,27 @@ export class AwsWafCaptchaService {
    */
   private initMockImplementation(): void {
     console.log('Initializing mock AWS WAF Captcha implementation as fallback');
-    
+
     // Define a mock AWS WAF Captcha object
     (window as any).AwsWafCaptcha = {
       renderCaptcha: (config: any) => {
         console.log('Mock AWS WAF Captcha rendered from fallback', config);
-        
+
         // Create a visual mock captcha
         const container = document.getElementById(config.containerId);
         if (container) {
           container.innerHTML = `
             <div style="border: 1px solid #ccc; padding: 10px; text-align: center; border-radius: 4px; background-color: #f9f9f9;">
               <p style="margin-bottom: 10px; font-weight: bold;">Mock AWS WAF Captcha (Fallback)</p>
-              <button 
-                id="mock-captcha-pass" 
-                type="button" 
+              <button
+                id="mock-captcha-pass"
+                type="button"
                 style="padding: 8px 16px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;">
                 I'm not a robot (Click to pass)
               </button>
             </div>
           `;
-          
+
           // Add click handler for the mock captcha button with explicit event prevention
           const captchaButton = document.getElementById('mock-captcha-pass');
           if (captchaButton) {
@@ -168,16 +171,18 @@ export class AwsWafCaptchaService {
             });
           }
         } else {
-          console.error(`Container with ID ${config.containerId} not found for fallback AWS WAF Captcha`);
+          console.error(
+            `Container with ID ${config.containerId} not found for fallback AWS WAF Captcha`
+          );
         }
         return true;
       },
       resetCaptcha: () => {
         console.log('Mock AWS WAF Captcha reset');
         return true;
-      }
+      },
     };
-    
+
     // Important: signal that captcha is loaded so the loading message disappears
     this.captchaLoaded = true;
     this.captchaLoadSubject.next(true);
@@ -190,7 +195,7 @@ export class AwsWafCaptchaService {
    */
   initCaptcha(config: IAwsWafCaptchaConfig): Observable<string> {
     const tokenSubject = new Subject<string>();
-    
+
     if (!isPlatformBrowser(this.platformId)) {
       return tokenSubject.asObservable();
     }
@@ -203,7 +208,10 @@ export class AwsWafCaptchaService {
       }
 
       try {
-        console.log('Rendering AWS WAF Captcha in container:', config.container);
+        console.log(
+          'Rendering AWS WAF Captcha in container:',
+          config.container
+        );
         (window as any).AwsWafCaptcha.renderCaptcha({
           containerId: config.container,
           apiKey: config.apiKey || environment.awsWafConfig.apiKey,
@@ -225,7 +233,7 @@ export class AwsWafCaptchaService {
             if (config.onExpired) {
               config.onExpired();
             }
-          }
+          },
         });
       } catch (error) {
         console.error('Error initializing AWS WAF Captcha:', error);
@@ -236,7 +244,7 @@ export class AwsWafCaptchaService {
     };
 
     initCaptchaWhenLoaded();
-    
+
     return tokenSubject.asObservable();
   }
 
@@ -244,9 +252,11 @@ export class AwsWafCaptchaService {
    * Reset the captcha to allow a new attempt
    */
   resetCaptcha(): void {
-    if (isPlatformBrowser(this.platformId) && 
-        this.captchaLoaded && 
-        (window as any).AwsWafCaptcha) {
+    if (
+      isPlatformBrowser(this.platformId) &&
+      this.captchaLoaded &&
+      (window as any).AwsWafCaptcha
+    ) {
       try {
         (window as any).AwsWafCaptcha.resetCaptcha();
       } catch (error) {
