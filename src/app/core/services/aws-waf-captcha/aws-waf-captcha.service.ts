@@ -90,11 +90,12 @@ export class AwsWafCaptchaService {
     // In production, attempt to load the real AWS WAF Captcha script
     try {
       const script = document.createElement('script');
-      
+
       // Use the configured script URL from environment
-      script.src = environment.awsWafConfig.captchaScriptUrl || 
+      script.src =
+        environment.awsWafConfig.captchaScriptUrl ||
         `https://us-east-1.captcha.awswaf.com/api/v1/${environment.awsWafConfig.webAclId}/captcha.js`;
-      
+
       script.async = true;
 
       script.onload = () => {
@@ -194,31 +195,41 @@ export class AwsWafCaptchaService {
       return tokenSubject.asObservable();
     }
 
+    // Simple retry counter to prevent infinite loops
+    let attempts = 0;
+    const maxAttempts = 5;
+
     const initCaptchaWhenLoaded = () => {
+      attempts++;
+
+      // Wait for script to load
       if (!this.captchaLoaded || !(window as any).AwsWafCaptcha) {
-        console.log('Waiting for AWS WAF Captcha to load...');
-        setTimeout(initCaptchaWhenLoaded, 100);
+        if (attempts <= maxAttempts) {
+          setTimeout(initCaptchaWhenLoaded, 300);
+        }
         return;
       }
 
       try {
-        // Ensure the container element exists before trying to render
+        // Get container element
         const containerElement = document.getElementById(config.container);
+
+        // If container not found or not ready, retry
         if (!containerElement) {
-          console.log(`Container #${config.container} not found, retrying in 200ms...`);
-          setTimeout(initCaptchaWhenLoaded, 200);
+          if (attempts <= maxAttempts) {
+            setTimeout(initCaptchaWhenLoaded, 300);
+          }
           return;
         }
-        
-        console.log(
-          'Rendering AWS WAF Captcha in container:',
-          config.container
-        );
+
+        // Clear container to ensure it's ready for DOM operations
+        containerElement.innerHTML = '';
+
+        // Render the captcha
         (window as any).AwsWafCaptcha.renderCaptcha({
           containerId: config.container,
           apiKey: environment.awsWafConfig.apiKey,
           onSuccess: (token: string) => {
-            console.log('AWS WAF Captcha success, token received');
             tokenSubject.next(token);
             if (config.onSuccess) {
               config.onSuccess(token);
@@ -239,13 +250,17 @@ export class AwsWafCaptchaService {
         });
       } catch (error) {
         console.error('Error initializing AWS WAF Captcha:', error);
-        if (config.onError) {
+        // On error, retry if we haven't exceeded max attempts
+        if (attempts <= maxAttempts) {
+          setTimeout(initCaptchaWhenLoaded, 300);
+        } else if (config.onError) {
           config.onError(error as Error);
         }
       }
     };
 
-    initCaptchaWhenLoaded();
+    // Delay the first attempt to ensure the DOM is ready
+    setTimeout(initCaptchaWhenLoaded, 750);
 
     return tokenSubject.asObservable();
   }
