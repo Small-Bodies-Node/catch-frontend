@@ -4,17 +4,6 @@ import { Observable, Subject, from } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 
 /**
- * Interface for AWS WAF Captcha configuration
- */
-export interface IAwsWafCaptchaConfig {
-  container: string;
-  apiKey?: string;
-  onSuccess?: (token: string) => void;
-  onError?: (error: Error) => void;
-  onExpired?: () => void;
-}
-
-/**
  * Service to handle AWS WAF CAPTCHA integration
  */
 @Injectable({
@@ -193,7 +182,12 @@ export class AwsWafCaptchaService {
    * @param config Configuration for AWS WAF Captcha
    * @returns Observable that emits the captcha token on success
    */
-  initCaptcha(config: IAwsWafCaptchaConfig): Observable<string> {
+  initCaptcha(config: {
+    container: string;
+    onSuccess: (token: string) => void;
+    onError: (error: Error) => void;
+    onExpired: () => void;
+  }): Observable<string> {
     const tokenSubject = new Subject<string>();
 
     if (!isPlatformBrowser(this.platformId)) {
@@ -208,13 +202,21 @@ export class AwsWafCaptchaService {
       }
 
       try {
+        // Ensure the container element exists before trying to render
+        const containerElement = document.getElementById(config.container);
+        if (!containerElement) {
+          console.log(`Container #${config.container} not found, retrying in 200ms...`);
+          setTimeout(initCaptchaWhenLoaded, 200);
+          return;
+        }
+        
         console.log(
           'Rendering AWS WAF Captcha in container:',
           config.container
         );
         (window as any).AwsWafCaptcha.renderCaptcha({
           containerId: config.container,
-          apiKey: config.apiKey || environment.awsWafConfig.apiKey,
+          apiKey: environment.awsWafConfig.apiKey,
           onSuccess: (token: string) => {
             console.log('AWS WAF Captcha success, token received');
             tokenSubject.next(token);

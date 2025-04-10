@@ -85,9 +85,10 @@ export class ContactPageComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngAfterViewInit() {
     // Initialize AWS WAF Captcha after view has initialized
+    // Use a longer delay to ensure DOM is fully rendered in SSR environments
     setTimeout(() => {
       this.initAwsWafCaptcha();
-    }, 1000);
+    }, 1500);
   }
 
   ngOnDestroy(): void {
