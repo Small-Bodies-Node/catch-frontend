@@ -8,7 +8,8 @@ type LSKey = keyof ILocalStorageState; // Define type for 'LocalStorageKeys'
   providedIn: 'root',
 })
 export class LocalStorageService {
-  // --->>>
+  // App-specific prefix for localStorage keys to avoid conflicts with other libraries
+  private readonly APP_PREFIX = 'sbn_catch_';
 
   private defaultPermittedLocalStorageState: ILocalStorageState = {
     siteTheme: 'DARK-THEME',
@@ -23,8 +24,13 @@ export class LocalStorageService {
 
   getLocalStorageState(): ILocalStorageState {
     try {
-      // Build copy of localStorage as js object
-      return Object.keys(localStorage).reduce(
+      // Only get app-specific keys (those with our prefix)
+      const appKeys = Object.keys(localStorage)
+        .filter(key => key.startsWith(this.APP_PREFIX))
+        .map(key => key.substring(this.APP_PREFIX.length));
+
+      // Build copy of localStorage as js object with only app-specific keys
+      return appKeys.reduce(
         (accumState: any, key: string) => {
           accumState[key] = this.getItem(key as LSKey);
           return accumState;
@@ -38,12 +44,14 @@ export class LocalStorageService {
 
   getItem(key: LSKey) {
     try {
-      // Retrieve parsed individual item
-      const item = localStorage.getItem(key);
+      // Retrieve parsed individual item using prefixed key
+      const prefixedKey = this.APP_PREFIX + key;
+      const item = localStorage.getItem(prefixedKey);
+      
       try {
         return !!item ? JSON.parse(item) : 'NO_ITEM_FOUND';
       } catch (e) {
-        console.error(e);
+        console.error(`Error parsing localStorage item '${key}':`, e);
         return 'NO_ITEM_FOUND';
       }
     } catch (e) {
@@ -53,47 +61,38 @@ export class LocalStorageService {
 
   setItem(key: LSKey, value: any) {
     try {
-      // Set individual key-value pair in localStorage
-      window.localStorage.setItem(key, JSON.stringify(value));
+      // Set individual key-value pair in localStorage with prefix
+      const prefixedKey = this.APP_PREFIX + key;
+      window.localStorage.setItem(prefixedKey, JSON.stringify(value));
       if (key === 'siteTheme') this.updateCdkOverlayClass(value);
     } catch (e) {
-      //
+      console.error(`Error setting localStorage item '${key}':`, e);
     }
   }
 
   removeItem(key: string) {
     try {
-      // Remove individual key-value pair from localStorage
-      window.localStorage.removeItem(key);
+      // Remove individual key-value pair from localStorage, with prefix
+      const prefixedKey = this.APP_PREFIX + key;
+      window.localStorage.removeItem(prefixedKey);
     } catch (e) {
-      //
+      console.error(`Error removing localStorage item '${key}':`, e);
     }
   }
 
   /**
-   * Check that local storage ONLY has "permitted" key-value pairs as defined by ILocalStorageState
-   * Remove any pairs that are not "permitted".
-   * Create and apply default key-value pair to any missing pair.
+   * Ensure app-specific localStorage state has all required keys with valid values.
+   * This doesn't remove any other keys that might be used by third-party libraries.
    */
   verifyAndRepairLocalStorageState() {
-    //
     // Create objects representing present and default state of localStorage
-    const defaultState: ILocalStorageState =
-      this.defaultPermittedLocalStorageState;
+    const defaultState: ILocalStorageState = this.defaultPermittedLocalStorageState;
     const presentState: any = this.getLocalStorageState();
 
-    // Loop through keys of presentState; remove pair if key is not in defaultState
-    Object.keys(presentState).forEach((stateKey: string) => {
-      if (!Object.keys(defaultState).includes(stateKey))
-        this.removeItem(stateKey);
-    });
-
-    // Verify key-value pairs and types by looping thru keys of defaultState;
-    // if presentState has key missing, or is of wrong type, then reset that key-value pair to default
+    // Ensure all required app keys exist with valid values
     const newState: ILocalStorageState = (
       Object.keys(defaultState) as LSKey[]
     ).reduce((accumState: any, key: LSKey) => {
-      //
       // Build tests that compare localStorage key-value pairs between
       // present state and default state
       const isValueUndefined = typeof presentState[key] === 'undefined';
@@ -101,16 +100,16 @@ export class LocalStorageService {
         typeof presentState[key] !== typeof defaultState[key];
 
       if (isValueUndefined || isBasicTypeWrong) {
-        // If problem is found with present key-value pair, reset it
+        // If problem is found with present key-value pair, use default
         accumState[key] = defaultState[key];
       } else {
-        // Else keep it
+        // Else keep existing value
         accumState[key] = presentState[key];
       }
       return accumState;
     }, {});
 
-    // Update localStorage key-value pairs
+    // Update localStorage key-value pairs for app-specific keys
     this.setLocalStorageState(newState);
   }
 
@@ -127,7 +126,6 @@ export class LocalStorageService {
    * 'cdk-overlay-container' to also be of class equal to the theme's name
    */
   updateCdkOverlayClass(newTheme: string) {
-    //
     const classList: DOMTokenList =
       this.overlayContainer.getContainerElement().classList;
     const toRemove = Array.from(classList).filter((item: string) =>

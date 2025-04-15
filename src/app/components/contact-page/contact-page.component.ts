@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, AfterViewInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, AfterViewInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import {
   Validators,
@@ -50,7 +50,8 @@ export class ContactPageComponent implements OnInit, AfterViewInit, OnDestroy {
     private emailer: EmailerService,
     private snackBar: MatSnackBar,
     private store$: Store<IAppState>,
-    private awsWafCaptchaService: AwsWafCaptchaService
+    private awsWafCaptchaService: AwsWafCaptchaService,
+    private changeDetectorRef: ChangeDetectorRef
   ) {
     this.subscriptions.add(
       this.store$
@@ -83,12 +84,11 @@ export class ContactPageComponent implements OnInit, AfterViewInit, OnDestroy {
     );
   }
 
-  ngAfterViewInit() {
-    // Initialize AWS WAF Captcha after view has initialized
-    // Use a longer delay to ensure DOM is fully rendered in SSR environments
+  ngAfterViewInit(): void {
+    // Delay captcha initialization to ensure DOM is fully rendered
     setTimeout(() => {
       this.initAwsWafCaptcha();
-    }, 1500);
+    }, 1000); // Reduced from 1500ms as our new debug approach is more reliable
   }
 
   ngOnDestroy(): void {
@@ -99,21 +99,24 @@ export class ContactPageComponent implements OnInit, AfterViewInit, OnDestroy {
    * Initialize the AWS WAF Captcha
    */
   private initAwsWafCaptcha(): void {
+    console.log('Initializing AWS WAF Captcha...');
     this.awsWafCaptchaService.initCaptcha({
       container: 'aws-waf-captcha-container',
       onSuccess: (token: string) => {
+        console.log('Captcha token received:', token.substring(0, 10) + '...');
         this.captchaToken = token;
         this.isMessageSendable = true;
-        setTimeout(() => this.form?.updateValueAndValidity(), 0);
+        this.changeDetectorRef.detectChanges();
       },
       onError: (error: Error) => {
         console.error('AWS WAF Captcha error:', error);
         this.isMessageSendable = false;
-        this.captchaToken = undefined;
+        this.changeDetectorRef.detectChanges();
       },
       onExpired: () => {
+        console.log('AWS WAF Captcha token expired');
         this.isMessageSendable = false;
-        this.captchaToken = undefined;
+        this.changeDetectorRef.detectChanges();
       }
     }).subscribe();
   }

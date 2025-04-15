@@ -75,9 +75,11 @@
   padding: 0;
 
   // background-size: auto 100%; //Scale to window height
-  background-size: 100% auto; // Scale to window width
+  // background-size: 100% auto; // Scale to window width
+  background-size: auto 100%; // Scale to window height
   background-position: center center;
   background-repeat: no-repeat;
+  // background-size: cover;
 }
 
 canvas {
