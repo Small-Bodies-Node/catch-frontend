@@ -185,37 +185,44 @@ export class AwsWafCaptchaService {
 
         console.log('Debug 1');
 
+        // Get the container element by ID
         const containerElement = document.getElementById(config.container);
         if (!containerElement) {
-          setTimeout(render, 300);
+          console.error(`Container element with ID "${config.container}" not found`);
+          if (config.onError) {
+            config.onError(new Error(`Container element with ID "${config.container}" not found`));
+          }
           return;
         }
 
         console.log('Debug 2', (window as any).AwsWafCaptcha);
         console.log('>>>', config, environment);
 
-        (window as any).AwsWafCaptcha.renderCaptcha({
-          containerId: config.container,
-          apiKey: environment.awsWafConfig.apiKey,
-          onSuccess: (token: string) => {
-            tokenSubject.next(token);
-            if (config.onSuccess) {
-              config.onSuccess(token);
-            }
-          },
-          onError: (error: Error) => {
-            console.error('AWS WAF Captcha error:', error);
-            if (config.onError) {
-              config.onError(error);
-            }
-          },
-          onExpired: () => {
-            console.log('AWS WAF Captcha expired');
-            if (config.onExpired) {
-              config.onExpired();
-            }
-          },
-        });
+        // Pass the container element as first param and config as second param
+        (window as any).AwsWafCaptcha.renderCaptcha(
+          containerElement,
+          {
+            apiKey: environment.awsWafConfig.apiKey,
+            onSuccess: (token: string) => {
+              tokenSubject.next(token);
+              if (config.onSuccess) {
+                config.onSuccess(token);
+              }
+            },
+            onError: (error: Error) => {
+              console.error('AWS WAF Captcha error:', error);
+              if (config.onError) {
+                config.onError(error);
+              }
+            },
+            onExpired: () => {
+              console.log('AWS WAF Captcha expired');
+              if (config.onExpired) {
+                config.onExpired();
+              }
+            },
+          }
+        );
 
         console.log('Debug 3');
       } catch (error) {
