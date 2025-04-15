@@ -54,7 +54,9 @@
       <div id="buttons">
         <!-- AWS WAF Captcha container -->
         <div id="captcha-wrapper">
-          <div *ngIf="captchaLoading" class="captcha-loading">Loading captcha...</div>
+          <div *ngIf="isCaptchaLoading" class="captcha-loading">
+            Loading captcha...
+          </div>
           <div id="aws-waf-captcha-container"></div>
         </div>
         <div id="submit-button-wrapper">
