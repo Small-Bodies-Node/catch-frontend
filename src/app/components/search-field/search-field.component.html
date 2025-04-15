@@ -109,176 +109,189 @@
   <!--  -->
 
   <div class="lower-form-wrapper">
-    <div
-      class="advanced-search-controls"
-      *ngIf="true || isAdvancedControls"
-      [ngStyle]="{
-        bottom: isAdvancedControls ? '0%' : '100%',
-        opacity: isAdvancedControls ? 1 : 0
-      }"
-    >
-      <!--  -->
+    <div class="advanced-search-controls-wrapper">
+      <div
+        class="advanced-search-controls"
+        *ngIf="true || isAdvancedControls"
+        [ngStyle]="{
+          bottom: isAdvancedControls ? '0%' : '100%',
+          opacity: isAdvancedControls ? 1 : 0
+        }"
+      >
+        <!--  -->
 
-      <div class="data-sources-title">Data Sources</div>
+        <div class="data-sources-title">Data Sources</div>
 
-      <div class="checkbox-grid">
-        @for (source of sources; track source) {
-        <div class="icon-checkbox-wrapper">
-          <mat-icon [matTooltip]="toolTipText[source]">info</mat-icon>
-          <mat-checkbox [formControlName]="getFormControlKey(source)">{{
-            formControlLabels[source]
-          }}</mat-checkbox>
+        <div class="checkbox-grid">
+          @for (source of sources; track source) {
+          <div class="icon-checkbox-wrapper">
+            <mat-icon [matTooltip]="toolTipText[source]">info</mat-icon>
+            <mat-checkbox [formControlName]="getFormControlKey(source)">{{
+              formControlLabels[source]
+            }}</mat-checkbox>
+          </div>
+          }
+
+          <div class="icon-checkbox-wrapper">
+            <mat-icon [matTooltip]="toolTipText['select_all_sources_control']"
+              >info</mat-icon
+            >
+            <mat-checkbox
+              class="select-all-sources-checkbox"
+              [formControlName]="
+                getFormControlKey('select_all_sources_control')
+              "
+            >
+              <span [ngStyle]="{ color: getSelectAllSourcesLabelColor() }">
+                {{ getSelectAllSourcesLabel() }}
+              </span>
+            </mat-checkbox>
+          </div>
+        </div>
+
+        <hr />
+
+        <div class="checkbox-grid">
+          <div class="icon-checkbox-wrapper">
+            <mat-icon [matTooltip]="toolTipText['use_cached_results_control']"
+              >info</mat-icon
+            >
+            <mat-checkbox
+              [formControlName]="
+                getFormControlKey('use_cached_results_control')
+              "
+              >Use Cached Results</mat-checkbox
+            >
+          </div>
+
+          <div class="icon-checkbox-wrapper">
+            <mat-icon [matTooltip]="toolTipText['uncertainty_ellipse_control']"
+              >info</mat-icon
+            >
+            <mat-checkbox
+              [formControlName]="
+                getFormControlKey('uncertainty_ellipse_control')
+              "
+              >Uncertainty Ellipse</mat-checkbox
+            >
+          </div>
+        </div>
+
+        <hr />
+
+        @if(!isMovingTarget){
+
+        <div
+          class="intersection-type-wrapper input-wrapper"
+          style="width: 100%"
+        >
+          <mat-form-field appearance="outline" style="width: 100%">
+            <mat-label>Select</mat-label>
+            <mat-select
+              [formControlName]="
+                getFormControlKey('intersection_type_input_control')
+              "
+            >
+              @for (intersectionType of intersectionTypes; track
+              intersectionType) {
+              <mat-option [value]="intersectionType">{{
+                intersectionTypeLabels[intersectionType]
+              }}</mat-option>
+              }
+            </mat-select>
+            <mat-icon
+              matSuffix
+              [matTooltip]="toolTipText['intersection_type_input_control']"
+              >info</mat-icon
+            >
+          </mat-form-field>
         </div>
         }
 
-        <div class="icon-checkbox-wrapper">
-          <mat-icon [matTooltip]="toolTipText['select_all_sources_control']"
-            >info</mat-icon
-          >
-          <mat-checkbox
-            class="select-all-sources-checkbox"
-            [formControlName]="getFormControlKey('select_all_sources_control')"
-          >
-            <span [ngStyle]="{ color: getSelectAllSourcesLabelColor() }">
-              {{ getSelectAllSourcesLabel() }}
-            </span>
-          </mat-checkbox>
-        </div>
-      </div>
-
-      <hr />
-
-      <div class="checkbox-grid">
-        <div class="icon-checkbox-wrapper">
-          <mat-icon [matTooltip]="toolTipText['use_cached_results_control']"
-            >info</mat-icon
-          >
-          <mat-checkbox
-            [formControlName]="getFormControlKey('use_cached_results_control')"
-            >Use Cached Results</mat-checkbox
-          >
+        <div class="start-time-wrapper input-wrapper" style="width: 100%">
+          <mat-form-field appearance="outline" style="width: 100%">
+            <mat-label>Start Time </mat-label>
+            <input
+              matInput
+              appearance="outline"
+              placeholder=""
+              value=""
+              [formControlName]="getFormControlKey('start_time_input_control')"
+            />
+            <mat-icon
+              matSuffix
+              [matTooltip]="toolTipText['start_time_input_control']"
+              >info</mat-icon
+            >
+          </mat-form-field>
         </div>
 
-        <div class="icon-checkbox-wrapper">
-          <mat-icon [matTooltip]="toolTipText['uncertainty_ellipse_control']"
-            >info</mat-icon
-          >
-          <mat-checkbox
-            [formControlName]="getFormControlKey('uncertainty_ellipse_control')"
-            >Uncertainty Ellipse</mat-checkbox
-          >
-        </div>
-      </div>
-
-      <hr />
-
-      @if(!isMovingTarget){
-
-      <div class="intersection-type-wrapper input-wrapper" style="width: 100%">
-        <mat-form-field appearance="outline" style="width: 100%">
-          <mat-label>Select</mat-label>
-          <mat-select
-            [formControlName]="
-              getFormControlKey('intersection_type_input_control')
-            "
-          >
-            @for (intersectionType of intersectionTypes; track intersectionType)
-            {
-            <mat-option [value]="intersectionType">{{
-              intersectionTypeLabels[intersectionType]
-            }}</mat-option>
-            }
-          </mat-select>
-          <mat-icon
-            matSuffix
-            [matTooltip]="toolTipText['intersection_type_input_control']"
-            >info</mat-icon
-          >
-        </mat-form-field>
-      </div>
-      }
-
-      <div class="start-time-wrapper input-wrapper" style="width: 100%">
-        <mat-form-field appearance="outline" style="width: 100%">
-          <mat-label>Start Time </mat-label>
-          <input
-            matInput
-            appearance="outline"
-            placeholder=""
-            value=""
-            [formControlName]="getFormControlKey('start_time_input_control')"
-          />
-          <mat-icon
-            matSuffix
-            [matTooltip]="toolTipText['start_time_input_control']"
-            >info</mat-icon
-          >
-        </mat-form-field>
-      </div>
-
-      <div class="stop-time-wrapper input-wrapper" style="width: 100%">
-        <mat-form-field appearance="outline" style="width: 100%">
-          <mat-label>Stop Time </mat-label>
-          <input
-            matInput
-            appearance="outline"
-            placeholder=""
-            value=""
-            [formControlName]="getFormControlKey('stop_time_input_control')"
-          />
-          <mat-icon
-            matSuffix
-            [matTooltip]="toolTipText['stop_time_input_control']"
-            >info</mat-icon
-          >
-          <mat-hint>{{
-            "Date format: YYYY-MM-DD HH:MM:SS.sss, all fields
+        <div class="stop-time-wrapper input-wrapper" style="width: 100%">
+          <mat-form-field appearance="outline" style="width: 100%">
+            <mat-label>Stop Time </mat-label>
+            <input
+              matInput
+              appearance="outline"
+              placeholder=""
+              value=""
+              [formControlName]="getFormControlKey('stop_time_input_control')"
+            />
+            <mat-icon
+              matSuffix
+              [matTooltip]="toolTipText['stop_time_input_control']"
+              >info</mat-icon
+            >
+            <mat-hint>{{
+              "Date format: YYYY-MM-DD HH:MM:SS.sss, all fields
             optional"
-          }}</mat-hint>
-        </mat-form-field>
-      </div>
+            }}</mat-hint>
+          </mat-form-field>
+        </div>
 
-      <!--  -->
-      @if(isMovingTarget){
-      <div class="padding-field-wrapper input-wrapper" style="width: 100%">
-        <mat-form-field appearance="outline" style="width: 100%">
-          <mat-label>Extra Padding </mat-label>
-          <input
-            matInput
-            placeholder="0"
-            value="0"
-            [formControlName]="getFormControlKey('padding_input_control')"
-          />
-          <mat-icon
-            matSuffix
-            [matTooltip]="toolTipText['padding_input_control']"
-            >info</mat-icon
-          >
-          <mat-hint>arcmins</mat-hint>
-        </mat-form-field>
-      </div>
-      } @else{
-      <!--  -->
+        <!--  -->
+        @if(isMovingTarget){
+        <div class="padding-field-wrapper input-wrapper" style="width: 100%">
+          <mat-form-field appearance="outline" style="width: 100%">
+            <mat-label>Extra Padding </mat-label>
+            <input
+              matInput
+              placeholder="0"
+              value="0"
+              [formControlName]="getFormControlKey('padding_input_control')"
+            />
+            <mat-icon
+              matSuffix
+              [matTooltip]="toolTipText['padding_input_control']"
+              >info</mat-icon
+            >
+            <mat-hint>arcmins</mat-hint>
+          </mat-form-field>
+        </div>
+        } @else{
+        <!--  -->
 
-      <div class="radius-field-wrapper input-wrapper" style="width: 100%">
-        <mat-form-field appearance="outline" style="width: 100%">
-          <mat-label>Radius </mat-label>
-          <input
-            matInput
-            placeholder="0"
-            value="0"
-            [formControlName]="getFormControlKey('radius_input_control')"
-          />
-          <mat-icon matSuffix [matTooltip]="toolTipText['radius_input_control']"
-            >info</mat-icon
-          >
-          <mat-hint>arcmins</mat-hint>
-        </mat-form-field>
-      </div>
-      <!--  -->
-      }
+        <div class="radius-field-wrapper input-wrapper" style="width: 100%">
+          <mat-form-field appearance="outline" style="width: 100%">
+            <mat-label>Radius </mat-label>
+            <input
+              matInput
+              placeholder="0"
+              value="0"
+              [formControlName]="getFormControlKey('radius_input_control')"
+            />
+            <mat-icon
+              matSuffix
+              [matTooltip]="toolTipText['radius_input_control']"
+              >info</mat-icon
+            >
+            <mat-hint>arcmins</mat-hint>
+          </mat-form-field>
+        </div>
+        <!--  -->
+        }
 
-      <!--  -->
+        <!--  -->
+      </div>
     </div>
   </div>
 </div>
