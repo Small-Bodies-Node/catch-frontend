@@ -1,5 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, AfterViewInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  AfterViewInit,
+  OnDestroy,
+  ChangeDetectorRef,
+} from '@angular/core';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import {
   Validators,
@@ -33,7 +39,7 @@ import { MatCardModule } from '@angular/material/card';
     MatButtonModule,
     MatFormFieldModule,
     MatCardModule,
-  ]
+  ],
 })
 export class ContactPageComponent implements OnInit, AfterViewInit, OnDestroy {
   subscriptions: Subscription = new Subscription();
@@ -41,7 +47,7 @@ export class ContactPageComponent implements OnInit, AfterViewInit, OnDestroy {
   theme?: TPermittedTheme;
   // Require user to pass captcha for every new message
   isMessageSendable = false;
-  captchaLoading = true;
+  isCaptchaLoading = true;
 
   form: FormGroup;
 
@@ -76,11 +82,9 @@ export class ContactPageComponent implements OnInit, AfterViewInit, OnDestroy {
   ngOnInit() {
     // Subscribe to captcha load status
     this.subscriptions.add(
-      this.awsWafCaptchaService.getCaptchaLoadStatus().subscribe(
-        (loaded) => {
-          this.captchaLoading = !loaded;
-        }
-      )
+      this.awsWafCaptchaService.getCaptchaLoadStatus().subscribe((loaded) => {
+        this.isCaptchaLoading = !loaded;
+      })
     );
   }
 
@@ -100,25 +104,30 @@ export class ContactPageComponent implements OnInit, AfterViewInit, OnDestroy {
    */
   private initAwsWafCaptcha(): void {
     console.log('Initializing AWS WAF Captcha...');
-    this.awsWafCaptchaService.initCaptcha({
-      container: 'aws-waf-captcha-container',
-      onSuccess: (token: string) => {
-        console.log('Captcha token received:', token.substring(0, 10) + '...');
-        this.captchaToken = token;
-        this.isMessageSendable = true;
-        this.changeDetectorRef.detectChanges();
-      },
-      onError: (error: Error) => {
-        console.error('AWS WAF Captcha error:', error);
-        this.isMessageSendable = false;
-        this.changeDetectorRef.detectChanges();
-      },
-      onExpired: () => {
-        console.log('AWS WAF Captcha token expired');
-        this.isMessageSendable = false;
-        this.changeDetectorRef.detectChanges();
-      }
-    }).subscribe();
+    this.awsWafCaptchaService
+      .initCaptcha({
+        container: 'aws-waf-captcha-container',
+        onSuccess: (token: string) => {
+          console.log(
+            'Captcha token received:',
+            token.substring(0, 10) + '...'
+          );
+          this.captchaToken = token;
+          this.isMessageSendable = true;
+          this.changeDetectorRef.detectChanges();
+        },
+        onError: (error: Error) => {
+          console.error('AWS WAF Captcha error:', error);
+          this.isMessageSendable = false;
+          this.changeDetectorRef.detectChanges();
+        },
+        onExpired: () => {
+          console.log('AWS WAF Captcha token expired');
+          this.isMessageSendable = false;
+          this.changeDetectorRef.detectChanges();
+        },
+      })
+      .subscribe();
   }
 
   /**
@@ -162,7 +171,7 @@ export class ContactPageComponent implements OnInit, AfterViewInit, OnDestroy {
               'Close',
               { duration: 5000 }
             );
-          }
+          },
         });
     }
   }

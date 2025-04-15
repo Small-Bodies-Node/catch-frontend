@@ -10,8 +10,8 @@ import { environment } from '../../../../environments/environment';
   providedIn: 'root',
 })
 export class AwsWafCaptchaService {
-  private captchaLoaded = false;
-  private captchaLoadSubject = new Subject<boolean>();
+  private isCaptchaLoaded = false;
+  private isCaptchaLoadedSubject = new Subject<boolean>();
 
   // Force local debugging mode - change to false to test real captcha
   private forceLocalDebug = !true;
@@ -28,8 +28,8 @@ export class AwsWafCaptchaService {
   private loadAwsWafCaptchaScript(): void {
     // Check if script is already loaded
     if (document.querySelector('script[src*="awswaf-captcha"]')) {
-      this.captchaLoaded = true;
-      this.captchaLoadSubject.next(true);
+      this.isCaptchaLoaded = true;
+      this.isCaptchaLoadedSubject.next(true);
       return;
     }
 
@@ -77,8 +77,8 @@ export class AwsWafCaptchaService {
         },
       };
 
-      this.captchaLoaded = true;
-      this.captchaLoadSubject.next(true);
+      this.isCaptchaLoaded = true;
+      this.isCaptchaLoadedSubject.next(true);
       return;
     }
 
@@ -94,13 +94,13 @@ export class AwsWafCaptchaService {
 
       script.onload = () => {
         console.log('AWS WAF Captcha script loaded successfully');
-        this.captchaLoaded = true;
-        this.captchaLoadSubject.next(true);
+        this.isCaptchaLoaded = true;
+        this.isCaptchaLoadedSubject.next(true);
       };
 
       script.onerror = (e) => {
         console.error('AWS WAF Captcha script failed to load', e);
-        this.captchaLoadSubject.next(false);
+        this.isCaptchaLoadedSubject.next(false);
 
         // Fall back to debug implementation
         this.forceLocalDebug = true;
@@ -110,7 +110,7 @@ export class AwsWafCaptchaService {
       document.body.appendChild(script);
     } catch (error) {
       console.error('Error loading AWS WAF Captcha script:', error);
-      this.captchaLoadSubject.next(false);
+      this.isCaptchaLoadedSubject.next(false);
 
       // Fall back to debug implementation
       this.forceLocalDebug = true;
@@ -178,7 +178,7 @@ export class AwsWafCaptchaService {
     const render = () => {
       console.log('Debug 0');
       try {
-        if (!this.captchaLoaded || !(window as any).AwsWafCaptcha) {
+        if (!this.isCaptchaLoaded || !(window as any).AwsWafCaptcha) {
           setTimeout(render, 300);
           return;
         }
@@ -191,7 +191,8 @@ export class AwsWafCaptchaService {
           return;
         }
 
-        console.log('Debug 2');
+        console.log('Debug 2', (window as any).AwsWafCaptcha);
+        console.log('>>>', config, environment);
 
         (window as any).AwsWafCaptcha.renderCaptcha({
           containerId: config.container,
@@ -239,7 +240,7 @@ export class AwsWafCaptchaService {
   resetCaptcha(): void {
     if (
       isPlatformBrowser(this.platformId) &&
-      this.captchaLoaded &&
+      this.isCaptchaLoaded &&
       (window as any).AwsWafCaptcha
     ) {
       try {
@@ -254,6 +255,6 @@ export class AwsWafCaptchaService {
    * Get the captcha load status as an observable
    */
   getCaptchaLoadStatus(): Observable<boolean> {
-    return this.captchaLoadSubject.asObservable();
+    return this.isCaptchaLoadedSubject.asObservable();
   }
 }
