@@ -32,20 +32,12 @@ export class EmailerService {
   ): Observable<{ success: boolean }> {
     const apiUrl = environment.awsWafConfig.endpoint;
 
-    // AWS WAF expects the captcha token in a specific header
-    const headers = {
-      'X-AWS-WAFTOKEN': captchaToken
-    };
-
-    return this.http.post<{ success: boolean }>(
-      apiUrl, 
-      {
-        name,
-        email,
-        message,
-        subject: EMAIL_CONSTANTS.DEFAULT_SUBJECT,
-      },
-      { headers }
-    );
+    return this.http.post<{ success: boolean }>(apiUrl, {
+      name,
+      email,
+      message,
+      subject: EMAIL_CONSTANTS.DEFAULT_SUBJECT,
+      captchaToken,
+    });
   }
 }
