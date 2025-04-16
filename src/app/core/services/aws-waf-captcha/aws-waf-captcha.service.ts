@@ -205,7 +205,24 @@ export class AwsWafCaptchaService {
       (window as any).AwsWafCaptcha
     ) {
       try {
-        (window as any).AwsWafCaptcha.resetCaptcha();
+        // Remove the existing captcha container's contents
+        const container = document.getElementById('waf-captcha-container');
+        if (container) {
+          container.innerHTML = '';
+        }
+        // Re-render the captcha widget
+        this.initCaptcha({
+          container: 'waf-captcha-container',
+          onSuccess: (token: string) => {
+            console.log('Captcha token:', token);
+          },
+          onError: (error: Error) => {
+            console.error('Captcha error:', error);
+          },
+          onExpired: () => {
+            console.log('Captcha expired');
+          },
+        });
       } catch (e) {
         console.error('Error resetting captcha:', e);
       }
