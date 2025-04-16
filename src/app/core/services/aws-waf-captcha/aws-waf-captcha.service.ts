@@ -18,104 +18,95 @@ export class AwsWafCaptchaService {
 
   constructor(@Inject(PLATFORM_ID) private platformId: Object) {
     if (isPlatformBrowser(this.platformId)) {
-      this.loadAwsWafCaptchaScript();
+      // Check if AWS WAF Captcha is available after a short delay
+      setTimeout(() => this.checkAwsWafCaptchaAvailability(), 500);
     }
   }
 
   /**
-   * Load the AWS WAF Captcha script dynamically
+   * Check if AWS WAF Captcha is available in the window object
    */
-  private loadAwsWafCaptchaScript(): void {
-    // Check if script is already loaded
-    if (document.querySelector('script[src*="awswaf-captcha"]')) {
-      this.isCaptchaLoaded = true;
-      this.isCaptchaLoadedSubject.next(true);
-      return;
-    }
-
+  private checkAwsWafCaptchaAvailability(): void {
     // For debugging locally
     if (this.forceLocalDebug || !environment.production) {
       console.log('Using debug captcha for local testing');
-
-      // Create simple mock version for debugging
-      (window as any).AwsWafCaptcha = {
-        renderCaptcha: (config: any) => {
-          console.log('Debug captcha config:', config);
-
-          const container = document.getElementById(config.containerId);
-          if (container) {
-            container.innerHTML = `
-              <div style="border: 2px solid #4285f4; padding: 15px; border-radius: 4px; background-color: #f8f9fa; text-align: center;">
-                <div style="font-weight: bold; margin-bottom: 10px; color: #1a73e8;">Local Debug Captcha</div>
-                <button
-                  id="debug-captcha-button"
-                  style="background-color: #1a73e8; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">
-                  Click to generate token
-                </button>
-              </div>
-            `;
-
-            const button = document.getElementById('debug-captcha-button');
-            if (button) {
-              button.addEventListener('click', (event) => {
-                event.preventDefault();
-                if (config.onSuccess) {
-                  const token = 'debug-token-' + Date.now();
-                  console.log('Generated debug token:', token);
-                  config.onSuccess(token);
-                }
-              });
-            }
-          } else {
-            console.error(`Container #${config.containerId} not found`);
-          }
-          return true;
-        },
-        resetCaptcha: () => {
-          console.log('Debug captcha reset');
-          return true;
-        },
-      };
-
-      this.isCaptchaLoaded = true;
-      this.isCaptchaLoadedSubject.next(true);
+      this.setupDebugCaptcha();
       return;
     }
 
-    // Production implementation - load the real script
-    try {
-      const script = document.createElement('script');
-
-      script.src =
-        environment.awsWafConfig.captchaScriptUrl ||
-        `https://us-east-1.captcha.awswaf.com/api/v1/${environment.awsWafConfig.webAclId}/captcha.js`;
-
-      script.async = true;
-
-      script.onload = () => {
-        console.log('AWS WAF Captcha script loaded successfully');
-        this.isCaptchaLoaded = true;
-        this.isCaptchaLoadedSubject.next(true);
-      };
-
-      script.onerror = (e) => {
-        console.error('AWS WAF Captcha script failed to load', e);
-        this.isCaptchaLoadedSubject.next(false);
-
-        // Fall back to debug implementation
-        this.forceLocalDebug = true;
-        this.loadAwsWafCaptchaScript();
-      };
-
-      document.body.appendChild(script);
-    } catch (error) {
-      console.error('Error loading AWS WAF Captcha script:', error);
-      this.isCaptchaLoadedSubject.next(false);
-
-      // Fall back to debug implementation
-      this.forceLocalDebug = true;
-      this.loadAwsWafCaptchaScript();
+    // Check if the script is loaded and AwsWafCaptcha is available
+    if ((window as any).AwsWafCaptcha) {
+      console.log('AWS WAF Captcha is available');
+      this.isCaptchaLoaded = true;
+      this.isCaptchaLoadedSubject.next(true);
+    } else {
+      console.warn('AWS WAF Captcha is not available yet, retrying...');
+      // Retry after a short delay
+      setTimeout(() => {
+        if ((window as any).AwsWafCaptcha) {
+          console.log('AWS WAF Captcha is now available');
+          this.isCaptchaLoaded = true;
+          this.isCaptchaLoadedSubject.next(true);
+        } else {
+          console.error('AWS WAF Captcha failed to load after retries');
+          this.isCaptchaLoadedSubject.next(false);
+          
+          // Fall back to debug implementation
+          this.forceLocalDebug = true;
+          this.setupDebugCaptcha();
+        }
+      }, 1000);
     }
+  }
+
+  /**
+   * Setup debug captcha for local development
+   */
+  private setupDebugCaptcha(): void {
+    // Create simple mock version for debugging
+    (window as any).AwsWafCaptcha = {
+      renderCaptcha: (container: HTMLElement, config: any) => {
+        console.log('Debug captcha config:', config);
+
+        container.innerHTML = `
+          <div style="border: 2px solid #4285f4; padding: 15px; border-radius: 4px; background-color: #f8f9fa; text-align: center;">
+            <div style="font-weight: bold; margin-bottom: 10px; color: #1a73e8;">Local Debug Captcha</div>
+            <button
+              id="debug-captcha-button"
+              style="background-color: #1a73e8; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">
+              Click to generate token
+            </button>
+          </div>
+        `;
+
+        const button = document.getElementById('debug-captcha-button');
+        if (button) {
+          button.addEventListener('click', (event) => {
+            event.preventDefault();
+            if (config.onSuccess) {
+              const token = 'debug-token-' + Date.now();
+              console.log('Generated debug token:', token);
+              config.onSuccess(token);
+            }
+          });
+        }
+        return true;
+      },
+      resetCaptcha: () => {
+        console.log('Debug captcha reset');
+        return true;
+      },
+    };
+
+    this.isCaptchaLoaded = true;
+    this.isCaptchaLoadedSubject.next(true);
+  }
+
+  /**
+   * Get the captcha load status as an observable
+   */
+  getCaptchaLoadStatus(): Observable<boolean> {
+    return this.isCaptchaLoadedSubject.asObservable();
   }
 
   /**
@@ -135,46 +126,6 @@ export class AwsWafCaptchaService {
       return tokenSubject.asObservable();
     }
 
-    if (this.forceLocalDebug || !environment.production) {
-      // Handle debug mode
-      setTimeout(() => {
-        if ((window as any).AwsWafCaptcha) {
-          try {
-            (window as any).AwsWafCaptcha.renderCaptcha({
-              containerId: config.container,
-              apiKey: 'debug-api-key',
-              onSuccess: (token: string) => {
-                tokenSubject.next(token);
-                if (config.onSuccess) {
-                  config.onSuccess(token);
-                }
-              },
-              onError: (error: Error) => {
-                console.error('Debug captcha error:', error);
-                if (config.onError) {
-                  config.onError(error);
-                }
-              },
-              onExpired: () => {
-                console.log('Debug captcha expired');
-                if (config.onExpired) {
-                  config.onExpired();
-                }
-              },
-            });
-          } catch (error) {
-            console.error('Error initializing debug captcha:', error);
-            if (config.onError) {
-              config.onError(error as Error);
-            }
-          }
-        }
-      }, 100);
-
-      return tokenSubject.asObservable();
-    }
-
-    // Production implementation with minimal complexity
     const render = () => {
       console.log('Debug 0');
       try {
@@ -188,9 +139,15 @@ export class AwsWafCaptchaService {
         // Get the container element by ID
         const containerElement = document.getElementById(config.container);
         if (!containerElement) {
-          console.error(`Container element with ID "${config.container}" not found`);
+          console.error(
+            `Container element with ID "${config.container}" not found`
+          );
           if (config.onError) {
-            config.onError(new Error(`Container element with ID "${config.container}" not found`));
+            config.onError(
+              new Error(
+                `Container element with ID "${config.container}" not found`
+              )
+            );
           }
           return;
         }
@@ -199,30 +156,27 @@ export class AwsWafCaptchaService {
         console.log('>>>', config, environment);
 
         // Pass the container element as first param and config as second param
-        (window as any).AwsWafCaptcha.renderCaptcha(
-          containerElement,
-          {
-            apiKey: environment.awsWafConfig.apiKey,
-            onSuccess: (token: string) => {
-              tokenSubject.next(token);
-              if (config.onSuccess) {
-                config.onSuccess(token);
-              }
-            },
-            onError: (error: Error) => {
-              console.error('AWS WAF Captcha error:', error);
-              if (config.onError) {
-                config.onError(error);
-              }
-            },
-            onExpired: () => {
-              console.log('AWS WAF Captcha expired');
-              if (config.onExpired) {
-                config.onExpired();
-              }
-            },
-          }
-        );
+        (window as any).AwsWafCaptcha.renderCaptcha(containerElement, {
+          apiKey: environment.awsWafConfig.apiKey,
+          onSuccess: (token: string) => {
+            tokenSubject.next(token);
+            if (config.onSuccess) {
+              config.onSuccess(token);
+            }
+          },
+          onError: (error: Error) => {
+            console.error('AWS WAF Captcha error:', error);
+            if (config.onError) {
+              config.onError(error);
+            }
+          },
+          onExpired: () => {
+            console.log('AWS WAF Captcha expired');
+            if (config.onExpired) {
+              config.onExpired();
+            }
+          },
+        });
 
         console.log('Debug 3');
       } catch (error) {
@@ -230,7 +184,7 @@ export class AwsWafCaptchaService {
 
         // Fall back to debug mode if we have issues in production
         this.forceLocalDebug = true;
-        this.loadAwsWafCaptchaScript();
+        this.setupDebugCaptcha();
         setTimeout(() => this.initCaptcha(config).subscribe(), 300);
       }
     };
@@ -256,12 +210,5 @@ export class AwsWafCaptchaService {
         console.error('Error resetting captcha:', e);
       }
     }
-  }
-
-  /**
-   * Get the captcha load status as an observable
-   */
-  getCaptchaLoadStatus(): Observable<boolean> {
-    return this.isCaptchaLoadedSubject.asObservable();
   }
 }
