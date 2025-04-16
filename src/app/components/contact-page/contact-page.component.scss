@@ -51,9 +51,51 @@
       #buttons {
         grid-area: buttons;
         display: flex;
-        align-items: center;
+        flex-direction: row;
         justify-content: space-between;
-        // grid-template-columns: minmax(320px, 1fr) minmax(50px, 1fr);
+        align-items: flex-start;
+        gap: 16px;
+
+        #captcha-wrapper {
+          min-width: 300px;
+          background-color: #f8f9fa;
+          display: flex;
+          flex-direction: column;
+          flex: 1 1 300px;
+        }
+
+        #submit-button-wrapper {
+          margin-right: 10px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex: 0 0 auto;
+        }
+
+        @media (max-width: 600px) {
+          flex-direction: column;
+          align-items: stretch;
+
+          #captcha-wrapper,
+          #submit-button-wrapper {
+            min-width: 0;
+            width: 100%;
+            margin-right: 0;
+          }
+
+          #submit-button-wrapper {
+            margin-top: 16px;
+            justify-content: center;
+            align-items: center;
+            display: flex;
+            width: 100%;
+          }
+
+          #submit-button-wrapper button {
+            width: 100%;
+            max-width: 100%;
+          }
+        }
 
         #captcha-wrapper {
           background-color: #f8f9fa;
