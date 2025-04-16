@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { HomePageComponent } from '../components/home-page/home-page.component';
 import { AboutPageComponent } from '../components/about-page/about-page.component';
+import { GamePageComponent } from '../components/game-page/game-page.component';
 import { ApisPageComponent } from '../components/apis-page/apis-page.component';
 import { ContactPageComponent } from '../components/contact-page/contact-page.component';
 import { SettingsPageComponent } from '../components/settings-page/settings-page.component';
@@ -39,6 +40,12 @@ export const routes: Routes | ILinkedRoute[] = [
   {
     path: 'about',
     component: AboutPageComponent,
+    pathMatch: 'full',
+    data: { preload: true }, // Mark this route for pre-rendering
+  },
+  {
+    path: 'game',
+    component: GamePageComponent,
     pathMatch: 'full',
     data: { preload: true }, // Mark this route for pre-rendering
   },

@@ -1,16 +1,23 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, AfterViewInit, OnDestroy } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  AfterViewInit,
+  OnDestroy,
+  ChangeDetectorRef,
+} from '@angular/core';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import {
   Validators,
   FormBuilder,
   FormGroup,
   ReactiveFormsModule,
-} from '@angular/forms'; // <-- Add ReactiveFormsModule
+} from '@angular/forms';
 import { Store } from '@ngrx/store';
 import { Subscription } from 'rxjs';
 
 import { EmailerService } from '../../core/services/emailer/emailer.service';
+import { AwsWafCaptchaService } from '../../core/services/aws-waf-captcha/aws-waf-captcha.service';
 import { TPermittedTheme } from '../../../models/ISiteSettings';
 import { IAppState } from '../../ngrx/reducers';
 import { environment } from '../../../environments/environment';
@@ -21,27 +28,26 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatCardModule } from '@angular/material/card';
 
 @Component({
-    selector: 'app-contact-page',
-    templateUrl: './contact-page.component.html',
-    styleUrls: ['./contact-page.component.scss'],
-    imports: [
-        CommonModule,
-        ReactiveFormsModule,
-        MatSnackBarModule, // <-- Add MatSnackBarModule
-        MatInputModule, // <-- Add MatInputModule
-        MatButtonModule, // <-- Add MatButtonModule
-        MatFormFieldModule, // <-- Add MatFormFieldModule
-        MatCardModule, // <-- Add MatCardModule
-    ]
+  selector: 'app-contact-page',
+  templateUrl: './contact-page.component.html',
+  styleUrls: ['./contact-page.component.scss'],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    MatSnackBarModule,
+    MatInputModule,
+    MatButtonModule,
+    MatFormFieldModule,
+    MatCardModule,
+  ],
 })
 export class ContactPageComponent implements OnInit, AfterViewInit, OnDestroy {
-  // --->>>
-
   subscriptions: Subscription = new Subscription();
-  recaptchaToken: string | undefined;
+  captchaToken: string | undefined;
   theme?: TPermittedTheme;
-  // Require user to perform recaptcha for every new message
+  // Require user to pass captcha for every new message
   isMessageSendable = false;
+  isCaptchaLoading = true;
 
   form: FormGroup;
 
@@ -49,7 +55,9 @@ export class ContactPageComponent implements OnInit, AfterViewInit, OnDestroy {
     private fb: FormBuilder,
     private emailer: EmailerService,
     private snackBar: MatSnackBar,
-    private store$: Store<IAppState>
+    private store$: Store<IAppState>,
+    private awsWafCaptchaService: AwsWafCaptchaService,
+    private changeDetectorRef: ChangeDetectorRef
   ) {
     this.subscriptions.add(
       this.store$
@@ -71,35 +79,60 @@ export class ContactPageComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  ngOnInit() {}
+  ngOnInit() {
+    // Subscribe to captcha load status
+    this.subscriptions.add(
+      this.awsWafCaptchaService.getCaptchaLoadStatus().subscribe((loaded) => {
+        this.isCaptchaLoading = !loaded;
+      })
+    );
+  }
 
-  ngAfterViewInit() {
+  ngAfterViewInit(): void {
+    // Delay captcha initialization to ensure DOM is fully rendered
     setTimeout(() => {
-      // @ts-ignore
-      (grecaptcha as typeof grecaptcha).render('recaptcha-id', {
-        sitekey: environment.recaptchaSiteKey,
-        theme: this.theme!.toUpperCase().includes('LIGHT') ? 'light' : 'dark',
-        size: 'normal',
-        callback: (token: string) => {
-          this.recaptchaToken = token;
-          this.isMessageSendable = true;
-          setTimeout(() => this.form?.updateValueAndValidity(), 0);
-        },
-        'expired-callback': () => {
-          this.isMessageSendable = false;
-          this.recaptchaToken = undefined;
-        },
-        'error-callback': () => {
-          // executed when reCAPTCHA encounters an error (usually network connectivity)
-        },
-      });
-    }, 1000);
+      this.initAwsWafCaptcha();
+    }, 1000); // Reduced from 1500ms as our new debug approach is more reliable
   }
 
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();
   }
 
+  /**
+   * Initialize the AWS WAF Captcha
+   */
+  private initAwsWafCaptcha(): void {
+    console.log('Initializing AWS WAF Captcha...');
+    this.awsWafCaptchaService
+      .initCaptcha({
+        container: 'aws-waf-captcha-container',
+        onSuccess: (token: string) => {
+          console.log(
+            'Captcha token received:',
+            token.substring(0, 10) + '...'
+          );
+          this.captchaToken = token;
+          this.isMessageSendable = true;
+          this.changeDetectorRef.detectChanges();
+        },
+        onError: (error: Error) => {
+          console.error('AWS WAF Captcha error:', error);
+          this.isMessageSendable = false;
+          this.changeDetectorRef.detectChanges();
+        },
+        onExpired: () => {
+          console.log('AWS WAF Captcha token expired');
+          this.isMessageSendable = false;
+          this.changeDetectorRef.detectChanges();
+        },
+      })
+      .subscribe();
+  }
+
+  /**
+   * Submit the contact form
+   */
   submit() {
     if (this.isFormSubmittable()) {
       this.emailer
@@ -107,35 +140,59 @@ export class ContactPageComponent implements OnInit, AfterViewInit, OnDestroy {
           this.form?.get('username')?.value || '',
           this.form?.get('email')?.value || '',
           this.form?.get('message')?.value || '',
-          this.recaptchaToken + ''
+          this.captchaToken || ''
         )
-        .subscribe((response) => {
-          try {
-            if (!!response.success) {
+        .subscribe({
+          next: (response) => {
+            try {
+              if (response.success) {
+                this.snackBar.open(
+                  'Message Sent. \n\n You must pass the captcha again to send another message.',
+                  'Close',
+                  { duration: 5000 }
+                );
+                this.isMessageSendable = false;
+                // Reset the form and captcha after successful submission
+                this.reset();
+                this.awsWafCaptchaService.resetCaptcha();
+              }
+            } catch (err) {
               this.snackBar.open(
-                'Message Sent. \n\n You must redo the Recaptcha (i.e. wait or refresh page) to send another message.',
+                'An error occurred while sending your message. Please try again.',
                 'Close',
-                {
-                  duration: 5000,
-                }
+                { duration: 5000 }
               );
-              this.isMessageSendable = false;
             }
-          } catch (err) {}
+          },
+          error: (err) => {
+            console.error('Error sending email:', err);
+            this.snackBar.open(
+              'An error occurred while sending your message. Please try again.',
+              'Close',
+              { duration: 5000 }
+            );
+          },
         });
     }
   }
 
+  /**
+   * Reset the form
+   */
   reset() {
     this.form?.reset();
     this.form?.clearValidators();
     this.form?.clearAsyncValidators();
   }
 
+  /**
+   * Check if the form can be submitted
+   * @returns True if the form can be submitted
+   */
   isFormSubmittable() {
     const isFormValid =
       !!this.isMessageSendable &&
-      !!this.recaptchaToken &&
+      !!this.captchaToken &&
       !!this.form?.get('username') &&
       !!this.form.get('email') &&
       !!this.form.get('message') &&

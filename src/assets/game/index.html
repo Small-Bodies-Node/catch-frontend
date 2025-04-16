@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>CATCH the GAME</title>
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+        background-color: #111;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        font-family: sans-serif;
+        color: white;
+      }
+      #gameContainer {
+        position: relative;
+        width: 95vw;
+        height: 90vh;
+        max-width: 1200px;
+        max-height: calc(1200px * (700 / 1000));
+        overflow: hidden;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        background-color: #000;
+      }
+      canvas {
+        background-color: #000020;
+        display: block;
+        width: 100%;
+        height: 100%;
+        cursor: crosshair;
+      }
+      #controls {
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
+        z-index: 10;
+      }
+      /* Combined controls styling */
+      .control-group {
+        position: absolute;
+        bottom: 10px;
+        z-index: 10;
+        color: white;
+        font-family: "Press Start 2P", monospace;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        background-color: rgba(0, 0, 0, 0.3);
+        padding: 5px 10px;
+        border-radius: 5px;
+      }
+      #speed-controls {
+        left: 10px;
+      } /* Speed controls bottom-left */
+      #difficulty-controls {
+        left: 50%;
+        transform: translateX(-50%);
+      } /* Difficulty bottom-center */
+      .control-group span {
+        margin: 0 8px;
+      }
+      .control-group span.display {
+        display: inline-block;
+        width: 2em;
+        text-align: center;
+        font-weight: bold;
+        color: #ffff00;
+      }
+      .control-group button {
+        padding: 4px 8px;
+        font-size: 14px;
+        min-width: 25px;
+      }
+      /* General button style */
+      button {
+        cursor: pointer;
+        background: linear-gradient(180deg, #f0ad4e 0%, #eea236 100%);
+        color: black;
+        border: 2px solid #d58512;
+        border-radius: 8px;
+        font-family: "Press Start 2P", monospace;
+        font-weight: bold;
+        text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.3);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        transition: background 0.1s ease-in-out, border-color 0.1s ease-in-out,
+          box-shadow 0.1s ease-in-out, opacity 0.2s ease-in-out;
+      }
+      #controls button {
+        padding: 10px 20px;
+        font-size: 16px;
+      } /* Start/Restart button */
+      button:hover:not(:disabled) {
+        background: linear-gradient(180deg, #ec971f 0%, #d58512 100%);
+        border-color: #ad6704;
+        box-shadow: 0 6px 8px rgba(0, 0, 0, 0.25);
+      }
+      button:active:not(:disabled) {
+        background: linear-gradient(180deg, #d58512 0%, #ad6704 100%);
+        box-shadow: 0 2px 3px rgba(0, 0, 0, 0.2);
+      }
+      button:disabled {
+        cursor: not-allowed;
+        opacity: 0.6;
+        background: #aaa;
+        border-color: #888;
+        box-shadow: none;
+      }
+      @import url("https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap");
+    </style>
+  </head>
+  <body>
+    <div id="gameContainer">
+      <canvas id="gameCanvas"></canvas>
+      <div id="controls"><button id="startButton">Start Game</button></div>
+      <div id="speed-controls" class="control-group">
+        <span>Speed:</span>
+        <button id="speedDownBtn">-</button>
+        <span id="speedDisplay" class="display">10</span>
+        <button id="speedUpBtn">+</button>
+      </div>
+      <div id="difficulty-controls" class="control-group">
+        <span>Precoveries:</span>
+        <button id="clicksDownBtn">-</button>
+        <span id="clicksDisplay" class="display">4</span>
+        <button id="clicksUpBtn">+</button>
+      </div>
+    </div>
+
+    <script>
+      // Get references
+      const canvas = document.getElementById("gameCanvas");
+      const ctx = canvas.getContext("2d");
+      const startButton = document.getElementById("startButton");
+      const gameContainer = document.getElementById("gameContainer");
+      const clicksDisplay = document.getElementById("clicksDisplay");
+      const clicksDownBtn = document.getElementById("clicksDownBtn");
+      const clicksUpBtn = document.getElementById("clicksUpBtn");
+      const speedDisplay = document.getElementById("speedDisplay");
+      const speedDownBtn = document.getElementById("speedDownBtn");
+      const speedUpBtn = document.getElementById("speedUpBtn");
+
+      // --- Base Resolution for Scaling ---
+      const BASE_WIDTH = 1000;
+      const BASE_HEIGHT = 700;
+      let scaleX = 1;
+      let scaleY = 1;
+
+      // --- Game Settings ---
+      const MIN_DURATION_SECS = 4;
+      const MAX_DURATION_SECS = 10;
+      const MIN_SPEED = 1;
+      const MAX_SPEED = 10;
+      const MIN_CLICKS = 4;
+      const MAX_CLICKS = 10;
+      const SCORE_WIDTH_UNIT = 100;
+      const LASER_DURATION_MS = 150;
+      const DEFAULT_TELESCOPE_ANGLE = -Math.PI / 6;
+      const TELESCOPE_SMOOTHING_FACTOR = 0.1;
+      const SPLINE_SEGMENT_POINTS = 10;
+      const SCORE_SENSITIVITY_FACTOR = 0.5;
+      const TAIL_SMOOTHING_FACTOR = 0.15;
+
+      // --- Game State Variables ---
+      let gameState = "idle";
+      let startTime = 0;
+      let cometPath = {
+        splinePoints: [],
+        targetPoints: [],
+        guidePositionsX: [],
+        guideStartX: 0,
+        stripWidth: 0,
+      };
+      let userClicks = [];
+      let currentClickIndex = 0;
+      let score = 0;
+      let laser = {
+        active: false,
+        start: null,
+        end: null,
+        progress: 0,
+        startTime: 0,
+      };
+      let mousePos = { x: BASE_WIDTH / 2, y: BASE_HEIGHT / 2 };
+      let currentTelescopeAngleDisplay = DEFAULT_TELESCOPE_ANGLE;
+      let currentSpeedValue = MAX_SPEED;
+      let trajectoryDuration = MIN_DURATION_SECS * 1000;
+      let clicksRequired = MIN_CLICKS;
+      let currentTailAngleDisplay = Math.PI;
+
+      // --- Canvas Sizing and Scaling ---
+      function resizeCanvas() {
+        const containerWidth = gameContainer.clientWidth;
+        const containerHeight = gameContainer.clientHeight;
+        const containerAspectRatio = containerWidth / containerHeight;
+        const baseAspectRatio = BASE_WIDTH / BASE_HEIGHT;
+        let newCanvasWidth;
+        let newCanvasHeight;
+        if (containerAspectRatio > baseAspectRatio) {
+          newCanvasHeight = containerHeight;
+          newCanvasWidth = newCanvasHeight * baseAspectRatio;
+        } else {
+          newCanvasWidth = containerWidth;
+          newCanvasHeight = newCanvasWidth / baseAspectRatio;
+        }
+        canvas.width = Math.floor(newCanvasWidth);
+        canvas.height = Math.floor(newCanvasHeight);
+        scaleX = canvas.width / BASE_WIDTH;
+        scaleY = canvas.height / BASE_HEIGHT;
+        const uniformScale = Math.min(scaleX, scaleY);
+        scaleX = uniformScale;
+        scaleY = uniformScale;
+        redrawStaticElements();
+      }
+
+      // --- Redraw Static Elements ---
+      function redrawStaticElements() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.save();
+        ctx.scale(scaleX, scaleY);
+        // Drawing Order: Mountains -> Ground -> Barrel -> Base -> Dome
+        drawMountains();
+        drawGround();
+        drawTelescopeBarrel(currentTelescopeAngleDisplay);
+        drawLabBase();
+        drawDome();
+        // State specific elements
+        if (gameState === "showing_results") {
+          drawGuides(false);
+          drawSplineTrajectory();
+          userClicks.forEach((click) => drawClickMarker(click));
+          drawScore(score);
+          drawMessage("Click Restart to Play Again", 30);
+        } else if (gameState === "idle") {
+          // drawMessage("Click Start to Play!"); // Replaced by drawTitleScreen
+          drawTitleScreen(); // NEW Call
+        } else if (gameState === "clicking") {
+          drawGuides();
+          userClicks.forEach((click) => drawClickMarker(click));
+          drawMessage(`Click ${currentClickIndex + 1} / ${clicksRequired}`, 30);
+        } else if (gameState === "animating") {
+          drawMessage("Resized during animation...", 30);
+        }
+        if (gameState === "idle" || gameState === "showing_results") {
+          drawScore(score);
+        }
+        ctx.restore();
+      }
+
+      // --- Drawing Functions ---
+      function drawGround() {
+        const groundHeight = BASE_HEIGHT * 0.2;
+        ctx.fillStyle = "#6b4423";
+        ctx.fillRect(0, BASE_HEIGHT - groundHeight, BASE_WIDTH, groundHeight);
+      }
+      function drawLabBase() {
+        const groundHeight = BASE_HEIGHT * 0.2;
+        const labBaseWidth = 80;
+        const labBaseHeight = 50;
+        const labX = BASE_WIDTH / 2 - labBaseWidth / 2;
+        const labY = BASE_HEIGHT - groundHeight - labBaseHeight;
+        ctx.fillStyle = "#B0C4DE";
+        ctx.fillRect(labX, labY, labBaseWidth, labBaseHeight);
+        ctx.strokeStyle = "#708090";
+        ctx.lineWidth = 1;
+        ctx.strokeRect(labX, labY, labBaseWidth, labBaseHeight);
+      }
+      function drawMountains() {
+        const groundHeight = BASE_HEIGHT * 0.2;
+        ctx.fillStyle = "#4a3a2a";
+        ctx.beginPath();
+        ctx.moveTo(0, BASE_HEIGHT - groundHeight);
+        ctx.lineTo(BASE_WIDTH * 0.15, BASE_HEIGHT * 0.4);
+        ctx.lineTo(BASE_WIDTH * 0.3, BASE_HEIGHT - groundHeight);
+        ctx.lineTo(BASE_WIDTH * 0.25, BASE_HEIGHT - groundHeight);
+        ctx.lineTo(BASE_WIDTH * 0.4, BASE_HEIGHT * 0.5);
+        ctx.lineTo(BASE_WIDTH * 0.55, BASE_HEIGHT - groundHeight);
+        ctx.lineTo(BASE_WIDTH * 0.5, BASE_HEIGHT - groundHeight);
+        ctx.lineTo(BASE_WIDTH * 0.65, BASE_HEIGHT * 0.3);
+        ctx.lineTo(BASE_WIDTH * 0.8, BASE_HEIGHT - groundHeight);
+        ctx.lineTo(BASE_WIDTH * 0.75, BASE_HEIGHT - groundHeight);
+        ctx.lineTo(BASE_WIDTH * 0.9, BASE_HEIGHT * 0.6);
+        ctx.lineTo(BASE_WIDTH, BASE_HEIGHT - groundHeight);
+        ctx.closePath();
+        ctx.fill();
+      }
+      function drawTelescopeBarrel(angle) {
+        const groundHeight = BASE_HEIGHT * 0.2;
+        const labBaseWidth = 80;
+        const labBaseHeight = 50;
+        const labCenterX = BASE_WIDTH / 2;
+        const labDomeY = BASE_HEIGHT - groundHeight - labBaseHeight;
+        ctx.fillStyle = "#A9A9A9";
+        ctx.save();
+        ctx.translate(labCenterX, labDomeY);
+        ctx.rotate(angle);
+        const tubeWidth = 10;
+        const tubeLength = 60;
+        ctx.fillRect(-tubeWidth / 2, -tubeLength, tubeWidth, tubeLength);
+        ctx.restore();
+      }
+      function drawDome() {
+        const groundHeight = BASE_HEIGHT * 0.2;
+        const labBaseWidth = 80;
+        const labBaseHeight = 50;
+        const labX = BASE_WIDTH / 2 - labBaseWidth / 2;
+        const labY = BASE_HEIGHT - groundHeight - labBaseHeight;
+        const domeRadius = labBaseWidth * 0.55;
+        ctx.fillStyle = "#E8E8E8";
+        ctx.beginPath();
+        ctx.arc(labX + labBaseWidth / 2, labY, domeRadius, Math.PI, 0);
+        ctx.closePath();
+        ctx.fill();
+        ctx.strokeStyle = "#708090";
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+      function drawComet(x, y, tailAngle) {
+        const headRadius = 8;
+        const headGradient = ctx.createRadialGradient(
+          x,
+          y,
+          1,
+          x,
+          y,
+          headRadius
+        );
+        headGradient.addColorStop(0, "white");
+        headGradient.addColorStop(0.5, "cyan");
+        headGradient.addColorStop(1, "rgba(0, 255, 255, 0)");
+        ctx.fillStyle = headGradient;
+        ctx.fillRect(
+          x - headRadius,
+          y - headRadius,
+          headRadius * 2,
+          headRadius * 2
+        );
+        const tailLength = 50;
+        const tailWidthFactor = 0.7;
+        const tipX = x + Math.cos(tailAngle) * tailLength;
+        const tipY = y + Math.sin(tailAngle) * tailLength;
+        const baseAngle1 = tailAngle + Math.PI / 2;
+        const baseAngle2 = tailAngle - Math.PI / 2;
+        const baseOffsetX = headRadius * tailWidthFactor;
+        const baseOffsetY = headRadius * tailWidthFactor;
+        const corner1X = x + Math.cos(baseAngle1) * baseOffsetX;
+        const corner1Y = y + Math.sin(baseAngle1) * baseOffsetY;
+        const corner2X = x + Math.cos(baseAngle2) * baseOffsetX;
+        const corner2Y = y + Math.sin(baseAngle2) * baseOffsetY;
+        const baseCenterX = (corner1X + corner2X) / 2;
+        const baseCenterY = (corner1Y + corner2Y) / 2;
+        const tailGradient = ctx.createLinearGradient(
+          baseCenterX,
+          baseCenterY,
+          tipX,
+          tipY
+        );
+        const fadeStartFraction =
+          tailLength > headRadius ? Math.min(0.99, headRadius / tailLength) : 0;
+        const startColor = "rgba(0, 255, 255, 0.7)";
+        const endColor = "rgba(0, 255, 255, 0)";
+        tailGradient.addColorStop(0, startColor);
+        if (fadeStartFraction > 0) {
+          tailGradient.addColorStop(fadeStartFraction, startColor);
+        }
+        tailGradient.addColorStop(1, endColor);
+        ctx.fillStyle = tailGradient;
+        ctx.beginPath();
+        ctx.moveTo(tipX, tipY);
+        ctx.lineTo(corner1X, corner1Y);
+        ctx.lineTo(corner2X, corner2Y);
+        ctx.closePath();
+        ctx.fill();
+      }
+      function drawGuides(useCyan = false) {
+        if (
+          !cometPath.guidePositionsX ||
+          cometPath.guidePositionsX.length !== clicksRequired
+        )
+          return;
+        ctx.strokeStyle = useCyan
+          ? "rgba(0, 255, 255, 0.6)"
+          : "rgba(255, 255, 0, 0.5)";
+        ctx.lineWidth = 1;
+        ctx.setLineDash([5, 5]);
+        const skyHeight = BASE_HEIGHT * 0.8;
+        cometPath.guidePositionsX.forEach((lineX) => {
+          const clampedX = Math.max(0, Math.min(BASE_WIDTH, lineX));
+          ctx.beginPath();
+          ctx.moveTo(clampedX, 0);
+          ctx.lineTo(clampedX, skyHeight);
+          ctx.stroke();
+        });
+        ctx.setLineDash([]);
+      }
+      function drawClickMarker(click) {
+        ctx.beginPath();
+        const radius = 5;
+        ctx.arc(click.x, click.y, radius, 0, Math.PI * 2);
+        ctx.fillStyle = click.color || "rgba(255, 255, 255, 0.8)";
+        ctx.fill();
+        ctx.strokeStyle = "black";
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+      function drawLaser(laserState, labCenterX, labDomeY) {
+        if (!laserState.active || !laserState.start || !laserState.end) return;
+        const dx = laserState.end.x - laserState.start.x;
+        const dy = laserState.end.y - laserState.start.y;
+        const currentX = laserState.start.x + dx * laserState.progress;
+        const currentY = laserState.start.y + dy * laserState.progress;
+        ctx.strokeStyle = "#FF0000";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(laserState.start.x, laserState.start.y);
+        ctx.lineTo(currentX, currentY);
+        ctx.stroke();
+      }
+      function drawScore(value) {
+        ctx.font = "bold 20px 'Press Start 2P', monospace";
+        ctx.fillStyle = "#FFFF00";
+        ctx.textAlign = "left";
+        ctx.textBaseline = "top";
+        ctx.fillText(`Score: ${value.toFixed(0)}/100`, 20, 20);
+      }
+      function drawMessage(text, yPos = BASE_HEIGHT / 2.5) {
+        ctx.font = "16px 'Press Start 2P', monospace";
+        ctx.fillStyle = "white";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(text, BASE_WIDTH / 2, yPos);
+      }
+      function drawHoverMarker(x, y) {
+        const radius = 4;
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.6)";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(x, y, radius, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+
+      /** NEW v49: Draws the title screen */
+      function drawTitleScreen() {
+        // Title Text
+        ctx.font = "bold 36px 'Press Start 2P', monospace"; // Larger font for title
+        ctx.fillStyle = "#FFFF00"; // Yellow title
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("CATCH the GAME", BASE_WIDTH / 2, BASE_HEIGHT * 0.4);
+
+        // Subtitle Text (Start instruction)
+        ctx.font = "16px 'Press Start 2P', monospace"; // Smaller font
+        ctx.fillStyle = "white";
+        // textBaseline is already middle
+        ctx.fillText(
+          "Click Start to Play!",
+          BASE_WIDTH / 2,
+          BASE_HEIGHT * 0.55
+        );
+      }
+
+      // --- Catmull-Rom Spline Calculation ---
+      function getCatmullRomPoint(t, p0, p1, p2, p3) {
+        const t2 = t * t;
+        const t3 = t * t * t;
+        const x =
+          0.5 *
+          (2 * p1.x +
+            (-p0.x + p2.x) * t +
+            (2 * p0.x - 5 * p1.x + 4 * p2.x - p3.x) * t2 +
+            (-p0.x + 3 * p1.x - 3 * p2.x + p3.x) * t3);
+        const y =
+          0.5 *
+          (2 * p1.y +
+            (-p0.y + p2.y) * t +
+            (2 * p0.y - 5 * p1.y + 4 * p2.y - p3.y) * t2 +
+            (-p0.y + 3 * p1.y - 3 * p2.y + p3.y) * t3);
+        return { x, y };
+      }
+      function getCatmullRomDerivative(t, p0, p1, p2, p3) {
+        const t2 = t * t;
+        const dx_dt =
+          0.5 *
+          (-p0.x +
+            p2.x +
+            (2 * p0.x - 5 * p1.x + 4 * p2.x - p3.x) * 2 * t +
+            (-p0.x + 3 * p1.x - 3 * p2.x + p3.x) * 3 * t2);
+        const dy_dt =
+          0.5 *
+          (-p0.y +
+            p2.y +
+            (2 * p0.y - 5 * p1.y + 4 * p2.y - p3.y) * 2 * t +
+            (-p0.y + 3 * p1.y - 3 * p2.y + p3.y) * 3 * t2);
+        return { vx: dx_dt, vy: dy_dt };
+      }
+
+      /** Draws the full Catmull-Rom spline */
+      function drawSplineTrajectory() {
+        const points = cometPath.splinePoints;
+        if (!points || points.length < 4) {
+          return;
+        }
+        ctx.strokeStyle = "rgba(0, 255, 0, 0.7)";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        let p_neg1 = points[0];
+        let p0 = points[0];
+        let p1 = points[1];
+        let p2 = points[2];
+        let startP = getCatmullRomPoint(0, p_neg1, p0, p1, p2);
+        ctx.moveTo(startP.x, startP.y);
+        const n = points.length;
+        for (let k = 0; k < n - 1; k++) {
+          p0 = points[Math.max(0, k - 1)];
+          p1 = points[k];
+          p2 = points[Math.min(n - 1, k + 1)];
+          p3 = points[Math.min(n - 1, k + 2)];
+          for (let i = 1; i <= SPLINE_SEGMENT_POINTS; i++) {
+            let t = i / SPLINE_SEGMENT_POINTS;
+            let p = getCatmullRomPoint(t, p0, p1, p2, p3);
+            ctx.lineTo(p.x, p.y);
+          }
+        }
+        ctx.stroke();
+      }
+
+      // --- Trajectory Generation ---
+      function generateTrajectory() {
+        const numClicks = clicksRequired;
+        const numStrips = numClicks + 1;
+        const numSplinePoints = numClicks + 2;
+        cometPath.splinePoints = [];
+        cometPath.targetPoints = [];
+        cometPath.guidePositionsX = [];
+        userClicks = [];
+        currentClickIndex = 0;
+        cometPath.guideStartX = 0;
+        cometPath.stripWidth = 0;
+        const paddingY = BASE_HEIGHT * 0.1;
+        const skyHeight = BASE_HEIGHT * 0.8;
+        const midSkyY = skyHeight / 2;
+        cometPath.guideStartX = 0;
+        const visibleWidth = BASE_WIDTH;
+        cometPath.stripWidth = visibleWidth / numStrips;
+        for (let i = 1; i <= numClicks; i++) {
+          const lineX = cometPath.guideStartX + cometPath.stripWidth * i;
+          cometPath.guidePositionsX.push(lineX);
+        }
+        const randomY = () =>
+          Math.random() * (skyHeight - 2 * paddingY) + paddingY;
+        cometPath.splinePoints.push({
+          x: cometPath.guideStartX - cometPath.stripWidth,
+          y: randomY(),
+        });
+        for (let i = 0; i < numClicks; i++) {
+          cometPath.splinePoints.push({
+            x: cometPath.guidePositionsX[i],
+            y: randomY(),
+          });
+        }
+        cometPath.splinePoints.push({
+          x: cometPath.guidePositionsX[numClicks - 1] + cometPath.stripWidth,
+          y: randomY(),
+        });
+        cometPath.targetPoints = cometPath.splinePoints.slice(1, numClicks + 1);
+        if (
+          cometPath.guidePositionsX.length !== numClicks ||
+          cometPath.splinePoints.length !== numSplinePoints ||
+          cometPath.targetPoints.length !== numClicks
+        ) {
+          console.error("Trajectory generation failed array length checks!");
+        }
+      }
+
+      // --- Scoring Logic ---
+      function calculateScore() {
+        let totalErrorPixels = 0;
+        for (let i = 0; i < clicksRequired; i++) {
+          if (!userClicks[i] || !cometPath.targetPoints[i]) {
+            console.error(`Missing data for score calculation at index ${i}`);
+            continue;
+          }
+          const click = userClicks[i];
+          const target = cometPath.targetPoints[i];
+          const dy = click.y - target.y;
+          const errorDist = Math.abs(dy);
+          click.error = errorDist;
+          totalErrorPixels += errorDist;
+          const errorScaleFactor = BASE_WIDTH / 5;
+          const normalizedErrorRatio = Math.min(
+            1,
+            Math.max(0, errorDist / errorScaleFactor)
+          );
+          const red = Math.floor(255 * normalizedErrorRatio);
+          const blue = Math.floor(255 * (1 - normalizedErrorRatio));
+          click.color = `rgb(${red}, 0, ${blue})`;
+        }
+        const maxSingleError = BASE_HEIGHT * SCORE_SENSITIVITY_FACTOR;
+        const maxTotalErrorPossible = clicksRequired * maxSingleError;
+        let errorRatio = 0;
+        if (maxTotalErrorPossible > 0) {
+          errorRatio = totalErrorPixels / maxTotalErrorPossible;
+        } else {
+          errorRatio = totalErrorPixels > 0 ? 1 : 0;
+        }
+        errorRatio = Math.max(0, Math.min(1, errorRatio));
+        score = (1 - errorRatio) * 100;
+      }
+
+      // --- Game Control Functions ---
+      function startGame() {
+        console.log("Starting game...");
+        gameState = "idle";
+        userClicks = [];
+        currentClickIndex = 0;
+        score = 0;
+        cometPath = {
+          splinePoints: [],
+          targetPoints: [],
+          guidePositionsX: [],
+          guideStartX: 0,
+          stripWidth: 0,
+        };
+        laser.active = false;
+        startButton.textContent = "Start Game";
+        mousePos = { x: BASE_WIDTH / 2, y: BASE_HEIGHT / 2 };
+        currentTelescopeAngleDisplay = DEFAULT_TELESCOPE_ANGLE;
+        currentTailAngleDisplay = Math.PI;
+        generateTrajectory();
+        gameState = "animating";
+        startTime = performance.now();
+        startButton.blur();
+        updateControlButtonsState();
+        requestAnimationFrame(gameLoop);
+      }
+      function resetGame() {
+        console.log("Resetting game state...");
+        gameState = "idle";
+        userClicks = [];
+        currentClickIndex = 0;
+        score = 0;
+        cometPath = {
+          splinePoints: [],
+          targetPoints: [],
+          guidePositionsX: [],
+          guideStartX: 0,
+          stripWidth: 0,
+        };
+        laser.active = false;
+        startButton.textContent = "Start Game";
+        mousePos = { x: BASE_WIDTH / 2, y: BASE_HEIGHT / 2 };
+        currentTelescopeAngleDisplay = DEFAULT_TELESCOPE_ANGLE;
+        currentTailAngleDisplay = Math.PI;
+        updateControlButtonsState();
+        redrawStaticElements();
+      }
+
+      /** Handles mouse clicks: Snaps X coord to target guide line. */
+      function handleCanvasClick(event) {
+        if (gameState !== "clicking") return;
+        if (
+          !cometPath.guidePositionsX ||
+          cometPath.guidePositionsX.length !== clicksRequired
+        ) {
+          return;
+        }
+        const rect = canvas.getBoundingClientRect();
+        const clickXScreen = event.clientX - rect.left;
+        const clickYScreen = event.clientY - rect.top;
+        let clickYBase = 0;
+        if (scaleY > 0) {
+          clickYBase = clickYScreen / scaleY;
+        }
+        const targetLineIndex = currentClickIndex; // 0 to clicksRequired-1
+        if (
+          targetLineIndex < 0 ||
+          targetLineIndex >= cometPath.guidePositionsX.length
+        ) {
+          return;
+        }
+        const snappedX = cometPath.guidePositionsX[targetLineIndex];
+        if (clickYBase < 0 || clickYBase > BASE_HEIGHT * 0.8) {
+          return;
+        }
+        if (currentClickIndex === 0) {
+          startButton.textContent = "Restart Game";
+        }
+        userClicks.push({
+          x: snappedX,
+          y: clickYBase,
+          error: 0,
+          color: "white",
+        });
+        const labBaseWidth = 80;
+        const labBaseHeight = 50;
+        const groundHeight = BASE_HEIGHT * 0.2;
+        const labCenterX = BASE_WIDTH / 2;
+        const labDomeY = BASE_HEIGHT - groundHeight - labBaseHeight;
+        laser.start = { x: labCenterX, y: labDomeY };
+        laser.end = { x: snappedX, y: clickYBase };
+        laser.progress = 0;
+        laser.active = true;
+        laser.startTime = performance.now();
+        currentClickIndex++;
+        if (currentClickIndex >= clicksRequired) {
+          console.log(`${clicksRequired} clicks reached. Calculating score.`);
+          laser.active = false;
+          gameState = "scoring";
+          calculateScore();
+          updateControlButtonsState(); /* Re-enable controls */
+        }
+      }
+
+      /** Handles mouse movement */
+      function handleMouseMove(event) {
+        if (gameState !== "clicking") return;
+        const rect = canvas.getBoundingClientRect();
+        const mouseXScreen = event.clientX - rect.left;
+        const mouseYScreen = event.clientY - rect.top;
+        if (scaleX > 0) {
+          mousePos.x = mouseXScreen / scaleX;
+        }
+        if (scaleY > 0) {
+          mousePos.y = mouseYScreen / scaleY;
+        }
+      }
+
+      /** Calculates trajectory duration based on speed value (1-10) */
+      function calculateDurationFromSpeed(speedValue) {
+        const speedRange = MAX_SPEED - MIN_SPEED;
+        const durationRange = MAX_DURATION_SECS - MIN_DURATION_SECS;
+        const clampedSpeed = Math.max(
+          MIN_SPEED,
+          Math.min(MAX_SPEED, speedValue)
+        );
+        const durationSecs =
+          MAX_DURATION_SECS -
+          ((clampedSpeed - MIN_SPEED) / speedRange) * durationRange;
+        return durationSecs * 1000;
+      }
+
+      /** Updates ALL control button enabled states */
+      function updateControlButtonsState() {
+        const isIdleOrDone =
+          gameState === "idle" || gameState === "showing_results";
+        speedDownBtn.disabled = currentSpeedValue <= MIN_SPEED || !isIdleOrDone;
+        speedUpBtn.disabled = currentSpeedValue >= MAX_SPEED || !isIdleOrDone;
+        clicksDownBtn.disabled = clicksRequired <= MIN_CLICKS || !isIdleOrDone;
+        clicksUpBtn.disabled = clicksRequired >= MAX_CLICKS || !isIdleOrDone;
+      }
+
+      /** Decreases speed value */
+      function decreaseSpeed() {
+        if (currentSpeedValue > MIN_SPEED) {
+          currentSpeedValue--;
+          trajectoryDuration = calculateDurationFromSpeed(currentSpeedValue);
+          speedDisplay.textContent = currentSpeedValue.toString();
+          updateControlButtonsState();
+        }
+      }
+
+      /** Increases speed value */
+      function increaseSpeed() {
+        if (currentSpeedValue < MAX_SPEED) {
+          currentSpeedValue++;
+          trajectoryDuration = calculateDurationFromSpeed(currentSpeedValue);
+          speedDisplay.textContent = currentSpeedValue.toString();
+          updateControlButtonsState();
+        }
+      }
+
+      /** Decreases difficulty */
+      function decreaseClicks() {
+        if (clicksRequired > MIN_CLICKS) {
+          clicksRequired--;
+          clicksDisplay.textContent = clicksRequired.toString();
+          updateControlButtonsState();
+        }
+      }
+
+      /** Increases difficulty */
+      function increaseClicks() {
+        if (clicksRequired < MAX_CLICKS) {
+          clicksRequired++;
+          clicksDisplay.textContent = clicksRequired.toString();
+          updateControlButtonsState();
+        }
+      }
+
+      // --- Main Game Loop ---
+      let lastTimestamp = 0;
+      function gameLoop(timestamp) {
+        const deltaTime = timestamp - lastTimestamp;
+        lastTimestamp = timestamp;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.save();
+        ctx.scale(scaleX, scaleY);
+
+        // --- Calculate Comet Position & Tail Angle FIRST (if animating) ---
+        let cometPos = null;
+        let targetTailAngle = currentTailAngleDisplay;
+        if (gameState === "animating") {
+          const overall_t = Math.min(
+            (timestamp - startTime) / trajectoryDuration,
+            1.0
+          );
+          const numSegments = cometPath.splinePoints.length - 1;
+          if (numSegments > 0 && cometPath.splinePoints.length >= 4) {
+            let segmentIdx = Math.floor(overall_t * numSegments);
+            segmentIdx = Math.min(segmentIdx, numSegments - 1);
+            let local_t = overall_t * numSegments - segmentIdx;
+            local_t = Math.max(0, Math.min(1, local_t));
+            const n_pts = cometPath.splinePoints.length;
+            const p0_idx = Math.max(0, segmentIdx - 1);
+            const p1_idx = segmentIdx;
+            const p2_idx = Math.min(n_pts - 1, segmentIdx + 1);
+            const p3_idx = Math.min(n_pts - 1, segmentIdx + 2);
+            const p0 = cometPath.splinePoints[p0_idx];
+            const p1 = cometPath.splinePoints[p1_idx];
+            const p2 = cometPath.splinePoints[p2_idx];
+            const p3 = cometPath.splinePoints[p3_idx];
+            if (p0 && p1 && p2 && p3) {
+              cometPos = getCatmullRomPoint(local_t, p0, p1, p2, p3);
+              const velocity = getCatmullRomDerivative(local_t, p0, p1, p2, p3);
+              if (
+                Math.abs(velocity.vx) > 0.01 ||
+                Math.abs(velocity.vy) > 0.01
+              ) {
+                const motionAngle = Math.atan2(velocity.vy, velocity.vx);
+                targetTailAngle = motionAngle + Math.PI;
+              }
+              let deltaTailAngle = targetTailAngle - currentTailAngleDisplay;
+              if (deltaTailAngle > Math.PI) {
+                deltaTailAngle -= 2 * Math.PI;
+              }
+              if (deltaTailAngle < -Math.PI) {
+                deltaTailAngle += 2 * Math.PI;
+              }
+              if (Math.abs(deltaTailAngle) > 0.001) {
+                currentTailAngleDisplay +=
+                  deltaTailAngle * TAIL_SMOOTHING_FACTOR;
+              } else {
+                currentTailAngleDisplay = targetTailAngle;
+              }
+              const paddingY = BASE_HEIGHT * 0.1;
+              const skyHeight = BASE_HEIGHT * 0.8;
+              cometPos.y = Math.max(
+                paddingY / 2,
+                Math.min(skyHeight - paddingY / 2, cometPos.y)
+              );
+            } else {
+              console.error(
+                "Error calculating comet position: Invalid spline points for segment",
+                segmentIdx
+              );
+            }
+          }
+          if (overall_t >= 1.0) {
+            gameState = "clicking";
+            updateControlButtonsState();
+          }
+        }
+
+        // --- Draw Background Elements ---
+        if (gameState === "animating" && cometPos) {
+          const headRadius = 8;
+          if (
+            cometPos.x >= -headRadius &&
+            cometPos.x <= BASE_WIDTH + headRadius
+          ) {
+            drawComet(cometPos.x, cometPos.y, currentTailAngleDisplay);
+          }
+        }
+        drawMountains();
+        drawGround();
+
+        // --- Telescope Angle Smoothing & Drawing ---
+        let targetTelescopeAngle = DEFAULT_TELESCOPE_ANGLE;
+        let hoverTargetX = BASE_WIDTH / 2;
+        let hoverTargetY = BASE_HEIGHT * 0.4;
+        if (gameState === "clicking") {
+          const targetLineIndex = currentClickIndex;
+          if (
+            targetLineIndex >= 0 &&
+            targetLineIndex < cometPath.guidePositionsX.length
+          ) {
+            hoverTargetX = cometPath.guidePositionsX[targetLineIndex];
+            hoverTargetY = Math.max(0, Math.min(BASE_HEIGHT * 0.8, mousePos.y));
+            if (mousePos.y > -99) {
+              const groundHeight = BASE_HEIGHT * 0.2;
+              const labBaseHeight = 50;
+              const labCenterX = BASE_WIDTH / 2;
+              const labDomeY = BASE_HEIGHT - groundHeight - labBaseHeight;
+              const deltaY = hoverTargetY - labDomeY;
+              const deltaX = hoverTargetX - labCenterX;
+              targetTelescopeAngle = Math.atan2(deltaY, deltaX) + Math.PI / 2;
+            }
+          }
+        }
+        let deltaAngle = targetTelescopeAngle - currentTelescopeAngleDisplay;
+        if (deltaAngle > Math.PI) {
+          deltaAngle -= 2 * Math.PI;
+        }
+        if (deltaAngle < -Math.PI) {
+          deltaAngle += 2 * Math.PI;
+        }
+        if (Math.abs(deltaAngle) > 0.001) {
+          currentTelescopeAngleDisplay +=
+            deltaAngle * TELESCOPE_SMOOTHING_FACTOR;
+        } else {
+          currentTelescopeAngleDisplay = targetTelescopeAngle;
+        }
+        drawTelescopeBarrel(currentTelescopeAngleDisplay); // Draw telescope barrel
+        drawLabBase(); // Draw base over barrel pivot
+        drawDome(); // Draw dome over barrel pivot
+
+        // --- Laser ---
+        if (laser.active) {
+          const elapsedLaserTime = timestamp - laser.startTime;
+          laser.progress = Math.min(1, elapsedLaserTime / LASER_DURATION_MS);
+          drawLaser(laser, BASE_WIDTH / 2, BASE_HEIGHT * 0.8 - 50);
+          if (laser.progress >= 1) {
+            laser.active = false;
+          }
+        }
+
+        // --- State Specific Overlays ---
+        switch (gameState) {
+          case "clicking":
+            drawGuides();
+            userClicks.forEach((click) => drawClickMarker(click));
+            if (mousePos.y > -99) {
+              drawHoverMarker(hoverTargetX, hoverTargetY);
+            }
+            drawMessage(
+              `Click ${currentClickIndex + 1} / ${clicksRequired}`,
+              30
+            );
+            break;
+          case "scoring":
+            gameState = "showing_results";
+            updateControlButtonsState(); // Fall through
+          case "showing_results":
+            drawGuides(false);
+            drawSplineTrajectory();
+            userClicks.forEach((click) => drawClickMarker(click));
+            drawScore(score);
+            drawMessage("Click Restart to Play Again", 30);
+            break;
+        }
+        ctx.restore();
+
+        // --- Loop Condition ---
+        const isTelescopeRotating =
+          Math.abs(targetTelescopeAngle - currentTelescopeAngleDisplay) > 0.001;
+        const isTailRotating =
+          gameState === "animating" &&
+          Math.abs(targetTailAngle - currentTailAngleDisplay) > 0.001;
+        if (
+          gameState === "animating" ||
+          gameState === "clicking" ||
+          laser.active ||
+          isTelescopeRotating ||
+          isTailRotating
+        ) {
+          requestAnimationFrame(gameLoop);
+        }
+      }
+
+      // --- Event Listeners ---
+      startButton.addEventListener("click", startGame);
+      canvas.addEventListener("click", handleCanvasClick);
+      canvas.addEventListener("mousemove", handleMouseMove);
+      clicksDownBtn.addEventListener("click", decreaseClicks);
+      clicksUpBtn.addEventListener("click", increaseClicks);
+      speedDownBtn.addEventListener("click", decreaseSpeed);
+      speedUpBtn.addEventListener("click", increaseSpeed);
+
+      // --- Initial Setup ---
+      window.addEventListener("resize", resizeCanvas);
+      clicksDisplay.textContent = clicksRequired.toString();
+      speedDisplay.textContent = currentSpeedValue.toString();
+      trajectoryDuration = calculateDurationFromSpeed(currentSpeedValue);
+      resizeCanvas();
+      updateControlButtonsState();
+    </script>
+  </body>
+</html>

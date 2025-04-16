@@ -1,0 +1,51 @@
+<div id="gameContainer" #gameContainer>
+  <canvas
+    #gameCanvas
+    (click)="handleCanvasClick($event)"
+    (mousemove)="handleMouseMove($event)"
+  >
+  </canvas>
+  <div id="controls">
+    <button id="startButton" (click)="toggleStartReset()">
+      {{ startButtonText }}
+    </button>
+  </div>
+
+  <div id="speed-controls" class="control-group">
+    <span>Speed:</span>
+    <button
+      id="speedDownBtn"
+      (click)="decreaseSpeed()"
+      [disabled]="!isIdleOrDone() || currentSpeedValue <= MIN_SPEED"
+    >
+      -
+    </button>
+    <span id="speedDisplay" class="display">{{ currentSpeedValue }}</span>
+    <button
+      id="speedUpBtn"
+      (click)="increaseSpeed()"
+      [disabled]="!isIdleOrDone() || currentSpeedValue >= MAX_SPEED"
+    >
+      +
+    </button>
+  </div>
+
+  <div id="difficulty-controls" class="control-group">
+    <span>Precoveries:</span>
+    <button
+      id="clicksDownBtn"
+      (click)="decreaseClicks()"
+      [disabled]="!isIdleOrDone() || clicksRequired <= MIN_CLICKS"
+    >
+      -
+    </button>
+    <span id="clicksDisplay" class="display">{{ clicksRequired }}</span>
+    <button
+      id="clicksUpBtn"
+      (click)="increaseClicks()"
+      [disabled]="!isIdleOrDone() || clicksRequired >= MAX_CLICKS"
+    >
+      +
+    </button>
+  </div>
+</div>

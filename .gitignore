@@ -47,3 +47,4 @@ _deploy_catch-prod
 _deploy_catch-dev
 .git-temp
 test-api.ts
+.windsurfrules.md

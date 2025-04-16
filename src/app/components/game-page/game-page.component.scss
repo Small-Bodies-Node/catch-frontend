@@ -1,0 +1,131 @@
+/* catch-game.component.css */
+
+/* Apply layout/background styles to the component host */
+:host {
+  margin: 0;
+  padding: 0;
+  overflow: hidden; /* Might be better on a parent container if needed */
+  background-color: #111;
+  display: flex; /* Center the game container within the component area */
+  justify-content: center;
+  align-items: center;
+  width: 100%; /* Make component take available width */
+  height: 100vh; /* Make component take full viewport height */
+  font-family: sans-serif;
+  color: white;
+}
+
+#gameContainer {
+  position: relative;
+  // width: 95vw;
+  width: 100%;
+  height: 90vh;
+  max-width: 1200px;
+  /* Adjusted max-height calculation for maintainability */
+  max-height: min(90vh, calc(1200px * 0.7)); /* 700 / 1000 = 0.7 */
+  overflow: hidden;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  background-color: #000; /* Container background */
+}
+
+canvas {
+  background-color: #000020; /* Canvas specific background */
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: crosshair;
+}
+
+#controls {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  z-index: 10;
+}
+
+/* Combined controls styling */
+.control-group {
+  position: absolute;
+  bottom: 10px;
+  z-index: 10;
+  color: white;
+  font-family: "Press Start 2P", monospace; /* Make sure this font is loaded globally */
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.3);
+  padding: 5px 10px;
+  border-radius: 5px;
+}
+
+#speed-controls {
+  left: 10px; /* Speed controls bottom-left */
+}
+
+#difficulty-controls {
+  left: 50%;
+  transform: translateX(-50%); /* Difficulty bottom-center */
+}
+
+.control-group span {
+  margin: 0 8px;
+}
+
+.control-group span.display {
+  display: inline-block;
+  width: 2em;
+  text-align: center;
+  font-weight: bold;
+  color: #ffff00;
+}
+
+.control-group button {
+  padding: 4px 8px;
+  font-size: 14px;
+  min-width: 25px;
+}
+
+/* General button style */
+button {
+  cursor: pointer;
+  background: linear-gradient(180deg, #f0ad4e 0%, #eea236 100%);
+  color: black;
+  border: 2px solid #d58512;
+  border-radius: 8px;
+  font-family: "Press Start 2P", monospace; /* Make sure this font is loaded globally */
+  font-weight: bold;
+  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  transition: background 0.1s ease-in-out, border-color 0.1s ease-in-out,
+    box-shadow 0.1s ease-in-out, opacity 0.2s ease-in-out;
+}
+
+#controls button {
+  /* Start/Restart button specific size */
+  padding: 10px 20px;
+  font-size: 16px;
+}
+
+button:hover:not(:disabled) {
+  background: linear-gradient(180deg, #ec971f 0%, #d58512 100%);
+  border-color: #ad6704;
+  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.25);
+}
+
+button:active:not(:disabled) {
+  background: linear-gradient(180deg, #d58512 0%, #ad6704 100%);
+  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.2);
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+  background: #aaa;
+  border-color: #888;
+  box-shadow: none;
+}
+
+/* IMPORTANT: Ensure 'Press Start 2P' font is loaded.
+   Either link it in index.html or add the @import to your global styles.css:
+   @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+*/

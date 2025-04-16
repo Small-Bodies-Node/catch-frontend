@@ -9,7 +9,6 @@ import {
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MatAutocompleteTrigger } from '@angular/material/autocomplete';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { Subscription } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { Store } from '@ngrx/store';
@@ -20,10 +19,7 @@ import { selectObjectNameMatchResults } from '../../ngrx/selectors/object-name-m
 import { selectApiDataStatus } from '../../ngrx/selectors/api-data.selectors';
 import { ObjectNameMatchAction_FetchResults } from '../../ngrx/actions/object-name-match.actions';
 import { UnrecognizedNameDialogComponent } from './unrecognized-name-dialog.component';
-import {
-  ApiDataAction_FetchData,
-  ApiDataAction_SetStatus,
-} from '../../ngrx/actions/api-data.actions';
+import { ApiDataAction_SetStatus } from '../../ngrx/actions/api-data.actions';
 import {
   formControlLabels,
   formControlDict,

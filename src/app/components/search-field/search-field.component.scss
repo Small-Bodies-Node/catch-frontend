@@ -3,11 +3,16 @@
   https://material.angular.io/components/form-field/overview
 */
 
+$upperFormWrapperHeight: 80px;
+$middleFormWrapperHeight: 60px;
+// $lowerFormWrapperHeight: 300px;
+
 div.search-field-container {
   position: relative;
   height: 100%;
   max-height: 100%;
   width: 100%;
+  // max-width: 70vw;
   // background-color: aqua;
 
   div.upper-form-wrapper {
@@ -18,7 +23,7 @@ div.search-field-container {
     margin: auto auto;
     position: relative;
     display: flex;
-    // height: 100px;
+    height: $upperFormWrapperHeight;
     // background-color: green;
 
     mat-form-field {
@@ -50,7 +55,7 @@ div.search-field-container {
   div.middle-form-wrapper {
     // background-color: yellow;
     width: 100%;
-    height: 60px;
+    height: $middleFormWrapperHeight;
     position: relative;
 
     // position: absolute;
@@ -99,69 +104,94 @@ div.search-field-container {
     // Params chosen so that advanced controls efficiently occupy space between
     // basic controls and footer without pushing homepage down
     $advancedControlsHeightParam: 120px;
-    $advancedControlsHeightOffset: -15px;
     position: relative;
-    height: 300px;
-    max-height: calc(100% - #{$advancedControlsHeightParam});
-    // transform: translateY($advancedControlsHeightOffset);
+    height: calc(
+      100% - #{$upperFormWrapperHeight} - #{$middleFormWrapperHeight} - 20px
+    );
+    // max-height: calc(100% - #{$advancedControlsHeightParam});
 
-    .advanced-search-controls {
+    // display: flex;
+    // justify-content: center;
+    // align-items: center;
+    // flex-direction: column;
+    // background-color: red;
+
+    .advanced-search-controls-wrapper {
       // background-color: yellow;
-      // background-color: cyan;
-      border: 1px rgba(255, 255, 255, 0.4) solid;
-      background-color: rgba(0, 0, 0, 0.9) !important;
-      box-sizing: border-box;
-      border-radius: 5px;
-      padding: 10px;
+
       position: absolute;
       top: 0px;
-      // bottom: 0px;
-      left: -100px;
-      right: -100px;
-      max-width: 100vw;
-      overflow-y: scroll;
-      transition: bottom 300ms ease-in-out, opacity 300ms ease-in-out;
+      bottom: 0px;
+      left: 0px;
+      right: 0px;
+      // height: 100%;
+      // width: 100%;
+      @media only screen and (min-width: 500px) {
+        // width: 150%;
+        // max-width: 80vw;
 
-      .data-sources-title {
-        // margin-bottom: 10px;
+        left: -100px;
+        right: -100px;
       }
 
-      .search-type-toggle-wrapper {
-        padding: 10px 10px;
-        display: flex;
-        justify-content: flex-start;
-        align-items: center;
-      }
+      .advanced-search-controls {
+        // background-color: cyan;
+        border: 1px rgba(255, 255, 255, 0.4) solid;
+        background-color: rgba(0, 0, 0, 0.9) !important;
+        box-sizing: border-box;
+        border-radius: 5px;
+        padding: 10px;
 
-      .checkbox-grid {
-        // background-color: red;
-        padding: 10px 0px;
-        display: grid;
-        grid-gap: 5px;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        grid-template-rows: auto;
+        position: absolute;
+        top: 0px;
+        bottom: 0px;
+        left: 0px;
+        right: 0px;
 
-        .icon-checkbox-wrapper {
+        overflow-y: scroll;
+        transition: bottom 300ms ease-in-out, opacity 300ms ease-in-out;
+
+        .data-sources-title {
+          // margin-bottom: 10px;
+        }
+
+        .search-type-toggle-wrapper {
+          padding: 10px 10px;
           display: flex;
           justify-content: flex-start;
           align-items: center;
-          ::ng-deep mat-checkbox {
+        }
+
+        .checkbox-grid {
+          // background-color: red;
+          padding: 10px 0px;
+          display: grid;
+          grid-gap: 5px;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          grid-template-rows: auto;
+
+          .icon-checkbox-wrapper {
             display: flex;
             justify-content: flex-start;
             align-items: center;
-            label {
-              font-size: 11px !important;
+            ::ng-deep mat-checkbox {
+              display: flex;
+              justify-content: flex-start;
+              align-items: center;
+              label {
+                font-size: 11px !important;
+              }
             }
           }
         }
-      }
 
-      .padding-field-wrapper,
-      .radius-field-wrapper,
-      .intersection-type-wrapper,
-      .start-time-wrapper {
-        // background-color: salmon;
-        margin-top: 40px;
+        .padding-field-wrapper,
+        .radius-field-wrapper,
+        .intersection-type-wrapper,
+        .start-time-wrapper {
+          // background-color: salmon;
+          margin-top: 40px;
+        }
       }
     }
   }

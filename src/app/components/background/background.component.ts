@@ -69,8 +69,8 @@ export class BackgroundComponent implements OnInit {
       this.siteTheme.toLowerCase().replace('-theme', '') +
       '_' +
       imageLabel +
-      '_v1.png';
-    const filePath = `images/pngs/${fileName}`;
+      '_v3.png';
+    const filePath = `assets/images/pngs/${fileName}`;
 
     const delayBeforeTransitionMs = imageIndex * intervalMs;
     const dynamicStyles: Partial<CSSStyleDeclaration> = {
