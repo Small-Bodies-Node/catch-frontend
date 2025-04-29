@@ -1,56 +1,60 @@
 <div class="mat-toolbar-wrapper">
-  <div
-    class="cookie-message-wrapper"
-    *ngIf="
-      !(isHappyWithCookie$ | async) as isNotHappyWithCookie;
-      else isHappyWithCookie
-    "
-  >
-    <div class="screen-filter"></div>
-    <div>
-      <span>
-        This site uses third party services that will in general leave cookies.
-        Click to accept
-        <a routerLink="terms">terms</a>
-        .
-      </span>
+  <mat-toolbar color="primary">
+    <!-- Left: GitHub -->
+    <div class="toolbar-cell github-cell">
+      <a
+        href="https://github.com/Small-Bodies-Node/catch-apis"
+        target="_blank"
+        aria-label="GitHub Repository"
+      >
+        <img
+          src="https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/github.svg"
+          alt="GitHub"
+          width="32"
+          height="32"
+        />
+        <span class="icon-descriptor">Github</span>
+      </a>
     </div>
-    <div>
-      <button mat-raised-button (click)="acceptTerms()">I Accept</button>
-    </div>
-  </div>
 
-  <ng-template #isHappyWithCookie>
-    <mat-toolbar color="primary">
-      <div class="toolbar-cell">
-        <a
-          href="https://github.com/Small-Bodies-Node/catch-apis"
-          target="_blank"
-        >
-          <div class="icon-wrapper start">
-            <!-- <mat-icon style="transform: translate(0px, -5px)"> -->
-            <!-- <fa-icon [icon]="['fab', 'github']"></fa-icon> -->
-            <!-- github-circle -->
-            <!-- </mat-icon> -->
-            <span class="icon-descriptor">
-              {{ "Github" }}
-            </span>
-          </div>
-        </a>
-      </div>
-      <div class="toolbar-cell">
-        <div class="text-wrapper" routerLink>
-          <div class="first">{{ " Copyright © " + timeStamp + " " }}</div>
-          <div class="second">{{ " Small Bodies Node " }}</div>
-        </div>
-      </div>
-      <div class="toolbar-cell">
-        <a href="https://pds-smallbodies.astro.umd.edu/" target="_blank">
-          <div class="icon-wrapper start">
-            <img [src]="sbnLogo" alt="" />
-          </div>
-        </a>
-      </div>
-    </mat-toolbar>
-  </ng-template>
+    <!-- Center: Text -->
+    <div class="toolbar-cell center-cell">
+      <div class="footer-text-primary">Small Bodies Node</div>
+      <div class="footer-text-secondary">Copyright {{ timeStamp }}</div>
+    </div>
+
+    <!-- Right: SBN logo -->
+    <div class="toolbar-cell">
+      <img
+        src="assets/images/pngs/sbn_logo_v1.png"
+        alt="SBN Logo"
+        class="sbn-logo"
+        width="60"
+        height="60"
+      />
+    </div>
+  </mat-toolbar>
+
+  <!-- Cookie/Terms Snackbar -->
+  @if (!(isHappyWithCookie$ | async)) {
+  <div class="cookie-snackbar" style="z-index: 2000">
+    <span>
+      This site uses cookies and third-party services. See our
+      <a
+        href="/terms"
+        target="_blank"
+        style="color: #fff; text-decoration: underline"
+        >terms</a
+      >.
+    </span>
+    <button
+      mat-button
+      color="accent"
+      class="accept-btn"
+      (click)="acceptTerms()"
+    >
+      I&nbsp;Accept
+    </button>
+  </div>
+  }
 </div>

@@ -28,9 +28,9 @@ export class FooterComponent {
 
   constructor(private store$: Store<IAppState>) {
     // witch off for now
-    this.store$.dispatch(
-      SiteSettingsAction_SetIsHappyWithCookies({ isHappyWithCookies: true })
-    );
+    // this.store$.dispatch(
+    //   SiteSettingsAction_SetIsHappyWithCookies({ isHappyWithCookies: true })
+    // );
 
     this.isHappyWithCookie$ = this.store$.select(
       selectSiteSettingsIsHappyWithCookies
@@ -42,6 +42,7 @@ export class FooterComponent {
   }
 
   acceptTerms() {
+    console.log('Accepting terms');
     this.store$.dispatch(
       SiteSettingsAction_SetIsHappyWithCookies({ isHappyWithCookies: true })
     );

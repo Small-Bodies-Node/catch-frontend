@@ -1,4 +1,5 @@
 $size: 40px;
+$footer-vertical-gap: 2px;
 
 :host {
   width: 100%;
@@ -44,6 +45,7 @@ $size: 40px;
         left: 0px;
         right: 0px;
         background-color: rgba(0, 0, 0, 0.6);
+        pointer-events: none;
         // opacity: 0;
         // transition: opacity 1s ease-in;
       }
@@ -55,6 +57,34 @@ $size: 40px;
         100% {
           opacity: 1;
         }
+      }
+    }
+
+    .cookie-snackbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #323232;
+      color: #fff;
+      padding: 20px 28px;
+      border-radius: 4px;
+      min-width: 320px;
+      max-width: 600px;
+      margin: 0 auto;
+      position: fixed;
+      left: 50%;
+      bottom: 32px;
+      transform: translateX(-50%);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+      z-index: 2000;
+      a {
+        color: #fff;
+        text-decoration: underline;
+      }
+      .accept-btn {
+        white-space: nowrap;
+        font-weight: bold;
+        margin-left: 24px;
       }
     }
 
@@ -109,6 +139,63 @@ $size: 40px;
               height: 1.5 * $size;
             }
           }
+        }
+
+        &.github-cell {
+          a {
+            display: flex;
+            // flex-direction: column;
+            // flex-grow: 0.5;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            color: white;
+            // background-color: red;
+
+            // Ensure GitHub icon appears white
+            img {
+              filter: invert(100%);
+              margin-right: 5px;
+            }
+
+            .icon-descriptor {
+              margin-top: 4px;
+              font-size: 12px;
+            }
+          }
+          // Hide the text descriptor on small screens
+          @media (max-width: 650px) {
+            .icon-descriptor {
+              display: none;
+            }
+          }
+        }
+
+        &.center-cell {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+
+          // Parameterized vertical gap between primary and secondary footer text
+          gap: $footer-vertical-gap;
+
+          .footer-text-primary {
+            font-weight: bold;
+            font-size: 14px;
+            margin: 0;
+            line-height: 1;
+          }
+          .footer-text-secondary {
+            font-size: 12px;
+            margin: 0;
+            line-height: 1;
+          }
+        }
+
+        .sbn-logo {
+          width: 60px;
+          height: 60px;
+          padding: 13px 0;
         }
 
         .text-wrapper {
