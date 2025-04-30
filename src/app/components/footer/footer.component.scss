@@ -269,14 +269,14 @@ $footer-vertical-gap: 2px;
         &.github-cell {
           a {
             justify-content: flex-start !important; // Align content to the left
-            // padding-left: 15px; // Add some padding from the edge
+            padding-left: 15px; // Add some padding from the edge
           }
         }
 
         &.logo-cell {
           a {
             justify-content: flex-end !important; // Align content to the right
-            // padding-right: 15px; // Add some padding from the edge
+            padding-right: 15px; // Add some padding from the edge
           }
         }
       }
