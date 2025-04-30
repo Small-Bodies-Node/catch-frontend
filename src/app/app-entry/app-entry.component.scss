@@ -101,3 +101,10 @@ mat-sidenav-content {
     transform: translateY(-25px);
   }
 }
+
+// Media query for small screens to adjust sidenav width
+@media (max-width: 600px) {
+  mat-sidenav {
+    // width: 50vw; // Make sidenav narrower, leaving 30vw space on the right
+  }
+}

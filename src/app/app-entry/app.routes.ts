@@ -14,7 +14,7 @@ const pageLinks = [
   'about',
   'apis',
   'contact',
-  'settings',
+  // 'settings',
   'terms',
   'data',
 ] as const;
@@ -61,12 +61,12 @@ export const routes: Routes | ILinkedRoute[] = [
     pathMatch: 'full',
     data: { preload: true }, // Mark this route for pre-rendering
   },
-  {
-    path: 'settings',
-    component: SettingsPageComponent,
-    pathMatch: 'full',
-    data: { preload: true }, // Mark this route for pre-rendering
-  },
+  // {
+  //   path: 'settings',
+  //   component: SettingsPageComponent,
+  //   pathMatch: 'full',
+  //   data: { preload: true }, // Mark this route for pre-rendering
+  // },
   {
     path: 'terms',
     component: TermsPageComponent,
