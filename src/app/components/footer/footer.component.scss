@@ -178,7 +178,8 @@ $footer-vertical-gap: 2px;
           // Styles for the cell itself (inherited from .toolbar-cell)
           // Ensure the anchor tag fills the cell if needed, but flex: 1 is already on toolbar-cell > a
 
-          a { // Apply flex direction to the anchor tag now
+          a {
+            // Apply flex direction to the anchor tag now
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -254,6 +255,28 @@ $footer-vertical-gap: 2px;
                 justify-content: flex-start;
               }
             }
+          }
+        }
+      }
+    }
+  }
+
+  // Media query for small screens
+  @media (max-width: 650px) {
+    // Use !important to force override highly specific base styles
+    mat-toolbar {
+      .toolbar-cell {
+        &.github-cell {
+          a {
+            justify-content: flex-start !important; // Align content to the left
+            // padding-left: 15px; // Add some padding from the edge
+          }
+        }
+
+        &.logo-cell {
+          a {
+            justify-content: flex-end !important; // Align content to the right
+            // padding-right: 15px; // Add some padding from the edge
           }
         }
       }
