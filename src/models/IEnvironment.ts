@@ -10,5 +10,5 @@ export interface IEnvironment {
   };
 
   //
-  serverApiBaseUrl: '/';
+  serverApiBaseUrl: string;
 }
