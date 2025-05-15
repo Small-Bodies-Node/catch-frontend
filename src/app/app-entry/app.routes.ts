@@ -7,6 +7,7 @@ import { ContactPageComponent } from '../components/contact-page/contact-page.co
 import { SettingsPageComponent } from '../components/settings-page/settings-page.component';
 import { TermsPageComponent } from '../components/terms-page/terms-page.component';
 import { ComponentType } from '@angular/cdk/portal';
+import { DashboardPageComponent } from '../components/dashboard-page/dashboard-page.component';
 
 const pageLinks = [
   '',
@@ -14,7 +15,7 @@ const pageLinks = [
   'about',
   'apis',
   'contact',
-  // 'settings',
+  'dashboard',
   'terms',
   'data',
 ] as const;
@@ -27,7 +28,7 @@ interface ILinkedRoute {
   pathMatch?: 'full';
   redirectTo?: string;
   loadChildren?: () => Promise<any>;
-  data?: { preload: true };
+  data?: { preload: true | false };
 }
 
 export const routes: Routes | ILinkedRoute[] = [
@@ -61,12 +62,12 @@ export const routes: Routes | ILinkedRoute[] = [
     pathMatch: 'full',
     data: { preload: true }, // Mark this route for pre-rendering
   },
-  // {
-  //   path: 'settings',
-  //   component: SettingsPageComponent,
-  //   pathMatch: 'full',
-  //   data: { preload: true }, // Mark this route for pre-rendering
-  // },
+  {
+    path: 'dashboard',
+    component: DashboardPageComponent,
+    pathMatch: 'full',
+    data: { preload: false }, // Mark this route for NOT pre-rendering
+  },
   {
     path: 'terms',
     component: TermsPageComponent,
@@ -79,6 +80,7 @@ export const routes: Routes | ILinkedRoute[] = [
       import('../data-display/data-display.module').then(
         (m) => m.DataDisplayModule
       ),
+    data: { preload: false }, // Mark this route for NOT pre-rendering
   },
   {
     path: '**',

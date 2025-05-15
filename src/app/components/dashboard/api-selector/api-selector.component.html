@@ -1,0 +1,10 @@
+<div class="api-selector-container">
+  <mat-form-field appearance="fill" class="api-select">
+    <mat-label>API</mat-label>
+    <mat-select [value]="apiUrl" (selectionChange)="onApiChange($event)">
+      <mat-option *ngFor="let option of apiOptions" [value]="option.value">
+        {{ option.label }}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+</div>

@@ -1,0 +1,30 @@
+<div class="observations-container">
+  <h2 class="mat-headline-5">Observations</h2>
+
+  <div *ngIf="isLoading" class="loading-container">
+    <mat-spinner diameter="40"></mat-spinner>
+  </div>
+
+  <div *ngIf="isError" class="error-container">
+    <mat-card appearance="outlined" class="error-card">
+      <mat-card-content>
+        <p>Error: {{ errorMessage }}</p>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <div *ngIf="!isLoading && !isError && observationsData" class="observations-content">
+    <!-- Customize based on the actual structure of observationsData -->
+    <mat-card appearance="outlined" class="observations-card">
+      <mat-card-content>
+        <div *ngIf="observationsData.sources" class="sources-list">
+          <div *ngFor="let source of observationsData.sources" class="source-item">
+            <h3 class="mat-subtitle-1">{{ source.name || 'Unknown source' }}</h3>
+            <p>Count: {{ source.count || 0 }}</p>
+            <!-- Add more specific source details based on actual data structure -->
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

@@ -1,0 +1,43 @@
+<div class="job-queue-container">
+  <h2 class="mat-headline-5">Job queue</h2>
+
+  <div *ngIf="isLoading" class="loading-container">
+    <mat-spinner diameter="40"></mat-spinner>
+  </div>
+
+  <div *ngIf="isError" class="error-container">
+    <mat-card appearance="outlined" class="error-card">
+      <mat-card-content>
+        <p>Error: {{ errorMessage }}</p>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <div *ngIf="!isLoading && !isError && queueData">
+    <mat-card *ngIf="queueData.full" appearance="outlined" class="warning-card">
+      <mat-card-content>
+        <p>Job queue is full!</p>
+      </mat-card-content>
+    </mat-card>
+
+    <div class="grid-container">
+      <div class="queue-info">
+        <div class="queue-chart">
+          <!-- Angular equivalent of Pie chart would go here -->
+          <div class="queue-stats">
+            <p class="mat-body-1">{{ queueData.jobs?.length || 0 }}/{{ queueData.depth || 0 }} jobs in the queue</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="job-list">
+        <mat-list>
+          <mat-list-item *ngFor="let job of queueData.jobs">
+            <div matListItemTitle>{{ job.prefix }}: {{ job.status }}</div>
+            <div matListItemLine>Enqueued at {{ job.enqueued_at }}</div>
+          </mat-list-item>
+        </mat-list>
+      </div>
+    </div>
+  </div>
+</div>
