@@ -42,4 +42,16 @@
     </div>
   </div>
   }
+
+  <!-- WCS Derived Star Positions -->
+  @for (coord of pixelCoordinatesWCS; track coord.id) {
+  <div
+    class="ra-dec-div-wcs"
+    [style.left.px]="coord.x - (wcsDivWidth / 2)"
+    [style.top.px]="coord.y - (wcsDivHeight / 2)"
+    [style.width.px]="wcsDivWidth"
+    [style.height.px]="wcsDivHeight"
+    [title]="'WCS - RA: ' + coord.ra.toFixed(5) + ', Dec: ' + coord.dec.toFixed(5) + ' | Pixel: (' + coord.x.toFixed(1) + ', ' + coord.y.toFixed(1) + ')'">
+  </div>
+  }
 </div>

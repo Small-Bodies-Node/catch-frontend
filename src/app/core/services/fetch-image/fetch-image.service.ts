@@ -75,7 +75,7 @@ export class ImageFetchService {
       url.includes('neat');
 
     if (!isQueueNeeded) {
-      const objectUrl = await fetch(url)
+      const objectUrl = await fetch(`${url}&align=true`)
         .then((response) => response.blob())
         .then((blob) => URL.createObjectURL(blob))
         .catch((_) => {

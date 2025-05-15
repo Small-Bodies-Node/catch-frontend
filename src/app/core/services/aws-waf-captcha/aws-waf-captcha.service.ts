@@ -50,7 +50,7 @@ export class AwsWafCaptchaService {
         } else {
           console.error('AWS WAF Captcha failed to load after retries');
           this.isCaptchaLoadedSubject.next(false);
-          
+
           // Fall back to debug implementation
           this.forceLocalDebug = true;
           this.setupDebugCaptcha();

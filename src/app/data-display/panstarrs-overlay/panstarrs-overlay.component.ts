@@ -1,7 +1,7 @@
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { combineLatest, Subscription } from 'rxjs';
-import { distinctUntilChanged, map } from 'rxjs/operators';
+import { combineLatest, Subscription, debounceTime, map, catchError, of, forkJoin } from 'rxjs';
+import { distinctUntilChanged } from 'rxjs/operators';
 import { IAppState } from '../../ngrx/reducers';
 import {
   selectApiDataStatus,
@@ -13,6 +13,7 @@ import { IApiFixum } from '../../../models/IApiFixum';
 import { convertToDecimal } from '../../../utils/convertToDecimal';
 import { IPanstarrsApiResponse } from '../../../models/IPanstarrsApiResponse';
 import { distToPanstarrsCenter } from '../../../utils/distToPanstarrsCenter';
+import { ImageWcsService } from '../../core/services/image-wcs/image-wcs.service';
 
 @Component({
   selector: 'app-panstarrs-overlay',
@@ -20,20 +21,30 @@ import { distToPanstarrsCenter } from '../../../utils/distToPanstarrsCenter';
   styleUrls: ['./panstarrs-overlay.component.scss'],
   standalone: false,
 })
-export class PanstarrsOverlayComponent implements OnInit {
+export class PanstarrsOverlayComponent implements OnInit, OnDestroy {
   @ViewChild('myContainer') myDiv!: ElementRef;
 
   apiSelectedDatum?: IApiMovum | IApiFixum;
   ra: number | string = 0;
   dec: number | string = 0;
   subscriptions = new Subscription();
-  raDecs: { ra: number; dec: number; raErr: number; decErr: number }[] = [];
+  raDecs: { id: number; ra: number; dec: number; raErr: number; decErr: number; rMeanPSFMag: number }[] = [];
   isPanstarrsDataFound = false;
+
+  // Properties for WCS-derived pixel coordinates
+  pixelCoordinatesWCS: { x: number; y: number; id: number; ra: number; dec: number }[] = [];
+  wcsDivWidth = 6;
+  wcsDivHeight = 6;
+
+  private wcsPixelCoordSubscription: Subscription = new Subscription(); // For managing WCS calculation subscription
 
   constructor(
     private store$: Store<IAppState>,
-    private pansstarrsApiService: PanstarrsApiService
+    private pansstarrsApiService: PanstarrsApiService,
+    private imageWcsService: ImageWcsService
   ) {
+    this.subscriptions.add(this.wcsPixelCoordSubscription); // Add to main subscriptions for cleanup
+
     this.subscriptions.add(
       combineLatest([
         this.store$.select(selectApiSelectedDatum),
@@ -46,6 +57,9 @@ export class PanstarrsOverlayComponent implements OnInit {
           if (!apiDataStatus.search) return;
 
           this.apiSelectedDatum = apiSelectedDatum;
+
+          // I need to use this URL to get the WCS information
+          const url = apiSelectedDatum.preview_url;
 
           this.ra =
             'ra' in this.apiSelectedDatum
@@ -79,6 +93,50 @@ export class PanstarrsOverlayComponent implements OnInit {
                 decErr: datum.decMeanErr,
                 rMeanPSFMag: datum.rMeanPSFMag,
               }));
+
+              // ---- Add WCS Pixel Coordinate Calculation ----
+              this.wcsPixelCoordSubscription.unsubscribe(); // Cancel any previous ongoing WCS calculations
+              this.wcsPixelCoordSubscription = new Subscription(); // Re-initialize for new additions
+
+              const url = this.apiSelectedDatum?.preview_url;
+
+              if (!url || !this.raDecs || this.raDecs.length === 0) {
+                this.pixelCoordinatesWCS = [];
+                // Potentially return or handle if other logic below depends on this check
+              } else {
+                const coordObservables = this.raDecs.map(raDecItem =>
+                  this.imageWcsService.getPixelCoordinatesFromUrl(url, raDecItem.ra, raDecItem.dec).pipe(
+                    map(([x, y]) => ({
+                      x,
+                      y,
+                      id: raDecItem.id,
+                      ra: raDecItem.ra,
+                      dec: raDecItem.dec
+                    })),
+                    catchError(error => {
+                      console.warn(`WCS: Failed to get pixel coords for RA:${raDecItem.ra}, Dec:${raDecItem.dec}. Error: ${error.message || error}`);
+                      return of(null); // Return null for this item on error, will be filtered later
+                    })
+                  )
+                );
+
+                if (coordObservables.length > 0) {
+                  this.wcsPixelCoordSubscription.add( // Add the forkJoin subscription to our manager
+                    forkJoin(coordObservables).subscribe({
+                      next: (results) => {
+                        this.pixelCoordinatesWCS = results.filter(r => r !== null) as { x: number, y: number, id: number, ra: number, dec: number }[];
+                      },
+                      error: (err) => {
+                        console.error("WCS: Critical error in forkJoin for pixel coordinates:", err);
+                        this.pixelCoordinatesWCS = []; // Clear on major error
+                      }
+                    })
+                  );
+                } else {
+                  this.pixelCoordinatesWCS = []; // No observables to process
+                }
+              }
+              // ---- End WCS Pixel Coordinate Calculation ----
             });
         })
     );

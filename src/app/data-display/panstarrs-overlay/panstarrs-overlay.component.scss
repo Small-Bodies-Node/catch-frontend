@@ -44,3 +44,12 @@
     }
   }
 }
+
+.ra-dec-div-wcs {
+  position: absolute;
+  border: 1px dotted #00FFFF; // Cyan dotted border for distinction
+  background-color: rgba(0, 255, 255, 0.15); // Light cyan background
+  border-radius: 50%; // Circular markers
+  box-sizing: border-box;
+  pointer-events: none; // So they don't interfere with underlying image interactions
+}
