@@ -50,7 +50,10 @@
           "configurations": {
             "local": {
               "outputHashing": "none",
-              "outputPath": "dist/catch-frontend-ng19-local"
+              "outputPath": "dist/catch-frontend-ng19-local",
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true
             },
             "prod": {
               "budgets": [

@@ -7,7 +7,8 @@ export const environment: IEnvironment = {
   //
   envName: 'local-default',
   production: false,
-  apiData: 'catch-dev',
+  // apiData: 'catch-dev',
+  apiData: 'catch-prod',
   hmr: true,
   // emailerEndpoint: '',
   awsWafConfig: {

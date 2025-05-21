@@ -133,8 +133,8 @@ export class TableThumbnailComponent implements OnChanges {
 
   getStyles() {
     return {
-      width: this.width,
-      height: this.height,
+      width: !false ? this.width : 'auto',
+      height: !false ? this.height : 'auto',
       transform: this.getSurveyScaleTransform(),
     };
   }
