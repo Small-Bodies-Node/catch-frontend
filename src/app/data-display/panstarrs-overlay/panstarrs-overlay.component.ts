@@ -1,6 +1,21 @@
-import { Component, ElementRef, OnInit, OnDestroy, ViewChild } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  OnInit,
+  OnDestroy,
+  ViewChild,
+  AfterViewInit,
+} from '@angular/core';
 import { Store } from '@ngrx/store';
-import { combineLatest, Subscription, debounceTime, map, catchError, of, forkJoin } from 'rxjs';
+import {
+  combineLatest,
+  Subscription,
+  debounceTime,
+  map,
+  catchError,
+  of,
+  forkJoin,
+} from 'rxjs';
 import { distinctUntilChanged } from 'rxjs/operators';
 import { IAppState } from '../../ngrx/reducers';
 import {
@@ -11,7 +26,6 @@ import { IApiMovum } from '../../../models/IApiMovum';
 import { PanstarrsApiService } from '../../core/services/panstarrs-api/panstarrs-api';
 import { IApiFixum } from '../../../models/IApiFixum';
 import { convertToDecimal } from '../../../utils/convertToDecimal';
-import { IPanstarrsApiResponse } from '../../../models/IPanstarrsApiResponse';
 import { distToPanstarrsCenter } from '../../../utils/distToPanstarrsCenter';
 import { ImageWcsService } from '../../core/services/image-wcs/image-wcs.service';
 
@@ -21,22 +35,38 @@ import { ImageWcsService } from '../../core/services/image-wcs/image-wcs.service
   styleUrls: ['./panstarrs-overlay.component.scss'],
   standalone: false,
 })
-export class PanstarrsOverlayComponent implements OnInit, OnDestroy {
+export class PanstarrsOverlayComponent
+  implements OnInit, OnDestroy, AfterViewInit
+{
   @ViewChild('myContainer') myDiv!: ElementRef;
 
   apiSelectedDatum?: IApiMovum | IApiFixum;
   ra: number | string = 0;
   dec: number | string = 0;
   subscriptions = new Subscription();
-  raDecs: { id: number; ra: number; dec: number; raErr: number; decErr: number; rMeanPSFMag: number }[] = [];
+  raDecs: {
+    id: number;
+    ra: number;
+    dec: number;
+    raErr: number;
+    decErr: number;
+    rMeanPSFMag: number;
+  }[] = [];
   isPanstarrsDataFound = false;
 
   // Properties for WCS-derived pixel coordinates
-  pixelCoordinatesWCS: { x: number; y: number; id: number; ra: number; dec: number }[] = [];
+  pixelCoordinatesWCS: {
+    x: number;
+    y: number;
+    id: number;
+    ra: number;
+    dec: number;
+  }[] = [];
   wcsDivWidth = 6;
   wcsDivHeight = 6;
 
   private wcsPixelCoordSubscription: Subscription = new Subscription(); // For managing WCS calculation subscription
+  private resizeObserver!: ResizeObserver;
 
   constructor(
     private store$: Store<IAppState>,
@@ -104,32 +134,56 @@ export class PanstarrsOverlayComponent implements OnInit, OnDestroy {
                 this.pixelCoordinatesWCS = [];
                 // Potentially return or handle if other logic below depends on this check
               } else {
-                const coordObservables = this.raDecs.map(raDecItem =>
-                  this.imageWcsService.getPixelCoordinatesFromUrl(url, raDecItem.ra, raDecItem.dec).pipe(
-                    map(([x, y]) => ({
-                      x,
-                      y,
-                      id: raDecItem.id,
-                      ra: raDecItem.ra,
-                      dec: raDecItem.dec
-                    })),
-                    catchError(error => {
-                      console.warn(`WCS: Failed to get pixel coords for RA:${raDecItem.ra}, Dec:${raDecItem.dec}. Error: ${error.message || error}`);
-                      return of(null); // Return null for this item on error, will be filtered later
-                    })
-                  )
+                const coordObservables = this.raDecs.map((raDecItem) =>
+                  this.imageWcsService
+                    .getPixelCoordinatesFromUrl(
+                      url,
+                      raDecItem.ra,
+                      raDecItem.dec
+                    )
+                    .pipe(
+                      map(([x, y]) => ({
+                        x,
+                        y,
+                        id: raDecItem.id,
+                        ra: raDecItem.ra,
+                        dec: raDecItem.dec,
+                      })),
+                      catchError((error) => {
+                        console.warn(
+                          `WCS: Failed to get pixel coords for RA:${
+                            raDecItem.ra
+                          }, Dec:${raDecItem.dec}. Error: ${
+                            error.message || error
+                          }`
+                        );
+                        return of(null); // Return null for this item on error, will be filtered later
+                      })
+                    )
                 );
 
                 if (coordObservables.length > 0) {
-                  this.wcsPixelCoordSubscription.add( // Add the forkJoin subscription to our manager
+                  this.wcsPixelCoordSubscription.add(
+                    // Add the forkJoin subscription to our manager
                     forkJoin(coordObservables).subscribe({
                       next: (results) => {
-                        this.pixelCoordinatesWCS = results.filter(r => r !== null) as { x: number, y: number, id: number, ra: number, dec: number }[];
+                        this.pixelCoordinatesWCS = results.filter(
+                          (r) => r !== null
+                        ) as {
+                          x: number;
+                          y: number;
+                          id: number;
+                          ra: number;
+                          dec: number;
+                        }[];
                       },
                       error: (err) => {
-                        console.error("WCS: Critical error in forkJoin for pixel coordinates:", err);
+                        console.error(
+                          'WCS: Critical error in forkJoin for pixel coordinates:',
+                          err
+                        );
                         this.pixelCoordinatesWCS = []; // Clear on major error
-                      }
+                      },
                     })
                   );
                 } else {
@@ -142,7 +196,26 @@ export class PanstarrsOverlayComponent implements OnInit, OnDestroy {
     );
   }
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    // Instantiate ResizeObserver here
+    this.resizeObserver = new ResizeObserver(() => {
+      if (this.myDiv && this.myDiv.nativeElement) {
+        this.calculateImageRenderDimensions();
+      }
+    });
+    // DO NOT call .observe() here
+  }
+
+  ngAfterViewInit(): void {
+    // Start observing after the view is initialized and myDiv is available
+    if (this.myDiv && this.myDiv.nativeElement) {
+      this.resizeObserver.observe(this.myDiv.nativeElement);
+    } else {
+      console.warn(
+        'PanstarrsOverlayComponent: myDiv not available in ngAfterViewInit for ResizeObserver.'
+      );
+    }
+  }
 
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();
@@ -232,5 +305,27 @@ export class PanstarrsOverlayComponent implements OnInit, OnDestroy {
     // Return 0.1 if raErr is more than 0.007;
     // Return 1.0 if raErr is less than 0.003;
     return Math.max(0.1, 1.0 - (raErr - 0.003) / 0.004);
+  }
+
+  private calculateImageRenderDimensions(): void {
+    if (!this.myDiv || !this.myDiv.nativeElement) {
+      return;
+    }
+    if (
+      this.myDiv.nativeElement.offsetWidth <= 0 ||
+      this.myDiv.nativeElement.offsetHeight <= 0
+    ) {
+      return;
+    }
+
+    const containerWidth = this.myDiv.nativeElement.offsetWidth;
+    const containerHeight = this.myDiv.nativeElement.offsetHeight;
+
+    // Add guard for zero container dimensions
+    if (containerWidth <= 0 || containerHeight <= 0) {
+      return;
+    }
+
+    // ... rest of the method remains the same ...
   }
 }
