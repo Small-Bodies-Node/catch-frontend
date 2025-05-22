@@ -40,6 +40,7 @@ export class PanstarrsOverlayComponent
   implements OnInit, OnDestroy, AfterViewInit
 {
   @ViewChild('myContainer') myDiv!: ElementRef;
+  @ViewChild('overlayImage') overlayImageRef!: ElementRef<HTMLImageElement>;
 
   imageSrc?: string;
   readonly placeholderImage: string = 'assets/images/placeholder.png';
@@ -69,6 +70,17 @@ export class PanstarrsOverlayComponent
   wcsDivWidth = 6;
   wcsDivHeight = 6;
 
+  // ---- Image rendering properties ----
+  nativeImageWidth = 1; // Default to 1 to prevent division by zero initially
+  nativeImageHeight = 1; // Default to 1
+  renderedImageWidth = 0;
+  renderedImageHeight = 0;
+  imageOffsetX = 0;
+  imageOffsetY = 0;
+  imageScaleX = 1;
+  imageScaleY = 1;
+  // ---- End Image rendering properties ----
+
   private wcsPixelCoordSubscription: Subscription = new Subscription(); // For managing WCS calculation subscription
   private resizeObserver!: ResizeObserver;
 
@@ -95,6 +107,10 @@ export class PanstarrsOverlayComponent
           this.apiSelectedDatum = apiSelectedDatum;
 
           if (apiSelectedDatum.preview_url) {
+            console.log(
+              'PanstarrsOverlayComponent: preview_url: ',
+              apiSelectedDatum.preview_url
+            );
             this.imageFetchService
               .fetchImage(apiSelectedDatum.preview_url, {
                 isPriority: true,
@@ -102,7 +118,8 @@ export class PanstarrsOverlayComponent
               })
               .then((objUrl) => {
                 this.imageSrc = objUrl || this.placeholderImage;
-                this.changeDetector.detectChanges();
+                // onImageLoad will be called by the <img> tag, which then calls calculateImageRenderDimensions
+                this.changeDetector.detectChanges(); // Ensure view updates with new imageSrc
               });
           }
 
@@ -155,7 +172,7 @@ export class PanstarrsOverlayComponent
                 const coordObservables = this.raDecs.map((raDecItem) =>
                   this.imageWcsService
                     .getPixelCoordinatesFromUrl(
-                      url,
+                      url + '&align=true',
                       raDecItem.ra,
                       raDecItem.dec
                     )
@@ -217,8 +234,15 @@ export class PanstarrsOverlayComponent
   ngOnInit(): void {
     // Instantiate ResizeObserver here
     this.resizeObserver = new ResizeObserver(() => {
-      if (this.myDiv && this.myDiv.nativeElement) {
+      if (
+        this.myDiv &&
+        this.myDiv.nativeElement &&
+        this.nativeImageWidth > 0 &&
+        this.nativeImageHeight > 0
+      ) {
+        // Check > 0
         this.calculateImageRenderDimensions();
+        this.changeDetector.detectChanges(); // Trigger change detection after resize
       }
     });
     // DO NOT call .observe() here
@@ -237,6 +261,30 @@ export class PanstarrsOverlayComponent
 
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect(); // Disconnect observer to prevent memory leaks
+    }
+  }
+
+  // Method called when the image has loaded
+  onImageLoad(): void {
+    if (this.overlayImageRef && this.overlayImageRef.nativeElement) {
+      this.nativeImageWidth =
+        this.overlayImageRef.nativeElement.naturalWidth || 1;
+      this.nativeImageHeight =
+        this.overlayImageRef.nativeElement.naturalHeight || 1;
+      this.calculateImageRenderDimensions();
+      this.changeDetector.detectChanges(); // Trigger change detection after image load
+    } else {
+      console.warn(
+        'PanstarrsOverlayComponent: overlayImageRef not available in onImageLoad.'
+      );
+      // Fallback if image ref is not yet available (should not happen with proper HTML binding)
+      this.nativeImageWidth = 1;
+      this.nativeImageHeight = 1;
+      this.calculateImageRenderDimensions();
+      this.changeDetector.detectChanges();
+    }
   }
 
   // Convert degrees to radians
@@ -327,23 +375,59 @@ export class PanstarrsOverlayComponent
 
   private calculateImageRenderDimensions(): void {
     if (!this.myDiv || !this.myDiv.nativeElement) {
-      return;
-    }
-    if (
-      this.myDiv.nativeElement.offsetWidth <= 0 ||
-      this.myDiv.nativeElement.offsetHeight <= 0
-    ) {
+      console.warn(
+        'calculateImageRenderDimensions: myDiv ElementRef not ready.'
+      );
       return;
     }
 
     const containerWidth = this.myDiv.nativeElement.offsetWidth;
     const containerHeight = this.myDiv.nativeElement.offsetHeight;
 
-    // Add guard for zero container dimensions
     if (containerWidth <= 0 || containerHeight <= 0) {
+      // console.warn('calculateImageRenderDimensions: Container has zero or negative dimensions.');
+      this.renderedImageWidth = 0;
+      this.renderedImageHeight = 0;
+      this.imageOffsetX = 0;
+      this.imageOffsetY = 0;
+      this.imageScaleX = 1;
+      this.imageScaleY = 1;
       return;
     }
 
-    // ... rest of the method remains the same ...
+    if (this.nativeImageWidth <= 0 || this.nativeImageHeight <= 0) {
+      // console.warn('calculateImageRenderDimensions: Native image dimensions are zero, negative or not yet loaded.');
+      // Default to filling container if native dimensions are broken, though this might distort
+      // Or, more safely, render nothing or a placeholder indication
+      this.renderedImageWidth = 0; // Or containerWidth if you want to fill
+      this.renderedImageHeight = 0; // Or containerHeight
+      this.imageOffsetX = 0;
+      this.imageOffsetY = 0;
+      this.imageScaleX = 1;
+      this.imageScaleY = 1;
+      return;
+    }
+
+    // Calculate dimensions to fit height and maintain aspect ratio
+    let newRenderedHeight = containerHeight;
+    const imageAspectRatio = this.nativeImageWidth / this.nativeImageHeight;
+    let newRenderedWidth = newRenderedHeight * imageAspectRatio;
+
+    // If calculated width is greater than container width, then fit by width instead
+    if (newRenderedWidth > containerWidth) {
+      newRenderedWidth = containerWidth;
+      newRenderedHeight = newRenderedWidth / imageAspectRatio;
+    }
+
+    this.renderedImageWidth = newRenderedWidth;
+    this.renderedImageHeight = newRenderedHeight;
+
+    // Calculate offsets for centering
+    this.imageOffsetX = (containerWidth - this.renderedImageWidth) / 2;
+    this.imageOffsetY = (containerHeight - this.renderedImageHeight) / 2; // Center vertically too
+
+    // Calculate scaling factors
+    this.imageScaleX = this.renderedImageWidth / this.nativeImageWidth;
+    this.imageScaleY = this.renderedImageHeight / this.nativeImageHeight;
   }
 }

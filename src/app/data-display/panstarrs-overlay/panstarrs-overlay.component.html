@@ -30,7 +30,15 @@
       "
     ></div>
     @if(imageSrc){
-    <img [src]="imageSrc" alt="Loaded Image" />
+    <img #overlayImage 
+         [src]="imageSrc"
+         (load)="onImageLoad()"
+         alt="Astronomical Image"
+         [style.position]="'absolute'"
+         [style.width.px]="renderedImageWidth"
+         [style.height.px]="renderedImageHeight"
+         [style.left.px]="imageOffsetX"
+         [style.top.px]="imageOffsetY" />
     }
   </div>
 
@@ -54,8 +62,8 @@
   @for (coord of pixelCoordinatesWCS; track coord.id) {
   <div
     class="ra-dec-div-wcs"
-    [style.left.px]="coord.x - wcsDivWidth / 2"
-    [style.top.px]="coord.y - wcsDivHeight / 2"
+    [style.left.px]="(coord.x * imageScaleX) + imageOffsetX - (wcsDivWidth / 2)"
+    [style.top.px]="(coord.y * imageScaleY) + imageOffsetY - (wcsDivHeight / 2)"
     [style.width.px]="wcsDivWidth"
     [style.height.px]="wcsDivHeight"
     [title]="
