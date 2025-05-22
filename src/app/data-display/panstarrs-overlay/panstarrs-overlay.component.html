@@ -2,44 +2,81 @@
   @if (!isPanstarrsDataFound) {
   <div class="no-data-found">No panstarrs data!</div>
   }
-  <!-- Crosshair: Vertical Line -->
-  <div
-    style="
-      position: absolute;
-      top: 0px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 2px;
-      height: 100%;
-      background-color: green;
-    "
-  ></div>
 
-  <!-- Crosshair: Horizontal Line -->
-  <div
-    style="
-      position: absolute;
-      top: 50%;
-      left: 0px;
-      transform: translateY(-50%);
-      width: 100%;
-      height: 2px;
-      background-color: green;
-    "
-  ></div>
+  <div class="image-wrapper">
+    <!-- Crosshair: Vertical Line -->
+    <div
+      style="
+        position: absolute;
+        top: 0px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 2px;
+        height: 100%;
+        background-color: green;
+      "
+    ></div>
+
+    <!-- Crosshair: Horizontal Line -->
+    <div
+      style="
+        position: absolute;
+        top: 50%;
+        left: 0px;
+        transform: translateY(-50%);
+        width: 100%;
+        height: 2px;
+        background-color: green;
+      "
+    ></div>
+    @if(imageSrc){
+    <img #overlayImage 
+         [src]="imageSrc"
+         (load)="onImageLoad()"
+         alt="Astronomical Image"
+         [style.position]="'absolute'"
+         [style.width.px]="renderedImageWidth"
+         [style.height.px]="renderedImageHeight"
+         [style.left.px]="imageOffsetX"
+         [style.top.px]="imageOffsetY" />
+    }
+  </div>
+
   <!--  -->
   @for (raDec of raDecs; track raDec ) {
   <div
+    class="ra-dec-div"
     [style.left.px]="getDivLeft(raDec.ra)"
     [style.top.px]="getDivTop(raDec.dec)"
     [style.width.px]="getDivWidth(raDec.raErr)"
     [style.height.px]="getDivHeight(raDec.decErr)"
     [style.opacity]="getOpacity(raDec.raErr)"
-    class="ra-dec-div"
   >
     <div class="object-info">
       Panstarrs RA: {{ raDec.ra }}, DEC: {{ raDec.dec }}
     </div>
   </div>
+  }
+
+  <!-- WCS Derived Star Positions -->
+  @for (coord of pixelCoordinatesWCS; track coord.id) {
+  <div
+    class="ra-dec-div-wcs"
+    [style.left.px]="(coord.x * imageScaleX) + imageOffsetX - (wcsDivWidth / 2)"
+    [style.top.px]="(coord.y * imageScaleY) + imageOffsetY - (wcsDivHeight / 2)"
+    [style.width.px]="wcsDivWidth"
+    [style.height.px]="wcsDivHeight"
+    [title]="
+      'WCS - RA: ' +
+      coord.ra.toFixed(5) +
+      ', Dec: ' +
+      coord.dec.toFixed(5) +
+      ' | Pixel: (' +
+      coord.x.toFixed(1) +
+      ', ' +
+      coord.y.toFixed(1) +
+      ')'
+    "
+  ></div>
   }
 </div>

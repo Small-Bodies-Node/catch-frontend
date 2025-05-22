@@ -75,7 +75,7 @@ export class ImageFetchService {
       url.includes('neat');
 
     if (!isQueueNeeded) {
-      const objectUrl = await fetch(url)
+      const objectUrl = await fetch(`${url}&align=true`)
         .then((response) => response.blob())
         .then((blob) => URL.createObjectURL(blob))
         .catch((_) => {
@@ -155,7 +155,7 @@ export class ImageFetchService {
       if (isDebug) {
         colog('>>> Fetch Call Count', this.fetchCallCount, task.label, 'green');
       }
-      const objectUrl = await fetch(task.url)
+      const objectUrl = await fetch(task.url + '&align=true')
         .then((res) => res.blob())
         .then((blob) => URL.createObjectURL(blob))
         .catch((_) => {

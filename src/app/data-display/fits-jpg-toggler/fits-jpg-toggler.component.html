@@ -15,25 +15,8 @@
     ></lib-ngx-js9>
   </div>
   } @else {
-  <div
-    class="table-thumbnail-wrapper"
-    [ngStyle]="{ width: widthPxls + 'px', height: heightPxls + 'px' }"
-  >
-    @if(isPanstarrsOverlay()){
+  <div class="panstarrs-overlay-wrapper">
     <app-panstarrs-overlay></app-panstarrs-overlay>
-    }
-    <!--  -->
-    @if(apiSelectedDatum){
-    <app-table-thumbnail
-      [apiDatum]="apiSelectedDatum"
-      [label]="getLabel()"
-      [width]="widthPxls + 'px'"
-      [height]="heightPxls + 'px'"
-      [diameterPxls]="150"
-      priority="vip"
-      [isReorientated]="isThumbnailReorientated"
-    ></app-table-thumbnail>
-    }
   </div>
 
   }

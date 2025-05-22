@@ -1,12 +1,8 @@
 .panstarrs-overlay-container {
-  z-index: 1000;
   width: 100%;
   height: 100%;
-  position: absolute;
-  top: 0px;
-  bottom: 0px;
-  left: 0px;
-  right: 0px;
+  position: relative;
+  overflow: hidden;
 
   .no-data-found {
     position: absolute;
@@ -42,5 +38,22 @@
     &:hover .object-info {
       display: block;
     }
+  }
+
+  .image-wrapper {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+  }
+
+  .ra-dec-div-wcs {
+    position: absolute;
+    border: 1px dotted #00ffff; // Cyan dotted border for distinction
+    background-color: rgba(0, 255, 255, 0.15); // Light cyan background
+    border-radius: 50%; // Circular markers
+    box-sizing: border-box;
+    pointer-events: none; // So they don't interfere with underlying image interactions
   }
 }

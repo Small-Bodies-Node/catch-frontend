@@ -1,16 +1,10 @@
 import { IEnvironment } from '../models/IEnvironment';
 
-/**
- * Default config is for LOCAL DEVELOPMENT
- */
 export const environment: IEnvironment = {
-  //
-  envName: 'local-default',
-  production: false,
-  // apiData: 'catch-dev',
-  apiData: 'catch-prod',
+  envName: 'stage',
+  production: true,
+  apiData: 'catch-dev',
   hmr: true,
-  // emailerEndpoint: '',
   awsWafConfig: {
     webAclId: '31f331b0-d1d0-482d-96c6-b5a99ec00596',
     endpoint:

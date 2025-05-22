@@ -41,10 +41,4 @@ testem.log
 .DS_Store
 Thumbs.db
 
-# DWD:
 .env
-_deploy_catch-prod
-_deploy_catch-dev
-.git-temp
-test-api.ts
-.windsurfrules.md

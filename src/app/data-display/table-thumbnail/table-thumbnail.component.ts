@@ -84,6 +84,7 @@ export class TableThumbnailComponent implements OnChanges {
    * Some surveys need to be flipped, etc. to have ra and dec increase +ve in consistent dirn
    */
   getSurveyScaleTransform() {
+    return 'scale(1, 1)';
     if (!this.isReorientated) return 'scale(1, 1)';
     if (!this.apiDatum) return 'scale(1, 1)';
     if (this.apiDatum.source === 'neat_palomar_tricam') {
@@ -132,8 +133,8 @@ export class TableThumbnailComponent implements OnChanges {
 
   getStyles() {
     return {
-      width: this.width,
-      height: this.height,
+      width: !false ? this.width : 'auto',
+      height: !false ? this.height : 'auto',
       transform: this.getSurveyScaleTransform(),
     };
   }

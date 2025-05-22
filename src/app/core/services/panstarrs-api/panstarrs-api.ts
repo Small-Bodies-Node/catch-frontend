@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 
 import { IPanstarrsApiResponse } from '../../../../models/IPanstarrsApiResponse';
 import { convertToDecimal } from '../../../../utils/convertToDecimal';
+import { environment } from '../../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class PanstarrsApiService {
@@ -22,7 +23,8 @@ export class PanstarrsApiService {
     const ra = typeof ra0 === 'string' ? convertToDecimal(ra0) : ra0;
     const dec = typeof dec0 === 'string' ? convertToDecimal(dec0) : dec0;
 
-    let url = `/api/panstarrs?ra=${ra}&dec=${dec}&nDetectionsMin=${nDetectionsMin}&radius=0.083&raDecMaxErr=${raDecMaxErr}`;
+    const baseUrl = environment.serverApiBaseUrl;
+    let url = `${baseUrl}/api/panstarrs?ra=${ra}&dec=${dec}&nDetectionsMin=${nDetectionsMin}&radius=0.083&raDecMaxErr=${raDecMaxErr}`;
 
     return this.httpClient.get<IPanstarrsApiResponse>(url, {
       //
