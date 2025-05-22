@@ -5,12 +5,12 @@ import {
   OnDestroy,
   ViewChild,
   AfterViewInit,
+  ChangeDetectorRef,
 } from '@angular/core';
 import { Store } from '@ngrx/store';
 import {
   combineLatest,
   Subscription,
-  debounceTime,
   map,
   catchError,
   of,
@@ -28,6 +28,7 @@ import { IApiFixum } from '../../../models/IApiFixum';
 import { convertToDecimal } from '../../../utils/convertToDecimal';
 import { distToPanstarrsCenter } from '../../../utils/distToPanstarrsCenter';
 import { ImageWcsService } from '../../core/services/image-wcs/image-wcs.service';
+import { ImageFetchService } from '../../core/services/fetch-image/fetch-image.service';
 
 @Component({
   selector: 'app-panstarrs-overlay',
@@ -39,6 +40,9 @@ export class PanstarrsOverlayComponent
   implements OnInit, OnDestroy, AfterViewInit
 {
   @ViewChild('myContainer') myDiv!: ElementRef;
+
+  imageSrc?: string;
+  readonly placeholderImage: string = 'assets/images/placeholder.png';
 
   apiSelectedDatum?: IApiMovum | IApiFixum;
   ra: number | string = 0;
@@ -71,7 +75,9 @@ export class PanstarrsOverlayComponent
   constructor(
     private store$: Store<IAppState>,
     private pansstarrsApiService: PanstarrsApiService,
-    private imageWcsService: ImageWcsService
+    private imageWcsService: ImageWcsService,
+    private imageFetchService: ImageFetchService,
+    private changeDetector: ChangeDetectorRef
   ) {
     this.subscriptions.add(this.wcsPixelCoordSubscription); // Add to main subscriptions for cleanup
 
@@ -87,6 +93,18 @@ export class PanstarrsOverlayComponent
           if (!apiDataStatus.search) return;
 
           this.apiSelectedDatum = apiSelectedDatum;
+
+          if (apiSelectedDatum.preview_url) {
+            this.imageFetchService
+              .fetchImage(apiSelectedDatum.preview_url, {
+                isPriority: true,
+                label: 'panstarrs-overlay-image',
+              })
+              .then((objUrl) => {
+                this.imageSrc = objUrl || this.placeholderImage;
+                this.changeDetector.detectChanges();
+              });
+          }
 
           // I need to use this URL to get the WCS information
           const url = apiSelectedDatum.preview_url;
