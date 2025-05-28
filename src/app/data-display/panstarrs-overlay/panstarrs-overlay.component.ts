@@ -58,6 +58,7 @@ export class PanstarrsOverlayComponent
     rMeanPSFMag: number;
   }[] = [];
   isPanstarrsDataFound = false;
+  isAtlasOrNeat = false;
 
   // Properties for WCS-derived pixel coordinates
   pixelCoordinatesWCS: {
@@ -67,8 +68,7 @@ export class PanstarrsOverlayComponent
     ra: number;
     dec: number;
   }[] = [];
-  wcsDivWidth = 6;
-  wcsDivHeight = 6;
+  starDivDiameter = 6;
 
   // ---- Image rendering properties ----
   nativeImageWidth = 1; // Default to 1 to prevent division by zero initially
@@ -106,25 +106,20 @@ export class PanstarrsOverlayComponent
 
           this.apiSelectedDatum = apiSelectedDatum;
 
-          if (apiSelectedDatum.preview_url) {
-            console.log(
-              'PanstarrsOverlayComponent: preview_url: ',
-              apiSelectedDatum.preview_url
-            );
-            this.imageFetchService
-              .fetchImage(apiSelectedDatum.preview_url, {
-                isPriority: true,
-                label: 'panstarrs-overlay-image',
-              })
-              .then((objUrl) => {
-                this.imageSrc = objUrl || this.placeholderImage;
-                // onImageLoad will be called by the <img> tag, which then calls calculateImageRenderDimensions
-                this.changeDetector.detectChanges(); // Ensure view updates with new imageSrc
-              });
-          }
+          const imageUrl = apiSelectedDatum.preview_url;
 
-          // I need to use this URL to get the WCS information
-          const url = apiSelectedDatum.preview_url;
+          if (!imageUrl) return;
+
+          this.imageFetchService
+            .fetchImage(imageUrl, {
+              isPriority: true,
+              label: 'panstarrs-overlay-image',
+            })
+            .then((objUrl) => {
+              this.imageSrc = objUrl || this.placeholderImage;
+              // onImageLoad will be called by the <img> tag, which then calls calculateImageRenderDimensions
+              this.changeDetector.detectChanges(); // Ensure view updates with new imageSrc
+            });
 
           this.ra =
             'ra' in this.apiSelectedDatum
@@ -150,6 +145,12 @@ export class PanstarrsOverlayComponent
                 )
                 .filter((_, ind) => ind < 500);
               this.isPanstarrsDataFound = data.length > 0;
+
+              // Only get WCS coords if url includea 'neat' or 'atlas'
+              this.isAtlasOrNeat =
+                imageUrl.toUpperCase().includes('NEAT') ||
+                imageUrl.toUpperCase().includes('ATLAS');
+
               this.raDecs = data.map((datum: any, ind: number) => ({
                 id: ind,
                 ra: datum.raMean,
@@ -163,16 +164,11 @@ export class PanstarrsOverlayComponent
               this.wcsPixelCoordSubscription.unsubscribe(); // Cancel any previous ongoing WCS calculations
               this.wcsPixelCoordSubscription = new Subscription(); // Re-initialize for new additions
 
-              const url = this.apiSelectedDatum?.preview_url;
-
-              if (!url || !this.raDecs || this.raDecs.length === 0) {
-                this.pixelCoordinatesWCS = [];
-                // Potentially return or handle if other logic below depends on this check
-              } else {
+              if (this.isAtlasOrNeat && this.raDecs.length > 0) {
                 const coordObservables = this.raDecs.map((raDecItem) =>
                   this.imageWcsService
                     .getPixelCoordinatesFromUrl(
-                      url + '&align=true',
+                      imageUrl + '&align=true',
                       raDecItem.ra,
                       raDecItem.dec
                     )
@@ -224,8 +220,9 @@ export class PanstarrsOverlayComponent
                 } else {
                   this.pixelCoordinatesWCS = []; // No observables to process
                 }
+              } else {
+                this.pixelCoordinatesWCS = [];
               }
-              // ---- End WCS Pixel Coordinate Calculation ----
             });
         })
     );
@@ -292,78 +289,76 @@ export class PanstarrsOverlayComponent
     return degrees * (Math.PI / 180);
   }
 
-  /**
-   * First-pass attempt
-   */
-  getDivLeftOld(ra: number): number {
-    const ra0 = convertToDecimal(this.ra);
-    if (!ra0 && ra0 !== 0) return -1000;
-    const angularWidth = 0.0833;
-    const width = this.myDiv.nativeElement.offsetWidth || 0;
-    const res = ((ra - ra0) / angularWidth) * width + width / 2;
-    return res;
-  }
-
-  /**
-   * Claude-determined solution with cosine correction
-   */
   getDivLeft(ra: number): number {
-    const ra0 = convertToDecimal(this.ra);
-    if (!ra0 && ra0 !== 0) return -1000;
+    const raStar = ra; // ra is already decimal from the input
+    const raCenter = convertToDecimal(this.ra);
+    const decCenter = convertToDecimal(this.dec);
 
-    const dec0 = convertToDecimal(this.dec);
-    if (!dec0 && dec0 !== 0) return -1000;
+    if (
+      (!raCenter && raCenter !== 0) ||
+      (!decCenter && decCenter !== 0) ||
+      this.renderedImageWidth <= 0
+    ) {
+      return -1000; // Off-screen or image not ready
+    }
 
-    const angularWidth = 0.0833;
-    const width = this.myDiv.nativeElement.offsetWidth || 0;
+    const angularFovWidth = 0.0833; // 5 arcminutes in degrees
+    const cosDecCenter = Math.cos(this.deg2rad(decCenter));
 
-    // Apply the cosine correction factor based on declination
-    const cosDec = Math.cos(this.deg2rad(dec0));
+    // Normalized offset from center (-0.5 to 0.5 across the FOV)
+    const normXOffset = ((raStar - raCenter) * cosDecCenter) / angularFovWidth;
 
-    // Adjust the RA difference by the cosine of declination
-    const correctedRaDiff = (ra - ra0) * cosDec;
+    // Pixel position on the scaled image, from its left edge
+    // (normXOffset + 0.5) maps -0.5 to +0.5 range to 0 to 1 range (left to right)
+    const pixelXOnImage = (normXOffset + 0.5) * this.renderedImageWidth;
 
-    const res = (correctedRaDiff / angularWidth) * width + width / 2;
-    return res;
+    return this.imageOffsetX + pixelXOnImage;
   }
 
   getDivTop(dec: number): number {
-    const dec0 = convertToDecimal(this.dec);
-    if (!dec0 && dec0 !== 0) return -1000;
-    const angularWidth = 0.0833;
-    const width = this.myDiv.nativeElement.offsetWidth || 0;
-    const res = ((dec - dec0) / angularWidth) * width + width / 2;
-    return res;
+    const decStar = dec; // dec is already decimal
+    const decCenter = convertToDecimal(this.dec);
+
+    if ((!decCenter && decCenter !== 0) || this.renderedImageHeight <= 0) {
+      return -1000; // Off-screen or image not ready
+    }
+
+    const angularFovWidth = 0.0833; // 5 arcminutes in degrees
+
+    // Normalized offset from center (-0.5 to 0.5 across the FOV)
+    const normYOffset = (decStar - decCenter) / angularFovWidth;
+
+    // Pixel position on the scaled image, from its top edge
+    // (0.5 - normYOffset) maps -0.5 (bottom) to +0.5 (top) FOV range to 0 (top) to 1 (bottom) screen range
+    const pixelYOnImage = (0.5 - normYOffset) * this.renderedImageHeight;
+
+    return this.imageOffsetY + pixelYOnImage;
   }
 
   getDivWidth(raErr: number): number {
-    return 10;
+    const decCenter = convertToDecimal(this.dec);
+    if ((!decCenter && decCenter !== 0) || this.renderedImageWidth <= 0) {
+      return 2; // Minimum visible size or image not ready
+    }
 
-    //
-    /*
-    const dec0 = this.apiSelectedDatum?.dec;
-    if (dec0 === undefined) return 0;
+    const angularFovWidth = 0.0833; // 5 arcminutes in degrees
+    const cosDecCenter = Math.cos(this.deg2rad(decCenter));
 
-    const angularWidth = 0.0833;
-    const width = this.myDiv.nativeElement.offsetWidth || 0;
+    const correctedRaErrAngular = raErr * cosDecCenter; // raErr is an angular size
+    const pixelWidth =
+      (correctedRaErrAngular / angularFovWidth) * this.renderedImageWidth;
 
-    // Apply the cosine correction to the RA error as well
-    const cosDec = Math.cos(this.deg2rad(dec0));
-    const correctedRaErr = raErr * cosDec;
-
-    const res = (correctedRaErr / angularWidth) * width;
-    return res;
-    */
+    return Math.max(2, pixelWidth); // Ensure a minimum visible size
   }
 
   getDivHeight(decErr: number): number {
-    return 10;
+    if (this.renderedImageHeight <= 0) {
+      return 2; // Minimum visible size or image not ready
+    }
+    const angularFovWidth = 0.0833; // 5 arcminutes in degrees
+    const pixelHeight = (decErr / angularFovWidth) * this.renderedImageHeight; // decErr is an angular size
 
-    //
-    const angularWidth = 0.0833;
-    const width = this.myDiv.nativeElement.offsetWidth || 0;
-    const res = (decErr / angularWidth) * width;
-    return res;
+    return Math.max(2, pixelHeight); // Ensure a minimum visible size
   }
 
   getOpacity(raErr: number) {
@@ -429,5 +424,19 @@ export class PanstarrsOverlayComponent
     // Calculate scaling factors
     this.imageScaleX = this.renderedImageWidth / this.nativeImageWidth;
     this.imageScaleY = this.renderedImageHeight / this.nativeImageHeight;
+  }
+
+  //
+  surveyScaleTransform() {
+    if (!this.apiSelectedDatum) return 'scale(1, 1)';
+    const source = this.apiSelectedDatum.source.toLowerCase();
+    // if (source.includes('neat')) return 'scale(1, 1)';
+    // if (source.includes('atlas')) return 'scale(1, 1)';
+    if (source.includes('loneos')) return 'scale(1, 1)';
+    if (source.includes('skymapper')) return 'scale(-1, 1)';
+    if (source.includes('spacewatch')) return 'scale(-1, 1)';
+    if (source.includes('catalina')) return 'scale(-1, 1)';
+    if (source.includes('ps1dr2')) return 'scale(-1, 1)';
+    return 'scale(1, 1)';
   }
 }

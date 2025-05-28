@@ -209,6 +209,9 @@ export class ApiDataService implements IApiDataService {
     searchParamsMoving: ISearchParamsMoving
   ): Observable<TApiDataCatchResultOrError> {
     if (isMock) {
+      this.store$.dispatch(
+        ApiDataAction_SetSmallBodyType({ smallBodyType: 'comet' })
+      );
       return getMockCatchResultOrError(searchParamsMoving).pipe(
         delay(mockNetworkDelayMs)
       );

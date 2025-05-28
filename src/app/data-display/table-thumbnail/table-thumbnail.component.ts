@@ -84,22 +84,18 @@ export class TableThumbnailComponent implements OnChanges {
    * Some surveys need to be flipped, etc. to have ra and dec increase +ve in consistent dirn
    */
   getSurveyScaleTransform() {
-    return 'scale(1, 1)';
+    // return 'scale(1, 1)';
     if (!this.isReorientated) return 'scale(1, 1)';
     if (!this.apiDatum) return 'scale(1, 1)';
-    if (this.apiDatum.source === 'neat_palomar_tricam') {
-      // return 'scale(1, 1)';
-      return 'scale(-1, -1)';
+    if (this.apiDatum.source.includes('neat')) {
+      return 'scale(1, 1)';
+      // return 'scale(-1, -1)';
       // return 'rotate(-90deg)';
     }
     if (this.apiDatum.source.includes('atlas')) {
-      // return 'scale(1, 1)';
-      return 'scale(-1, 1)';
+      return 'scale(1, 1)';
+      // return 'scale(-1, 1)';
       // return 'rotate(-90deg)';
-    }
-    if (this.apiDatum.source === 'neat_maui_geodss') {
-      return 'scale(1, -1)';
-      // return 'rotate(90deg)';
     }
     if (this.apiDatum.source === 'loneos') {
       return 'scale(-1, -1)';

@@ -12,6 +12,7 @@ import {
   selectApiSmallBodyType,
 } from '../../ngrx/selectors/api-data.selectors';
 import { IApiFixum } from '../../../models/IApiFixum';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-solar-viewer',
@@ -62,6 +63,9 @@ export class SolarViewerComponent implements OnInit {
                   data: timeStampsJds,
                   bodyType: smallBodyType,
                 },
+                horizonsBaseUrl:
+                  environment.serverApiBaseUrl + 'api/horizons2/',
+
                 isControlsShown: !true,
                 logScaleZoomingPositionAus: { x: 3, y: 0, z: 1 },
                 nonLogScaleZoomingPositionAus: { x: 0, y: 0, z: 10 },

@@ -12,7 +12,6 @@ export interface IWcs {
   size: [number, number];
   scale: [number, number];
   rotation: number;
-  // Add any other properties returned by getWCSfromXMP and used by world_to_pixel
 }
 
 @Injectable({
@@ -62,7 +61,7 @@ export class ImageWcsService {
   }
 
   /**
-   * Fetches an image, extracts WCS information (utilizing cache), 
+   * Fetches an image, extracts WCS information (utilizing cache),
    * and converts RA/Dec to pixel coordinates.
    * @param imageUrl The URL of the image to process.
    * @param ra Right Ascension in degrees.
