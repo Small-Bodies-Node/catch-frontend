@@ -6,10 +6,13 @@
 
   <div class="results">
     <span class="unit" style="margin-right: 4px"> {{ "RESULTS: " }}</span>
-    <span class="unit">{{ (rowsInTable ? rowsInTable : "") + " " }}</span>
+
+    <a [href]="dataLink" target="_blank">
+      <span class="unit">{{ (rowsInTable ? rowsInTable : "") + " " }}</span>
+    </a>
   </div>
 
-  <div class="jobid">
+  <!-- <div class="jobid">
     <span class="unit" style="margin-right: 4px">
       {{ isMoving ? "JOB:" : "" }}
     </span>
@@ -22,7 +25,7 @@
       {{ "N/A" }}
     </span>
     }
-  </div>
+  </div> -->
 
   <div class="download-button-wrapper">
     <span class="unit">
