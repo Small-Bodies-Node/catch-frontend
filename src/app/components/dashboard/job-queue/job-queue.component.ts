@@ -4,6 +4,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatListModule } from '@angular/material/list';
 import { MatGridListModule } from '@angular/material/grid-list';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { PieChartComponent } from './pie-chart.component';
 import { CatchApiService } from '../../../core/services/dashboard-api/catch-api.service';
 import { Subscription } from 'rxjs';
 
@@ -16,6 +17,7 @@ import { Subscription } from 'rxjs';
     MatListModule,
     MatGridListModule,
     MatProgressSpinnerModule,
+    PieChartComponent,
   ],
   templateUrl: './job-queue.component.html',
   styleUrls: ['./job-queue.component.scss'],

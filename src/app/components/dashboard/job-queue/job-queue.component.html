@@ -23,7 +23,11 @@
     <div class="grid-container">
       <div class="queue-info">
         <div class="queue-chart">
-          <!-- Angular equivalent of Pie chart would go here -->
+          <app-pie-chart
+            [values]="queueData.jobs?.length === 0 ? [] : [queueData.jobs?.length]"
+            [maximum]="queueData.depth || 5"
+            [title]="(queueData.jobs?.length || 0) + '/' + (queueData.depth || 0) + ' jobs in the queue'"
+          ></app-pie-chart>
           <div class="queue-stats">
             <p class="mat-body-1">{{ queueData.jobs?.length || 0 }}/{{ queueData.depth || 0 }} jobs in the queue</p>
           </div>
