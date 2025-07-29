@@ -23,7 +23,7 @@ import {
   ],
 })
 export class AboutPageComponent implements OnInit {
-  allSkyCoverage = 'assets/images/pngs/sky-coverage-20241127.png';
+  allSkyCoverage = 'assets/images/pngs/sky-coverage-20250725.png';
 
   ngOnInit(): void {}
 }
