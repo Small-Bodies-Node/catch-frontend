@@ -19,10 +19,9 @@ mat-toolbar {
     display: flex;
     align-items: center;
 
+    // spacer no longer needed; kept here in case referenced elsewhere
     .spacer {
-      flex: 1 1 auto; // Cause ul to take up available space
-      overflow: hidden;
-      color: transparent;
+      display: none;
     }
 
     ul {
@@ -56,6 +55,26 @@ mat-toolbar {
   // Make header bar responsive
   .nav-menu-in-side-nav {
     display: none;
+    position: relative; // for absolute centering of title
+    width: 100%;
+    height: 100%;
+
+    // Left menu button stays at natural left, vertically centered by toolbar
+    button[mat-icon-button] {
+      z-index: 2; // ensure above centered title if ever overlapping
+    }
+
+    // Precisely center the title horizontally within the toolbar
+    .title {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      height: 100%;
+      z-index: 1;
+      cursor: pointer;
+    }
   }
   .nav-menu-in-header {
     display: flex;

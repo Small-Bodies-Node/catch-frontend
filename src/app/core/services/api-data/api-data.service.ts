@@ -17,15 +17,11 @@ import { ISearchParamsFixed } from '../../../../models/ISearchParamsFixed';
 import { getUrlForFixedRoute } from '../../../../utils/getUrlForFixedRoute';
 import { getUrlForCatchRoute } from '../../../../utils/getUrlForCatchRoute';
 import { IApiDataCatchResult } from '../../../../models/IApiDataCatchResult';
-import { TWrappedApiDataResultOrError } from '../../../../models/TApiDataResultOrError';
+import { TWrappedApiDataResultOrError } from '../../../../models/TWrappedApiDataResultOrError';
 import { TApiDataCatchResultOrError } from '../../../../models/TApiDataCatchResultOrError';
-import {
-  apiBaseUrl,
-  apiStreamTimeoutSecs,
-  mockNetworkDelayMs,
-} from '../../../../utils/constants';
-import { TApiDataResult } from '../../../../models/IApiDataResult';
-import { environment } from '../../../../environments/environment';
+import { apiBaseUrl, apiStreamTimeoutSecs, mockNetworkDelayMs } from '../../../../utils/constants';
+import { TApiDataResult } from '../../../../models/TApiDataResult';
+import { environment } from '../../../../environments/environment.local';
 import { apiMockResultMoving } from '../../../../utils/apiMockResultMoving';
 import { getMockCatchResultOrError } from '../../../../utils/getMockCatchResultOrError';
 import { apiMockResultFixed } from '../../../../utils/apiMockResultFixed';
@@ -46,12 +42,10 @@ export class ApiDataService implements IApiDataService {
 
   constructor(
     private httpClient: HttpClient,
-    private store$: Store<IAppState>
+    private store$: Store<IAppState>,
   ) {}
 
-  fetchApiDataFixed(
-    input: ISearchParamsFixed
-  ): Observable<TWrappedApiDataResultOrError> {
+  fetchApiDataFixed(input: ISearchParamsFixed): Observable<TWrappedApiDataResultOrError> {
     if (isMock) {
       return of({
         status: 'success',
@@ -61,30 +55,28 @@ export class ApiDataService implements IApiDataService {
     }
 
     const catchFixedUrl = getUrlForFixedRoute(input);
-    const httpRequest$ = this.httpClient
-      .get<TApiDataResult>(catchFixedUrl, { headers })
-      .pipe(
-        map((apiDataResult) => {
-          return {
-            status: 'success',
-            apiDataResult,
-            job_id: 'N/A',
-          } as const;
-        }),
-        catchError((error) => {
-          console.error('Err:', JSON.stringify(error.message));
-          return of({
-            status: 'error',
-            message: networkErrorMessage(),
-            job_id: 'N/A',
-          } as const);
-        })
-      );
+    const httpRequest$ = this.httpClient.get<TApiDataResult>(catchFixedUrl, { headers }).pipe(
+      map((apiDataResult) => {
+        return {
+          status: 'success',
+          apiDataResult,
+          job_id: 'N/A',
+        } as const;
+      }),
+      catchError((error) => {
+        console.error('Err:', JSON.stringify(error.message));
+        return of({
+          status: 'error',
+          message: networkErrorMessage(),
+          job_id: 'N/A',
+        } as const);
+      }),
+    );
     return httpRequest$;
   }
 
   fetchApiDataMoving(
-    searchParamsMoving: ISearchParamsMoving
+    searchParamsMoving: ISearchParamsMoving,
   ): Observable<TWrappedApiDataResultOrError> {
     if (!searchParamsMoving.target) {
       return of({
@@ -140,7 +132,7 @@ export class ApiDataService implements IApiDataService {
                 status: 'error',
                 message: networkErrorMessage(job_id),
               });
-            })
+            }),
           );
           return caughtResult;
         }
@@ -172,16 +164,14 @@ export class ApiDataService implements IApiDataService {
                 }
                 return caughtResult;
               }),
-              catchError(
-                (e: Error): Observable<TWrappedApiDataResultOrError> => {
-                  console.error('Error in apiCaughtRequest:', e.message);
-                  return of({
-                    status: 'error',
-                    message: networkErrorMessage(job_id),
-                    job_id,
-                  });
-                }
-              )
+              catchError((e: Error): Observable<TWrappedApiDataResultOrError> => {
+                console.error('Error in apiCaughtRequest:', e.message);
+                return of({
+                  status: 'error',
+                  message: networkErrorMessage(job_id),
+                  job_id,
+                });
+              }),
             );
           }),
           catchError((e: Error): Observable<TWrappedApiDataResultOrError> => {
@@ -191,7 +181,7 @@ export class ApiDataService implements IApiDataService {
               message: networkErrorMessage(job_id),
               job_id,
             });
-          })
+          }),
         );
       }),
       catchError((e: Error): Observable<TWrappedApiDataResultOrError> => {
@@ -201,20 +191,14 @@ export class ApiDataService implements IApiDataService {
           message: networkErrorMessage(),
           job_id: 'N/A',
         });
-      })
+      }),
     );
   }
 
-  launchCatchJob(
-    searchParamsMoving: ISearchParamsMoving
-  ): Observable<TApiDataCatchResultOrError> {
+  launchCatchJob(searchParamsMoving: ISearchParamsMoving): Observable<TApiDataCatchResultOrError> {
     if (isMock) {
-      this.store$.dispatch(
-        ApiDataAction_SetSmallBodyType({ smallBodyType: 'comet' })
-      );
-      return getMockCatchResultOrError(searchParamsMoving).pipe(
-        delay(mockNetworkDelayMs)
-      );
+      this.store$.dispatch(ApiDataAction_SetSmallBodyType({ smallBodyType: 'comet' }));
+      return getMockCatchResultOrError(searchParamsMoving).pipe(delay(mockNetworkDelayMs));
     }
 
     const movingTargetUrl = getUrlForCatchRoute(searchParamsMoving);
@@ -226,7 +210,7 @@ export class ApiDataService implements IApiDataService {
           this.store$.dispatch(
             ApiDataAction_SetSmallBodyType({
               smallBodyType: type === 'ASTEROID' ? 'asteroid' : 'comet',
-            })
+            }),
           );
           return {
             status: 'success',
@@ -239,7 +223,7 @@ export class ApiDataService implements IApiDataService {
             status: 'error',
             message: networkErrorMessage(),
           } as const);
-        })
+        }),
       );
     return httpRequest$;
   }
@@ -270,7 +254,7 @@ export class ApiDataService implements IApiDataService {
             message: networkErrorMessage(job_id),
             job_id,
           } as const);
-        })
+        }),
       );
       return httpRequest$;
     } catch (e) {
@@ -284,7 +268,7 @@ export class ApiDataService implements IApiDataService {
 
   watchJobStream(
     job_id: string,
-    searchParamsMoving: ISearchParamsMoving
+    searchParamsMoving: ISearchParamsMoving,
   ): Promise<TJobStreamResult> {
     // --->>
 
@@ -294,10 +278,7 @@ export class ApiDataService implements IApiDataService {
     return new Promise<TJobStreamResult>((resolve, reject) => {
       // --->>
 
-      console.log('watchJobStream jobId', job_id);
       const streamUrl = apiBaseUrl + `/stream`;
-      console.log('streamUrl', streamUrl);
-
       const source = isMock
         ? new MockEventSource(job_id, searchParamsMoving)
         : new EventSource(streamUrl);
@@ -306,10 +287,7 @@ export class ApiDataService implements IApiDataService {
 
       // Close shop after waiting long time
       const timer = setTimeout(() => {
-        console.log(
-          'Query taking too long; go to results...',
-          +new Date() - +start
-        );
+        console.log('Query taking too long; go to results...', +new Date() - +start);
         resolve({
           status: 'error',
           job_id: job_id,
@@ -319,9 +297,7 @@ export class ApiDataService implements IApiDataService {
       }, apiStreamTimeoutSecs * 1000);
 
       source.onerror = function (errEvent: Event) {
-        console.error(
-          `Error handling message stream: ${JSON.stringify(errEvent)}`
-        );
+        console.error(`Error handling message stream: ${JSON.stringify(errEvent)}`);
         resolve({
           status: 'error',
           job_id: job_id,
@@ -333,13 +309,9 @@ export class ApiDataService implements IApiDataService {
       // Process streamed messages
       source.onmessage = function (msgEvent: MessageEvent) {
         try {
-          // console.log('msgEvent', msgEvent);
           const data: IApiServiceStream = JSON.parse(msgEvent.data);
           const { job_prefix, status, text } = data;
-
           const isThisJob = job_id.includes(job_prefix);
-
-          // if (isThisJob) console.log('Data stream:', data);
 
           if (isThisJob && status !== 'error' && !!text) {
             store$.dispatch(
@@ -350,20 +322,17 @@ export class ApiDataService implements IApiDataService {
                   searchType: 'moving',
                   searchParams: searchParamsMoving,
                 },
-              })
+              }),
             );
           }
           if (isThisJob && status === 'success') {
             this.close(); // Sever connection to SSE route
             resolve({ status: 'success', job_id: job_id });
-            console.log('timer', timer);
             clearTimeout(timer);
           }
           if (isThisJob && status === 'error') {
             this.close();
-            const errMessage = `Error from server: ${
-              text || 'No error message included'
-            }`;
+            const errMessage = `Error from server: ${text || 'No error message included'}`;
             resolve({ status: 'error', message: errMessage, job_id: job_id });
             clearTimeout(timer);
           }

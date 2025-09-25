@@ -1,11 +1,11 @@
-import { environment } from '../environments/environment';
+import { environment } from '../environments/environment.local';
 
 // Define the time client will wait for API to return
 export const apiDefaultTimeoutMs = 5000;
 
 /**
- * There are two deployments: "prod" and "dev"
- *
+ * There are two remote deployments: "prod" and "dev"
+ * Note: we do NOT call running local instances 'dev', we call it 'local'
  */
 export const apiBaseUrl = ['catch-dev', 'mock'].includes(environment.apiData)
   ? `https://catch-dev-api.astro.umd.edu`

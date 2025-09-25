@@ -1,4 +1,4 @@
-import { IApiMovingResult } from '../models/IApiDataResult';
+import { IApiMovingResult } from '../models/TApiDataResult';
 import { IApiMovum } from '../models/IApiMovum';
 
 const maxDataEntries = 3000;
@@ -165,8 +165,7 @@ function getData() {
       phase: 12.5942,
       preview_url:
         'https://sbnsurveys.astro.umd.edu/api/images/urn:nasa:pds:gbo.ast.neat.survey:data_tricam:p20020121_obsdata_20020121132624c?ra=177.51011&dec=15.25013&size=7.20arcmin&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.neat.survey:data_tricam:p20020121_obsdata_20020121132624c',
+      product_id: 'urn:nasa:pds:gbo.ast.neat.survey:data_tricam:p20020121_obsdata_20020121132624c',
       ra: 177.51011,
       rh: 3.531535016403,
       sangle: 103.483,
@@ -201,8 +200,7 @@ function getData() {
       phase: 12.5924,
       preview_url:
         'https://sbnsurveys.astro.umd.edu/api/images/urn:nasa:pds:gbo.ast.neat.survey:data_tricam:p20020121_obsdata_20020121134124c?ra=177.50992&dec=15.25081&size=7.20arcmin&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.neat.survey:data_tricam:p20020121_obsdata_20020121134124c',
+      product_id: 'urn:nasa:pds:gbo.ast.neat.survey:data_tricam:p20020121_obsdata_20020121134124c',
       ra: 177.50992,
       rh: 3.531504458169,
       sangle: 103.47899999999998,
@@ -237,8 +235,7 @@ function getData() {
       phase: 5.6655,
       preview_url:
         'https://sbnsurveys.astro.umd.edu/api/images/urn:nasa:pds:gbo.ast.neat.survey:data_tricam:p20020222_obsdata_20020222120052c?ra=174.62244&dec=17.97594&size=7.20arcmin&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.neat.survey:data_tricam:p20020222_obsdata_20020222120052c',
+      product_id: 'urn:nasa:pds:gbo.ast.neat.survey:data_tricam:p20020222_obsdata_20020222120052c',
       ra: 174.62244,
       rh: 3.436865439347,
       sangle: 69.62299999999999,
@@ -273,8 +270,7 @@ function getData() {
       phase: 5.6632,
       preview_url:
         'https://sbnsurveys.astro.umd.edu/api/images/urn:nasa:pds:gbo.ast.neat.survey:data_tricam:p20020222_obsdata_20020222121552c?ra=174.62074&dec=17.9769&size=7.20arcmin&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.neat.survey:data_tricam:p20020222_obsdata_20020222121552c',
+      product_id: 'urn:nasa:pds:gbo.ast.neat.survey:data_tricam:p20020222_obsdata_20020222121552c',
       ra: 174.62074,
       rh: 3.436834277647,
       sangle: 69.596,
@@ -309,8 +305,7 @@ function getData() {
       phase: 5.6609,
       preview_url:
         'https://sbnsurveys.astro.umd.edu/api/images/urn:nasa:pds:gbo.ast.neat.survey:data_tricam:p20020222_obsdata_20020222123100c?ra=174.61904&dec=17.97786&size=7.20arcmin&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.neat.survey:data_tricam:p20020222_obsdata_20020222123100c',
+      product_id: 'urn:nasa:pds:gbo.ast.neat.survey:data_tricam:p20020222_obsdata_20020222123100c',
       ra: 174.61904,
       rh: 3.436802838785,
       sangle: 69.56899999999999,
@@ -345,8 +340,7 @@ function getData() {
       phase: 4.1893,
       preview_url:
         'https://sbnsurveys.astro.umd.edu/api/images/urn:nasa:pds:gbo.ast.neat.survey:data_geodss:g19971002_obsdata_971002110736a?ra=8.14763&dec=-10.75019&size=7.20arcmin&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.neat.survey:data_geodss:g19971002_obsdata_971002110736a',
+      product_id: 'urn:nasa:pds:gbo.ast.neat.survey:data_geodss:g19971002_obsdata_971002110736a',
       ra: 8.14763,
       rh: 3.416742577319,
       sangle: 181.7,
@@ -381,8 +375,7 @@ function getData() {
       phase: 4.1907,
       preview_url:
         'https://sbnsurveys.astro.umd.edu/api/images/urn:nasa:pds:gbo.ast.neat.survey:data_geodss:g19971002_obsdata_971002112309a?ra=8.14556&dec=-10.75069&size=7.20arcmin&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.neat.survey:data_geodss:g19971002_obsdata_971002112309a',
+      product_id: 'urn:nasa:pds:gbo.ast.neat.survey:data_geodss:g19971002_obsdata_971002112309a',
       ra: 8.14556,
       rh: 3.416774776346,
       sangle: 181.747,
@@ -417,8 +410,7 @@ function getData() {
       phase: 4.1919,
       preview_url:
         'https://sbnsurveys.astro.umd.edu/api/images/urn:nasa:pds:gbo.ast.neat.survey:data_geodss:g19971002_obsdata_971002113659a?ra=8.14371&dec=-10.75114&size=7.20arcmin&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.neat.survey:data_geodss:g19971002_obsdata_971002113659a',
+      product_id: 'urn:nasa:pds:gbo.ast.neat.survey:data_geodss:g19971002_obsdata_971002113659a',
       ra: 8.14371,
       rh: 3.416803420577,
       sangle: 181.789,
@@ -453,8 +445,7 @@ function getData() {
       phase: 10.1718,
       preview_url:
         'https://sbnsurveys.astro.umd.edu/api/images/urn:nasa:pds:gbo.ast.neat.survey:data_geodss:g19971029_obsdata_971029072300a?ra=3.89604&dec=-11.18307&size=7.20arcmin&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.neat.survey:data_geodss:g19971029_obsdata_971029072300a',
+      product_id: 'urn:nasa:pds:gbo.ast.neat.survey:data_geodss:g19971029_obsdata_971029072300a',
       ra: 3.89604,
       rh: 3.496244736403,
       sangle: 230.838,
@@ -489,8 +480,7 @@ function getData() {
       phase: 10.1722,
       preview_url:
         'https://sbnsurveys.astro.umd.edu/api/images/urn:nasa:pds:gbo.ast.neat.survey:data_geodss:g19971029_obsdata_971029072537a?ra=3.89582&dec=-11.18304&size=7.20arcmin&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.neat.survey:data_geodss:g19971029_obsdata_971029072537a',
+      product_id: 'urn:nasa:pds:gbo.ast.neat.survey:data_geodss:g19971029_obsdata_971029072537a',
       ra: 3.89582,
       rh: 3.496250077687,
       sangle: 230.839,
@@ -525,8 +515,7 @@ function getData() {
       phase: 10.1741,
       preview_url:
         'https://sbnsurveys.astro.umd.edu/api/images/urn:nasa:pds:gbo.ast.neat.survey:data_geodss:g19971029_obsdata_971029073726a?ra=3.89483&dec=-11.18291&size=7.20arcmin&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.neat.survey:data_geodss:g19971029_obsdata_971029073726a',
+      product_id: 'urn:nasa:pds:gbo.ast.neat.survey:data_geodss:g19971029_obsdata_971029073726a',
       ra: 3.89483,
       rh: 3.496274198441,
       sangle: 230.844,
@@ -561,8 +550,7 @@ function getData() {
       phase: 10.1746,
       preview_url:
         'https://sbnsurveys.astro.umd.edu/api/images/urn:nasa:pds:gbo.ast.neat.survey:data_geodss:g19971029_obsdata_971029074044a?ra=3.89455&dec=-11.18287&size=7.20arcmin&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.neat.survey:data_geodss:g19971029_obsdata_971029074044a',
+      product_id: 'urn:nasa:pds:gbo.ast.neat.survey:data_geodss:g19971029_obsdata_971029074044a',
       ra: 3.89455,
       rh: 3.49628093454,
       sangle: 230.846,
@@ -597,8 +585,7 @@ function getData() {
       phase: 10.1763,
       preview_url:
         'https://sbnsurveys.astro.umd.edu/api/images/urn:nasa:pds:gbo.ast.neat.survey:data_geodss:g19971029_obsdata_971029075156a?ra=3.89362&dec=-11.18275&size=7.20arcmin&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.neat.survey:data_geodss:g19971029_obsdata_971029075156a',
+      product_id: 'urn:nasa:pds:gbo.ast.neat.survey:data_geodss:g19971029_obsdata_971029075156a',
       ra: 3.89362,
       rh: 3.496303796379,
       sangle: 230.851,
@@ -633,8 +620,7 @@ function getData() {
       phase: 10.1765,
       preview_url:
         'https://sbnsurveys.astro.umd.edu/api/images/urn:nasa:pds:gbo.ast.neat.survey:data_geodss:g19971029_obsdata_971029075300a?ra=3.89353&dec=-11.18274&size=7.20arcmin&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.neat.survey:data_geodss:g19971029_obsdata_971029075300a',
+      product_id: 'urn:nasa:pds:gbo.ast.neat.survey:data_geodss:g19971029_obsdata_971029075300a',
       ra: 3.89353,
       rh: 3.49630597369,
       sangle: 230.852,
@@ -3459,8 +3445,7 @@ function getData() {
       phase: 0.4775,
       preview_url:
         'https://uxzqjwo0ye.execute-api.us-west-1.amazonaws.com/api/images/urn:nasa:pds:gbo.ast.loneos.survey:data_augmented:051121_1a_270_fits?ra=57.31174&dec=17.80684&size=12.60arcmin&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.loneos.survey:data_augmented:051121_1a_270_fits',
+      product_id: 'urn:nasa:pds:gbo.ast.loneos.survey:data_augmented:051121_1a_270_fits',
       ra: 57.31174,
       rh: 4.523900320542,
       sangle: 166.289,
@@ -3495,8 +3480,7 @@ function getData() {
       phase: 0.4772,
       preview_url:
         'https://uxzqjwo0ye.execute-api.us-west-1.amazonaws.com/api/images/urn:nasa:pds:gbo.ast.loneos.survey:data_augmented:051121_1a_290_fits?ra=57.30834&dec=17.80651&size=12.60arcmin&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.loneos.survey:data_augmented:051121_1a_290_fits',
+      product_id: 'urn:nasa:pds:gbo.ast.loneos.survey:data_augmented:051121_1a_290_fits',
       ra: 57.30834,
       rh: 4.523924771368,
       sangle: 166.86200000000002,
@@ -3531,8 +3515,7 @@ function getData() {
       phase: 2.0496,
       preview_url:
         'https://uxzqjwo0ye.execute-api.us-west-1.amazonaws.com/api/images/urn:nasa:pds:gbo.ast.loneos.survey:data_augmented:051129_1a_151_fits?ra=55.88982&dec=17.66952&size=12.60arcmin&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.loneos.survey:data_augmented:051129_1a_151_fits',
+      product_id: 'urn:nasa:pds:gbo.ast.loneos.survey:data_augmented:051129_1a_151_fits',
       ra: 55.88982,
       rh: 4.534313481156,
       sangle: 244.90300000000002,
@@ -3567,8 +3550,7 @@ function getData() {
       phase: 2.0552,
       preview_url:
         'https://uxzqjwo0ye.execute-api.us-west-1.amazonaws.com/api/images/urn:nasa:pds:gbo.ast.loneos.survey:data_augmented:051129_1a_176_fits?ra=55.88572&dec=17.66915&size=12.60arcmin&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.loneos.survey:data_augmented:051129_1a_176_fits',
+      product_id: 'urn:nasa:pds:gbo.ast.loneos.survey:data_augmented:051129_1a_176_fits',
       ra: 55.88572,
       rh: 4.534343215456,
       sangle: 244.941,
@@ -3603,8 +3585,7 @@ function getData() {
       phase: 2.0609,
       preview_url:
         'https://uxzqjwo0ye.execute-api.us-west-1.amazonaws.com/api/images/urn:nasa:pds:gbo.ast.loneos.survey:data_augmented:051129_1a_201_fits?ra=55.8816&dec=17.66878&size=12.60arcmin&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.loneos.survey:data_augmented:051129_1a_201_fits',
+      product_id: 'urn:nasa:pds:gbo.ast.loneos.survey:data_augmented:051129_1a_201_fits',
       ra: 55.8816,
       rh: 4.534372940046,
       sangle: 244.978,
@@ -3639,8 +3620,7 @@ function getData() {
       phase: 2.0665,
       preview_url:
         'https://uxzqjwo0ye.execute-api.us-west-1.amazonaws.com/api/images/urn:nasa:pds:gbo.ast.loneos.survey:data_augmented:051129_1a_226_fits?ra=55.87749&dec=17.6684&size=12.60arcmin&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.loneos.survey:data_augmented:051129_1a_226_fits',
+      product_id: 'urn:nasa:pds:gbo.ast.loneos.survey:data_augmented:051129_1a_226_fits',
       ra: 55.87749,
       rh: 4.53440267001,
       sangle: 245.015,
@@ -3675,8 +3655,7 @@ function getData() {
       phase: 8.197,
       preview_url:
         'https://uxzqjwo0ye.execute-api.us-west-1.amazonaws.com/api/images/urn:nasa:pds:gbo.ast.loneos.survey:data_augmented:051227_1a_025_fits?ra=51.82055&dec=17.372&size=12.60arcmin&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.loneos.survey:data_augmented:051227_1a_025_fits',
+      product_id: 'urn:nasa:pds:gbo.ast.loneos.survey:data_augmented:051227_1a_025_fits',
       ra: 51.82055,
       rh: 4.569080883328,
       sangle: 254.176,
@@ -3711,8 +3690,7 @@ function getData() {
       phase: 8.2013,
       preview_url:
         'https://uxzqjwo0ye.execute-api.us-west-1.amazonaws.com/api/images/urn:nasa:pds:gbo.ast.loneos.survey:data_augmented:051227_1a_051_fits?ra=51.81803&dec=17.37197&size=12.60arcmin&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.loneos.survey:data_augmented:051227_1a_051_fits',
+      product_id: 'urn:nasa:pds:gbo.ast.loneos.survey:data_augmented:051227_1a_051_fits',
       ra: 51.81803,
       rh: 4.569109092737,
       sangle: 254.178,
@@ -3747,8 +3725,7 @@ function getData() {
       phase: 8.2056,
       preview_url:
         'https://uxzqjwo0ye.execute-api.us-west-1.amazonaws.com/api/images/urn:nasa:pds:gbo.ast.loneos.survey:data_augmented:051227_1a_077_fits?ra=51.81551&dec=17.37193&size=12.60arcmin&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.loneos.survey:data_augmented:051227_1a_077_fits',
+      product_id: 'urn:nasa:pds:gbo.ast.loneos.survey:data_augmented:051227_1a_077_fits',
       ra: 51.81551,
       rh: 4.569137272309,
       sangle: 254.179,
@@ -3783,8 +3760,7 @@ function getData() {
       phase: 8.2099,
       preview_url:
         'https://uxzqjwo0ye.execute-api.us-west-1.amazonaws.com/api/images/urn:nasa:pds:gbo.ast.loneos.survey:data_augmented:051227_1a_103_fits?ra=51.81299&dec=17.37189&size=12.60arcmin&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.loneos.survey:data_augmented:051227_1a_103_fits',
+      product_id: 'urn:nasa:pds:gbo.ast.loneos.survey:data_augmented:051227_1a_103_fits',
       ra: 51.81299,
       rh: 4.569165483871,
       sangle: 254.18099999999998,
@@ -3819,8 +3795,7 @@ function getData() {
       phase: 11.3814,
       preview_url:
         'https://uxzqjwo0ye.execute-api.us-west-1.amazonaws.com/api/images/urn:nasa:pds:gbo.ast.loneos.survey:data_augmented:060120_1a_055_fits?ra=50.48106&dec=17.57335&size=12.60arcmin&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.loneos.survey:data_augmented:060120_1a_055_fits',
+      product_id: 'urn:nasa:pds:gbo.ast.loneos.survey:data_augmented:060120_1a_055_fits',
       ra: 50.48106,
       rh: 4.596475298158,
       sangle: 254.963,
@@ -3855,8 +3830,7 @@ function getData() {
       phase: 11.3834,
       preview_url:
         'https://uxzqjwo0ye.execute-api.us-west-1.amazonaws.com/api/images/urn:nasa:pds:gbo.ast.loneos.survey:data_augmented:060120_1a_080_fits?ra=50.48083&dec=17.57377&size=12.60arcmin&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.loneos.survey:data_augmented:060120_1a_080_fits',
+      product_id: 'urn:nasa:pds:gbo.ast.loneos.survey:data_augmented:060120_1a_080_fits',
       ra: 50.48083,
       rh: 4.596500137321,
       sangle: 254.964,
@@ -3891,8 +3865,7 @@ function getData() {
       phase: 11.3854,
       preview_url:
         'https://uxzqjwo0ye.execute-api.us-west-1.amazonaws.com/api/images/urn:nasa:pds:gbo.ast.loneos.survey:data_augmented:060120_1a_105_fits?ra=50.4806&dec=17.57419&size=12.60arcmin&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.loneos.survey:data_augmented:060120_1a_105_fits',
+      product_id: 'urn:nasa:pds:gbo.ast.loneos.survey:data_augmented:060120_1a_105_fits',
       ra: 50.4806,
       rh: 4.596524974299,
       sangle: 254.964,
@@ -3927,8 +3900,7 @@ function getData() {
       phase: 12.1155,
       preview_url:
         'https://uxzqjwo0ye.execute-api.us-west-1.amazonaws.com/api/images/urn:nasa:pds:gbo.ast.loneos.survey:data_augmented:060201_1a_034_fits?ra=50.67085&dec=17.85701&size=12.60arcmin&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.loneos.survey:data_augmented:060201_1a_034_fits',
+      product_id: 'urn:nasa:pds:gbo.ast.loneos.survey:data_augmented:060201_1a_034_fits',
       ra: 50.67085,
       rh: 4.609131275058,
       sangle: 255.26999999999998,
@@ -3963,8 +3935,7 @@ function getData() {
       phase: 12.1165,
       preview_url:
         'https://uxzqjwo0ye.execute-api.us-west-1.amazonaws.com/api/images/urn:nasa:pds:gbo.ast.loneos.survey:data_augmented:060201_1a_060_fits?ra=50.6717&dec=17.85769&size=12.60arcmin&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.loneos.survey:data_augmented:060201_1a_060_fits',
+      product_id: 'urn:nasa:pds:gbo.ast.loneos.survey:data_augmented:060201_1a_060_fits',
       ra: 50.6717,
       rh: 4.609155899677,
       sangle: 255.27100000000002,
@@ -3999,8 +3970,7 @@ function getData() {
       phase: 13.8345,
       preview_url:
         'https://sbnsurveys.astro.umd.edu/api/images/urn:nasa:pds:gbo.ast.atlas.survey.242:58719:02a58719o0517o.fits?ra=44.05443&dec=11.28315&size=0.16deg&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.atlas.survey.242:58719:02a58719o0517o.fits',
+      product_id: 'urn:nasa:pds:gbo.ast.atlas.survey.242:58719:02a58719o0517o.fits',
       ra: 44.05443,
       rh: 4.070246850127,
       sangle: 74.811,
@@ -4035,8 +4005,7 @@ function getData() {
       phase: 13.8343,
       preview_url:
         'https://sbnsurveys.astro.umd.edu/api/images/urn:nasa:pds:gbo.ast.atlas.survey.242:58719:02a58719o0524o.fits?ra=44.05454&dec=11.28317&size=0.16deg&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.atlas.survey.242:58719:02a58719o0524o.fits',
+      product_id: 'urn:nasa:pds:gbo.ast.atlas.survey.242:58719:02a58719o0524o.fits',
       ra: 44.05454,
       rh: 4.070253401176,
       sangle: 74.81200000000001,
@@ -4071,8 +4040,7 @@ function getData() {
       phase: 13.8331,
       preview_url:
         'https://sbnsurveys.astro.umd.edu/api/images/urn:nasa:pds:gbo.ast.atlas.survey.242:58719:02a58719o0554o.fits?ra=44.05506&dec=11.2833&size=0.16deg&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.atlas.survey.242:58719:02a58719o0554o.fits',
+      product_id: 'urn:nasa:pds:gbo.ast.atlas.survey.242:58719:02a58719o0554o.fits',
       ra: 44.05506,
       rh: 4.070284770503,
       sangle: 74.81299999999999,
@@ -4107,8 +4075,7 @@ function getData() {
       phase: 13.8324,
       preview_url:
         'https://sbnsurveys.astro.umd.edu/api/images/urn:nasa:pds:gbo.ast.atlas.survey.242:58719:02a58719o0572o.fits?ra=44.05537&dec=11.28337&size=0.16deg&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.atlas.survey.242:58719:02a58719o0572o.fits',
+      product_id: 'urn:nasa:pds:gbo.ast.atlas.survey.242:58719:02a58719o0572o.fits',
       ra: 44.05537,
       rh: 4.070303644614,
       sangle: 74.814,
@@ -4143,8 +4110,7 @@ function getData() {
       phase: 13.5051,
       preview_url:
         'https://sbnsurveys.astro.umd.edu/api/images/urn:nasa:pds:gbo.ast.atlas.survey.242:58723:02a58723o0554c.fits?ra=44.17232&dec=11.30539&size=0.16deg&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.atlas.survey.242:58723:02a58723o0554c.fits',
+      product_id: 'urn:nasa:pds:gbo.ast.atlas.survey.242:58723:02a58723o0554c.fits',
       ra: 44.17232,
       rh: 4.078441954851,
       sangle: 75.22900000000001,
@@ -4179,8 +4145,7 @@ function getData() {
       phase: 13.5048,
       preview_url:
         'https://sbnsurveys.astro.umd.edu/api/images/urn:nasa:pds:gbo.ast.atlas.survey.242:58723:02a58723o0561c.fits?ra=44.17237&dec=11.30541&size=0.16deg&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.atlas.survey.242:58723:02a58723o0561c.fits',
+      product_id: 'urn:nasa:pds:gbo.ast.atlas.survey.242:58723:02a58723o0561c.fits',
       ra: 44.17237,
       rh: 4.078448689655,
       sangle: 75.22900000000001,
@@ -4215,8 +4180,7 @@ function getData() {
       phase: 13.5034,
       preview_url:
         'https://sbnsurveys.astro.umd.edu/api/images/urn:nasa:pds:gbo.ast.atlas.survey.242:58723:02a58723o0591c.fits?ra=44.17264&dec=11.30546&size=0.16deg&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.atlas.survey.242:58723:02a58723o0591c.fits',
+      product_id: 'urn:nasa:pds:gbo.ast.atlas.survey.242:58723:02a58723o0591c.fits',
       ra: 44.17264,
       rh: 4.078479260909,
       sangle: 75.231,
@@ -4251,8 +4215,7 @@ function getData() {
       phase: 13.5021,
       preview_url:
         'https://sbnsurveys.astro.umd.edu/api/images/urn:nasa:pds:gbo.ast.atlas.survey.242:58723:02a58723o0616c.fits?ra=44.17286&dec=11.30551&size=0.16deg&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.atlas.survey.242:58723:02a58723o0616c.fits',
+      product_id: 'urn:nasa:pds:gbo.ast.atlas.survey.242:58723:02a58723o0616c.fits',
       ra: 44.17286,
       rh: 4.078505907192,
       sangle: 75.232,
@@ -4287,8 +4250,7 @@ function getData() {
       phase: 13.1221,
       preview_url:
         'https://sbnsurveys.astro.umd.edu/api/images/urn:nasa:pds:gbo.ast.atlas.survey.242:58727:02a58727o0443c.fits?ra=44.22425&dec=11.31038&size=0.16deg&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.atlas.survey.242:58727:02a58727o0443c.fits',
+      product_id: 'urn:nasa:pds:gbo.ast.atlas.survey.242:58727:02a58727o0443c.fits',
       ra: 44.22425,
       rh: 4.086404043826,
       sangle: 75.64500000000001,
@@ -4323,8 +4285,7 @@ function getData() {
       phase: 13.1212,
       preview_url:
         'https://sbnsurveys.astro.umd.edu/api/images/urn:nasa:pds:gbo.ast.atlas.survey.242:58727:02a58727o0459c.fits?ra=44.22428&dec=11.31038&size=0.16deg&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.atlas.survey.242:58727:02a58727o0459c.fits',
+      product_id: 'urn:nasa:pds:gbo.ast.atlas.survey.242:58727:02a58727o0459c.fits',
       ra: 44.22428,
       rh: 4.086421132337,
       sangle: 75.64599999999999,
@@ -4359,8 +4320,7 @@ function getData() {
       phase: 13.1198,
       preview_url:
         'https://sbnsurveys.astro.umd.edu/api/images/urn:nasa:pds:gbo.ast.atlas.survey.242:58727:02a58727o0485c.fits?ra=44.22431&dec=11.31038&size=0.16deg&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.atlas.survey.242:58727:02a58727o0485c.fits',
+      product_id: 'urn:nasa:pds:gbo.ast.atlas.survey.242:58727:02a58727o0485c.fits',
       ra: 44.22431,
       rh: 4.086447521738,
       sangle: 75.64699999999999,
@@ -4395,8 +4355,7 @@ function getData() {
       phase: 13.1191,
       preview_url:
         'https://sbnsurveys.astro.umd.edu/api/images/urn:nasa:pds:gbo.ast.atlas.survey.242:58727:02a58727o0497c.fits?ra=44.22432&dec=11.31038&size=0.16deg&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.atlas.survey.242:58727:02a58727o0497c.fits',
+      product_id: 'urn:nasa:pds:gbo.ast.atlas.survey.242:58727:02a58727o0497c.fits',
       ra: 44.22432,
       rh: 4.086459668402,
       sangle: 75.648,
@@ -4431,8 +4390,7 @@ function getData() {
       phase: 11.6985,
       preview_url:
         'https://sbnsurveys.astro.umd.edu/api/images/urn:nasa:pds:gbo.ast.atlas.survey.242:58738:02a58738o0766o.fits?ra=44.02437&dec=11.2383&size=0.16deg&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.atlas.survey.242:58738:02a58738o0766o.fits',
+      product_id: 'urn:nasa:pds:gbo.ast.atlas.survey.242:58738:02a58738o0766o.fits',
       ra: 44.02437,
       rh: 4.108809575407,
       sangle: 76.918,
@@ -4467,8 +4425,7 @@ function getData() {
       phase: 11.6979,
       preview_url:
         'https://sbnsurveys.astro.umd.edu/api/images/urn:nasa:pds:gbo.ast.atlas.survey.242:58738:02a58738o0774o.fits?ra=44.02419&dec=11.23825&size=0.16deg&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.atlas.survey.242:58738:02a58738o0774o.fits',
+      product_id: 'urn:nasa:pds:gbo.ast.atlas.survey.242:58738:02a58738o0774o.fits',
       ra: 44.02419,
       rh: 4.108817736185,
       sangle: 76.918,
@@ -4503,8 +4460,7 @@ function getData() {
       phase: 11.6969,
       preview_url:
         'https://sbnsurveys.astro.umd.edu/api/images/urn:nasa:pds:gbo.ast.atlas.survey.242:58738:02a58738o0787o.fits?ra=44.02389&dec=11.23817&size=0.16deg&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.atlas.survey.242:58738:02a58738o0787o.fits',
+      product_id: 'urn:nasa:pds:gbo.ast.atlas.survey.242:58738:02a58738o0787o.fits',
       ra: 44.02389,
       rh: 4.108831021117,
       sangle: 76.91899999999998,
@@ -4539,8 +4495,7 @@ function getData() {
       phase: 1.4392,
       preview_url:
         'https://sbnsurveys.astro.umd.edu/api/images/urn:nasa:pds:gbo.ast.atlas.survey.244:58785:01a58785o0513o.fits?ra=38.31644&dec=9.91391&size=0.16deg&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.atlas.survey.244:58785:01a58785o0513o.fits',
+      product_id: 'urn:nasa:pds:gbo.ast.atlas.survey.244:58785:01a58785o0513o.fits',
       ra: 38.31644,
       rh: 4.20064849993,
       sangle: 124.964,
@@ -4575,8 +4530,7 @@ function getData() {
       phase: 1.441,
       preview_url:
         'https://sbnsurveys.astro.umd.edu/api/images/urn:nasa:pds:gbo.ast.atlas.survey.244:58785:01a58785o0493o.fits?ra=38.3183&dec=9.91428&size=0.16deg&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.atlas.survey.244:58785:01a58785o0493o.fits',
+      product_id: 'urn:nasa:pds:gbo.ast.atlas.survey.244:58785:01a58785o0493o.fits',
       ra: 38.3183,
       rh: 4.200628311955,
       sangle: 124.87,
@@ -4611,8 +4565,7 @@ function getData() {
       phase: 1.4403,
       preview_url:
         'https://sbnsurveys.astro.umd.edu/api/images/urn:nasa:pds:gbo.ast.atlas.survey.244:58785:01a58785o0500o.fits?ra=38.31761&dec=9.91415&size=0.16deg&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.atlas.survey.244:58785:01a58785o0500o.fits',
+      product_id: 'urn:nasa:pds:gbo.ast.atlas.survey.244:58785:01a58785o0500o.fits',
       ra: 38.31761,
       rh: 4.200635832004,
       sangle: 124.90499999999997,
@@ -4647,8 +4600,7 @@ function getData() {
       phase: 1.4374,
       preview_url:
         'https://sbnsurveys.astro.umd.edu/api/images/urn:nasa:pds:gbo.ast.atlas.survey.244:58785:01a58785o0533o.fits?ra=38.31461&dec=9.91355&size=0.16deg&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.atlas.survey.244:58785:01a58785o0533o.fits',
+      product_id: 'urn:nasa:pds:gbo.ast.atlas.survey.244:58785:01a58785o0533o.fits',
       ra: 38.31461,
       rh: 4.200668309044,
       sangle: 125.05599999999998,
@@ -4683,8 +4635,7 @@ function getData() {
       phase: 1.1457,
       preview_url:
         'https://sbnsurveys.astro.umd.edu/api/images/urn:nasa:pds:gbo.ast.atlas.survey.244:58789:01a58789o0288o.fits?ra=37.65726&dec=9.78286&size=0.16deg&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.atlas.survey.244:58789:01a58789o0288o.fits',
+      product_id: 'urn:nasa:pds:gbo.ast.atlas.survey.244:58789:01a58789o0288o.fits',
       ra: 37.65726,
       rh: 4.207954518233,
       sangle: 171.82100000000003,
@@ -4719,8 +4670,7 @@ function getData() {
       phase: 1.1466,
       preview_url:
         'https://sbnsurveys.astro.umd.edu/api/images/urn:nasa:pds:gbo.ast.atlas.survey.244:58789:01a58789o0327o.fits?ra=37.65357&dec=9.78217&size=0.16deg&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.atlas.survey.244:58789:01a58789o0327o.fits',
+      product_id: 'urn:nasa:pds:gbo.ast.atlas.survey.244:58789:01a58789o0327o.fits',
       ra: 37.65357,
       rh: 4.207994337674,
       sangle: 172.111,
@@ -4755,8 +4705,7 @@ function getData() {
       phase: 1.1459,
       preview_url:
         'https://sbnsurveys.astro.umd.edu/api/images/urn:nasa:pds:gbo.ast.atlas.survey.244:58789:01a58789o0299o.fits?ra=37.65627&dec=9.78267&size=0.16deg&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.atlas.survey.244:58789:01a58789o0299o.fits',
+      product_id: 'urn:nasa:pds:gbo.ast.atlas.survey.244:58789:01a58789o0299o.fits',
       ra: 37.65627,
       rh: 4.207965264867,
       sangle: 171.89999999999998,
@@ -4791,8 +4740,7 @@ function getData() {
       phase: 1.1463,
       preview_url:
         'https://sbnsurveys.astro.umd.edu/api/images/urn:nasa:pds:gbo.ast.atlas.survey.244:58789:01a58789o0317o.fits?ra=37.6545&dec=9.78234&size=0.16deg&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.atlas.survey.244:58789:01a58789o0317o.fits',
+      product_id: 'urn:nasa:pds:gbo.ast.atlas.survey.244:58789:01a58789o0317o.fits',
       ra: 37.6545,
       rh: 4.207984318226,
       sangle: 172.038,
@@ -4827,8 +4775,7 @@ function getData() {
       phase: 1.1507,
       preview_url:
         'https://sbnsurveys.astro.umd.edu/api/images/urn:nasa:pds:gbo.ast.atlas.survey.244:58789:01a58789o0512o.fits?ra=37.63743&dec=9.77911&size=0.16deg&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.atlas.survey.244:58789:01a58789o0512o.fits',
+      product_id: 'urn:nasa:pds:gbo.ast.atlas.survey.244:58789:01a58789o0512o.fits',
       ra: 37.63743,
       rh: 4.208168235812,
       sangle: 173.36900000000003,
@@ -4863,8 +4810,7 @@ function getData() {
       phase: 1.1496,
       preview_url:
         'https://sbnsurveys.astro.umd.edu/api/images/urn:nasa:pds:gbo.ast.atlas.survey.244:58789:01a58789o0468o.fits?ra=37.64133&dec=9.77986&size=0.16deg&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.atlas.survey.244:58789:01a58789o0468o.fits',
+      product_id: 'urn:nasa:pds:gbo.ast.atlas.survey.244:58789:01a58789o0468o.fits',
       ra: 37.64133,
       rh: 4.208126206153,
       sangle: 173.06599999999997,
@@ -4899,8 +4845,7 @@ function getData() {
       phase: 1.1498,
       preview_url:
         'https://sbnsurveys.astro.umd.edu/api/images/urn:nasa:pds:gbo.ast.atlas.survey.244:58789:01a58789o0475o.fits?ra=37.64069&dec=9.77973&size=0.16deg&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.atlas.survey.244:58789:01a58789o0475o.fits',
+      product_id: 'urn:nasa:pds:gbo.ast.atlas.survey.244:58789:01a58789o0475o.fits',
       ra: 37.64069,
       rh: 4.208133192946,
       sangle: 173.11599999999999,
@@ -4935,8 +4880,7 @@ function getData() {
       phase: 1.1501,
       preview_url:
         'https://sbnsurveys.astro.umd.edu/api/images/urn:nasa:pds:gbo.ast.atlas.survey.244:58789:01a58789o0488o.fits?ra=37.63955&dec=9.77952&size=0.16deg&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.atlas.survey.244:58789:01a58789o0488o.fits',
+      product_id: 'urn:nasa:pds:gbo.ast.atlas.survey.244:58789:01a58789o0488o.fits',
       ra: 37.63955,
       rh: 4.208145442269,
       sangle: 173.20499999999998,
@@ -4971,8 +4915,7 @@ function getData() {
       phase: 1.5236,
       preview_url:
         'https://sbnsurveys.astro.umd.edu/api/images/urn:nasa:pds:gbo.ast.atlas.survey.244:58792:01a58792o0316o.fits?ra=37.12832&dec=9.6818&size=0.16deg&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.atlas.survey.244:58792:01a58792o0316o.fits',
+      product_id: 'urn:nasa:pds:gbo.ast.atlas.survey.244:58792:01a58792o0316o.fits',
       ra: 37.12832,
       rh: 4.213807396943,
       sangle: 205.079,
@@ -5007,8 +4950,7 @@ function getData() {
       phase: 1.5245,
       preview_url:
         'https://sbnsurveys.astro.umd.edu/api/images/urn:nasa:pds:gbo.ast.atlas.survey.244:58792:01a58792o0324o.fits?ra=37.12755&dec=9.68166&size=0.16deg&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.atlas.survey.244:58792:01a58792o0324o.fits',
+      product_id: 'urn:nasa:pds:gbo.ast.atlas.survey.244:58792:01a58792o0324o.fits',
       ra: 37.12755,
       rh: 4.213815653976,
       sangle: 205.112,
@@ -5043,8 +4985,7 @@ function getData() {
       phase: 1.5255,
       preview_url:
         'https://sbnsurveys.astro.umd.edu/api/images/urn:nasa:pds:gbo.ast.atlas.survey.244:58792:01a58792o0336o.fits?ra=37.12657&dec=9.68148&size=0.16deg&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.atlas.survey.244:58792:01a58792o0336o.fits',
+      product_id: 'urn:nasa:pds:gbo.ast.atlas.survey.244:58792:01a58792o0336o.fits',
       ra: 37.12657,
       rh: 4.213826246495,
       sangle: 205.156,

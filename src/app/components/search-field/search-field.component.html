@@ -22,7 +22,7 @@
         @for (option of objectNameMatchResults; track option) {
         <mat-option [value]="option.target">
           <span class="name-search-result">
-            {{ optionToText(option) + "" }}
+            {{ optionToText(option) + '' }}
           </span>
         </mat-option>
         }
@@ -81,15 +81,8 @@
         aria-label="Font Style"
         [formControlName]="getFormControlKey('toggle_moving_vs_fixed_control')"
       >
-        <mat-button-toggle
-          value="moving"
-          [checked]="isMovingTarget"
-          appearance="legacy"
-          >Moving Target</mat-button-toggle
-        >
-        <mat-button-toggle value="fixed" [checked]="!isMovingTarget"
-          >Fixed Target</mat-button-toggle
-        >
+        <mat-button-toggle value="moving" appearance="legacy">Moving Target</mat-button-toggle>
+        <mat-button-toggle value="fixed">Fixed Target</mat-button-toggle>
       </mat-button-toggle-group>
     </div>
 
@@ -133,14 +126,10 @@
           }
 
           <div class="icon-checkbox-wrapper">
-            <mat-icon [matTooltip]="toolTipText['select_all_sources_control']"
-              >info</mat-icon
-            >
+            <mat-icon [matTooltip]="toolTipText['select_all_sources_control']">info</mat-icon>
             <mat-checkbox
               class="select-all-sources-checkbox"
-              [formControlName]="
-                getFormControlKey('select_all_sources_control')
-              "
+              [formControlName]="getFormControlKey('select_all_sources_control')"
             >
               <span [ngStyle]="{ color: getSelectAllSourcesLabelColor() }">
                 {{ getSelectAllSourcesLabel() }}
@@ -153,25 +142,15 @@
 
         <div class="checkbox-grid">
           <div class="icon-checkbox-wrapper">
-            <mat-icon [matTooltip]="toolTipText['use_cached_results_control']"
-              >info</mat-icon
-            >
-            <mat-checkbox
-              [formControlName]="
-                getFormControlKey('use_cached_results_control')
-              "
+            <mat-icon [matTooltip]="toolTipText['use_cached_results_control']">info</mat-icon>
+            <mat-checkbox [formControlName]="getFormControlKey('use_cached_results_control')"
               >Use Cached Results</mat-checkbox
             >
           </div>
 
           <div class="icon-checkbox-wrapper">
-            <mat-icon [matTooltip]="toolTipText['uncertainty_ellipse_control']"
-              >info</mat-icon
-            >
-            <mat-checkbox
-              [formControlName]="
-                getFormControlKey('uncertainty_ellipse_control')
-              "
+            <mat-icon [matTooltip]="toolTipText['uncertainty_ellipse_control']">info</mat-icon>
+            <mat-checkbox [formControlName]="getFormControlKey('uncertainty_ellipse_control')"
               >Uncertainty Ellipse</mat-checkbox
             >
           </div>
@@ -181,27 +160,17 @@
 
         @if(!isMovingTarget){
 
-        <div
-          class="intersection-type-wrapper input-wrapper"
-          style="width: 100%"
-        >
+        <div class="intersection-type-wrapper input-wrapper" style="width: 100%">
           <mat-form-field appearance="outline" style="width: 100%">
             <mat-label>Select</mat-label>
-            <mat-select
-              [formControlName]="
-                getFormControlKey('intersection_type_input_control')
-              "
-            >
-              @for (intersectionType of intersectionTypes; track
-              intersectionType) {
+            <mat-select [formControlName]="getFormControlKey('intersection_type_input_control')">
+              @for (intersectionType of intersectionTypes; track intersectionType) {
               <mat-option [value]="intersectionType">{{
                 intersectionTypeLabels[intersectionType]
               }}</mat-option>
               }
             </mat-select>
-            <mat-icon
-              matSuffix
-              [matTooltip]="toolTipText['intersection_type_input_control']"
+            <mat-icon matSuffix [matTooltip]="toolTipText['intersection_type_input_control']"
               >info</mat-icon
             >
           </mat-form-field>
@@ -215,12 +184,9 @@
               matInput
               appearance="outline"
               placeholder=""
-              value=""
               [formControlName]="getFormControlKey('start_time_input_control')"
             />
-            <mat-icon
-              matSuffix
-              [matTooltip]="toolTipText['start_time_input_control']"
+            <mat-icon matSuffix [matTooltip]="toolTipText['start_time_input_control']"
               >info</mat-icon
             >
           </mat-form-field>
@@ -233,17 +199,14 @@
               matInput
               appearance="outline"
               placeholder=""
-              value=""
               [formControlName]="getFormControlKey('stop_time_input_control')"
             />
-            <mat-icon
-              matSuffix
-              [matTooltip]="toolTipText['stop_time_input_control']"
+            <mat-icon matSuffix [matTooltip]="toolTipText['stop_time_input_control']"
               >info</mat-icon
             >
             <mat-hint>{{
-              "Date format: YYYY-MM-DD HH:MM:SS.sss, all fields
-            optional"
+              'Date format: YYYY-MM-DD HH:MM:SS.sss, all fields
+            optional'
             }}</mat-hint>
           </mat-form-field>
         </div>
@@ -256,14 +219,9 @@
             <input
               matInput
               placeholder="0"
-              value="0"
               [formControlName]="getFormControlKey('padding_input_control')"
             />
-            <mat-icon
-              matSuffix
-              [matTooltip]="toolTipText['padding_input_control']"
-              >info</mat-icon
-            >
+            <mat-icon matSuffix [matTooltip]="toolTipText['padding_input_control']">info</mat-icon>
             <mat-hint>arcmins</mat-hint>
           </mat-form-field>
         </div>
@@ -276,14 +234,9 @@
             <input
               matInput
               placeholder="0"
-              value="0"
               [formControlName]="getFormControlKey('radius_input_control')"
             />
-            <mat-icon
-              matSuffix
-              [matTooltip]="toolTipText['radius_input_control']"
-              >info</mat-icon
-            >
+            <mat-icon matSuffix [matTooltip]="toolTipText['radius_input_control']">info</mat-icon>
             <mat-hint>arcmins</mat-hint>
           </mat-form-field>
         </div>

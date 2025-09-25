@@ -1,7 +1,7 @@
 import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { Observable, Subject } from 'rxjs';
-import { environment } from '../../../../environments/environment';
+import { environment } from '../../../../environments/environment.local';
 
 /**
  * Service to handle AWS WAF CAPTCHA integration
@@ -139,21 +139,12 @@ export class AwsWafCaptchaService {
         // Get the container element by ID
         const containerElement = document.getElementById(config.container);
         if (!containerElement) {
-          console.error(
-            `Container element with ID "${config.container}" not found`
-          );
+          console.error(`Container element with ID "${config.container}" not found`);
           if (config.onError) {
-            config.onError(
-              new Error(
-                `Container element with ID "${config.container}" not found`
-              )
-            );
+            config.onError(new Error(`Container element with ID "${config.container}" not found`));
           }
           return;
         }
-
-        console.log('Debug 2', (window as any).AwsWafCaptcha);
-        console.log('>>>', config, environment);
 
         // Pass the container element as first param and config as second param
         (window as any).AwsWafCaptcha.renderCaptcha(containerElement, {

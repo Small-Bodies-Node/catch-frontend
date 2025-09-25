@@ -6,7 +6,7 @@ import { NavigationAction_SetIsNewRouteScheduled } from '../../../ngrx/actions/n
 import { IAppState } from '../../../ngrx/reducers';
 import { selectNavigationRecordsPresentRoute } from '../../../ngrx/selectors/navigation.selectors';
 import { pageFadeDurationMs } from '../../../../utils/animation-constants';
-import { routes, TPageLink } from '../../../app-entry/app.routes';
+import { TPageLink } from '../../../app-root/app.routes';
 import { ApiDataAction_SetStatus } from '../../../ngrx/actions/api-data.actions';
 
 @Injectable({
@@ -17,12 +17,13 @@ export class DelayedRouterService {
 
   presentRoute?: string;
 
-  constructor(private router: Router, private store$: Store<IAppState>) {
-    this.store$
-      .select(selectNavigationRecordsPresentRoute)
-      .subscribe((presentRoute) => {
-        this.presentRoute = presentRoute;
-      });
+  constructor(
+    private router: Router,
+    private store$: Store<IAppState>,
+  ) {
+    this.store$.select(selectNavigationRecordsPresentRoute).subscribe((presentRoute) => {
+      this.presentRoute = presentRoute;
+    });
   }
 
   delayedRouter(link: TPageLink, navigationExtras = {}) {
@@ -38,14 +39,12 @@ export class DelayedRouterService {
           code: 'unset',
           message: 'Ready to fetch data',
           search: undefined,
-        })
+        }),
       );
     }
 
     // Signal that a route change will take place soon
-    this.store$.dispatch(
-      NavigationAction_SetIsNewRouteScheduled({ isNewRouteScheduled: true })
-    );
+    this.store$.dispatch(NavigationAction_SetIsNewRouteScheduled({ isNewRouteScheduled: true }));
 
     // Schedule change of route at end of page-fade-out animation
     setTimeout(() => {

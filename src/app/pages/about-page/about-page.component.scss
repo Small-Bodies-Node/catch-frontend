@@ -1,0 +1,68 @@
+.about-container {
+  width: 90%;
+  padding: 30px;
+  margin: auto auto;
+  overflow: hidden;
+  max-width: 1200px;
+}
+
+/* Responsive grid for Figures and Videos section */
+.about-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 24px;
+  align-items: stretch; /* make cards in the same row the same height */
+}
+
+.about-figure {
+  margin: 0; /* spacing handled by grid gap */
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  gap: 12px;
+  figcaption {
+    margin: 0; /* use figure gap for spacing */
+  }
+  p {
+    margin: 0; /* use figure gap for spacing */
+  }
+  /* Normalize media sizing */
+  img,
+  iframe {
+    width: 100%;
+    display: block;
+  }
+  iframe {
+    aspect-ratio: 16/9;
+  }
+  img {
+    /* keep images visually consistent; crop if aspect deviates heavily */
+    aspect-ratio: 16/9;
+    object-fit: cover;
+  }
+}
+
+.table-wrapper {
+  width: 100%;
+  overflow: auto;
+
+  .data-source-table {
+    border-collapse: collapse;
+    thead {
+      border-bottom: 1px solid #888;
+    }
+    tr {
+      border-bottom: 1px solid #888;
+    }
+    th,
+    td {
+      padding: 10px;
+    }
+  }
+}
+
+ul, ol {
+  li {
+    margin-bottom: 0.3em;
+  }
+}

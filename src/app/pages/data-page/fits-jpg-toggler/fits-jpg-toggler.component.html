@@ -1,0 +1,40 @@
+@if (apiData) {
+<div class="fits-jpg-toggler-container" #FitsJpgTogglerContainer>
+  @if (isFits) {
+  <div class="lib-ngx-js9-wrapper">
+    <lib-ngx-js9
+      [widthPxls]="widthPxls"
+      [heightPxls]="heightPxls"
+      [siteTheme]="'DARK-THEME'"
+      [fitsUrl]="fitsUrl"
+      [globalOpts]="{
+        menuBar: ['view', 'zoom', 'scale', 'color', 'region'],
+        alerts: !true
+      }"
+      (fitsLoadStatus)="onFitsLoadStatusUpdate($event)"
+    ></lib-ngx-js9>
+  </div>
+  } @else {
+  <div class="panstarrs-overlay-wrapper">
+    <app-panstarrs-overlay></app-panstarrs-overlay>
+  </div>
+
+  }
+
+  <button
+    mat-fab
+    [disabled]="isFitsButtonDisabled()"
+    (click)="toggleFits()"
+    [ngClass]="{ 'raise-button': isButtonRaised }"
+  >
+    @if (isFits) {
+    <mat-icon>{{ 'image' }}</mat-icon>
+    } @else {
+    <span style="font-weight: bold">{{ 'FITS' }}</span>
+    }
+  </button>
+</div>
+
+} @else {
+<mat-progress-spinner></mat-progress-spinner>
+}

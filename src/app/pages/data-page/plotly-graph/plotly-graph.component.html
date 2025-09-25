@@ -1,0 +1,25 @@
+<div id="suburban-expander">
+  @if (true) {
+  <h1>GRAPH DISABLED</h1>
+  } @else {
+
+  <!--  -->
+
+  @if ( plotlySetting$ | async; as plotlySettings) {
+  <!--  -->
+
+  @if (plotlySettings) {
+  <plotly-plot
+    [ngClass]="{
+      sizeDeterminer: true,
+      hideDisplayBar: !!plotlySettings?.isMiniMode
+    }"
+    [data]="plotlySettings?.data ?? []"
+    [layout]="plotlySettings?.layout ?? {}"
+    [config]="plotlySettings?.config ?? {}"
+  ></plotly-plot>
+  <!--  -->
+  @if (plotlySettings?.isMiniMode) {
+  <div class="miniModeCovering"></div>
+  } } } }
+</div>

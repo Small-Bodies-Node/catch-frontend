@@ -1,4 +1,4 @@
-import { IApiFixedResult } from '../models/IApiDataResult';
+import { IApiFixedResult } from '../models/TApiDataResult';
 
 /**
  *
@@ -22,8 +22,7 @@ export const apiMockResultFixed: IApiFixedResult = {
       mjd_stop: 50434.634467592594,
       preview_url:
         'https://sbnsurveys.astro.umd.edu/api/images/urn:nasa:pds:gbo.ast.neat.survey:data_geodss:g19961217_obsdata_961217151258a?ra=83.63333333333331&dec=22.013333333333332&size=7.20arcmin&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.neat.survey:data_geodss:g19961217_obsdata_961217151258a',
+      product_id: 'urn:nasa:pds:gbo.ast.neat.survey:data_geodss:g19961217_obsdata_961217151258a',
       seeing: null,
       source: 'neat_maui_geodss',
       source_name: 'NEAT Maui GEODSS',
@@ -1264,8 +1263,7 @@ export const apiMockResultFixed: IApiFixedResult = {
       mjd_stop: 58711.57874699074,
       preview_url:
         'https://sbnsurveys.astro.umd.edu/api/images/urn:nasa:pds:gbo.ast.atlas.survey.242:58711:02a58711o0629o.fits?ra=83.63333333333331&dec=22.013333333333332&size=0.16deg&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.atlas.survey.242:58711:02a58711o0629o.fits',
+      product_id: 'urn:nasa:pds:gbo.ast.atlas.survey.242:58711:02a58711o0629o.fits',
       seeing: null,
       source: 'atlas_haleakela',
       source_name: 'ATLAS Hawaii, Haleakela',
@@ -1287,8 +1285,7 @@ export const apiMockResultFixed: IApiFixedResult = {
       mjd_stop: 58719.56940543981,
       preview_url:
         'https://sbnsurveys.astro.umd.edu/api/images/urn:nasa:pds:gbo.ast.atlas.survey.242:58719:02a58719o0602o.fits?ra=83.63333333333331&dec=22.013333333333332&size=0.16deg&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.atlas.survey.242:58719:02a58719o0602o.fits',
+      product_id: 'urn:nasa:pds:gbo.ast.atlas.survey.242:58719:02a58719o0602o.fits',
       seeing: null,
       source: 'atlas_haleakela',
       source_name: 'ATLAS Hawaii, Haleakela',
@@ -1310,8 +1307,7 @@ export const apiMockResultFixed: IApiFixedResult = {
       mjd_stop: 58719.57271990741,
       preview_url:
         'https://sbnsurveys.astro.umd.edu/api/images/urn:nasa:pds:gbo.ast.atlas.survey.242:58719:02a58719o0609o.fits?ra=83.63333333333331&dec=22.013333333333332&size=0.16deg&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.atlas.survey.242:58719:02a58719o0609o.fits',
+      product_id: 'urn:nasa:pds:gbo.ast.atlas.survey.242:58719:02a58719o0609o.fits',
       seeing: null,
       source: 'atlas_haleakela',
       source_name: 'ATLAS Hawaii, Haleakela',
@@ -1333,8 +1329,7 @@ export const apiMockResultFixed: IApiFixedResult = {
       mjd_stop: 58719.58252743055,
       preview_url:
         'https://sbnsurveys.astro.umd.edu/api/images/urn:nasa:pds:gbo.ast.atlas.survey.242:58719:02a58719o0628o.fits?ra=83.63333333333331&dec=22.013333333333332&size=0.16deg&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.atlas.survey.242:58719:02a58719o0628o.fits',
+      product_id: 'urn:nasa:pds:gbo.ast.atlas.survey.242:58719:02a58719o0628o.fits',
       seeing: null,
       source: 'atlas_haleakela',
       source_name: 'ATLAS Hawaii, Haleakela',
@@ -1356,8 +1351,7 @@ export const apiMockResultFixed: IApiFixedResult = {
       mjd_stop: 58719.59294270833,
       preview_url:
         'https://sbnsurveys.astro.umd.edu/api/images/urn:nasa:pds:gbo.ast.atlas.survey.242:58719:02a58719o0648o.fits?ra=83.63333333333331&dec=22.013333333333332&size=0.16deg&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.atlas.survey.242:58719:02a58719o0648o.fits',
+      product_id: 'urn:nasa:pds:gbo.ast.atlas.survey.242:58719:02a58719o0648o.fits',
       seeing: null,
       source: 'atlas_haleakela',
       source_name: 'ATLAS Hawaii, Haleakela',
@@ -1379,8 +1373,7 @@ export const apiMockResultFixed: IApiFixedResult = {
       mjd_stop: 58739.57465625,
       preview_url:
         'https://sbnsurveys.astro.umd.edu/api/images/urn:nasa:pds:gbo.ast.atlas.survey.242:58739:02a58739o0760o.fits?ra=83.63333333333331&dec=22.013333333333332&size=0.16deg&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.atlas.survey.242:58739:02a58739o0760o.fits',
+      product_id: 'urn:nasa:pds:gbo.ast.atlas.survey.242:58739:02a58739o0760o.fits',
       seeing: null,
       source: 'atlas_haleakela',
       source_name: 'ATLAS Hawaii, Haleakela',
@@ -1402,8 +1395,7 @@ export const apiMockResultFixed: IApiFixedResult = {
       mjd_stop: 58739.57750196759,
       preview_url:
         'https://sbnsurveys.astro.umd.edu/api/images/urn:nasa:pds:gbo.ast.atlas.survey.242:58739:02a58739o0766o.fits?ra=83.63333333333331&dec=22.013333333333332&size=0.16deg&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.atlas.survey.242:58739:02a58739o0766o.fits',
+      product_id: 'urn:nasa:pds:gbo.ast.atlas.survey.242:58739:02a58739o0766o.fits',
       seeing: null,
       source: 'atlas_haleakela',
       source_name: 'ATLAS Hawaii, Haleakela',
@@ -1425,8 +1417,7 @@ export const apiMockResultFixed: IApiFixedResult = {
       mjd_stop: 58739.58380706018,
       preview_url:
         'https://sbnsurveys.astro.umd.edu/api/images/urn:nasa:pds:gbo.ast.atlas.survey.242:58739:02a58739o0778o.fits?ra=83.63333333333331&dec=22.013333333333332&size=0.16deg&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.atlas.survey.242:58739:02a58739o0778o.fits',
+      product_id: 'urn:nasa:pds:gbo.ast.atlas.survey.242:58739:02a58739o0778o.fits',
       seeing: null,
       source: 'atlas_haleakela',
       source_name: 'ATLAS Hawaii, Haleakela',
@@ -1448,8 +1439,7 @@ export const apiMockResultFixed: IApiFixedResult = {
       mjd_stop: 58739.595196180555,
       preview_url:
         'https://sbnsurveys.astro.umd.edu/api/images/urn:nasa:pds:gbo.ast.atlas.survey.242:58739:02a58739o0800o.fits?ra=83.63333333333331&dec=22.013333333333332&size=0.16deg&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.atlas.survey.242:58739:02a58739o0800o.fits',
+      product_id: 'urn:nasa:pds:gbo.ast.atlas.survey.242:58739:02a58739o0800o.fits',
       seeing: null,
       source: 'atlas_haleakela',
       source_name: 'ATLAS Hawaii, Haleakela',
@@ -1470,8 +1460,7 @@ export const apiMockResultFixed: IApiFixedResult = {
       mjd_stop: 58919.27041921296,
       preview_url:
         'https://sbnsurveys.astro.umd.edu/api/images/urn:nasa:pds:gbo.ast.atlas.survey.249:58919:02a58919o0120o.fits?ra=83.63333333333331&dec=22.013333333333332&size=0.16deg&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.atlas.survey.249:58919:02a58919o0120o.fits',
+      product_id: 'urn:nasa:pds:gbo.ast.atlas.survey.249:58919:02a58919o0120o.fits',
       seeing: null,
       source: 'atlas_haleakela',
       source_name: 'ATLAS Hawaii, Haleakela',
@@ -1492,8 +1481,7 @@ export const apiMockResultFixed: IApiFixedResult = {
       mjd_stop: 58919.273716550924,
       preview_url:
         'https://sbnsurveys.astro.umd.edu/api/images/urn:nasa:pds:gbo.ast.atlas.survey.249:58919:02a58919o0127o.fits?ra=83.63333333333331&dec=22.013333333333332&size=0.16deg&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.atlas.survey.249:58919:02a58919o0127o.fits',
+      product_id: 'urn:nasa:pds:gbo.ast.atlas.survey.249:58919:02a58919o0127o.fits',
       seeing: null,
       source: 'atlas_haleakela',
       source_name: 'ATLAS Hawaii, Haleakela',
@@ -1514,8 +1502,7 @@ export const apiMockResultFixed: IApiFixedResult = {
       mjd_stop: 58919.27897222222,
       preview_url:
         'https://sbnsurveys.astro.umd.edu/api/images/urn:nasa:pds:gbo.ast.atlas.survey.249:58919:02a58919o0138o.fits?ra=83.63333333333331&dec=22.013333333333332&size=0.16deg&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.atlas.survey.249:58919:02a58919o0138o.fits',
+      product_id: 'urn:nasa:pds:gbo.ast.atlas.survey.249:58919:02a58919o0138o.fits',
       seeing: null,
       source: 'atlas_haleakela',
       source_name: 'ATLAS Hawaii, Haleakela',
@@ -1536,8 +1523,7 @@ export const apiMockResultFixed: IApiFixedResult = {
       mjd_stop: 58919.29346006944,
       preview_url:
         'https://sbnsurveys.astro.umd.edu/api/images/urn:nasa:pds:gbo.ast.atlas.survey.249:58919:02a58919o0167o.fits?ra=83.63333333333331&dec=22.013333333333332&size=0.16deg&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.atlas.survey.249:58919:02a58919o0167o.fits',
+      product_id: 'urn:nasa:pds:gbo.ast.atlas.survey.249:58919:02a58919o0167o.fits',
       seeing: null,
       source: 'atlas_haleakela',
       source_name: 'ATLAS Hawaii, Haleakela',
@@ -1558,8 +1544,7 @@ export const apiMockResultFixed: IApiFixedResult = {
       mjd_stop: 58931.28345740741,
       preview_url:
         'https://sbnsurveys.astro.umd.edu/api/images/urn:nasa:pds:gbo.ast.atlas.survey.249:58931:02a58931o0142c.fits?ra=83.63333333333331&dec=22.013333333333332&size=0.16deg&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.atlas.survey.249:58931:02a58931o0142c.fits',
+      product_id: 'urn:nasa:pds:gbo.ast.atlas.survey.249:58931:02a58931o0142c.fits',
       seeing: null,
       source: 'atlas_haleakela',
       source_name: 'ATLAS Hawaii, Haleakela',
@@ -1580,8 +1565,7 @@ export const apiMockResultFixed: IApiFixedResult = {
       mjd_stop: 58931.286660185186,
       preview_url:
         'https://sbnsurveys.astro.umd.edu/api/images/urn:nasa:pds:gbo.ast.atlas.survey.249:58931:02a58931o0149c.fits?ra=83.63333333333331&dec=22.013333333333332&size=0.16deg&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.atlas.survey.249:58931:02a58931o0149c.fits',
+      product_id: 'urn:nasa:pds:gbo.ast.atlas.survey.249:58931:02a58931o0149c.fits',
       seeing: null,
       source: 'atlas_haleakela',
       source_name: 'ATLAS Hawaii, Haleakela',
@@ -1603,8 +1587,7 @@ export const apiMockResultFixed: IApiFixedResult = {
       mjd_stop: 58721.60423344908,
       preview_url:
         'https://sbnsurveys.astro.umd.edu/api/images/urn:nasa:pds:gbo.ast.atlas.survey.242:58721:01a58721o0790o.fits?ra=83.63333333333331&dec=22.013333333333332&size=0.16deg&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.atlas.survey.242:58721:01a58721o0790o.fits',
+      product_id: 'urn:nasa:pds:gbo.ast.atlas.survey.242:58721:01a58721o0790o.fits',
       seeing: null,
       source: 'atlas_mauna_loa',
       source_name: 'ATLAS Hawaii, Mauna Loa',
@@ -1626,8 +1609,7 @@ export const apiMockResultFixed: IApiFixedResult = {
       mjd_stop: 58721.608290972224,
       preview_url:
         'https://sbnsurveys.astro.umd.edu/api/images/urn:nasa:pds:gbo.ast.atlas.survey.242:58721:01a58721o0797o.fits?ra=83.63333333333331&dec=22.013333333333332&size=0.16deg&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.atlas.survey.242:58721:01a58721o0797o.fits',
+      product_id: 'urn:nasa:pds:gbo.ast.atlas.survey.242:58721:01a58721o0797o.fits',
       seeing: null,
       source: 'atlas_mauna_loa',
       source_name: 'ATLAS Hawaii, Mauna Loa',
@@ -1649,8 +1631,7 @@ export const apiMockResultFixed: IApiFixedResult = {
       mjd_stop: 58721.61939050926,
       preview_url:
         'https://sbnsurveys.astro.umd.edu/api/images/urn:nasa:pds:gbo.ast.atlas.survey.242:58721:01a58721o0819o.fits?ra=83.63333333333331&dec=22.013333333333332&size=0.16deg&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.atlas.survey.242:58721:01a58721o0819o.fits',
+      product_id: 'urn:nasa:pds:gbo.ast.atlas.survey.242:58721:01a58721o0819o.fits',
       seeing: null,
       source: 'atlas_mauna_loa',
       source_name: 'ATLAS Hawaii, Mauna Loa',
@@ -1672,8 +1653,7 @@ export const apiMockResultFixed: IApiFixedResult = {
       mjd_stop: 58721.62507847222,
       preview_url:
         'https://sbnsurveys.astro.umd.edu/api/images/urn:nasa:pds:gbo.ast.atlas.survey.242:58721:01a58721o0830o.fits?ra=83.63333333333331&dec=22.013333333333332&size=0.16deg&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.atlas.survey.242:58721:01a58721o0830o.fits',
+      product_id: 'urn:nasa:pds:gbo.ast.atlas.survey.242:58721:01a58721o0830o.fits',
       seeing: null,
       source: 'atlas_mauna_loa',
       source_name: 'ATLAS Hawaii, Mauna Loa',
@@ -1695,8 +1675,7 @@ export const apiMockResultFixed: IApiFixedResult = {
       mjd_stop: 58733.593726851854,
       preview_url:
         'https://sbnsurveys.astro.umd.edu/api/images/urn:nasa:pds:gbo.ast.atlas.survey.242:58733:01a58733o0779o.fits?ra=83.63333333333331&dec=22.013333333333332&size=0.16deg&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.atlas.survey.242:58733:01a58733o0779o.fits',
+      product_id: 'urn:nasa:pds:gbo.ast.atlas.survey.242:58733:01a58733o0779o.fits',
       seeing: null,
       source: 'atlas_mauna_loa',
       source_name: 'ATLAS Hawaii, Mauna Loa',
@@ -1718,8 +1697,7 @@ export const apiMockResultFixed: IApiFixedResult = {
       mjd_stop: 58733.59418726852,
       preview_url:
         'https://sbnsurveys.astro.umd.edu/api/images/urn:nasa:pds:gbo.ast.atlas.survey.242:58733:01a58733o0780o.fits?ra=83.63333333333331&dec=22.013333333333332&size=0.16deg&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.atlas.survey.242:58733:01a58733o0780o.fits',
+      product_id: 'urn:nasa:pds:gbo.ast.atlas.survey.242:58733:01a58733o0780o.fits',
       seeing: null,
       source: 'atlas_mauna_loa',
       source_name: 'ATLAS Hawaii, Mauna Loa',
@@ -1741,8 +1719,7 @@ export const apiMockResultFixed: IApiFixedResult = {
       mjd_stop: 58733.59741412037,
       preview_url:
         'https://sbnsurveys.astro.umd.edu/api/images/urn:nasa:pds:gbo.ast.atlas.survey.242:58733:01a58733o0787o.fits?ra=83.63333333333331&dec=22.013333333333332&size=0.16deg&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.atlas.survey.242:58733:01a58733o0787o.fits',
+      product_id: 'urn:nasa:pds:gbo.ast.atlas.survey.242:58733:01a58733o0787o.fits',
       seeing: null,
       source: 'atlas_mauna_loa',
       source_name: 'ATLAS Hawaii, Mauna Loa',
@@ -1764,8 +1741,7 @@ export const apiMockResultFixed: IApiFixedResult = {
       mjd_stop: 58733.597874189814,
       preview_url:
         'https://sbnsurveys.astro.umd.edu/api/images/urn:nasa:pds:gbo.ast.atlas.survey.242:58733:01a58733o0788o.fits?ra=83.63333333333331&dec=22.013333333333332&size=0.16deg&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.atlas.survey.242:58733:01a58733o0788o.fits',
+      product_id: 'urn:nasa:pds:gbo.ast.atlas.survey.242:58733:01a58733o0788o.fits',
       seeing: null,
       source: 'atlas_mauna_loa',
       source_name: 'ATLAS Hawaii, Mauna Loa',
@@ -1787,8 +1763,7 @@ export const apiMockResultFixed: IApiFixedResult = {
       mjd_stop: 58733.602966087965,
       preview_url:
         'https://sbnsurveys.astro.umd.edu/api/images/urn:nasa:pds:gbo.ast.atlas.survey.242:58733:01a58733o0799o.fits?ra=83.63333333333331&dec=22.013333333333332&size=0.16deg&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.atlas.survey.242:58733:01a58733o0799o.fits',
+      product_id: 'urn:nasa:pds:gbo.ast.atlas.survey.242:58733:01a58733o0799o.fits',
       seeing: null,
       source: 'atlas_mauna_loa',
       source_name: 'ATLAS Hawaii, Mauna Loa',
@@ -1810,8 +1785,7 @@ export const apiMockResultFixed: IApiFixedResult = {
       mjd_stop: 58733.60342604166,
       preview_url:
         'https://sbnsurveys.astro.umd.edu/api/images/urn:nasa:pds:gbo.ast.atlas.survey.242:58733:01a58733o0800o.fits?ra=83.63333333333331&dec=22.013333333333332&size=0.16deg&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.atlas.survey.242:58733:01a58733o0800o.fits',
+      product_id: 'urn:nasa:pds:gbo.ast.atlas.survey.242:58733:01a58733o0800o.fits',
       seeing: null,
       source: 'atlas_mauna_loa',
       source_name: 'ATLAS Hawaii, Mauna Loa',
@@ -1833,8 +1807,7 @@ export const apiMockResultFixed: IApiFixedResult = {
       mjd_stop: 58733.61456446759,
       preview_url:
         'https://sbnsurveys.astro.umd.edu/api/images/urn:nasa:pds:gbo.ast.atlas.survey.242:58733:01a58733o0824o.fits?ra=83.63333333333331&dec=22.013333333333332&size=0.16deg&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.atlas.survey.242:58733:01a58733o0824o.fits',
+      product_id: 'urn:nasa:pds:gbo.ast.atlas.survey.242:58733:01a58733o0824o.fits',
       seeing: null,
       source: 'atlas_mauna_loa',
       source_name: 'ATLAS Hawaii, Mauna Loa',
@@ -1856,8 +1829,7 @@ export const apiMockResultFixed: IApiFixedResult = {
       mjd_stop: 58733.615024074075,
       preview_url:
         'https://sbnsurveys.astro.umd.edu/api/images/urn:nasa:pds:gbo.ast.atlas.survey.242:58733:01a58733o0825o.fits?ra=83.63333333333331&dec=22.013333333333332&size=0.16deg&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.atlas.survey.242:58733:01a58733o0825o.fits',
+      product_id: 'urn:nasa:pds:gbo.ast.atlas.survey.242:58733:01a58733o0825o.fits',
       seeing: null,
       source: 'atlas_mauna_loa',
       source_name: 'ATLAS Hawaii, Mauna Loa',
@@ -1879,8 +1851,7 @@ export const apiMockResultFixed: IApiFixedResult = {
       mjd_stop: 58733.64239270833,
       preview_url:
         'https://sbnsurveys.astro.umd.edu/api/images/urn:nasa:pds:gbo.ast.atlas.survey.242:58733:01a58733o0882o.fits?ra=83.63333333333331&dec=22.013333333333332&size=0.16deg&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.atlas.survey.242:58733:01a58733o0882o.fits',
+      product_id: 'urn:nasa:pds:gbo.ast.atlas.survey.242:58733:01a58733o0882o.fits',
       seeing: null,
       source: 'atlas_mauna_loa',
       source_name: 'ATLAS Hawaii, Mauna Loa',
@@ -1902,8 +1873,7 @@ export const apiMockResultFixed: IApiFixedResult = {
       mjd_stop: 58737.58378368056,
       preview_url:
         'https://sbnsurveys.astro.umd.edu/api/images/urn:nasa:pds:gbo.ast.atlas.survey.242:58737:01a58737o0659o.fits?ra=83.63333333333331&dec=22.013333333333332&size=0.16deg&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.atlas.survey.242:58737:01a58737o0659o.fits',
+      product_id: 'urn:nasa:pds:gbo.ast.atlas.survey.242:58737:01a58737o0659o.fits',
       seeing: null,
       source: 'atlas_mauna_loa',
       source_name: 'ATLAS Hawaii, Mauna Loa',
@@ -1925,8 +1895,7 @@ export const apiMockResultFixed: IApiFixedResult = {
       mjd_stop: 58737.58733796296,
       preview_url:
         'https://sbnsurveys.astro.umd.edu/api/images/urn:nasa:pds:gbo.ast.atlas.survey.242:58737:01a58737o0665o.fits?ra=83.63333333333331&dec=22.013333333333332&size=0.16deg&format=jpeg',
-      product_id:
-        'urn:nasa:pds:gbo.ast.atlas.survey.242:58737:01a58737o0665o.fits',
+      product_id: 'urn:nasa:pds:gbo.ast.atlas.survey.242:58737:01a58737o0665o.fits',
       seeing: null,
       source: 'atlas_mauna_loa',
       source_name: 'ATLAS Hawaii, Mauna Loa',

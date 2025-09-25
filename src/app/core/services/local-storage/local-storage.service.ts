@@ -1,5 +1,6 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { OverlayContainer } from '@angular/cdk/overlay';
+import { isPlatformBrowser } from '@angular/common';
 import { ILocalStorageState } from '../../../../models/ILocalStorageState';
 
 type LSKey = keyof ILocalStorageState; // Define type for 'LocalStorageKeys'
@@ -11,6 +12,9 @@ export class LocalStorageService {
   // App-specific prefix for localStorage keys to avoid conflicts with other libraries
   private readonly APP_PREFIX = 'sbn_catch_';
 
+  private readonly isBrowser: boolean;
+  private memoryStore: Record<string, string> = {};
+
   private defaultPermittedLocalStorageState: ILocalStorageState = {
     siteTheme: 'DARK-THEME',
     isPageAnimated: true,
@@ -20,23 +24,30 @@ export class LocalStorageService {
     testKey: 'foo',
   };
 
-  constructor(private overlayContainer: OverlayContainer) {}
+  constructor(
+    private overlayContainer: OverlayContainer,
+    @Inject(PLATFORM_ID) platformId: Object,
+  ) {
+    this.isBrowser = isPlatformBrowser(platformId);
+  }
 
   getLocalStorageState(): ILocalStorageState {
     try {
-      // Only get app-specific keys (those with our prefix)
-      const appKeys = Object.keys(localStorage)
-        .filter(key => key.startsWith(this.APP_PREFIX))
-        .map(key => key.substring(this.APP_PREFIX.length));
+      if (!this.isBrowser) {
+        // On the server, return a safe default clone
+        return { ...this.defaultPermittedLocalStorageState };
+      }
 
-      // Build copy of localStorage as js object with only app-specific keys
-      return appKeys.reduce(
-        (accumState: any, key: string) => {
-          accumState[key] = this.getItem(key as LSKey);
-          return accumState;
-        },
-        {}
-      );
+      // Only get app-specific keys (those with our prefix)
+      const appKeys = Object.keys(window.localStorage)
+        .filter((key) => key.startsWith(this.APP_PREFIX))
+        .map((key) => key.substring(this.APP_PREFIX.length));
+
+      // Build copy of localStorage as JS object with only app-specific keys
+      return appKeys.reduce((accumState: any, key: string) => {
+        accumState[key] = this.getItem(key as LSKey);
+        return accumState;
+      }, {});
     } catch (e) {
       return { ...this.defaultPermittedLocalStorageState };
     }
@@ -46,7 +57,9 @@ export class LocalStorageService {
     try {
       // Retrieve parsed individual item using prefixed key
       const prefixedKey = this.APP_PREFIX + key;
-      const item = localStorage.getItem(prefixedKey);
+      const item = this.isBrowser
+        ? window.localStorage.getItem(prefixedKey)
+        : this.memoryStore[prefixedKey];
       
       try {
         return !!item ? JSON.parse(item) : 'NO_ITEM_FOUND';
@@ -63,8 +76,13 @@ export class LocalStorageService {
     try {
       // Set individual key-value pair in localStorage with prefix
       const prefixedKey = this.APP_PREFIX + key;
-      window.localStorage.setItem(prefixedKey, JSON.stringify(value));
-      if (key === 'siteTheme') this.updateCdkOverlayClass(value);
+      if (this.isBrowser) {
+        window.localStorage.setItem(prefixedKey, JSON.stringify(value));
+        if (key === 'siteTheme') this.updateCdkOverlayClass(value);
+      } else {
+        // Store in-memory on the server to avoid ReferenceError
+        this.memoryStore[prefixedKey] = JSON.stringify(value);
+      }
     } catch (e) {
       console.error(`Error setting localStorage item '${key}':`, e);
     }
@@ -74,7 +92,11 @@ export class LocalStorageService {
     try {
       // Remove individual key-value pair from localStorage, with prefix
       const prefixedKey = this.APP_PREFIX + key;
-      window.localStorage.removeItem(prefixedKey);
+      if (this.isBrowser) {
+        window.localStorage.removeItem(prefixedKey);
+      } else {
+        delete this.memoryStore[prefixedKey];
+      }
     } catch (e) {
       console.error(`Error removing localStorage item '${key}':`, e);
     }
@@ -121,13 +143,76 @@ export class LocalStorageService {
     });
   }
 
+  // ===== Dynamic app-key helpers for arbitrary items (e.g., API data cache)
+  getAppItemDynamic<T = any>(dynamicKey: string): T | undefined {
+    try {
+      const prefixedKey = this.APP_PREFIX + dynamicKey;
+      const item = this.isBrowser
+        ? window.localStorage.getItem(prefixedKey)
+        : this.memoryStore[prefixedKey];
+      if (!item) return undefined;
+      return JSON.parse(item) as T;
+    } catch (e) {
+      console.error(`Error reading dynamic localStorage item '${dynamicKey}':`, e);
+      return undefined;
+    }
+  }
+
+  setAppItemDynamic(dynamicKey: string, value: any) {
+    try {
+      const prefixedKey = this.APP_PREFIX + dynamicKey;
+      if (this.isBrowser) {
+        window.localStorage.setItem(prefixedKey, JSON.stringify(value));
+      } else {
+        this.memoryStore[prefixedKey] = JSON.stringify(value);
+      }
+    } catch (e) {
+      console.error(`Error setting dynamic localStorage item '${dynamicKey}':`, e);
+    }
+  }
+
+  removeAppItemDynamic(dynamicKey: string) {
+    this.removeItem(dynamicKey);
+  }
+
+  /**
+   * Remove all API cache entries (keys beginning with APP_PREFIX + 'api_cache_').
+   * Returns the number of entries removed.
+   */
+  clearApiCache(): number {
+    try {
+      const cachePrefix = this.APP_PREFIX + 'api_cache_';
+      let removed = 0;
+      if (this.isBrowser) {
+        Object.keys(window.localStorage).forEach((k) => {
+          if (k.startsWith(cachePrefix)) {
+            window.localStorage.removeItem(k);
+            removed += 1;
+          }
+        });
+      } else {
+        Object.keys(this.memoryStore).forEach((k) => {
+          if (k.startsWith(cachePrefix)) {
+            delete this.memoryStore[k];
+            removed += 1;
+          }
+        });
+      }
+      return removed;
+    } catch (e) {
+      console.error('Error clearing API cache', e);
+      return 0;
+    }
+  }
+
   /**
    * Method to be triggered when SiteTheme is updated to update div of class
    * 'cdk-overlay-container' to also be of class equal to the theme's name
    */
   updateCdkOverlayClass(newTheme: string) {
-    const classList: DOMTokenList =
-      this.overlayContainer.getContainerElement().classList;
+    if (!this.isBrowser) return;
+
+    const classList: DOMTokenList = this.overlayContainer.getContainerElement().classList;
     const toRemove = Array.from(classList).filter((item: string) =>
       item.includes('-theme')
     );

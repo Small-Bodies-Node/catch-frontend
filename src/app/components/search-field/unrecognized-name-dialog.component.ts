@@ -60,7 +60,7 @@ export class UnrecognizedNameDialogComponent {
   }
 
   @HostListener('keydown.enter', ['$event'])
-  handleEnterKey(event: KeyboardEvent) {
+  handleEnterKey(event: Event) {
     event.preventDefault(); // Prevent ENTER key from triggering any actions
   }
 }

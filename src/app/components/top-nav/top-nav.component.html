@@ -1,0 +1,10 @@
+<div class="links">
+  <a
+    *ngFor="let link of links"
+    mat-button
+    [routerLink]="link.path"
+    routerLinkActive="active"
+    [routerLinkActiveOptions]="{ exact: link.exact === true }"
+    >{{ link.label }}</a
+  >
+</div>

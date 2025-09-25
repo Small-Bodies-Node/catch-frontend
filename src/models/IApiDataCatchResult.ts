@@ -16,6 +16,7 @@ export interface IApiDataCatchResult {
     start_date: string | null;
     stop_date: string | null;
   };
+  queue_full: boolean;
   queued: boolean;
   results: string;
   version: string;

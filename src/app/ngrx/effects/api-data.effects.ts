@@ -1,7 +1,7 @@
 import { createEffect, Actions, ofType } from '@ngrx/effects';
 import { inject } from '@angular/core';
 import { of, concat, EMPTY } from 'rxjs';
-import { filter, map, switchMap, takeUntil, tap } from 'rxjs/operators';
+import { filter, map, switchMap, takeUntil, tap, take } from 'rxjs/operators';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import {
@@ -12,6 +12,7 @@ import {
   ApiDataAction_SetSelectedDatum,
   ApiDataAction_SetShownColState,
   ApiDataAction_SetStatus,
+  ApiDataAction_SetSmallBodyType,
 } from '../actions/api-data.actions';
 import { ApiDataService } from '../../core/services/api-data/api-data.service';
 import { DelayedRouterService } from '../../core/services/delayed-router/delayed-router.service';
@@ -23,6 +24,48 @@ import { colog } from '../../../utils/colog';
 import { summarizeAction } from '../../../utils/summarizeAction';
 import { initColStateFixed } from '../../../utils/initColStateFixed';
 import { initColStateMoving } from '../../../utils/initColStateMoving';
+import { LocalStorageService } from '../../core/services/local-storage/local-storage.service';
+import { IApiMovum } from '../../../models/IApiMovum';
+import { IApiFixum } from '../../../models/IApiFixum';
+import { TApiDataSearch } from '../../../models/TApiDataSearch';
+import { Store } from '@ngrx/store';
+import { IAppState } from '../reducers';
+import { selectApiSmallBodyType } from '../selectors/api-data.selectors';
+
+const CACHE_PREFIX = 'api_cache_';
+function normalizeForKey(v: any): string {
+  if (v === null || typeof v === 'undefined') return 'none';
+  if (typeof v === 'boolean') return v ? 'true' : 'false';
+  return String(v);
+}
+function buildCacheKeyForSearch(search: TApiDataSearch): string {
+  if (search.searchType === 'moving') {
+    const { target, padding, uncertainty_ellipse, start_date, stop_date, sources } = search.searchParams;
+    const sourcesStr = sources && sources.length ? [...sources].sort().join('-') : 'none';
+    return [
+      'moving',
+      normalizeForKey(target),
+      normalizeForKey(padding),
+      normalizeForKey(uncertainty_ellipse),
+      normalizeForKey(start_date),
+      normalizeForKey(stop_date),
+      sourcesStr,
+    ].join('_');
+  } else {
+    const { ra, dec, radius, intersection_type, start_date, stop_date, sources } = search.searchParams as any;
+    const sourcesStr = sources && sources.length ? [...sources].sort().join('-') : 'none';
+    return [
+      'fixed',
+      normalizeForKey(ra),
+      normalizeForKey(dec),
+      normalizeForKey(radius),
+      normalizeForKey(intersection_type),
+      normalizeForKey(start_date),
+      normalizeForKey(stop_date),
+      sourcesStr,
+    ].join('_');
+  }
+}
 
 export const setApiStatus$ = createEffect(
   (
@@ -103,7 +146,12 @@ export const setApiStatus$ = createEffect(
 );
 
 export const fetchApiDataResults$ = createEffect(
-  (actions$ = inject(Actions), apiDataService = inject(ApiDataService)) => {
+  (
+    actions$ = inject(Actions),
+    apiDataService = inject(ApiDataService),
+    localStorageService = inject(LocalStorageService),
+    store$ = inject(Store<IAppState>),
+  ) => {
     return actions$.pipe(
       map((action) => {
         // console.log('Action: ', action, new Date().toUTCString());
@@ -123,6 +171,39 @@ export const fetchApiDataResults$ = createEffect(
               apiData: undefined,
             })
           );
+        }
+
+        // Try cache for moving searches when cached=true
+        if (search.searchType === 'moving' && (search.searchParams as ISearchParamsMoving).cached) {
+          const cacheKey = CACHE_PREFIX + buildCacheKeyForSearch(search as TApiDataSearch);
+          const cached = localStorageService.getAppItemDynamic<{
+            apiData: (IApiMovum | IApiFixum)[];
+            job_id?: string;
+            smallBodyType?: 'asteroid' | 'comet';
+            cachedAt?: string;
+          }>(cacheKey);
+          if (cached && Array.isArray(cached.apiData) && cached.apiData.length) {
+            const apiData = cached.apiData;
+            const newDownloadRowState = getNewDownloadState(apiData);
+            const apiDataShownColState = initColStateMoving;
+            return concat(
+              of(ApiDataAction_SetData({ apiData })),
+              of(ApiDataAction_SetJobId({ job_id: cached.job_id || 'LOCAL_CACHE' })),
+              of(ApiDataAction_SetSelectedDatum({ apiDatum: apiData[0] })),
+              of(ApiDataAction_SetDownloadRowState({ newDownloadRowState })),
+              of(ApiDataAction_SetShownColState({ apiDataShownColState })),
+              ...(cached.smallBodyType
+                ? [of(ApiDataAction_SetSmallBodyType({ smallBodyType: cached.smallBodyType }))]
+                : []),
+              of(
+                ApiDataAction_SetStatus({
+                  search,
+                  message: 'Loaded cached results',
+                  code: 'found',
+                })
+              )
+            );
+          }
         }
 
         const { searchType, searchParams } = search;
@@ -164,6 +245,30 @@ export const fetchApiDataResults$ = createEffect(
                 JSON.stringify(apiDataShownColState, null, 2),
                 'cyan'
               );
+            }
+
+            // Save to cache if requested (persist smallBodyType and timestamp)
+            try {
+              if (
+                searchType === 'moving' &&
+                (search.searchParams as ISearchParamsMoving).cached
+              ) {
+                const cacheKey = CACHE_PREFIX + buildCacheKeyForSearch(search as TApiDataSearch);
+                let smallBodyType: 'asteroid' | 'comet' | undefined = undefined;
+                try {
+                  store$.select(selectApiSmallBodyType).pipe(take(1)).subscribe((sbt) => (smallBodyType = sbt || undefined));
+                } catch (e) {
+                  console.warn('Unable to read smallBodyType from store for caching');
+                }
+                localStorageService.setAppItemDynamic(cacheKey, {
+                  apiData,
+                  job_id: job_id || 'N/A',
+                  smallBodyType,
+                  cachedAt: new Date().toISOString(),
+                });
+              }
+            } catch (e) {
+              console.error('Error caching API data', e);
             }
 
             /**

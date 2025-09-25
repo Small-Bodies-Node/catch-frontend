@@ -1,13 +1,13 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
-import { environment } from '../../../../environments/environment';
+import { environment } from '../../../../environments/environment.local';
 
 /**
  * Constants for email service
  */
 export const EMAIL_CONSTANTS = {
-  DEFAULT_SUBJECT: 'Email from CATCH'
+  DEFAULT_SUBJECT: 'Email from CATCH',
 };
 
 @Injectable({
@@ -28,7 +28,7 @@ export class EmailerService {
     name: string,
     email: string,
     message: string,
-    captchaToken: string
+    captchaToken: string,
   ): Observable<{ success: boolean }> {
     const apiUrl = environment.awsWafConfig.endpoint;
 

@@ -1,9 +1,12 @@
 {
   "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
   "version": 1,
+  "cli": {
+    "packageManager": "npm"
+  },
   "newProjectRoot": "projects",
   "projects": {
-    "catch-frontend-ng19": {
+    "catch-frontend-ng20": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -15,10 +18,8 @@
       "prefix": "app",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:application",
+          "builder": "@angular/build:application",
           "options": {
-            "outputPath": "dist/catch-frontend-ng19",
-            "index": "src/index.html",
             "browser": "src/main.ts",
             "polyfills": ["zone.js"],
             "tsConfig": "tsconfig.app.json",
@@ -45,67 +46,90 @@
               "src/assets/js9-to-be-compiled/js9support.min.js",
               "src/assets/js9-to-be-compiled/js9.js",
               "src/assets/js9-to-be-compiled/js9plugins.js"
-            ]
+            ],
+            "server": "src/main.server.ts",
+            "outputMode": "server",
+            "ssr": {
+              "entry": "src/server.ts"
+            }
           },
           "configurations": {
-            "local": {
-              "outputHashing": "none",
-              "outputPath": "dist/catch-frontend-ng19-local",
-              "optimization": false,
-              "extractLicenses": false,
-              "sourceMap": true
-            },
-            "prod": {
+            "prod-deployment": {
               "budgets": [
                 {
                   "type": "initial",
                   "maximumWarning": "500kB",
-                  "maximumError": "10MB"
+                  "maximumError": "5MB"
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "2kB",
-                  "maximumError": "10kB"
+                  "maximumWarning": "4kB",
+                  "maximumError": "8kB"
                 }
               ],
               "outputHashing": "all",
-              "outputPath": "dist/catch-frontend-ng19-prod",
+              "outputPath": "dist/catch-frontend-ng20",
               "fileReplacements": [
                 {
-                  "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.prod.ts"
+                  "replace": "src/environments/environment.local.ts",
+                  "with": "src/environments/environment.prod-deployment.ts"
                 }
               ]
             },
-            "stage": {
+            "dev-deployment": {
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "500kB",
+                  "maximumError": "5MB"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "4kB",
+                  "maximumError": "8kB"
+                }
+              ],
+              "outputHashing": "all",
+              "outputPath": "dist/catch-frontend-ng20",
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.local.ts",
+                  "with": "src/environments/environment.dev-deployment.ts"
+                }
+              ]
+            },
+            "local": {
               "optimization": false,
               "extractLicenses": false,
               "sourceMap": true,
-              "outputPath": "dist/catch-frontend-ng19-stage",
-              "fileReplacements": [
-                {
-                  "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.stage.ts"
-                }
-              ]
+              "outputPath": "dist/catch-frontend-ng20"
             }
           },
-          "defaultConfiguration": "local"
+          "defaultConfiguration": "production"
         },
         "serve": {
-          "builder": "@angular-devkit/build-angular:dev-server",
+          "builder": "@angular/build:dev-server",
+          "options": {
+            "proxyConfig": "proxy.conf.json"
+          },
           "configurations": {
+            "prod-deployment": {
+              "buildTarget": "catch-frontend-ng20:build:prod-deployment"
+            },
+            "dev-deployment": {
+              "buildTarget": "catch-frontend-ng20:build:dev-deployment"
+            },
             "local": {
-              "buildTarget": "catch-frontend-ng19:build:local"
+              "buildTarget": "catch-frontend-ng20:build:local"
             }
           },
           "defaultConfiguration": "local"
         },
         "extract-i18n": {
-          "builder": "@angular-devkit/build-angular:extract-i18n"
+          "builder": "@angular/build:extract-i18n"
         },
         "test": {
-          "builder": "@angular-devkit/build-angular:karma",
+          "builder": "@angular/build:karma",
           "options": {
             "polyfills": ["zone.js", "zone.js/testing"],
             "tsConfig": "tsconfig.spec.json",
@@ -114,61 +138,12 @@
               {
                 "glob": "**/*",
                 "input": "public"
-              },
-              "src/assets",
-              "src/assets/fits",
-              "src/assets/js9-to-be-served",
-              "src/assets/js9-to-be-compiled",
-              "src/assets/socket.io",
-              {
-                "glob": "**/*",
-                "input": "src/assets/socket.io/",
-                "output": "/socket.io/"
               }
             ],
-            "styles": ["src/styles/styles.scss"],
-            "scripts": [
-              "src/assets/js9-to-be-compiled/js9prefs.js",
-              "src/assets/js9-to-be-compiled/js9support.min.js",
-              "src/assets/js9-to-be-compiled/js9.js",
-              "src/assets/js9-to-be-compiled/js9plugins.js"
-            ]
-          }
-        }
-      }
-    },
-    "ngx-js9": {
-      "projectType": "library",
-      "root": "projects/ngx-js9",
-      "sourceRoot": "projects/ngx-js9/src",
-      "prefix": "lib",
-      "architect": {
-        "build": {
-          "builder": "@angular-devkit/build-angular:ng-packagr",
-          "options": {
-            "project": "projects/ngx-js9/ng-package.json"
-          },
-          "configurations": {
-            "prod": {
-              "tsConfig": "projects/ngx-js9/tsconfig.lib.prod.json"
-            },
-            "dev": {
-              "tsConfig": "projects/ngx-js9/tsconfig.lib.json"
-            }
-          },
-          "defaultConfiguration": "prod"
-        },
-        "test": {
-          "builder": "@angular-devkit/build-angular:karma",
-          "options": {
-            "tsConfig": "projects/ngx-js9/tsconfig.spec.json",
-            "polyfills": ["zone.js", "zone.js/testing"]
+            "styles": ["src/styles/styles.scss"]
           }
         }
       }
     }
-  },
-  "cli": {
-    "analytics": false
   }
 }

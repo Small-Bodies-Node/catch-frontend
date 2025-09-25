@@ -1,14 +1,9 @@
 import { CommonModule } from '@angular/common';
-import {
-  Component,
-  OnInit,
-  OnDestroy,
-  ViewChild,
-  ChangeDetectorRef,
-} from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
-import { FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { MatAutocompleteTrigger } from '@angular/material/autocomplete';
+import { FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { MatAutocomplete, MatAutocompleteTrigger } from '@angular/material/autocomplete';
+import { MatOption } from '@angular/material/core';
 import { Subscription } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { Store } from '@ngrx/store';
@@ -25,27 +20,56 @@ import {
   formControlDict,
   TControlKeyForGroupForm,
 } from '../../../models/TControlKeyForGroupForm';
-import { SharedModule } from '../../shared/shared.module';
 import {
   controlKeysForSources,
   TControlKeyForSources,
 } from '../../../models/TControlKeyForSources';
 import { toolTipTextDict } from '../../../utils/toolTipTextDict';
-import {
-  intersectionTypeLabels,
-  intersectionTypes,
-} from '../../../models/TIntersectionType';
+import { intersectionTypeLabels, intersectionTypes } from '../../../models/TIntersectionType';
 import { fixedTargets } from '../../../utils/fixedTargets';
 import { pastelGreen, pastelPink } from '../../../utils/constants';
 import { TMovingVsFixed } from '../../../models/TMovingVsFixed';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatFormField, MatLabel } from '@angular/material/form-field';
+import { MatError } from '@angular/material/form-field';
+import { MatHint } from '@angular/material/form-field';
+import { MatIcon } from '@angular/material/icon';
+import { MatButton, MatFabButton } from '@angular/material/button';
+import { MatButtonToggle, MatButtonToggleGroup } from '@angular/material/button-toggle';
+import { MatCheckbox } from '@angular/material/checkbox';
+import { MatTooltip } from '@angular/material/tooltip';
+import { MatSelect } from '@angular/material/select';
 
 const searchFormDebounceTimeMs = 200;
 
 @Component({
   selector: 'app-search-field',
+  standalone: true,
   templateUrl: './search-field.component.html',
   styleUrls: ['./search-field.component.scss'],
-  imports: [CommonModule, ReactiveFormsModule, SharedModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    FormsModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatFormField,
+    MatLabel,
+    MatAutocomplete,
+    MatAutocompleteTrigger,
+    MatOption,
+    MatError,
+    MatHint,
+    MatIcon,
+    MatButton,
+    MatFabButton,
+    MatButtonToggle,
+    MatButtonToggleGroup,
+    MatCheckbox,
+    MatTooltip,
+    MatSelect,
+  ],
 })
 export class SearchFieldComponent implements OnInit, OnDestroy {
   // --->>>
@@ -77,7 +101,7 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
   constructor(
     private dialog: MatDialog,
     private store$: Store<IAppState>,
-    private changeDetectorRef: ChangeDetectorRef
+    private changeDetectorRef: ChangeDetectorRef,
   ) {
     // --->>>
 
@@ -91,7 +115,7 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
           .reduce((acc, el) => {
             return Math.max(acc, el);
           }, 0);
-      })
+      }),
     );
 
     this.subscriptions.add(
@@ -99,7 +123,7 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
         if (status.code === 'searching') {
           this.isAdvancedControls = false;
         }
-      })
+      }),
     );
 
     this.subscriptions.add(
@@ -116,7 +140,7 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
 
           // Search-field-dropdown logic
           this.updateSearchField(value['search_field_control']);
-        })
+        }),
     );
   }
 
@@ -132,9 +156,7 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
    */
   isTargetMatched(inputText?: string) {
     const text = inputText || this.latestInputText.trim();
-    const match = this.objectNameMatchResults.find(
-      (el) => el.target === text.trim()
-    );
+    const match = this.objectNameMatchResults.find((el) => el.target === text.trim());
     return !!match;
   }
 
@@ -146,10 +168,9 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
     if (isSelectAllSources !== this.isAllSourcesSelected) {
       this.isAllSourcesSelected = isSelectAllSources;
       controlKeysForSources.forEach((controlKeyForSources) => {
-        this.formGroup.controls[controlKeyForSources].setValue(
-          isSelectAllSources,
-          { emitEvent: false }
-        );
+        this.formGroup.controls[controlKeyForSources].setValue(isSelectAllSources, {
+          emitEvent: false,
+        });
       });
     }
     // Update errors AFTER checkboxes get updated!
@@ -167,7 +188,7 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
         this.store$.dispatch(
           ObjectNameMatchAction_FetchResults({
             searchTerm: this.latestInputText,
-          })
+          }),
         );
       }
     }
@@ -197,14 +218,12 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
   }
 
   getSelectAllSourcesLabel() {
-    const isSelected =
-      !!this.formGroup.controls.select_all_sources_control.value;
+    const isSelected = !!this.formGroup.controls.select_all_sources_control.value;
     return isSelected ? 'Deselect All Sources' : 'Select All Sources';
   }
 
   getSelectAllSourcesLabelColor() {
-    const isSelected =
-      !!this.formGroup.controls.select_all_sources_control.value;
+    const isSelected = !!this.formGroup.controls.select_all_sources_control.value;
     return isSelected ? '#FFD1DC' : '#77DD77';
   }
 
@@ -219,21 +238,15 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
 
   getSearchMessageText() {
     if (this.latestInputText.length === 0) {
-      return this.isMovingTarget
-        ? 'Search for moving object'
-        : 'Search for fixed target';
+      return this.isMovingTarget ? 'Search for moving object' : 'Search for fixed target';
     }
 
     if (this.isMovingTarget) {
       const target = this.latestInputText.trim();
-      const match = this.objectNameMatchResults.find(
-        (el) => el.target === target
-      );
+      const match = this.objectNameMatchResults.find((el) => el.target === target);
       if (!!match) return 'Match: ' + match.display_text;
 
-      return this.isAtleastOneSourceSelected()
-        ? 'Unrecognized. Search anyway?'
-        : 'Unrecognized.';
+      return this.isAtleastOneSourceSelected() ? 'Unrecognized. Search anyway?' : 'Unrecognized.';
     } else {
       return 'Search for fixed target';
     }
@@ -250,14 +263,14 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
     if (!this.dialog.openDialogs.length) {
       const dialogRef = this.dialog.open<UnrecognizedNameDialogComponent, any>(
         UnrecognizedNameDialogComponent,
-        { data: { submittedText: target } }
+        { data: { submittedText: target } },
       );
       this.subscriptions.add(
         dialogRef.afterClosed().subscribe((isSearchConfirmed) => {
           if (!!isSearchConfirmed) {
             this.launchMovingObjectQuery(target);
           }
-        })
+        }),
       );
     }
   }
@@ -310,7 +323,7 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
         },
         message: 'Starting search....',
         code: 'initiated',
-      })
+      }),
     );
   }
 
@@ -339,7 +352,7 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
         },
         message: 'Starting fixed-target search....',
         code: 'initiated',
-      })
+      }),
     );
   }
 
@@ -367,14 +380,8 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
     // Neatly format displayed options to form:
     // "LongName1_______|_COMET"
     // "Name2___________|_ASTEROID"
-    const wSpaces =
-      this.lengthOfLongestDisplayText - option.display_text.length;
-    return (
-      option.display_text +
-      ' '.repeat(wSpaces > 0 ? wSpaces : 0) +
-      ' | ' +
-      option.body_type
-    );
+    const wSpaces = this.lengthOfLongestDisplayText - option.display_text.length;
+    return option.display_text + ' '.repeat(wSpaces > 0 ? wSpaces : 0) + ' | ' + option.body_type;
   }
 
   getInputTextColor() {
@@ -412,9 +419,7 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
 
   isSearchFieldError() {
     const isTargetUnrecognized =
-      !!this.formGroup.controls.search_field_control.errors?.[
-        'isTargetUnrecognized'
-      ];
+      !!this.formGroup.controls.search_field_control.errors?.['isTargetUnrecognized'];
     const isSourceNeeded =
       !!this.formGroup.controls.search_field_control.errors?.['isSourceNeeded'];
     const output = !!isTargetUnrecognized || !!isSourceNeeded;

@@ -8,7 +8,4 @@ export interface IEnvironment {
     endpoint: string;
     apiKey: string;
   };
-
-  //
-  serverApiBaseUrl: string;
 }

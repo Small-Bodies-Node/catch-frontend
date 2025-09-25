@@ -1,0 +1,40 @@
+.links {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.signin-msg {
+  opacity: 0.85;
+  margin-right: 12px;
+}
+
+.user-actions {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 8px;
+}
+
+.signin-compact {
+  display: none;
+}
+
+.signin-wide {
+  display: inline-flex;
+}
+
+@media (max-width: 768px) {
+  .links {
+    display: none;
+  }
+  .signin-compact {
+    display: inline-flex;
+  }
+  .signin-wide {
+    display: none;
+  }
+}
+
+.user-menu-trigger {
+  margin-left: 4px;
+}
