@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -13,7 +13,7 @@ import { CatchApiService } from '../../../core/services/dashboard-api/catch-api.
   templateUrl: './queries.component.html',
   styleUrls: ['./queries.component.scss'],
 })
-export class QueriesComponent implements OnInit, OnDestroy {
+export class QueriesComponent implements OnInit, OnDestroy, OnChanges {
   @Input() apiUrl!: string;
 
   queriesData: any = null;
@@ -26,6 +26,12 @@ export class QueriesComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadQueriesData();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['apiUrl'] && !changes['apiUrl'].firstChange) {
+      this.loadQueriesData();
+    }
   }
 
   ngOnDestroy(): void {

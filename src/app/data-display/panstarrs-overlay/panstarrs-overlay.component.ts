@@ -69,6 +69,7 @@ export class PanstarrsOverlayComponent
     dec: number;
   }[] = [];
   starDivDiameter = 6;
+  crosshairCenterCutoutFraction = 0.15; // Fraction of the line length to cut out from center
 
   // ---- Image rendering properties ----
   nativeImageWidth = 1; // Default to 1 to prevent division by zero initially

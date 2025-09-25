@@ -164,18 +164,19 @@ export class TitleDataComponent implements OnInit {
       })
     );
 
-    // Convert urls to "image blobs"
+    // Convert FITS urls to blobs directly (avoid service which adds '&align=true')
     const fitsImageBlobs = await Promise.all(
       fitsUrls.map(async ({ url, product_id }) => {
-        const blob = await this.imageFetchService
-          .fetchImage(url, { isPriority: false, label: url })
-          .then((objectUrl) => {
-            if (!objectUrl) return null;
-            return fetch(objectUrl)
-              .then((r) => r.blob())
-              .catch((_) => null);
-          });
-        return { url, product_id, blob };
+        const cleanUrl = url.replace(/[?&]align=true/, '');
+        try {
+          const res = await fetch(cleanUrl);
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const blob = await res.blob();
+          return { url: cleanUrl, product_id, blob };
+        } catch (e) {
+          console.error('Error fetching FITS', cleanUrl, e);
+          return { url: cleanUrl, product_id, blob: null as any };
+        }
       })
     );
 
@@ -188,7 +189,7 @@ export class TitleDataComponent implements OnInit {
         url,
       }));
     const fitsImageFiles = fitsImageBlobs
-      .filter(({ blob }) => blob) // Juzstifies ! below
+      .filter(({ blob }) => blob)
       .map(({ blob, product_id, url }, ind) => ({
         file: new File([blob!], this.fitsUrlsForDownload![ind]),
         product_id,
@@ -206,14 +207,11 @@ export class TitleDataComponent implements OnInit {
 
     // Convert JSON to CSV
     try {
-      console.log('==========');
-      console.log(this.apiDataForDownload);
-      console.log(Parser);
       const parser = new Parser();
       const csv2 = parser.parse(this.apiDataForDownload);
       zip.file(`${target}_data.csv`, csv2);
     } catch (err) {
-      console.log(err);
+      console.error(err);
     }
 
     // Create folders for images
@@ -222,11 +220,11 @@ export class TitleDataComponent implements OnInit {
 
     // Place images in respective folders
     jpgImageFiles.map(({ file, product_id }) => {
-      jpgs?.file(product_id + '.jpg', file, { base64: true });
+      jpgs?.file(product_id + '.jpg', file);
     });
 
     fitsImageFiles.map(({ file, product_id }) => {
-      fits?.file(product_id + '.fit', file, { base64: true });
+      fits?.file(product_id + '.fits', file);
     });
 
     zip.generateAsync({ type: 'blob' }).then((content: any) => {

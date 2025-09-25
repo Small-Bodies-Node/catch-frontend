@@ -1,6 +1,7 @@
 @if(imageSrc){
 <img
   [ngStyle]="getStyles()"
+  [style.image-rendering]="'pixelated'"
   [src]="imageSrc"
   alt="Loaded Image"
   [width]="width"

@@ -166,7 +166,13 @@ export class PlotlyGraphComponent implements OnInit {
 
             // PLOT SIZING
             width: !!isMiniMode ? 30 : size.width,
-            height: !!isMiniMode ? 30 : size.height,
+            // height: !!isMiniMode ? 30 : size.height,
+
+            // width: !!isMiniMode ? 30 : 500,
+            height: !!isMiniMode ? 30 : undefined,
+
+            // autosize: !isMiniMode,
+
             // margin: !!isMiniMode ? { l: 0, r: 0, b: 0, t: 0 } : undefined,
             margin: !!isMiniMode
               ? { l: 0, r: 0, b: 0, t: 0 }
@@ -270,7 +276,9 @@ export class PlotlyGraphComponent implements OnInit {
    */
   getPlotSize(): { width: number; height: number } {
     return {
-      width: 0.65 * window.innerWidth,
+      // width: 0.65 * window.innerWidth,
+      // width: '100%',
+      width: 500,
       height: window.innerHeight * 0.65,
     };
   }

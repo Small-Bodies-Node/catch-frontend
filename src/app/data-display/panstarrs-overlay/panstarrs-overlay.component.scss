@@ -50,7 +50,9 @@
 
   .ra-dec-div-wcs {
     position: absolute;
-    border: 1px dotted #00ffff; // Cyan dotted border for distinction
+    // border: 1px dotted #00ffff; // Cyan dotted border for distinction
+    border: 1px solid orange; // Cyan dotted border for distinction
+    // border: 1px dotted red; // Cyan dotted border for distinction
     background-color: rgba(0, 255, 255, 0.15); // Light cyan background
     border-radius: 50%; // Circular markers
     box-sizing: border-box;

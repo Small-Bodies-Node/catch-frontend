@@ -1,4 +1,5 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { GoogleAnalyticsService } from '../core/services/google-analytics.service';
 import { MatSidenav } from '@angular/material/sidenav';
 import { Store } from '@ngrx/store';
 import {
@@ -86,10 +87,12 @@ export class AppEntryComponent implements OnInit {
   constructor(
     private store$: Store<IAppState>,
     private localStorageService: LocalStorageService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private googleAnalyticsService: GoogleAnalyticsService
   ) {}
 
   ngOnInit(): void {
+    this.googleAnalyticsService.initPageViewTracking();
     this._onSiteLoad();
   }
 

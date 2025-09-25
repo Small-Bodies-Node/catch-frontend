@@ -152,9 +152,9 @@
         <tr>
           <td>Asteroid Terrestrial-impact Last Alert System (ATLAS)</td>
           <td>Haleakala Observatory, Hawaii, USA (T05)</td>
-          <td>December 2018 &ndash; September 2021<sup>c</sup></td>
-          <td>848<sup>c</sup></td>
-          <td>594,688<sup>c</sup></td>
+          <td>December 2018 &ndash; March 2024, ~July 2025<sup>c</sup></td>
+          <td>1,495<sup>c</sup></td>
+          <td>1,076,906<sup>c</sup></td>
           <td>1.86</td>
           <td>28</td>
           <td>o, c</td>
@@ -165,9 +165,9 @@
         <tr>
           <td>Asteroid Terrestrial-impact Last Alert System (ATLAS)</td>
           <td>Mauna Loa Observatory, Hawaii, USA (T08)</td>
-          <td>December 2018 &ndash; September 2021<sup>c</sup></td>
-          <td>978<sup>c</sup></td>
-          <td>741,270<sup>c</sup></td>
+          <td>December 2018 &ndash; March 2024, ~July 2025<sup>c</sup></td>
+          <td>1,367<sup>c</sup></td>
+          <td>1,043,037<sup>c</sup></td>
           <td>1.86</td>
           <td>28</td>
           <td>o, c</td>
@@ -178,9 +178,9 @@
         <tr>
           <td>Asteroid Terrestrial-impact Last Alert System (ATLAS)</td>
           <td>El Sauce Observatory, Rio Hurtado, Chile (W68)</td>
-          <td><sup>c</sup></td>
-          <td><sup>c</sup></td>
-          <td><sup>c</sup></td>
+          <td>January 2022 &ndash; March 2024, ~July 2025<sup>c</sup></td>
+          <td>736<sup>c</sup></td>
+          <td>544,460<sup>c</sup></td>
           <td>1.86</td>
           <td>28</td>
           <td>o, c</td>
@@ -194,9 +194,9 @@
             South African Astronomical Observatory, Sutherland Station, South
             Africa (M22)
           </td>
-          <td><sup>c</sup></td>
-          <td><sup>c</sup></td>
-          <td><sup>c</sup></td>
+          <td>December 2021 &ndash; March 2024, ~July 2025<sup>c</sup></td>
+          <td>648<sup>c</sup></td>
+          <td>394,914<sup>c</sup></td>
           <td>1.86</td>
           <td>28</td>
           <td>o, c</td>
@@ -207,9 +207,9 @@
         <tr>
           <td>Catalina Sky Survey</td>
           <td>Mt. Bigelow, Arizona, USA (703, V06)</td>
-          <td>January 2020 &ndash; December 2024<sup>c</sup></td>
-          <td>1,085<sup>c</sup></td>
-          <td>1,149,463<sup>c</sup></td>
+          <td>January 2020 &ndash; June 2025<sup>c</sup></td>
+          <td>1,251<sup>c</sup></td>
+          <td>1,408,208<sup>c</sup></td>
           <td>2.5 or 3.0 (703), 0.6 (V06)</td>
           <td>8.1 or 19.4 (703), 0.03 (V06)</td>
           <td>None</td>
@@ -224,9 +224,9 @@
         <tr>
           <td>Catalina Sky Survey</td>
           <td>Mt. Lemmon, Arizona, USA (G96, I52)</td>
-          <td>January 2020 &ndash; December 2024<sup>c</sup></td>
-          <td>1,154<sup>c</sup></td>
-          <td>1,493,143<sup>c</sup></td>
+          <td>January 2020 &ndash; June 2025<sup>c</sup></td>
+          <td>1,295<sup>c</sup></td>
+          <td>1,704,048<sup>c</sup></td>
           <td>1.0 or 1.5 (G96), 1.0 (I51)</td>
           <td>1.2 or 5.0 (G96), 0.3 (I52)</td>
           <td>None</td>
@@ -392,7 +392,7 @@
         <tr>
           <td colspan="11">
             <sup>c</sup>These archives are accumulating data with time. Archive
-            statistics were updated on 2025 Jan 19.
+            statistics were updated on 2025 July 29.
             <a href="https://catch-api.astro.umd.edu/status/sources"
               >Current statistics for CATCH holdings</a
             >
@@ -418,7 +418,15 @@
 
   <h3>Known issues</h3>
   <ol>
-    <li>NEAT and LONEOS astrometric solutions are up to ~3 arcmin off.</li>
+    <li>
+      NEAT and LONEOS astrometric solutions are typically up to ~5 arcmin off.
+    </li>
+
+    <li>
+      NEAT Palomar/Tricam data from the night of 2002 June 17 have a row-order
+      bug (C. Nugent, Olin College). These data are expected to be corrected in
+      a future archive update.
+    </li>
 
     <li>
       Target name resolution: our name resolution service is incomplete. Some
@@ -440,14 +448,25 @@
 
     <li>
       Images may not be correctly displayed in the image preview, which causes a
-      misalignment with the PanSTARRS catalog overlay. In such cases the image
-      will generally be flipped with respect to the catalog, even when the image
-      has an accurate astrometric solution.
+      misalignment with the PanSTARRS catalog overlay.
     </li>
   </ol>
 
   <h3>Updates</h3>
   <ul>
+    <li>
+      v3.0 (2025 Jul 9):
+      <ul>
+        <li>
+          All preview images are now aligned with equatorial north up and east
+          to the left, according to each image's world coordinate system.
+        </li>
+        <li>
+          Improved the PanSTARRS DR2 catalog overlay to use metadata embedded in
+          the JPEG cutouts, if available.
+        </li>
+      </ul>
+    </li>
     <li>
       v3.0-beta (2025 Jan 31):
       <ul>
