@@ -55,7 +55,6 @@ export const routes: Routes | ILinkedRoute[] = [
   },
   {
     path: 'data',
-    // component: DataPageComponent,
     loadComponent: () =>
       import('../pages/data-page/data-page.component').then((m) => m.DataPageComponent),
   },

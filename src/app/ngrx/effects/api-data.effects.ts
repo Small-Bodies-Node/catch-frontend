@@ -1,6 +1,6 @@
 import { createEffect, Actions, ofType } from '@ngrx/effects';
 import { inject } from '@angular/core';
-import { of, concat, EMPTY } from 'rxjs';
+import { of, concat, EMPTY, from } from 'rxjs';
 import { filter, map, switchMap, takeUntil, tap, take } from 'rxjs/operators';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
@@ -24,7 +24,7 @@ import { colog } from '../../../utils/colog';
 import { summarizeAction } from '../../../utils/summarizeAction';
 import { initColStateFixed } from '../../../utils/initColStateFixed';
 import { initColStateMoving } from '../../../utils/initColStateMoving';
-import { LocalStorageService } from '../../core/services/local-storage/local-storage.service';
+import { IndexedDbCacheService } from '../../core/services/indexeddb-cache/indexeddb-cache.service';
 import { IApiMovum } from '../../../models/IApiMovum';
 import { IApiFixum } from '../../../models/IApiFixum';
 import { TApiDataSearch } from '../../../models/TApiDataSearch';
@@ -149,7 +149,7 @@ export const fetchApiDataResults$ = createEffect(
   (
     actions$ = inject(Actions),
     apiDataService = inject(ApiDataService),
-    localStorageService = inject(LocalStorageService),
+    indexedDbCacheService = inject(IndexedDbCacheService),
     store$ = inject(Store<IAppState>),
   ) => {
     return actions$.pipe(
@@ -173,45 +173,124 @@ export const fetchApiDataResults$ = createEffect(
           );
         }
 
-        // Try cache for moving searches when cached=true
+        // Try cache for moving searches when cached=true (IndexedDB)
         if (search.searchType === 'moving' && (search.searchParams as ISearchParamsMoving).cached) {
           const cacheKey = CACHE_PREFIX + buildCacheKeyForSearch(search as TApiDataSearch);
-          const cached = localStorageService.getAppItemDynamic<{
-            apiData: (IApiMovum | IApiFixum)[];
-            job_id?: string;
-            smallBodyType?: 'asteroid' | 'comet';
-            cachedAt?: string;
-          }>(cacheKey);
-          if (cached && Array.isArray(cached.apiData) && cached.apiData.length) {
-            const apiData = cached.apiData;
-            const newDownloadRowState = getNewDownloadState(apiData);
-            const apiDataShownColState = initColStateMoving;
-            return concat(
-              of(ApiDataAction_SetData({ apiData })),
-              of(ApiDataAction_SetJobId({ job_id: cached.job_id || 'LOCAL_CACHE' })),
-              of(ApiDataAction_SetSelectedDatum({ apiDatum: apiData[0] })),
-              of(ApiDataAction_SetDownloadRowState({ newDownloadRowState })),
-              of(ApiDataAction_SetShownColState({ apiDataShownColState })),
-              ...(cached.smallBodyType
-                ? [of(ApiDataAction_SetSmallBodyType({ smallBodyType: cached.smallBodyType }))]
-                : []),
-              of(
-                ApiDataAction_SetStatus({
-                  search,
-                  message: 'Loaded cached results',
-                  code: 'found',
-                })
-              )
-            );
-          }
+          return from(
+            indexedDbCacheService.get<{
+              apiData: (IApiMovum | IApiFixum)[];
+              job_id?: string;
+              smallBodyType?: 'asteroid' | 'comet';
+              cachedAt?: string;
+            }>(cacheKey)
+          ).pipe(
+            switchMap((cached) => {
+              if (cached && Array.isArray(cached.apiData) && cached.apiData.length) {
+                const apiData = cached.apiData;
+                const newDownloadRowState = getNewDownloadState(apiData);
+                const apiDataShownColState = initColStateMoving;
+                return concat(
+                  of(ApiDataAction_SetData({ apiData })),
+                  of(ApiDataAction_SetJobId({ job_id: cached.job_id || 'LOCAL_CACHE' })),
+                  of(ApiDataAction_SetSelectedDatum({ apiDatum: apiData[0] })),
+                  of(ApiDataAction_SetDownloadRowState({ newDownloadRowState })),
+                  of(ApiDataAction_SetShownColState({ apiDataShownColState })),
+                  ...(cached.smallBodyType
+                    ? [of(ApiDataAction_SetSmallBodyType({ smallBodyType: cached.smallBodyType }))]
+                    : []),
+                  of(
+                    ApiDataAction_SetStatus({
+                      search,
+                      message: 'Loaded cached results',
+                      code: 'found',
+                    })
+                  )
+                );
+              }
+
+              // Else fall through to network fetch below (we are in a 'moving' branch)
+              const dataFetchObservable =
+                apiDataService.fetchApiDataMoving(
+                  search.searchParams as ISearchParamsMoving
+                );
+
+              return dataFetchObservable.pipe(
+                switchMap((wrappedApiDataResultOrError) => {
+                  const { status, message, job_id } = wrappedApiDataResultOrError;
+                  if (status === 'error') {
+                    return of(
+                      ApiDataAction_SetStatus({ search, message, code: 'error' })
+                    );
+                  }
+
+                  const { apiDataResult } = wrappedApiDataResultOrError;
+                  const apiData = apiDataResult.data;
+                  const isDataFound = !!apiData.length;
+                  const newDownloadRowState = getNewDownloadState(apiData);
+                  const apiDataShownColState =
+                    search.searchType === 'moving' ? initColStateMoving : initColStateFixed;
+
+                  // Persist to IndexedDB cache (fire-and-forget)
+                  try {
+                    if (
+                      search.searchType === 'moving' &&
+                      (search.searchParams as ISearchParamsMoving).cached
+                    ) {
+                      let smallBodyType: 'asteroid' | 'comet' | undefined = undefined;
+                      try {
+                        store$
+                          .select(selectApiSmallBodyType)
+                          .pipe(take(1))
+                          .subscribe((sbt) => (smallBodyType = sbt || undefined));
+                      } catch (e) {
+                        console.warn('Unable to read smallBodyType from store for caching');
+                      }
+                      const payload = {
+                        apiData,
+                        job_id: job_id || 'N/A',
+                        smallBodyType,
+                        cachedAt: new Date().toISOString(),
+                      };
+                      void indexedDbCacheService.set(cacheKey, payload);
+                    }
+                  } catch (e) {
+                    console.error('Error caching API data to IndexedDB', e);
+                  }
+
+                  return concat(
+                    of(ApiDataAction_SetData({ apiData })),
+                    of(ApiDataAction_SetJobId({ job_id: job_id || 'N/A' })),
+                    of(ApiDataAction_SetSelectedDatum({ apiDatum: apiData[0] })),
+                    of(ApiDataAction_SetDownloadRowState({ newDownloadRowState })),
+                    of(ApiDataAction_SetShownColState({ apiDataShownColState })),
+                    of(
+                      ApiDataAction_SetStatus({
+                        search,
+                        message: message || 'N/A',
+                        code: isDataFound ? 'found' : 'notfound',
+                      })
+                    )
+                  );
+                }),
+                takeUntil(
+                  actions$.pipe(
+                    ofType(ApiDataAction_FetchData),
+                    map((action) => {
+                      console.log('Cancel Action ?:', !action.search);
+                      return !action.search;
+                    }),
+                    filter(Boolean)
+                  )
+                )
+              );
+            })
+          );
         }
 
-        const { searchType, searchParams } = search;
-
         const dataFetchObservable =
-          searchType === 'moving'
-            ? apiDataService.fetchApiDataMoving(searchParams)
-            : apiDataService.fetchApiDataFixed(searchParams);
+          search.searchType === 'moving'
+            ? apiDataService.fetchApiDataMoving(search.searchParams as ISearchParamsMoving)
+            : apiDataService.fetchApiDataFixed(search.searchParams as ISearchParamsFixed);
 
         return dataFetchObservable.pipe(
           switchMap((wrappedApiDataResultOrError) => {
@@ -232,7 +311,7 @@ export const fetchApiDataResults$ = createEffect(
             const isDataFound = !!apiData.length;
             const newDownloadRowState = getNewDownloadState(apiData);
             const apiDataShownColState =
-              searchType === 'moving' ? initColStateMoving : initColStateFixed;
+              search.searchType === 'moving' ? initColStateMoving : initColStateFixed;
 
             // initColStateMoving : initColStateFixed;
 
@@ -247,10 +326,10 @@ export const fetchApiDataResults$ = createEffect(
               );
             }
 
-            // Save to cache if requested (persist smallBodyType and timestamp)
+            // Save to cache if requested (persist smallBodyType and timestamp) - IndexedDB
             try {
               if (
-                searchType === 'moving' &&
+                search.searchType === 'moving' &&
                 (search.searchParams as ISearchParamsMoving).cached
               ) {
                 const cacheKey = CACHE_PREFIX + buildCacheKeyForSearch(search as TApiDataSearch);
@@ -260,15 +339,16 @@ export const fetchApiDataResults$ = createEffect(
                 } catch (e) {
                   console.warn('Unable to read smallBodyType from store for caching');
                 }
-                localStorageService.setAppItemDynamic(cacheKey, {
+                const payload = {
                   apiData,
                   job_id: job_id || 'N/A',
                   smallBodyType,
                   cachedAt: new Date().toISOString(),
-                });
+                };
+                void indexedDbCacheService.set(cacheKey, payload);
               }
             } catch (e) {
-              console.error('Error caching API data', e);
+              console.error('Error caching API data to IndexedDB', e);
             }
 
             /**
