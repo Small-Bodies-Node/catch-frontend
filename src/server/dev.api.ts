@@ -6,5 +6,5 @@ const app = express();
 app.use(express.json());
 app.use('/api', configureAPI());
 
-const PORT = Number(process.env['PORT'] || 3000);
+const PORT = 3000; // Fixed dev API port
 app.listen(PORT, () => console.log(`Dev API listening on http://localhost:${PORT}`));
