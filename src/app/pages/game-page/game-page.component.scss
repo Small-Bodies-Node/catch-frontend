@@ -49,7 +49,7 @@ canvas {
   bottom: 10px;
   z-index: 10;
   color: white;
-  font-family: "Press Start 2P", monospace; /* Make sure this font is loaded globally */
+  font-family: 'Press Start 2P', monospace; /* Make sure this font is loaded globally */
   font-size: 14px;
   display: flex;
   align-items: center;
@@ -92,7 +92,7 @@ button {
   color: black;
   border: 2px solid #d58512;
   border-radius: 8px;
-  font-family: "Press Start 2P", monospace; /* Make sure this font is loaded globally */
+  font-family: 'Press Start 2P', monospace; /* Make sure this font is loaded globally */
   font-weight: bold;
   text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.3);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);

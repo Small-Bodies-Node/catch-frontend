@@ -6,6 +6,7 @@ import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { MatTooltip } from '@angular/material/tooltip';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
+import { MatIcon } from '@angular/material/icon';
 
 import { saveAs } from 'file-saver';
 import { Parser } from '@json2csv/plainjs';
@@ -40,6 +41,7 @@ import { ImageFetchService } from '../../../core/services/fetch-image/fetch-imag
     MatTooltip,
     MatInputModule,
     MatButtonModule,
+    MatIcon,
   ],
   standalone: true,
 })
@@ -64,10 +66,7 @@ export class TitleDataComponent implements OnInit {
   fitsUrlsForDownload?: string[];
   isDownloadButtonShown = true;
 
-  constructor(
-    private store$: Store<IAppState>,
-    private imageFetchService: ImageFetchService,
-  ) {
+  constructor(private store$: Store<IAppState>, private imageFetchService: ImageFetchService) {
     this.subscriptions.add(
       combineLatest([
         this.store$.select(selectApiDataStatus).pipe(take(1)),
@@ -110,7 +109,7 @@ export class TitleDataComponent implements OnInit {
         this.fitsUrlsForDownload = this.apiDataForDownload
           .map((apiDatum) => apiDatum.cutout_url || '')
           .filter(Boolean);
-      }),
+      })
     );
   }
 
@@ -131,7 +130,7 @@ export class TitleDataComponent implements OnInit {
         ? searchParams.target
         : `${searchParams.ra} ${searchParams.dec}`.replace(
             /[\s!@#$%^&*()+={}\[\]|\\:;"'<>?,./`~]/g,
-            '_',
+            '_'
           );
 
     const jpegUrls: { url: string; product_id: string }[] = this.apiDataForDownload
@@ -164,7 +163,7 @@ export class TitleDataComponent implements OnInit {
               .catch((_) => null);
           });
         return { url, product_id, blob } as const;
-      }),
+      })
     );
 
     // Convert FITS urls to blobs directly (avoid service which adds '&align=true')
@@ -180,7 +179,7 @@ export class TitleDataComponent implements OnInit {
           console.error('Error fetching FITS', cleanUrl, e);
           return { url: cleanUrl, product_id, blob: null as any };
         }
-      }),
+      })
     );
 
     // Convert blobs to 'File's with productid as name

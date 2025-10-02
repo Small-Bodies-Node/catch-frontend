@@ -1,26 +1,8 @@
 <mat-nav-list (click)="_closeSidenav()">
+  @for (item of menuItems; track item.route) {
   <mat-list-item>
-    <mat-icon mat-list-icon> home </mat-icon>
-    <span (click)="_delayedRouting('home')">Home</span>
+    <mat-icon mat-list-icon> {{ item.icon }} </mat-icon>
+    <span (click)="_delayedRouting(item.route)">{{ item.label }}</span>
   </mat-list-item>
-
-  <mat-list-item>
-    <mat-icon mat-list-icon> info </mat-icon>
-    <span (click)="_delayedRouting('about')">About</span>
-  </mat-list-item>
-
-  <mat-list-item>
-    <mat-icon mat-list-icon> sync_alt </mat-icon>
-    <span (click)="_delayedRouting('apis')">APIs</span>
-  </mat-list-item>
-
-  <mat-list-item>
-    <mat-icon mat-list-icon> mail </mat-icon>
-    <span (click)="_delayedRouting('contact')">Contact</span>
-  </mat-list-item>
-
-  <!-- <mat-list-item>
-    <mat-icon mat-list-icon> settings </mat-icon>
-    <span (click)="_delayedRouting('settings')">Settings</span>
-  </mat-list-item> -->
+  }
 </mat-nav-list>

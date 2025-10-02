@@ -1,0 +1,8 @@
+@import '../../../styles/variables';
+
+.data-page-container {
+  width: $page-width;
+  padding: $page-padding;
+  margin: $page-margin;
+  max-width: $page-max-width;
+}

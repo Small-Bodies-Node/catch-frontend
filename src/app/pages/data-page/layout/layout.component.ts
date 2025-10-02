@@ -17,9 +17,9 @@ import { TitleDataComponent } from '../title-data/title-data.component';
 import { TempTableComponent } from '../../../components/temp-table/temp-table.component';
 
 @Component({
-  selector: 'app-desktop-view',
-  templateUrl: './desktop-view.component.html',
-  styleUrls: ['./desktop-view.component.scss'],
+  selector: 'app-layout',
+  templateUrl: './layout.component.html',
+  styleUrls: ['./layout.component.scss'],
   imports: [
     TableDataComponent,
     // TempTableComponent,
@@ -31,18 +31,23 @@ import { TempTableComponent } from '../../../components/temp-table/temp-table.co
   ],
   standalone: true,
 })
-export class DesktopViewComponent implements OnInit {
+export class LayoutComponent implements OnInit {
   // --->>>
 
   maxHeight = `calc(100vh - ${headerHeightPx}px)`;
   apiData?: IApiMovum[] | IApiFixum[];
   apiDataStatus?: TApiDataStatus;
   movingOrFixed?: 'moving' | 'fixed';
+  isMobile = false;
 
   subscriptions = new Subscription();
 
   constructor(private store$: Store<IAppState>) {
     //--->>
+
+    // Detect mobile on init and resize
+    this.checkMobile();
+    window.addEventListener('resize', () => this.checkMobile());
 
     this.subscriptions.add(
       combineLatest([this.store$.select(selectApiData), this.store$.select(selectApiDataStatus)])
@@ -54,7 +59,7 @@ export class DesktopViewComponent implements OnInit {
           const { search } = apiDataStatus;
           const { searchType } = search!;
           this.movingOrFixed = searchType;
-        }),
+        })
     );
   }
 
@@ -62,5 +67,13 @@ export class DesktopViewComponent implements OnInit {
 
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();
+  }
+
+  checkMobile(): void {
+    this.isMobile = window.innerWidth <= 768;
+  }
+
+  get containerStyle() {
+    return this.isMobile ? {} : { maxHeight: this.maxHeight };
   }
 }

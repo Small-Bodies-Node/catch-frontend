@@ -1,7 +1,9 @@
+@import '../../../styles/variables';
+
 .apis-container {
-  width: 90%;
-  padding: 30px;
-  margin: auto auto;
+  width: $page-width;
+  padding: $page-padding;
+  margin: $page-margin;
   overflow: hidden;
 
   code {

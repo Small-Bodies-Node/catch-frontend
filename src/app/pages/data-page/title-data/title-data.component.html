@@ -1,14 +1,14 @@
 <div class="title-bar-container" [ngClass]="{ isMobile: isMobile }">
   <div class="title">
-    <span class="unit" style="margin-right: 4px"> {{ "TARGET: " }} </span>
+    <span class="unit" style="margin-right: 4px"> {{ 'TARGET: ' }} </span>
     <span class="unit">{{ searchDescriptor }}</span>
   </div>
 
   <div class="results">
-    <span class="unit" style="margin-right: 4px"> {{ "RESULTS: " }}</span>
+    <span class="unit" style="margin-right: 4px"> {{ 'RESULTS: ' }}</span>
 
     <a [href]="dataLink" target="_blank">
-      <span class="unit">{{ (rowsInTable ? rowsInTable : "") + " " }}</span>
+      <span class="unit">{{ (rowsInTable ? rowsInTable : '') + ' ' }}</span>
     </a>
   </div>
 
@@ -36,9 +36,11 @@
         (click)="downloadData()"
         [disabled]="isDownloadButtonDisabled()"
       >
-        @if(isDownloadButtonShown){
-        <span class="unit"> DOWNLOAD </span>
+        @if(isDownloadButtonShown){ @if(isMobile){
+        <mat-icon>download</mat-icon>
         }@else{
+        <span class="unit"> DOWNLOAD </span>
+        } }@else{
         <mat-spinner style="zoom: 0.2"></mat-spinner>
         }
       </button>

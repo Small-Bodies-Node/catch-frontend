@@ -82,8 +82,14 @@
   margin-top: 32px;
 }
 
+.table-wrapper {
+  overflow-x: auto;
+  max-width: 100%;
+}
+
 .observation-table {
   width: 100%;
+  min-width: 600px; // Ensure table has minimum width for readability
 
   th {
     font-weight: 600;
@@ -92,5 +98,6 @@
   td,
   th {
     padding: 12px 16px;
+    white-space: nowrap; // Prevent text wrapping in cells
   }
 }

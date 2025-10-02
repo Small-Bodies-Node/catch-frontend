@@ -2,7 +2,17 @@ import { Routes } from '@angular/router';
 import { ComponentType } from '@angular/cdk/portal';
 import { DataPageComponent } from '../pages/data-page/data-page.component';
 
-const pageLinks = ['', 'home', 'about', 'apis', 'contact', 'dashboard', 'terms', 'data'] as const;
+const pageLinks = [
+  '',
+  'home',
+  'about',
+  'apis',
+  'contact',
+  'dashboard',
+  'terms',
+  'data',
+  'game',
+] as const;
 
 export type TPageLink = (typeof pageLinks)[number];
 
@@ -45,7 +55,7 @@ export const routes: Routes | ILinkedRoute[] = [
     path: 'dashboard',
     loadComponent: () =>
       import('../pages/dashboard-page/dashboard-page.component').then(
-        (m) => m.DashboardPageComponent,
+        (m) => m.DashboardPageComponent
       ),
   },
   {

@@ -1,13 +1,14 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, Output, EventEmitter } from '@angular/core';
+import { MatIcon } from '@angular/material/icon';
+import { MatToolbar } from '@angular/material/toolbar';
+import { MatIconButton } from '@angular/material/button';
+import { MatRipple } from '@angular/material/core';
 
+import { NAVIGATION_MENU_ITEMS, IMenuItem } from '../../../utils/navigation-menu';
 import { DelayedRouterService } from '../../core/services/delayed-router/delayed-router.service';
 import { headerHeightPx } from '../../../utils/constants';
 import { TPageLink } from '../../app-root/app.routes';
-import { MatIcon } from '@angular/material/icon';
-import { MatToolbar } from '@angular/material/toolbar';
-import { MatButton, MatIconButton } from '@angular/material/button';
-import { MatRipple } from '@angular/material/core';
 
 @Component({
   selector: 'app-header',
@@ -29,9 +30,13 @@ export class HeaderComponent implements OnInit {
   @Output()
   openSidenav: EventEmitter<any> = new EventEmitter();
 
+  menuItems: IMenuItem[] = [];
+
   constructor(private delayedRouter: DelayedRouterService) {}
 
-  ngOnInit() {}
+  ngOnInit() {
+    this.menuItems = NAVIGATION_MENU_ITEMS;
+  }
 
   _openSidenav() {
     this.openSidenav.emit();

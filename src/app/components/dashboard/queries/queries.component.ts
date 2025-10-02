@@ -56,14 +56,12 @@ export class QueriesComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   loadQueriesData(): void {
-    console.log('Loading queries data...');
     this.isLoading = true;
     this.isError = false;
     this.subscription.add(
       this.catchApiService.getStatusQueries().subscribe({
         next: (data): void => {
           this.queriesData = data;
-          console.log('Queries data:', this.queriesData);
           this.isLoading = false;
           this.isRefreshing = false;
         },

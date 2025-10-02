@@ -33,7 +33,6 @@ export class CatchApiService {
 
   private fetchFromAPI<T>(route: string): Observable<T> {
     const url = `${this.getApiUrl()}/${route}`;
-    console.log('fetching', url);
 
     return this.http.get<T>(url).pipe(
       retry(2),

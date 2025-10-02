@@ -15,13 +15,13 @@ import { selectApiData, selectApiDataStatus } from '../../ngrx/selectors/api-dat
 import { TControlKeyForSources } from '../../../models/TControlKeyForSources';
 import { TApiDataSearch } from '../../../models/TApiDataSearch';
 import { ApiDataAction_SetStatus } from '../../ngrx/actions/api-data.actions';
-import { DesktopViewComponent } from './desktop-view/desktop-view.component';
+import { LayoutComponent } from './layout/layout.component';
 
 @Component({
   selector: 'app-data-display',
   templateUrl: './data-page.component.html',
   styleUrls: ['./data-page.component.scss'],
-  imports: [DesktopViewComponent],
+  imports: [LayoutComponent],
   standalone: true,
 })
 export class DataPageComponent implements OnInit, OnDestroy {
@@ -62,7 +62,7 @@ export class DataPageComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private snackBar: MatSnackBar,
     private router: Router,
-    private store$: Store<IAppState>,
+    private store$: Store<IAppState>
   ) {
     //--->>
 
@@ -77,7 +77,7 @@ export class DataPageComponent implements OnInit, OnDestroy {
           map(([apiData, apiDataStatus, queryParams]) => {
             // console.log('>>>>> ', apiData, apiDataStatus, queryParams);
             return { apiData, apiDataStatus, queryParams };
-          }),
+          })
         )
         .subscribe(({ apiData, apiDataStatus, queryParams }) => {
           // --->>
@@ -123,7 +123,7 @@ export class DataPageComponent implements OnInit, OnDestroy {
             const errMsg = `The intersection_type value '${
               this.intersection_type
             }' provided in the query params is invalid. The valid values are: ${intersectionTypes.join(
-              ', ',
+              ', '
             )}
             `;
             console.error(errMsg);
@@ -172,9 +172,9 @@ export class DataPageComponent implements OnInit, OnDestroy {
               code: 'initiated',
               message: 'Begin searching....',
               search: newSearchParams,
-            }),
+            })
           );
-        }),
+        })
     );
   }
 

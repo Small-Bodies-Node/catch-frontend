@@ -1,9 +1,11 @@
+@import '../../../styles/variables';
+
 .about-container {
-  width: 90%;
-  padding: 30px;
-  margin: auto auto;
+  width: $page-width;
+  padding: $page-padding;
+  margin: $page-margin;
   overflow: hidden;
-  max-width: 1200px;
+  max-width: $page-max-width;
 }
 
 /* Responsive grid for Figures and Videos section */
@@ -61,7 +63,8 @@
   }
 }
 
-ul, ol {
+ul,
+ol {
   li {
     margin-bottom: 0.3em;
   }

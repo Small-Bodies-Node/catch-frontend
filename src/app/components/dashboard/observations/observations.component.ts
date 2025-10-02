@@ -66,7 +66,6 @@ export class ObservationsComponent implements OnInit, OnDestroy {
       }).subscribe({
         next: (data): void => {
           this.allSources = data.sources || [];
-          console.log('>>> ', data, this.allSources);
           this.updates = data.updates || [];
           this.isLoading = false;
         },
@@ -128,7 +127,6 @@ export class ObservationsComponent implements OnInit, OnDestroy {
   }
 
   getObservationValues(): number[] {
-    console.log('>>> getObservationValues', this.sourcesByObservations);
     return this.sourcesByObservations.map((source) => source.count);
   }
 

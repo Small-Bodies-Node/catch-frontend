@@ -4,10 +4,9 @@
       <li (click)="delayedRouting('home')">
         <span style="font-size: 30px">CATCH<span style="font-size: 10px">V3</span></span>
       </li>
-      <li (click)="delayedRouting('about')">About</li>
-      <li (click)="delayedRouting('apis')">APIs</li>
-      <!-- <li (click)="delayedRouting('dashboard')">Dashboard</li> -->
-      <li (click)="delayedRouting('contact')">Contact</li>
+      @for (item of menuItems; track item.route) { @if (item.route !== 'home') {
+      <li (click)="delayedRouting(item.route)">{{ item.label }}</li>
+      } }
     </ul>
     <!-- <a
       class="feedback-link"

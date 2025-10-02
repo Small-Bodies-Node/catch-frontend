@@ -8,12 +8,25 @@
   $footerHeight: 60px;
   $gapHeight: 0px;
 
+  // Mobile: use flexbox layout for dynamic sizing
+  @media (max-width: 768px) {
+    display: flex;
+    flex-direction: column-reverse;
+  }
+
   .table-wrapper {
     width: 100%;
     // height: 60%;
     height: calc(100% - #{$footerHeight} - #{$gapHeight});
     overflow: auto; // Important: this is how non-sticky sections scroll
     cursor: pointer;
+
+    // Mobile: use flex-grow instead of calc to adapt to dynamic footer
+    @media (max-width: 768px) {
+      height: auto;
+      flex: 1;
+      min-height: 0;
+    }
 
     table {
       width: 100%;
@@ -44,30 +57,43 @@
 
   .table-footer {
     display: flex;
-    flex-direction: row; /* Already correct */
-    justify-content: space-between; /* Already correct */
-    // align-items: center; /* Already correct */
-    align-items: flex-start; /* Align items to the top */
-    // padding: 0 10px;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
     height: $footerHeight;
-    // overflow: hidden;
     background-color: black;
-    // border-top: 1px solid #e0e0e0;
-    // gap: 10px; /* Optional: Adds space between items */
+
+    // Mobile: stack in column
+    @media (max-width: 768px) {
+      flex-direction: column;
+      height: auto;
+      gap: 10px;
+      padding: 10px 0;
+    }
 
     .form-field-wrapper {
       background-color: #101414;
-      flex: 1; /* Makes them share available space evenly */
-      min-width: 0; /* Ensures no weird wrapping */
+      flex: 1;
+      min-width: 0;
       max-width: 200px;
+
+      @media (max-width: 768px) {
+        max-width: 100%;
+        width: 100%;
+      }
+
       mat-form-field {
         width: 100%;
-        // height: 66px;
       }
     }
+
     .paginator-wrapper {
-      flex: 2; /* Makes them share available space evenly */
-      min-width: 0; /* Ensures no weird wrapping */
+      // flex: 2;
+      min-width: 0;
+
+      @media (max-width: 768px) {
+        width: 100%;
+      }
     }
   }
 

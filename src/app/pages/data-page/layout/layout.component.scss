@@ -1,0 +1,144 @@
+.layout-container {
+  $bgcolor: rgba(255, 255, 255, 0.15);
+
+  // Mobile height constraints
+  $mobile-title-min-height: 60px;
+  $mobile-title-max-height: 90px;
+  $mobile-table-min-height: 400px;
+  $mobile-table-max-height: 800px;
+  $mobile-fits-toggler-min-height: 300px;
+  $mobile-fits-toggler-max-height: 444px;
+  $mobile-solar-viewer-min-height: 200px;
+  $mobile-solar-viewer-max-height: 333px;
+
+  background-color: $bgcolor;
+
+  position: relative;
+  width: 100%;
+  height: 100%;
+  padding: 10px;
+  box-sizing: border-box;
+
+  display: grid;
+  grid-gap: 5px;
+
+  // Mobile: allow vertical scrolling
+  @media (max-width: 768px) {
+    height: auto;
+    min-height: 100%;
+  }
+
+  // Desktop layout (default)
+  &.moving {
+    grid-template-rows: 1fr 6fr 7fr;
+    grid-template-columns: 1fr 2fr;
+    grid-template-areas:
+      'fitsjpgtoggler   title   '
+      'fitsjpgtoggler   table   '
+      'solarviewer      table   ';
+
+    // Mobile: single column with specific row heights
+    @media (max-width: 768px) {
+      grid-template-columns: 1fr;
+      grid-template-rows:
+        minmax($mobile-title-min-height, $mobile-title-max-height)
+        minmax($mobile-table-min-height, $mobile-table-max-height) minmax(
+          $mobile-fits-toggler-min-height,
+          $mobile-fits-toggler-max-height
+        )
+        minmax($mobile-solar-viewer-min-height, $mobile-solar-viewer-max-height);
+      grid-template-areas:
+        'title'
+        'table'
+        'fitsjpgtoggler'
+        'solarviewer';
+    }
+  }
+
+  &.fixed {
+    grid-template-rows: 1fr 3fr 4fr;
+    grid-template-columns: 2fr 3fr;
+    grid-template-areas:
+      'title            table   '
+      'fitsjpgtoggler   table   '
+      'fitsjpgtoggler   table   ';
+
+    // Mobile: single column with specific row heights
+    @media (max-width: 768px) {
+      grid-template-columns: 1fr;
+      grid-template-rows:
+        minmax($mobile-title-min-height, $mobile-title-max-height)
+        minmax($mobile-table-min-height, $mobile-table-max-height) minmax($mobile-fits-toggler-min-height, $mobile-fits-toggler-max-height);
+      grid-template-areas:
+        'title'
+        'table'
+        'fitsjpgtoggler';
+    }
+  }
+
+  grid-auto-flow: dense;
+
+  .title-wrapper,
+  .table-wrapper,
+  .fits-jpg-toggler-wrapper,
+  .solar-viewer-wrapper {
+    min-width: 0; // Prevents content from expanding the grid
+    min-height: 0; // Prevents content from expanding the grid
+    overflow: hidden; // Clips any overflowing content
+
+    // Mobile: contain content within grid cell
+    @media (max-width: 768px) {
+      overflow: auto;
+      height: 100%;
+      width: 100%;
+    }
+  }
+
+  .title-wrapper {
+    position: relative;
+    grid-area: title;
+    font-size: 32px;
+    font-weight: bold;
+    min-height: 30px; // Added minimum height
+    // background-color: $bgcolor;
+    // background-color: black;
+  }
+
+  .table-wrapper {
+    grid-area: table;
+    overflow: auto;
+    // background-color: black;
+    // background-color: $bgcolor;
+    min-width: 200px; // Added minimum width
+    // No mobile overrides - grid handles sizing
+
+    // Ensure child component fills the wrapper
+    app-table-data {
+      display: block;
+      height: 100%;
+      width: 100%;
+    }
+  }
+
+  .fits-jpg-toggler-wrapper {
+    grid-area: fitsjpgtoggler;
+    background-color: $bgcolor;
+    // aspect-ratio: 1 / 1;
+    // min-width: 300px;
+    // min-height: 300px;
+    // width: 400px;
+    // height: 400px;
+    // max-width: 300px;
+    // max-height: 300px;
+    // No mobile overrides - grid handles sizing
+  }
+
+  .solar-viewer-wrapper {
+    // background-color: red;
+    grid-area: solarviewer;
+    // background-color: black;
+    // max-height: 50%;
+    // max-height: 50%;
+    // No mobile overrides - grid handles sizing
+  }
+}

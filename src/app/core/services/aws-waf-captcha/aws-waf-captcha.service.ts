@@ -66,7 +66,7 @@ export class AwsWafCaptchaService {
     // Create simple mock version for debugging
     (window as any).AwsWafCaptcha = {
       renderCaptcha: (container: HTMLElement, config: any) => {
-        console.log('Debug captcha config:', config);
+        // console.log('Debug captcha config:', config);
 
         container.innerHTML = `
           <div style="border: 2px solid #4285f4; padding: 15px; border-radius: 4px; background-color: #f8f9fa; text-align: center;">
@@ -93,7 +93,7 @@ export class AwsWafCaptchaService {
         return true;
       },
       resetCaptcha: () => {
-        console.log('Debug captcha reset');
+        // console.log('Debug captcha reset');
         return true;
       },
     };
@@ -127,14 +127,11 @@ export class AwsWafCaptchaService {
     }
 
     const render = () => {
-      console.log('Debug 0');
       try {
         if (!this.isCaptchaLoaded || !(window as any).AwsWafCaptcha) {
           setTimeout(render, 300);
           return;
         }
-
-        console.log('Debug 1');
 
         // Get the container element by ID
         const containerElement = document.getElementById(config.container);
@@ -168,8 +165,6 @@ export class AwsWafCaptchaService {
             }
           },
         });
-
-        console.log('Debug 3');
       } catch (error) {
         console.error('Error rendering captcha:', error);
 

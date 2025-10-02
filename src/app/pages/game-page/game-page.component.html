@@ -1,9 +1,6 @@
 <div id="gameContainer" #gameContainer>
-  <canvas
-    #gameCanvas
-    (click)="handleCanvasClick($event)"
-    (mousemove)="handleMouseMove($event)"
-  >
+  <!-- <h1>CATCH The Game</h1> -->
+  <canvas #gameCanvas (click)="handleCanvasClick($event)" (mousemove)="handleMouseMove($event)">
   </canvas>
   <div id="controls">
     <button id="startButton" (click)="toggleStartReset()">

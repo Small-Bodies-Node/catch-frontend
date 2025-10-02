@@ -1,9 +1,0 @@
-<section class="admin">
-  <h1>Admin</h1>
-  <p>You have access to admin-only content.</p>
-  @if (data$ | async; as data) {
-    <pre>{{ data | json }}</pre>
-  } @else {
-    <p>Loading…</p>
-  }
-</section>

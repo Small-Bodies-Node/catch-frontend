@@ -1,8 +1,13 @@
+@import '../../../styles/variables';
+
 .home-page-container {
-  width: 100%;
+  width: $page-width;
   height: 100%;
   overflow: auto;
   position: relative;
+  padding: $page-padding;
+  margin: $page-margin;
+  max-width: $page-max-width;
 
   .long-title {
     margin: auto;

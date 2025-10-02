@@ -1,3 +1,7 @@
+// SCSS Variables
+$mobile-font-size: 16px;
+$desktop-font-size: 16px;
+
 .title-bar-container {
   position: absolute;
   top: 0px;
@@ -9,7 +13,12 @@
   justify-content: center;
   gap: 10px;
   background-color: #101414;
-  font-size: 16px;
+  font-size: $desktop-font-size;
+
+  // Mobile: smaller text and fixed height
+  @media (max-width: 768px) {
+    font-size: $mobile-font-size;
+  }
 
   span.unit {
     // margin-right: 5px;
@@ -25,7 +34,7 @@
   }
 
   &.isMobile {
-    // font-size: 12px;
+    font-size: $mobile-font-size;
     gap: 10px;
   }
 
