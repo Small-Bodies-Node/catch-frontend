@@ -12,7 +12,7 @@ const panstarrsCache: any = {};
 
 // Clear cache every 24 hours (24 * 60 * 60 * 1000 ms)
 setInterval(() => {
-  console.log('Clearing panstarrsCache');
+  // console.log('Clearing panstarrsCache');
   for (const key in panstarrsCache) {
     if (panstarrsCache.hasOwnProperty(key)) {
       delete panstarrsCache[key];
@@ -27,27 +27,28 @@ export const panstarrs = async (req: Request, res: Response) => {
   const { ra, dec, radius, nDetectionsMin, raDecMaxErr } = req.query;
   if (!ra || !dec || !radius || !nDetectionsMin || !raDecMaxErr) {
     return res.status(400).json({
-      error:
-        'Missing required query parameters: ra, dec, radius, nDetectionsMin',
+      error: 'Missing required query parameters: ra, dec, radius, nDetectionsMin',
     });
   }
 
-  console.log(
-    'ra:',
-    ra,
-    'dec:',
-    dec,
-    'radius:',
-    radius,
-    'nDetectionsMin',
-    nDetectionsMin,
-    'raDecMaxErr:',
-    raDecMaxErr
-  );
+  if (false) {
+    console.log(
+      'ra:',
+      ra,
+      'dec:',
+      dec,
+      'radius:',
+      radius,
+      'nDetectionsMin',
+      nDetectionsMin,
+      'raDecMaxErr:',
+      raDecMaxErr
+    );
+  }
 
   const cacheKey = `${ra},${dec},${radius},${nDetectionsMin},${raDecMaxErr}`;
   if (panstarrsCache[cacheKey]) {
-    console.log('Returning cached data');
+    // console.log('Returning cached data');
     return res.json(panstarrsCache[cacheKey]);
   }
 
@@ -85,14 +86,10 @@ export const panstarrs = async (req: Request, res: Response) => {
       panstarrsCache[cacheKey] = data;
       return res.json(data);
     } else {
-      throw new Error(
-        `Network response was not ok. Status: ${response.status}`
-      );
+      throw new Error(`Network response was not ok. Status: ${response.status}`);
     }
   } catch (error) {
     console.error('Error fetching data from the API:', error);
-    return res
-      .status(500)
-      .json({ error: 'An error occurred while fetching data from the API.' });
+    return res.status(500).json({ error: 'An error occurred while fetching data from the API.' });
   }
 };

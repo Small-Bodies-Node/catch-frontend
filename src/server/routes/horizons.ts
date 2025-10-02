@@ -82,7 +82,7 @@ export const horizons = async (req: Request, res: Response) => {
     const cachedResponse = await fetch(cachedUrl, { method: 'GET' });
     if (cachedResponse.status === 200) {
       const data = await cachedResponse.text();
-      console.log('Cached Horizons Data Found!');
+      // console.log('Cached Horizons Data Found!');
       return res.status(200).send(data || 'No data found');
     }
   } catch (err) {
@@ -101,7 +101,7 @@ export const horizons = async (req: Request, res: Response) => {
 
     if (contentHtml) {
       // Save data to S3 cache
-      console.log('Saving file to cache: ', process.env['S3_BUCKET_NAME'] + '/' + filename);
+      // console.log('Saving file to cache: ', process.env['S3_BUCKET_NAME'] + '/' + filename);
       try {
         const data = s3.send(
           new AWS.PutObjectCommand({
@@ -110,9 +110,9 @@ export const horizons = async (req: Request, res: Response) => {
             Body: contentHtml, // The HTML content
             ContentType: 'text/html', // MIME type for HTML
             // ACL: 'public-read', // Make the file publicly accessible
-          }),
+          })
         );
-        data.then((data2) => console.log('File uploaded successfully:', data2));
+        // data.then((data2) => console.log('File uploaded successfully:', data2));
       } catch (err: any) {
         return res.status(500).send(`Error uploading file: ${err.message}`);
       }

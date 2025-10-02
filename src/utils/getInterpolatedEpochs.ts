@@ -11,12 +11,9 @@ const jd2074 = dateToJulianDay(new Date('2074-01-01T00:00:00Z'));
  * Receive a start date and end date and return an array of julian days for years
  * between the start and end date.
  */
-export function getInterpolatedEpochs(
-  startDate: number = jd1994,
-  endDate: number = jd2074
-) {
-  console.log('startDate', startDate);
-  console.log('endDate', endDate);
+export function getInterpolatedEpochs(startDate: number = jd1994, endDate: number = jd2074) {
+  // console.log('startDate', startDate);
+  // console.log('endDate', endDate);
   if (startDate === endDate) {
     return [startDate];
   }
@@ -30,9 +27,6 @@ export function getInterpolatedEpochs(
   const totalYears = Math.ceil((endDate - startDate) / year);
   const totalEpochs = totalYears * stepsPerYear;
   const stepSize = year / stepsPerYear;
-  const epochs = Array.from(
-    { length: totalEpochs },
-    (_, i) => startDate + i * stepSize
-  );
+  const epochs = Array.from({ length: totalEpochs }, (_, i) => startDate + i * stepSize);
   return epochs;
 }
