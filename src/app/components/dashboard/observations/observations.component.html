@@ -1,0 +1,130 @@
+<div class="observations-container">
+  <h2 class="mat-headline-5">Observations</h2>
+
+  <div *ngIf="isLoading" class="loading-container">
+    <mat-spinner diameter="40"></mat-spinner>
+  </div>
+
+  <div *ngIf="isError" class="error-container">
+    <mat-card appearance="outlined" class="error-card">
+      <mat-card-content>
+        <p>Error: {{ errorMessage }}</p>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <div *ngIf="!isLoading && !isError">
+    <!-- Updates Section -->
+    <h3 class="mat-headline-6">Updates in the past...</h3>
+    <div class="updates-grid">
+      <div class="update-section">
+        <h4 class="mat-subtitle-1">24 hours</h4>
+        <mat-list>
+          <mat-list-item *ngFor="let update of getUpdatesForDays(1)">
+            <mat-icon matListItemIcon>inventory</mat-icon>
+            <div matListItemTitle>
+              {{ update.count.toLocaleString() }} products from {{ update.source_name }}
+            </div>
+            <div matListItemLine>
+              {{ formatDate(update.start_date) }} to {{ formatDate(update.stop_date) }}
+            </div>
+          </mat-list-item>
+        </mat-list>
+      </div>
+
+      <div class="update-section">
+        <h4 class="mat-subtitle-1">7 days</h4>
+        <mat-list>
+          <mat-list-item *ngFor="let update of getUpdatesForDays(7)">
+            <mat-icon matListItemIcon>inventory</mat-icon>
+            <div matListItemTitle>
+              {{ update.count.toLocaleString() }} products from {{ update.source_name }}
+            </div>
+            <div matListItemLine>
+              {{ formatDate(update.start_date) }} to {{ formatDate(update.stop_date) }}
+            </div>
+          </mat-list-item>
+        </mat-list>
+      </div>
+
+      <div class="update-section">
+        <h4 class="mat-subtitle-1">30 days</h4>
+        <mat-list>
+          <mat-list-item *ngFor="let update of getUpdatesForDays(30)">
+            <mat-icon matListItemIcon>inventory</mat-icon>
+            <div matListItemTitle>
+              {{ update.count.toLocaleString() }} products from {{ update.source_name }}
+            </div>
+            <div matListItemLine>
+              {{ formatDate(update.start_date) }} to {{ formatDate(update.stop_date) }}
+            </div>
+          </mat-list-item>
+        </mat-list>
+      </div>
+    </div>
+
+    <!-- Current Holdings -->
+    <h3 class="mat-headline-6">Current holdings</h3>
+    <div class="charts-grid">
+      <div class="chart-container">
+        <app-pie-chart
+          [title]="totalObservations.toLocaleString() + ' observations'"
+          [values]="getObservationValues()"
+          [maximum]="totalObservations"
+          [legend]="true"
+          [labels]="getObservationLabels()"
+        ></app-pie-chart>
+      </div>
+
+      <div class="chart-container">
+        <app-pie-chart
+          [title]="totalNights.toLocaleString() + ' nights by survey site'"
+          [values]="getNightsValues()"
+          [maximum]="totalNights"
+          [legend]="true"
+          [labels]="getNightsLabels()"
+        ></app-pie-chart>
+      </div>
+    </div>
+
+    <!-- Observation Summary Table -->
+    <mat-card appearance="outlined" class="table-card">
+      <mat-card-content>
+        <table mat-table [dataSource]="sortedSources" class="observation-table">
+          <ng-container matColumnDef="source_name">
+            <th mat-header-cell *matHeaderCellDef>Source</th>
+            <td mat-cell *matCellDef="let source">{{ source.source_name }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="nights">
+            <th mat-header-cell *matHeaderCellDef>Nights</th>
+            <td mat-cell *matCellDef="let source">{{ (source.nights || 0).toLocaleString() }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="count">
+            <th mat-header-cell *matHeaderCellDef>Observations</th>
+            <td mat-cell *matCellDef="let source">{{ (source.count || 0).toLocaleString() }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="start_date">
+            <th mat-header-cell *matHeaderCellDef>Start (UTC)</th>
+            <td mat-cell *matCellDef="let source">{{ formatDate(source.start_date) }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="stop_date">
+            <th mat-header-cell *matHeaderCellDef>Stop (UTC)</th>
+            <td mat-cell *matCellDef="let source">{{ formatDate(source.stop_date) }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="updated">
+            <th mat-header-cell *matHeaderCellDef>Updated (UTC)</th>
+            <td mat-cell *matCellDef="let source">{{ formatDate(source.updated) }}</td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+        </table>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

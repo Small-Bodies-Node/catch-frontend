@@ -31,7 +31,7 @@ export class DashboardComponent implements OnDestroy {
     this.subscription.add(
       this.catchApiService.apiUrl$.subscribe((url) => {
         this.apiUrl = url;
-      })
+      }),
     );
   }
 

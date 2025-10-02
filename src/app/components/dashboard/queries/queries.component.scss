@@ -1,0 +1,86 @@
+.queries-container {
+  margin-bottom: 16px;
+}
+
+.header-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loading-container,
+.error-container {
+  display: flex;
+  justify-content: center;
+  padding: 24px;
+}
+
+.error-card {
+  background-color: #ffebee;
+  margin-bottom: 16px;
+  p {
+    color: red;
+  }
+}
+
+.queries-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  .queries-card {
+    width: 100%;
+
+    .query-display {
+      font-size: 16px;
+      font-weight: bold;
+
+      .mat-line-secondary {
+        font-size: 14px;
+      }
+    }
+  }
+}
+
+.errored-text {
+  color: red;
+}
+
+.summary-cards {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.summary-card {
+  flex: 1;
+  min-width: 120px;
+  text-align: center;
+
+  .summary-number {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #1976d2;
+  }
+
+  .summary-label {
+    font-size: 0.875rem;
+    color: #666;
+    margin-top: 4px;
+  }
+}
