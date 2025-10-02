@@ -1,136 +1,91 @@
 #!/usr/bin/env bash
-# _pm2: thin wrapper around pm2 to manage the production Angular SSR server
-#
-# Env vars:
-#   PM2_APP_NAME                Name of the pm2 process (default: NG20)
-#   PM2_LOG_RETENTION_DAYS     Number of days to retain logs (default: 14)
-#                              Implemented via pm2-logrotate with daily rotation
-#   PM2_NODE_PATH              Optional path to the node binary (default: node on PATH)
-#   PM2_START_FILE             Override entry (default: dist/catch-frontend-ng20/server/server.mjs)
-#
-# Usage:
-#   _pm2            -> prints help
-#   _pm2 help       -> prints help
-#   _pm2 enable     -> configure systemd startup (idempotent)
-#   _pm2 start      -> build if needed and start (or restart) the app under pm2
-#   _pm2 stop       -> stop the app
-#   _pm2 restart    -> restart the app
-#   _pm2 logs       -> tail the app logs
-#
+# Simple PM2 wrapper for Angular SSR server
+
 set -euo pipefail
 
-APP_NAME=${PM2_APP_NAME:-NG20}
-RETENTION_DAYS=${PM2_LOG_RETENTION_DAYS:-14}
-NODE_BIN=${PM2_NODE_PATH:-node}
-START_FILE=${PM2_START_FILE:-dist/catch-frontend-ng20/server/server.mjs}
-PROJECT_ROOT=$(cd "$(dirname "$0")" && pwd)
-CWD="$PROJECT_ROOT"
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m'
 
-pm2_cmd() {
-  if ! command -v pm2 >/dev/null 2>&1; then
-    echo "[error] pm2 is not installed. Install with: npm i -g pm2" >&2
-    exit 1
-  fi
-  pm2 "$@"
-}
+log() { echo -e "${GREEN}[INFO]${NC} $*"; }
+warn() { echo -e "${YELLOW}[WARN]${NC} $*"; }
+error() { echo -e "${RED}[ERROR]${NC} $*"; exit 1; }
 
-print_help() {
-  cat <<EOF
-_pm2 – manage production server with pm2
+# Check pm2 is installed
+if ! command -v pm2 >/dev/null 2>&1; then
+  error "pm2 not found. Install with: npm i -g pm2"
+fi
 
-Commands:
-  help           Show this help
-  enable         Setup pm2 to boot with systemd (Ubuntu). Idempotent.
-  start          Build if missing and start (or restart) the SSR server under pm2
-  stop           Stop the pm2 process
-  restart        Restart the pm2 process
-  logs           Tail logs for the pm2 process
+# Load .env if it exists
+if [[ -f .env ]]; then
+  set -a; source .env; set +a
+  log "Loaded .env file"
+fi
+
+# Set variables AFTER loading .env so they can be overridden
+APP_NAME="${PM2_APP_NAME:-NG20}"
+START_FILE="${PM2_START_FILE:-dist/catch-frontend-ng20/server/server.mjs}"
+
+# Build if needed
+if [[ ! -f "$START_FILE" ]]; then
+  log "Building application..."
+  npm run build || error "Build failed"
+fi
+
+case "${1:-help}" in
+  start)
+    log "Starting $APP_NAME..."
+    if pm2 describe "$APP_NAME" >/dev/null 2>&1; then
+      pm2 restart "$APP_NAME" --update-env
+    else
+      pm2 start node --name "$APP_NAME" --time -- "$START_FILE"
+    fi
+    pm2 save
+    log "Started $APP_NAME"
+    ;;
+  stop)
+    log "Stopping $APP_NAME..."
+    pm2 stop "$APP_NAME" || warn "App not running"
+    ;;
+  restart)
+    log "Restarting $APP_NAME..."
+    pm2 restart "$APP_NAME" --update-env || error "Restart failed"
+    ;;
+  logs)
+    pm2 logs "$APP_NAME"
+    ;;
+  status)
+    pm2 status
+    ;;
+  enable)
+    log "Setting up systemd startup for PM2..."
+    log "This will configure your system to automatically start PM2 on boot"
+    log "User: $USER, Home: $HOME"
+    log "Running: pm2 startup systemd -u $USER --hp $HOME"
+    pm2 startup systemd -u "$USER" --hp "$HOME"
+    log ""
+    log "IMPORTANT: After running this command, you need to:"
+    log "1. Start your app: ./_pm2 start"
+    log "2. Save the PM2 configuration: pm2 save"
+    log "3. The saved configuration will be automatically restored on system reboot"
+    log ""
+    log "To disable auto-start later, run: pm2 unstartup systemd"
+    ;;
+  delete)
+    log "Deleting $APP_NAME from PM2..."
+    pm2 delete "$APP_NAME" || warn "App not found in PM2"
+    pm2 save
+    log "Deleted $APP_NAME"
+    ;;
+  *)
+    cat <<EOF
+Usage: $0 {start|stop|restart|logs|status|enable|delete}
 
 Environment:
-  PM2_APP_NAME                Name of the pm2 process (default: NG20)
-  PM2_LOG_RETENTION_DAYS     Days of logs to keep (default: 14). Implemented with daily rotation.
-  PM2_NODE_PATH              Optional path to node binary (default: node)
-  PM2_START_FILE             Entry file (default: dist/catch-frontend-ng20/server/server.mjs)
-
-Examples:
-  PM2_APP_NAME=MyApp _pm2 start
-  PM2_LOG_RETENTION_DAYS=30 _pm2 enable
+  PM2_APP_NAME    App name (default: NG20)
+  PM2_START_FILE  Start file (default: dist/catch-frontend-ng20/server/server.mjs)
 EOF
-}
-
-source_env() {
-  # Export .env if present so pm2 processes inherit runtime env
-  if [ -f "$CWD/.env" ]; then
-    # shellcheck disable=SC1091
-    set -a; . "$CWD/.env"; set +a
-  fi
-}
-
-ensure_build() {
-  if [ ! -f "$CWD/$START_FILE" ]; then
-    echo "[info] Build output not found at $START_FILE. Running 'npm run build'..."
-    (cd "$CWD" && npm run build)
-  fi
-}
-
-configure_logrotate() {
-  # Install pm2-logrotate (idempotent) and set daily rotation with retention
-  pm2_cmd install pm2-logrotate || true
-  pm2_cmd set pm2-logrotate:rotateInterval '0 0 * * *'   >/dev/null
-  pm2_cmd set pm2-logrotate:retain "$RETENTION_DAYS"     >/dev/null
-  # Leave other defaults (max_size etc.) as module defaults
-}
-
-enable_systemd() {
-  if ! command -v systemctl >/dev/null 2>&1; then
-    echo "[warn] systemctl not found. 'enable' is intended for Ubuntu/systemd hosts."
-    echo "       You can still start with: _pm2 start"
-    exit 0
-  fi
-  echo "[info] Configuring pm2 to launch on boot via systemd for user $USER"
-  # Use env to preserve PATH so pm2 can be found after reboot
-  sudo env PATH="$PATH" PM2_HOME="$HOME/.pm2" pm2 startup systemd -u "$USER" --hp "$HOME" >/dev/null
-  configure_logrotate
-  echo "[ok] pm2 systemd startup configured. After starting your app, run: pm2 save"
-}
-
-start_app() {
-  source_env
-  ensure_build
-
-  # If already exists in pm2 list, restart with updated env; otherwise start
-  if pm2_cmd describe "$APP_NAME" >/dev/null 2>&1; then
-    echo "[info] Restarting existing pm2 process: $APP_NAME"
-    pm2_cmd restart "$APP_NAME" --update-env
-  else
-    echo "[info] Starting new pm2 process: $APP_NAME"
-    pm2_cmd start "$NODE_BIN" --name "$APP_NAME" --time --cwd "$CWD" -- "$START_FILE"
-  fi
-  configure_logrotate
-  # Persist current process list for startup on reboot
-  pm2_cmd save
-}
-
-stop_app() {
-  pm2_cmd stop "$APP_NAME" || true
-}
-
-restart_app() {
-  source_env
-  pm2_cmd restart "$APP_NAME" --update-env
-}
-
-logs_app() {
-  pm2_cmd logs "$APP_NAME"
-}
-
-cmd=${1:-help}
-case "$cmd" in
-  help|--help|-h) print_help ;;
-  enable) enable_systemd ;;
-  start) start_app ;;
-  stop) stop_app ;;
-  restart) restart_app ;;
-  logs) logs_app ;;
-  *) print_help ;;
+    ;;
 esac
