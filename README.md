@@ -61,6 +61,15 @@ npm run build
 
 Output is in `dist/catch-frontend-ng20`. Provide the environment variables above to your server process at runtime.
 
+## Docker (production)
+
+- Update `.env` with the `PORT` you want the container to listen on and any other runtime variables (for production deployments, supply real secrets via your orchestrator rather than baking them into the image).
+- Build the container image locally: `docker compose build`.
+- Run it in the background: `docker compose up -d`.
+- The container exposes port `${PORT}` (default `4000`) and starts the SSR server via `node dist/catch-frontend-ng20/server/server.mjs`. An Apache or ALB reverse proxy can forward traffic to this port.
+- Check health locally with `curl http://localhost:${PORT}`; the compose healthcheck uses the same endpoint.
+- When ready for AWS, tag the image (e.g., `docker tag catch-frontend-ng20:latest <account>.dkr.ecr.<region>.amazonaws.com/catch-frontend-ng20:<tag>`) and push it to ECR for use in ECS/Fargate task definitions.
+
 ## AWS Cognito: Setup from scratch (Console)
 
 1. Create a User Pool
