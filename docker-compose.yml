@@ -1,0 +1,18 @@
+services:
+  catch-frontend-ng20:
+    build:
+      context: .
+    image: catch-frontend-ng20:latest
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+    ports:
+      - "${PORT:-4000}:${PORT:-4000}"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:${PORT:-4000}/ || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s

@@ -10,6 +10,7 @@
     "watch": "ng build --watch --configuration prod-deployment",
     "build": "ng build --configuration prod-deployment --stats-json --source-map",
     "build:prod": "npm run build",
+    "build:docker": "ng build --configuration prod-deployment --output-hashing=all --stats-json=false --source-map=false",
     "stats": "npx esbuild-visualizer --metadata ./dist/catch-frontend-ng20/stats.json --filename ./dist/catch-frontend-ng20/stats.html",
     "---2": "---",
     "build:dev": "ng build --configuration dev-deployment --stats-json --source-map",
