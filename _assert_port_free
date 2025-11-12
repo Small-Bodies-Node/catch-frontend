@@ -1,0 +1,28 @@
+#!/usr/bin/env node
+
+const { createServer } = require('node:http');
+
+const portArg = process.argv[2];
+const port = Number(portArg);
+
+if (!Number.isFinite(port) || port <= 0) {
+  console.error('Usage: _assert_port_free <port>');
+  process.exit(1);
+}
+
+const server = createServer();
+
+server.once('error', (error) => {
+  if (error && error.code === 'EADDRINUSE') {
+    console.error(`Port ${port} is already in use. Stop the conflicting process or choose another port.`);
+  } else {
+    console.error('Failed to probe port availability:', error);
+  }
+  process.exit(1);
+});
+
+server.once('listening', () => {
+  server.close(() => process.exit(0));
+});
+
+server.listen(port);

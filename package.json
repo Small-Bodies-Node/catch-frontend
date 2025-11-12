@@ -5,7 +5,7 @@
     "___Local Development___": "",
     "dev": "concurrently -r -k -n NG,API -c cyan,magenta \"npm:local:ng\" \"npm:local:api\"",
     "local:ng": "ng serve --port 4000 --configuration local",
-    "local:api": "tsx watch src/server/local.api.ts",
+    "local:api": "./_assert_port_free 3000 && tsx watch --clear-screen=false --inspect src/server/local.api.ts",
     "___Stage Builds___": "",
     "build:stage": "ng build --configuration stage-deployment --stats-json --source-map",
     "___Production Builds___": "",

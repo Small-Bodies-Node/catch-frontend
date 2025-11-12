@@ -6,8 +6,9 @@ import {
   writeResponseToNodeResponse,
 } from '@angular/ssr/node';
 import express from 'express';
+import { createServer } from 'node:http';
 import { join } from 'node:path';
-import { configureAPI } from './server/routes/index';
+import { configureAPI } from './server/index';
 
 const browserDistFolder = join(import.meta.dirname, '../browser');
 
@@ -41,7 +42,7 @@ app.use(
     maxAge: '1y',
     index: false,
     redirect: false,
-  }),
+  })
 );
 
 /**
@@ -50,9 +51,7 @@ app.use(
 app.use((req, res, next) => {
   angularApp
     .handle(req)
-    .then((response) =>
-      response ? writeResponseToNodeResponse(response, res) : next(),
-    )
+    .then((response) => (response ? writeResponseToNodeResponse(response, res) : next()))
     .catch(next);
 });
 
@@ -61,13 +60,20 @@ app.use((req, res, next) => {
  * The server listens on the port defined by the `PORT` environment variable, or defaults to 4000.
  */
 if (isMainModule(import.meta.url)) {
-  const port = process.env['PORT'] || 4000;
-  app.listen(port, (error) => {
-    if (error) {
-      throw error;
-    }
+  const port = Number(process.env['PORT'] ?? 4000);
+  const server = createServer(app);
 
+  server.listen(port, () => {
     console.log(`Node Express server listening on http://localhost:${port}`);
+  });
+
+  server.on('error', (error: NodeJS.ErrnoException) => {
+    if (error.code === 'EADDRINUSE') {
+      console.error(`Port ${port} is already in use. Stop the conflicting process or set PORT to another value.`);
+    } else {
+      console.error('Node Express server failed to start:', error);
+    }
+    process.exit(1);
   });
 }
 

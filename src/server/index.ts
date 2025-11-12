@@ -1,7 +1,7 @@
 import { Router } from 'express';
-import { hello } from './hello';
-import { horizons } from './horizons';
-import { panstarrs } from './panstarrs';
+import { hello } from './routes/hello';
+import { horizons } from './routes/horizons';
+import { panstarrs } from './routes/panstarrs';
 
 export function configureAPI(router = Router()) {
   router.use('/hello', hello);
