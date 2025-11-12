@@ -77,7 +77,7 @@
                 }
               ]
             },
-            "dev-deployment": {
+            "stage-deployment": {
               "budgets": [
                 {
                   "type": "initial",
@@ -95,7 +95,7 @@
               "fileReplacements": [
                 {
                   "replace": "src/environments/environment.local.ts",
-                  "with": "src/environments/environment.dev-deployment.ts"
+                  "with": "src/environments/environment.stage-deployment.ts"
                 }
               ]
             },
@@ -117,8 +117,8 @@
             "prod-deployment": {
               "buildTarget": "catch-frontend-ng20:build:prod-deployment"
             },
-            "dev-deployment": {
-              "buildTarget": "catch-frontend-ng20:build:dev-deployment"
+            "stage-deployment": {
+              "buildTarget": "catch-frontend-ng20:build:stage-deployment"
             },
             "local": {
               "buildTarget": "catch-frontend-ng20:build:local"

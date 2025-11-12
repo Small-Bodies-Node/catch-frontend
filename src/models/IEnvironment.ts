@@ -1,7 +1,7 @@
 export interface IEnvironment {
   envName: string;
   production: boolean;
-  apiData: 'mock' | 'catch-prod' | 'catch-dev';
+  apiData: 'mock' | 'catch-prod' | 'catch-stage';
   hmr: boolean;
   awsWafConfig: {
     webAclId: string;

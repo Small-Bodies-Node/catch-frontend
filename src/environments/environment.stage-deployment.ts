@@ -2,9 +2,9 @@ import { IEnvironment } from '../models/IEnvironment';
 import { awsWafConfig } from './awsWafConfig';
 
 export const environment: IEnvironment = {
-  envName: 'dev',
+  envName: 'stage',
   production: true,
-  apiData: 'catch-dev',
+  apiData: 'catch-stage',
   hmr: true,
   awsWafConfig,
 };

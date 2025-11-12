@@ -9,7 +9,6 @@ import { EmailerService } from '../../core/services/emailer/emailer.service';
 import { AwsWafCaptchaService } from '../../core/services/aws-waf-captcha/aws-waf-captcha.service';
 import { TPermittedTheme } from '../../../models/ISiteSettings';
 import { IAppState } from '../../ngrx/reducers';
-import { environment } from '../../../environments/environment.local';
 import { selectSiteSettingsEffectiveTheme } from '../../ngrx/selectors/site-settings.selectors';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
@@ -46,12 +45,12 @@ export class ContactPageComponent implements OnInit, AfterViewInit, OnDestroy {
     private snackBar: MatSnackBar,
     private store$: Store<IAppState>,
     private awsWafCaptchaService: AwsWafCaptchaService,
-    private changeDetectorRef: ChangeDetectorRef,
+    private changeDetectorRef: ChangeDetectorRef
   ) {
     this.subscriptions.add(
       this.store$
         .select(selectSiteSettingsEffectiveTheme)
-        .subscribe((theme) => (this.theme = theme)),
+        .subscribe((theme) => (this.theme = theme))
     );
 
     this.form = this.fb.group({
@@ -66,7 +65,7 @@ export class ContactPageComponent implements OnInit, AfterViewInit, OnDestroy {
     this.subscriptions.add(
       this.awsWafCaptchaService.getCaptchaLoadStatus().subscribe((loaded) => {
         this.isCaptchaLoading = !loaded;
-      }),
+      })
     );
   }
 
@@ -119,7 +118,7 @@ export class ContactPageComponent implements OnInit, AfterViewInit, OnDestroy {
           this.form?.get('username')?.value || '',
           this.form?.get('email')?.value || '',
           this.form?.get('message')?.value || '',
-          this.captchaToken || '',
+          this.captchaToken || ''
         )
         .subscribe({
           next: (response) => {
@@ -128,7 +127,7 @@ export class ContactPageComponent implements OnInit, AfterViewInit, OnDestroy {
                 this.snackBar.open(
                   'Message Sent. \n\n You must pass the captcha again to send another message.',
                   'Close',
-                  { duration: 5000 },
+                  { duration: 5000 }
                 );
                 this.isMessageSendable = false;
                 // Reset the form and captcha after successful submission
@@ -139,7 +138,7 @@ export class ContactPageComponent implements OnInit, AfterViewInit, OnDestroy {
               this.snackBar.open(
                 'An error occurred while sending your message. Please try again.',
                 'Close',
-                { duration: 5000 },
+                { duration: 5000 }
               );
             }
           },
@@ -148,7 +147,7 @@ export class ContactPageComponent implements OnInit, AfterViewInit, OnDestroy {
             this.snackBar.open(
               'An error occurred while sending your message. Please try again.',
               'Close',
-              { duration: 5000 },
+              { duration: 5000 }
             );
           },
         });

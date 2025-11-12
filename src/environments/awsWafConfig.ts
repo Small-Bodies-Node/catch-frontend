@@ -1,6 +1,22 @@
 export const awsWafConfig = {
+  //
+
+  /**
+   * Web ACL ID for AWS WAF Captcha validation
+   * To find it: AWS Console -> WAF & Shield -> Web ACLs: appears under ID
+   */
   webAclId: '31f331b0-d1d0-482d-96c6-b5a99ec00596',
-  endpoint: 'https://sdo46iqni6.execute-api.us-east-1.amazonaws.com/prod/contact',
+
+  /**
+   * API Key associated with specific domains set in AWS Console
+   * To find/create it: AWS Console -> WAF & Shield -> Web ACLs -> Click on your Web ACL -> Rules -> Click on your rule -> Edit -> Captcha Customize -> Captcha Integration -> API Key
+   */
   apiKey:
-    'pgNo668486xLhO6EjWkvxuAjNPUybkUhOT/ZhK07rWkDdN0vBQC3ysAM7luP9yv527Wds1sWZE9bDYHMIr1q8SE8jeoo1AkEiHY5ZaTTEnWLCzZHqeWdCt9HSD9TX7gxMgOthz3MQe5n7RTkTJ1vzhsWu2l33il0/HMfXdmiVw6TFlm/Gqdo/TljFrNbec4TKZzVuV1EEZx8rOwsTjsej9v4ndOiQ7RQealJqxh3KqfqeVVHyA32zWXPAr5ZWhri+actoHZIMAQKUrL2mPUCJzxfebhx31Pw3EC7BHXNHdOpoMhTYbCo1axRMLqCaJydHv9P7tzI8TOLNzSbCYiYkKUAOMH7THK4QasFatWodRPUTPHt56FNJsPWdCdHnTY0blcKaWdlcrnGtoLKQ9ODvtCBZt98ihaTLdCLI+aDSnRkd0M6Kpve96Dhl/O37I3gBgz1gdddZI5ZkyZ9DyXLL7hVvPdMhmEY15G2wsxNAkwEuqnXDDrCyynxMy+I3S8mCLAuo6Wazf+bhUJ7qH0ElYAtehg0+2Vws/vRvKRRRgyXiQRAPu0Jh2D4dYti6y/xwAizW3Ml3VwLX20WNWkpRT8FLAAac0MlDnC9Qf4cZI6QmFC4TJkNzOuYQplYVIlHdHeEjsMr+0oH7pp0W5nNq77xFE9o18hBRk9nHCEGS3g=_0_1',
+    'dkTNECLVhhmS6tjfHtFS7P7Zl5BJLcG082GGCnF86pyviwfyS6E6pL2fcRoug8di2lU2PTJGkwqTkFjNkBjo/OtjIxLo2WzhvGU50hHFvn/7bYdAWxpUVas7thv6UMk6SP86lHVvdIh/BqB+aQDlJKKs8ZRUuPXXnvMwDmUYx/FgWSvJddGCH7Uf2MmOb3v/T0QS0IpccIdgNi+BG6kLI2rGsTyEn277pPW/eXc0y4JSPb5sB9tYlMEnpdBRt96oYs3bs2Sraa6qD30DouZuiaSmlYweKglSkFByAeQ8u1vhjiiK4bRc+anBBAGGBj7b46d0sJTB3UzocUaaP25Ej9uSwPng/3ajA4+e6bNpqhzrK5PTgWevYN5xA01lxZpqjUbqp4gxVCZnXPwyzx0Wi5uRBiydjrmv6EbcvwtHWszE52iyuVFy55Vug60R6FspdC8I8YQ0nXWx8e5cRuQW4yZ2LoXj5jlDSYR2cJstv9BcuutVG3N7iq+hCFAdnFobQWIzzABzJxrNYjWk290AV5zzssbZmnvPo5+ky5piHQpTS6fEEhrHYChrMXRf/EWNHrB74ryTbBRA62ofB25Z1hrSFfI1zEq0GOJ+x8iybS1HdDzMWwIrTOUMg5LvBgS0BZhihoBVsFiD4s8vyh157Hxe0jmMhMuucoGe+3YpRXg=_0_1',
+
+  /**
+   * Separately created lambda function endpoint to send email data + WAF Captcha token
+   * See here: [Find on github]
+   */
+  endpoint: 'https://sdo46iqni6.execute-api.us-east-1.amazonaws.com/prod/contact',
 };
