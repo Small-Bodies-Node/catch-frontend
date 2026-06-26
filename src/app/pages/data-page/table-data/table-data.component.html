@@ -62,11 +62,19 @@
           (click)="activateRowDatum(element)"
         >
           @if (isRowDisplayed(element)) {
-            <app-table-thumbnail
-              [apiDatum]="element"
-              [priority]="isRowActive(element) ? 'vip' : 'nip'"
-              [label]="getThumbnailLabel(element)"
-            ></app-table-thumbnail>
+            @if (useThumbnailLoaderV2) {
+              <app-table-thumbnail-v2
+                [apiDatum]="element"
+                [priority]="isRowActive(element) ? 'vip' : 'nip'"
+                [label]="getThumbnailLabel(element)"
+              ></app-table-thumbnail-v2>
+            } @else {
+              <app-table-thumbnail
+                [apiDatum]="element"
+                [priority]="isRowActive(element) ? 'vip' : 'nip'"
+                [label]="getThumbnailLabel(element)"
+              ></app-table-thumbnail>
+            }
           } @else {
             <div>Placeholder</div>
           }
