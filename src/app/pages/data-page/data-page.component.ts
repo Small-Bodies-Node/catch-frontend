@@ -10,18 +10,17 @@ import { headerHeightPx } from '../../../utils/constants';
 import { IApiMovum } from '../../../models/IApiMovum';
 import { IApiFixum } from '../../../models/IApiFixum';
 import { TApiDataStatus } from '../../../models/TApiDataStatus';
-import { intersectionTypes, TIntersectionType } from '../../../models/TIntersectionType';
 import { selectApiData, selectApiDataStatus } from '../../ngrx/selectors/api-data.selectors';
-import { TControlKeyForSources } from '../../../models/TControlKeyForSources';
-import { TApiDataSearch } from '../../../models/TApiDataSearch';
 import { ApiDataAction_SetStatus } from '../../ngrx/actions/api-data.actions';
-import { LayoutComponent } from './layout/layout.component';
+import { DesktopLayoutComponent } from './desktop-layout/desktop-layout.component';
+import { MobileLayoutComponent } from './mobile-layout/mobile-layout.component';
+import { parseDataRouteQueryParams } from './data-route-query-params';
 
 @Component({
   selector: 'app-data-display',
   templateUrl: './data-page.component.html',
   styleUrls: ['./data-page.component.scss'],
-  imports: [LayoutComponent],
+  imports: [DesktopLayoutComponent, MobileLayoutComponent],
   standalone: true,
 })
 export class DataPageComponent implements OnInit, OnDestroy {
@@ -32,6 +31,9 @@ export class DataPageComponent implements OnInit, OnDestroy {
   apiData?: IApiMovum[] | IApiFixum[];
   apiDataStatus?: TApiDataStatus;
   subscriptions = new Subscription();
+  isMobile = false;
+
+  private resizeListener = () => this.updateIsMobile();
 
   /**
    * Note: this flag is used to ensure that we only ever load data
@@ -41,30 +43,15 @@ export class DataPageComponent implements OnInit, OnDestroy {
    */
   isDataLoaded = false;
 
-  // Moving Query Params
-  target?: string;
-  cached?: boolean;
-  uncertainty_ellipse?: boolean;
-  padding?: number;
-
-  // Fixed Query Params
-  ra?: string;
-  dec?: string;
-  radius?: number;
-  intersection_type?: TIntersectionType;
-
-  // Shared
-  start_date?: string;
-  stop_date?: string;
-  sources?: TControlKeyForSources[];
-
   constructor(
     private route: ActivatedRoute,
     private snackBar: MatSnackBar,
     private router: Router,
-    private store$: Store<IAppState>
+    private store$: Store<IAppState>,
   ) {
     //--->>
+
+    this.updateIsMobile();
 
     this.subscriptions.add(
       combineLatest([
@@ -77,7 +64,7 @@ export class DataPageComponent implements OnInit, OnDestroy {
           map(([apiData, apiDataStatus, queryParams]) => {
             // console.log('>>>>> ', apiData, apiDataStatus, queryParams);
             return { apiData, apiDataStatus, queryParams };
-          })
+          }),
         )
         .subscribe(({ apiData, apiDataStatus, queryParams }) => {
           // --->>
@@ -103,88 +90,47 @@ export class DataPageComponent implements OnInit, OnDestroy {
            * from query params! So let's do it
            */
 
-          // Moving Query Params
-          this.target = 'target' in queryParams ? queryParams['target'] : undefined;
-          this.cached = 'cached' in queryParams ? queryParams['cached'] === 'true' : true;
-          this.uncertainty_ellipse =
-            'uncertainty_ellipse' in queryParams
-              ? queryParams['uncertainty_ellipse'] === 'true'
-              : false;
-          this.padding = 'padding' in queryParams ? queryParams['padding'] : undefined;
-
-          // Fixed Query Params
-          this.ra = 'ra' in queryParams ? queryParams['ra'] : undefined;
-          this.dec = 'dec' in queryParams ? queryParams['dec'] : undefined;
-          this.radius = 'radius' in queryParams ? queryParams['radius'] : undefined;
-          this.intersection_type =
-            'intersection_type' in queryParams ? queryParams['intersection_type'] : undefined;
-
-          if (this.intersection_type && !intersectionTypes.includes(this.intersection_type)) {
-            const errMsg = `The intersection_type value '${
-              this.intersection_type
-            }' provided in the query params is invalid. The valid values are: ${intersectionTypes.join(
-              ', '
-            )}
-            `;
-            console.error(errMsg);
-            this.snackBar.open(errMsg, 'Close', {});
-          }
-
-          // Shared
-          this.start_date = 'start_date' in queryParams ? queryParams['start_date'] : undefined;
-          this.stop_date = 'stop_date' in queryParams ? queryParams['stop_date'] : undefined;
-          const sources = 'sources' in queryParams ? queryParams['sources'] : [];
-          this.sources = Array.isArray(sources) ? sources : [sources];
-
-          if (!this.target && (!this.ra || !this.dec)) {
+          const parsedSearch = parseDataRouteQueryParams(queryParams);
+          if (!parsedSearch.ok) {
+            console.error(parsedSearch.message);
+            this.snackBar.open(parsedSearch.message, 'Close', {});
             this.router.navigate([''], {});
             return;
           }
-
-          const newSearchParams: TApiDataSearch = this.target
-            ? {
-                searchType: 'moving',
-                searchParams: {
-                  target: this.target!,
-                  cached: this.cached,
-                  uncertainty_ellipse: this.uncertainty_ellipse,
-                  padding: this.padding,
-                  start_date: this.start_date,
-                  stop_date: this.stop_date,
-                  sources: this.sources,
-                },
-              }
-            : {
-                searchType: 'fixed',
-                searchParams: {
-                  ra: this.ra!,
-                  dec: this.dec!,
-                  radius: this.radius,
-                  intersection_type: this.intersection_type,
-                  start_date: this.start_date,
-                  stop_date: this.stop_date,
-                  sources: this.sources,
-                },
-              };
 
           this.store$.dispatch(
             ApiDataAction_SetStatus({
               code: 'initiated',
               message: 'Begin searching....',
-              search: newSearchParams,
-            })
+              search: parsedSearch.search,
+            }),
           );
-        })
+        }),
     );
   }
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    if (typeof window !== 'undefined') {
+      window.addEventListener('resize', this.resizeListener);
+    }
+  }
 
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('resize', this.resizeListener);
+    }
   }
 
   _displayData(data: any) {
     return JSON.stringify(data, null, 2);
+  }
+
+  private updateIsMobile(): void {
+    if (typeof window === 'undefined') {
+      this.isMobile = false;
+      return;
+    }
+    this.isMobile = window.matchMedia('(max-width: 768px)').matches;
   }
 }

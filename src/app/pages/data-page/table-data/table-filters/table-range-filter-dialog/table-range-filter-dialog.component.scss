@@ -1,0 +1,41 @@
+:host {
+  display: block;
+  color: var(--mat-sys-on-surface);
+}
+
+.table-range-filter-section {
+  min-width: min(360px, calc(100vw - 80px));
+
+  p {
+    margin: 0 0 14px;
+    color: var(--mat-sys-on-surface-variant);
+    font-size: 13px;
+    line-height: 1.35;
+  }
+}
+
+.table-range-filter-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.table-range-filter-error {
+  margin-top: 4px;
+  color: var(--mat-sys-error);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.table-range-filter-preview {
+  margin-top: 4px;
+  color: var(--mat-sys-on-surface-variant);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.35;
+
+  &.is-empty {
+    color: var(--mat-sys-error);
+  }
+}

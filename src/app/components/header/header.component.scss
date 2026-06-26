@@ -1,6 +1,7 @@
 mat-toolbar {
   display: flex;
   align-items: center;
+  color: var(--catch-on-brand-surface);
 
   /* fa-icon {
     font-size: 24px;
@@ -33,7 +34,7 @@ mat-toolbar {
       padding: 0;
 
       // Font
-      font-family: Roboto, "Helvetica Neue", sans-serif;
+      font-family: Roboto, 'Helvetica Neue', sans-serif;
       font-size: 14px;
       font-weight: 500;
       li {
@@ -50,6 +51,34 @@ mat-toolbar {
         }
       }
     }
+
+    .brand-mark {
+      font-size: 30px;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .version-badge {
+      margin-left: 2px;
+      font-size: 10px;
+      vertical-align: super;
+    }
+
+    .settings-button {
+      flex: 0 0 auto;
+      margin-left: auto;
+      color: inherit;
+    }
+
+    .site-banner-alert {
+      flex: 0 0 auto;
+      margin-left: auto;
+      color: #ffe066;
+    }
+
+    .site-banner-alert + .settings-button {
+      margin-left: 0;
+    }
   }
 
   // Make header bar responsive
@@ -62,6 +91,10 @@ mat-toolbar {
     // Left menu button stays at natural left, vertically centered by toolbar
     button[mat-icon-button] {
       z-index: 2; // ensure above centered title if ever overlapping
+    }
+
+    .settings-button {
+      z-index: 2;
     }
 
     // Precisely center the title horizontally within the toolbar

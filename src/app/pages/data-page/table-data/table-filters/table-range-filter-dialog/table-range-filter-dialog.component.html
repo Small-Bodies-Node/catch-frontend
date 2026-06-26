@@ -1,0 +1,65 @@
+<h2 mat-dialog-title>{{ config.label }} Filter</h2>
+
+<mat-dialog-content>
+  <section class="table-range-filter-section">
+    <p>
+      Enter an inclusive numeric range. Rows with non-numeric values are excluded while this filter
+      is active.
+      @if (config.minAllowed !== undefined || config.maxAllowed !== undefined) {
+        Allowed values:
+        {{ config.minAllowed ?? 'no lower limit' }} to
+        {{ config.maxAllowed ?? 'no upper limit' }}.
+      }
+    </p>
+
+    <div class="table-range-filter-grid">
+      <mat-form-field appearance="outline">
+        <mat-label>Min</mat-label>
+        <input
+          matInput
+          type="number"
+          [min]="config.minAllowed ?? null"
+          [max]="config.maxAllowed ?? null"
+          step="any"
+          [ngModel]="minInput"
+          (ngModelChange)="setMinInput($event)"
+        />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Max</mat-label>
+        <input
+          matInput
+          type="number"
+          [min]="config.minAllowed ?? null"
+          [max]="config.maxAllowed ?? null"
+          step="any"
+          [ngModel]="maxInput"
+          (ngModelChange)="setMaxInput($event)"
+        />
+      </mat-form-field>
+    </div>
+
+    @if (validationError) {
+      <div class="table-range-filter-error">{{ validationError }}</div>
+    } @else {
+      <div class="table-range-filter-preview" [class.is-empty]="isPreviewEmpty">
+        {{ previewLabel }}
+      </div>
+    }
+  </section>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button type="button" mat-button (click)="clear()">Clear</button>
+  <button type="button" mat-button mat-dialog-close>Cancel</button>
+  <button
+    type="button"
+    mat-flat-button
+    color="accent"
+    [disabled]="isApplyDisabled"
+    (click)="apply()"
+  >
+    Apply
+  </button>
+</mat-dialog-actions>

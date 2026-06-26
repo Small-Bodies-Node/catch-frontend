@@ -1,0 +1,50 @@
+:host {
+  display: block;
+  color: var(--mat-sys-on-surface);
+}
+
+.table-filter-section {
+  min-width: min(420px, calc(100vw - 80px));
+}
+
+.table-filter-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+
+  h3 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 700;
+  }
+
+  p {
+    margin: 2px 0 0;
+    color: var(--mat-sys-on-surface-variant);
+    font-size: 12px;
+  }
+}
+
+.source-option-list {
+  display: grid;
+  max-height: 340px;
+  gap: 2px;
+  overflow: auto;
+}
+
+.source-option-label {
+  display: inline-block;
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.source-option-count {
+  margin-left: 8px;
+  color: var(--mat-sys-on-surface-variant);
+  font-size: 12px;
+}

@@ -2,14 +2,10 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, AfterViewInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Validators, FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { Store } from '@ngrx/store';
 import { Subscription } from 'rxjs';
 
 import { EmailerService } from '../../core/services/emailer/emailer.service';
 import { AwsWafCaptchaService } from '../../core/services/aws-waf-captcha/aws-waf-captcha.service';
-import { TPermittedTheme } from '../../../models/ISiteSettings';
-import { IAppState } from '../../ngrx/reducers';
-import { selectSiteSettingsEffectiveTheme } from '../../ngrx/selectors/site-settings.selectors';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -32,7 +28,6 @@ import { MatCardModule } from '@angular/material/card';
 export class ContactPageComponent implements OnInit, AfterViewInit, OnDestroy {
   subscriptions: Subscription = new Subscription();
   captchaToken: string | undefined;
-  theme?: TPermittedTheme;
   // Require user to pass captcha for every new message
   isMessageSendable = false;
   isCaptchaLoading = true;
@@ -43,16 +38,9 @@ export class ContactPageComponent implements OnInit, AfterViewInit, OnDestroy {
     private fb: FormBuilder,
     private emailer: EmailerService,
     private snackBar: MatSnackBar,
-    private store$: Store<IAppState>,
     private awsWafCaptchaService: AwsWafCaptchaService,
-    private changeDetectorRef: ChangeDetectorRef
+    private changeDetectorRef: ChangeDetectorRef,
   ) {
-    this.subscriptions.add(
-      this.store$
-        .select(selectSiteSettingsEffectiveTheme)
-        .subscribe((theme) => (this.theme = theme))
-    );
-
     this.form = this.fb.group({
       username: ['', [Validators.required]],
       email: ['', [Validators.required, Validators.email]],
@@ -65,7 +53,7 @@ export class ContactPageComponent implements OnInit, AfterViewInit, OnDestroy {
     this.subscriptions.add(
       this.awsWafCaptchaService.getCaptchaLoadStatus().subscribe((loaded) => {
         this.isCaptchaLoading = !loaded;
-      })
+      }),
     );
   }
 
@@ -118,7 +106,7 @@ export class ContactPageComponent implements OnInit, AfterViewInit, OnDestroy {
           this.form?.get('username')?.value || '',
           this.form?.get('email')?.value || '',
           this.form?.get('message')?.value || '',
-          this.captchaToken || ''
+          this.captchaToken || '',
         )
         .subscribe({
           next: (response) => {
@@ -127,7 +115,7 @@ export class ContactPageComponent implements OnInit, AfterViewInit, OnDestroy {
                 this.snackBar.open(
                   'Message Sent. \n\n You must pass the captcha again to send another message.',
                   'Close',
-                  { duration: 5000 }
+                  { duration: 5000 },
                 );
                 this.isMessageSendable = false;
                 // Reset the form and captcha after successful submission
@@ -138,7 +126,7 @@ export class ContactPageComponent implements OnInit, AfterViewInit, OnDestroy {
               this.snackBar.open(
                 'An error occurred while sending your message. Please try again.',
                 'Close',
-                { duration: 5000 }
+                { duration: 5000 },
               );
             }
           },
@@ -147,7 +135,7 @@ export class ContactPageComponent implements OnInit, AfterViewInit, OnDestroy {
             this.snackBar.open(
               'An error occurred while sending your message. Please try again.',
               'Close',
-              { duration: 5000 }
+              { duration: 5000 },
             );
           },
         });

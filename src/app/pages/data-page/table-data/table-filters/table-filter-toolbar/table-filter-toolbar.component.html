@@ -1,0 +1,13 @@
+<div class="table-filter-toolbar">
+  @if (activeFilterCount > 0) {
+    <span class="table-filter-summary">
+      {{ filterSummary }} · {{ filteredCount }} of {{ totalCount }} shown
+    </span>
+
+    <button type="button" mat-button class="table-filter-clear" (click)="clearAll.emit()">
+      Clear all
+    </button>
+  } @else {
+    <span class="table-filter-empty">No filters applied</span>
+  }
+</div>

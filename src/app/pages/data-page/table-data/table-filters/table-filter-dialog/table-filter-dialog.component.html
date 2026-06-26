@@ -1,0 +1,42 @@
+<h2 mat-dialog-title>Filters</h2>
+
+<mat-dialog-content>
+  <section class="table-filter-section">
+    <div class="table-filter-section-header">
+      <div>
+        <h3>Sources</h3>
+        <p>{{ selectedSourceCount }} of {{ sourceOptions.length }} selected</p>
+      </div>
+
+      <button type="button" mat-button (click)="toggleAllSources()">
+        {{ sourceSelectionToggleLabel }}
+      </button>
+    </div>
+
+    <div class="source-option-list">
+      @for (option of sourceOptions; track option.value) {
+        <mat-checkbox
+          color="accent"
+          [checked]="isSourceSelected(option.value)"
+          (change)="setSourceSelected(option.value, $event.checked)"
+        >
+          <span class="source-option-label">{{ option.label }}</span>
+          <span class="source-option-count">{{ option.count }}</span>
+        </mat-checkbox>
+      }
+    </div>
+  </section>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button type="button" mat-button mat-dialog-close>Cancel</button>
+  <button
+    type="button"
+    mat-flat-button
+    color="accent"
+    [disabled]="isApplyDisabled"
+    (click)="apply()"
+  >
+    Apply
+  </button>
+</mat-dialog-actions>

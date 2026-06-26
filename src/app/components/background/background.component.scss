@@ -43,6 +43,9 @@
 
   &.host-light-theme {
     // background-image: url('src/client/assets/images/jpgs/light_sky_v0.jpg');
+    opacity: .5;
+    background-image: url('../../../assets/images/pngs/light_sky_v1.png');
+    background-size: cover;
   }
 }
 

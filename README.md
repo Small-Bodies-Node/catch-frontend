@@ -22,6 +22,22 @@ See: [catch.astro.umd.edu](https://catch.astro.umd.edu/).
 - Install dependencies: `npm install`
 - Start the development server: `npm run dev`
 
+## Environment Configuration
+
+- `CAT_BASE_URL` sets the CAT data API base URL in the Angular environment files under `src/environments/*`. Local development points at `http://localhost:8000`.
+- When the app is served over HTTPS and `CAT_BASE_URL` is HTTP-only, the browser uses the same-origin `/api/cat/*` proxy to avoid mixed-content blocking.
+
+## Dev Container
+
+- Open the repo in VS Code and run `Dev Containers: Reopen in Container`.
+- The devcontainer uses the shared `master-vscode-devcontainer:latest` image directly.
+- The repo is bind-mounted at `/workspaces/catch-frontend-ng20`.
+- Codex state is persisted on the project-specific Docker volume `catch-frontend-ng20-codex`.
+- VS Code server extensions are persisted on the project-specific Docker volume `catch-frontend-ng20-vscode-extensions`.
+- `node_modules` is persisted on the project-specific Docker volume `catch-frontend-ng20-node-modules`.
+- Shared package-manager caches are mounted for npm, pnpm, pip, and uv.
+- Dependencies are installed with `npm ci` during `postCreateCommand`; the app is not started automatically.
+
 ## Docker (production)
 
 - Update `.env` with the `PORT` you want the container to listen on and any other runtime variables (for production deployments, supply real secrets via your orchestrator rather than baking them into the image).

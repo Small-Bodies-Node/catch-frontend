@@ -1,9 +1,7 @@
 export interface ISiteSettings {
-  siteTheme: TPermittedTheme;
+  themePreference: TThemePreference;
   isHappyWithCookies: boolean;
-  isAutoNightMode: boolean;
   isPageAnimated: boolean;
-  hour: number;
 }
 
 // TS apparatus to convert an array of strings to a union of string types
@@ -12,8 +10,6 @@ function stringLiteralArray<T extends string>(s: T[]) {
   return s;
 }
 
-export const permittedThemes = stringLiteralArray([
-  'DARK-THEME',
-  'LIGHT-THEME',
-]);
-export type TPermittedTheme = typeof permittedThemes[number];
+export const themePreferences = stringLiteralArray(['system', 'light', 'dark']);
+export type TThemePreference = (typeof themePreferences)[number];
+export type TEffectiveTheme = Exclude<TThemePreference, 'system'>;

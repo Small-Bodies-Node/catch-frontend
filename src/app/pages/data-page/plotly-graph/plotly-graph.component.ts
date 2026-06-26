@@ -12,14 +12,14 @@ import { IPlotlyGraphInput } from '../../../../models/IPlotlyGraphInput';
 import { IPlotlySettings } from '../../../../models/IPlotlySettings';
 import { IAppState } from '../../../ngrx/reducers';
 import { selectApiData, selectApiDataStatus } from '../../../ngrx/selectors/api-data.selectors';
-import { selectSiteSettingsTheme } from '../../../ngrx/selectors/site-settings.selectors';
 import { apiDataLabels } from '../../../../utils/apiDataLabels';
 import { julianToDate } from '../../../../utils/julianToDate';
 import { IApiFixum } from '../../../../models/IApiFixum';
 import { AsyncPipe, NgClass } from '@angular/common';
+import { ThemeService } from '../../../core/services/theme/theme.service';
 
 import { PlotlyComponent, PlotlyService } from 'angular-plotly.js';
-import Plotly, { Layout, Margin } from 'plotly.js-dist-min';
+import Plotly, { Data, Layout, Margin } from 'plotly.js-dist-min';
 
 @Component({
   selector: 'app-plotly-graph',
@@ -47,7 +47,10 @@ export class PlotlyGraphComponent implements OnInit {
 
   public plotlySetting$!: Observable<IPlotlySettings>;
 
-  constructor(private store$: Store<IAppState>) {
+  constructor(
+    private store$: Store<IAppState>,
+    private themeService: ThemeService,
+  ) {
     if (!PlotlyService.plotly) PlotlyService.setPlotly(Plotly);
     this.setPlotlySettings();
   }
@@ -62,31 +65,40 @@ export class PlotlyGraphComponent implements OnInit {
   setPlotlySettings() {
     this.plotlySetting$ = combineLatest([
       this.inputPlotlyParam$,
-      this.store$.select(selectSiteSettingsTheme),
+      this.themeService.effectiveTheme$,
       this.store$.select(selectApiData),
       this.store$.select(selectApiDataStatus),
     ]).pipe(
-      map(([inputPlotlyParams, siteTheme, apiData, apiStatus]) => {
+      map(([inputPlotlyParams, effectiveTheme, apiData, apiStatus]) => {
         //
-        // Combine siteTheme, input params, and data returned from server to
+        // Combine theme, input params, and data returned from server to
         // update `plotlySettings` that completely determines graph
         //
 
         if (!inputPlotlyParams || !apiData || !apiStatus?.search) return null;
 
         // Extract vars from observables
-        const isLightTheme = !!siteTheme.includes('LIGHT');
-        const { xDataKey, isMiniMode } = inputPlotlyParams;
-        const yDataKey = xDataKey === 'ra' ? 'dec' : undefined;
+        const isLightTheme = effectiveTheme === 'light';
+        const { xDataKey, yDataKey, isMiniMode } = inputPlotlyParams;
 
         // For now, we're only allowing two types of graph based on presence/absence of y data
         const plotType = yDataKey ? 'scatter' : 'histogram';
+        const xAxisAutorange: true | 'reversed' = plotType === 'scatter' ? 'reversed' : true;
 
         // Data
-        const xData = apiData.map((el) => el[xDataKey as keyof (IApiMovum | IApiFixum)]);
-        const yData = !yDataKey
+        const rawXData = apiData.map((el) => el[xDataKey as keyof (IApiMovum | IApiFixum)]);
+        const rawYData = !yDataKey
           ? undefined
           : apiData.map((el) => el[yDataKey as keyof (IApiMovum | IApiFixum)]);
+        const dataPairs = rawYData
+          ? rawXData
+              .map((x, index) => ({ x, y: rawYData[index] }))
+              .filter(({ x, y }) => this.isPlotlyDatum(x) && this.isPlotlyDatum(y))
+          : undefined;
+        const xData = dataPairs
+          ? dataPairs.map(({ x }) => x)
+          : rawXData.filter((datum) => this.isPlotlyDatum(datum));
+        const yData = dataPairs ? dataPairs.map(({ y }) => y) : undefined;
         const tooltipInfo = apiData
           .map((el) => {
             return 'jd' in el ? el.jd : el.mjd_start;
@@ -119,14 +131,35 @@ export class PlotlyGraphComponent implements OnInit {
 
         // Colors
         const fontColor: Color = isLightTheme ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.7)';
-        const markerLineColor: Color = 'rgba(103,169,253,1.0)';
-        const gridColor: Color = 'white';
-        const bgColor: Color = isLightTheme ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.2)';
+        const markerLineColor: Color = isLightTheme
+          ? 'rgba(0, 105, 97, 0.95)'
+          : 'rgba(20, 220, 220, 0.95)';
+        const gridColor: Color = isLightTheme ? 'rgba(0,0,0,0.22)' : 'rgba(255,255,255,0.22)';
+        const bgColor: Color = isMiniMode
+          ? 'rgba(0,0,0,0)'
+          : isLightTheme
+            ? 'rgba(0,0,0,0.08)'
+            : 'rgba(255,255,255,0.08)';
         const markerColor = isLightTheme
-          ? 'rgba(black,0.5)'
+          ? 'rgba(0, 105, 97, 0.75)'
           : isMiniMode
-          ? 'rgba(53,119,203,1.0)'
-          : 'rgba(53,119,203,0.8)';
+            ? 'rgba(20, 220, 220, 0.9)'
+            : 'rgba(20, 184, 184, 0.8)';
+        const plotData = {
+          x: xData,
+          type: plotType,
+          ...(isMiniMode ? { hoverinfo: 'skip' as const, hovertemplate: null } : {}),
+          marker: {
+            color: markerColor,
+            size: isMiniMode ? 3 : 18,
+            line: {
+              color: markerLineColor,
+              width: 1,
+            },
+          },
+          ...(yData ? { y: yData } : {}),
+          ...(plotType === 'scatter' ? { mode: 'markers' as const } : {}),
+        } as Data;
 
         // Combine
         const plotlySettings: IPlotlySettings = {
@@ -134,27 +167,10 @@ export class PlotlyGraphComponent implements OnInit {
           config: {
             displaylogo: false,
             responsive: true,
-            displayModeBar: 'hover',
+            staticPlot: !!isMiniMode,
+            displayModeBar: isMiniMode ? false : 'hover',
           },
-          data: [
-            {
-              //@ts-ignore
-              x: xData,
-              //@ts-ignore
-              y: !!yData ? yData : undefined,
-              // text: tooltipInfo,
-              type: plotType,
-              marker: {
-                color: markerColor,
-                size: isMiniMode ? 3 : 18,
-                line: {
-                  color: markerLineColor,
-                  width: 1,
-                },
-              },
-              mode: 'markers',
-            },
-          ],
+          data: [plotData],
           layout: {
             // LABELLING
             title: {
@@ -167,12 +183,7 @@ export class PlotlyGraphComponent implements OnInit {
 
             // PLOT SIZING
             width: !!isMiniMode ? 30 : size.width,
-            // height: !!isMiniMode ? 30 : size.height,
-
-            // width: !!isMiniMode ? 30 : 500,
-            height: !!isMiniMode ? 30 : undefined,
-
-            // autosize: !isMiniMode,
+            height: !!isMiniMode ? 30 : size.height,
 
             // margin: !!isMiniMode ? { l: 0, r: 0, b: 0, t: 0 } : undefined,
             margin: !!isMiniMode ? { l: 0, r: 0, b: 0, t: 0 } : { l: 50, r: 25, b: 50, t: 100 },
@@ -180,6 +191,7 @@ export class PlotlyGraphComponent implements OnInit {
             // PLOT BACKGROUND COLOR
             plot_bgcolor: bgColor,
             paper_bgcolor: bgColor,
+            hovermode: isMiniMode ? false : 'closest',
 
             // AXES
             xaxis: {
@@ -191,7 +203,7 @@ export class PlotlyGraphComponent implements OnInit {
                   color: fontColor,
                 },
               },
-              autorange: 'reversed',
+              autorange: xAxisAutorange,
               // type === 'scatter',
               // range: !!xData ? [0, Math.ceil(Math.max.apply(null, xData))] : [0, 10],
               showgrid: !isMiniMode,
@@ -283,12 +295,33 @@ export class PlotlyGraphComponent implements OnInit {
       height: window.innerHeight * 0.65,
     };
   }
+
+  private isPlotlyDatum(input: unknown): input is number | string {
+    return typeof input === 'number' || typeof input === 'string';
+  }
 }
 
 @Component({
   selector: 'app-plotly-graph-wrapper',
-  template: ` <app-plotly-graph [inputPlotlyParams]="inputPlotlyParams"></app-plotly-graph> `,
-  styles: [``],
+  template: `
+    <div class="plotly-dialog-content">
+      <app-plotly-graph [inputPlotlyParams]="inputPlotlyParams"></app-plotly-graph>
+    </div>
+  `,
+  styles: [
+    `
+      :host {
+        display: block;
+        background: var(--mat-sys-surface-container-high);
+        color: var(--mat-sys-on-surface);
+      }
+
+      .plotly-dialog-content {
+        box-sizing: border-box;
+        padding: 16px;
+      }
+    `,
+  ],
   imports: [
     //
 

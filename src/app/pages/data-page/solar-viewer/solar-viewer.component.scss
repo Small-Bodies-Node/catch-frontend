@@ -1,3 +1,33 @@
+:host {
+  --solar-viewer-background: #000;
+
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+}
+
 .solar-viewer-container {
-  background-color: #101414;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 160px;
+  overflow: hidden;
+  background-color: var(--solar-viewer-background);
+}
+
+.solar-viewer-container,
+:host ::ng-deep .solar-viewer-container canvas {
+  background: var(--solar-viewer-background) !important;
+}
+
+.solar-viewer-placeholder {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--mat-sys-on-surface-variant);
+  font-size: 15px;
+  text-align: center;
 }

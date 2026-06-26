@@ -1,6 +1,6 @@
 {
   "name": "catch-frontend-ng20",
-  "version": "3.1.0",
+  "version": "4.0.0",
   "scripts": {
     "___Local Development___": "",
     "dev": "concurrently -r -k -n NG,API -c cyan,magenta \"npm:local:ng\" \"npm:local:api\"",

@@ -1,0 +1,22 @@
+{
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "explicit",
+    "source.organizeImports": "explicit",
+    "source.sortMembers": "explicit"
+  },
+  "workbench.colorCustomizations": {
+    // "titleBar.activeBackground": "#1f3b57",
+    "titleBar.activeBackground": "#105610",
+    // "titleBar.activeForeground": "#ffffff",
+    "titleBar.activeForeground": "#000000",
+    "titleBar.inactiveBackground": "#1f3b57cc",
+    "activityBar.background": "#12283d",
+    // "activityBar.background": "#944547",
+    "activityBar.foreground": "#944547",
+    // "statusBar.background": "#0f2233",
+    "statusBar.background": "#209BBA",
+    "statusBar.foreground": "#e6f0ff"
+  },
+  "window.title": "LBR • ${rootName}"
+  // "workbench.colorTheme": "Default Light Modern"
+}

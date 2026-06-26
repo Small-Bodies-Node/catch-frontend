@@ -59,7 +59,7 @@ export const apiDataLabels: Readonly<TApiDataLabels> = {
     label: 'd[rh]/dt',
   },
   designation: {
-    description: 'XXX',
+    description: 'Object designation',
     // fractionSize: 2,
     label: 'Designation',
   },
@@ -105,8 +105,7 @@ export const apiDataLabels: Readonly<TApiDataLabels> = {
     label: 'Phase',
   },
   preview_url: {
-    description:
-      'Preview cutout image around target ephemeris in a web image format',
+    description: 'Preview cutout image around target ephemeris in a web image format',
     label: 'Preview URL',
   },
   product_id: {
@@ -137,8 +136,7 @@ export const apiDataLabels: Readonly<TApiDataLabels> = {
     label: 'RDot',
   },
   retrieved: {
-    description:
-      'Date when the ephemeris was retrieved from the ephemeris generator, UTC',
+    description: 'Date when the ephemeris was retrieved from the ephemeris generator, UTC',
     label: 'Retrieved',
   },
   rh: {
@@ -147,8 +145,7 @@ export const apiDataLabels: Readonly<TApiDataLabels> = {
     label: 'rh',
   },
   sangle: {
-    description:
-      'Position angle of projected target-Sun vector, east of Celestial north (deg)',
+    description: 'Position angle of projected target-Sun vector, east of Celestial north (deg)',
     fractionSize: 0,
     label: 'PA(\u2299)',
   },
@@ -188,12 +185,6 @@ export const apiDataLabels: Readonly<TApiDataLabels> = {
     description: 'Thumbnail image around target ephemeris',
   },
 
-  // tmtp: {
-  //   description: 'XXX',
-  //   // fractionSize: 1,
-  //   label: 'tmtp',
-  // },
-
   true_anomaly: {
     description: 'True anomaly angle (deg)',
     fractionSize: 1,
@@ -210,8 +201,7 @@ export const apiDataLabels: Readonly<TApiDataLabels> = {
     label: '\u03c3(b)',
   },
   unc_theta: {
-    description:
-      'Ephemeris uncertainty ellipse position angle, east of Celestial north (deg)',
+    description: 'Ephemeris uncertainty ellipse position angle, east of Celestial north (deg)',
     fractionSize: 0,
     label: '\u03c3(\u03b8)',
   },

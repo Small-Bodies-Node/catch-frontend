@@ -2,10 +2,8 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
-  EventEmitter,
   Input,
   OnChanges,
-  Output,
   SimpleChanges,
 } from '@angular/core';
 import { ImageFetchService } from '../../../core/services/fetch-image/fetch-image.service';
@@ -13,6 +11,7 @@ import { IApiMovum } from '../../../../models/IApiMovum';
 import { IApiFixum } from '../../../../models/IApiFixum';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { NgStyle } from '@angular/common';
+import { getTableThumbnailSurveyScaleTransform } from '../../../../utils/image-orientation';
 // import { colog } from '../../../utils/colog';
 
 @Component({
@@ -36,8 +35,6 @@ export class TableThumbnailComponent implements OnChanges {
   @Input() diameterPxls: number = 30;
   @Input() isReorientated = false;
 
-  @Output() onLoadEventMessage = new EventEmitter<string>();
-
   imageSrc?: string;
   isImageInQueue: boolean = false;
   readonly placeholderImage: string = 'assets/images/placeholder.png';
@@ -59,27 +56,27 @@ export class TableThumbnailComponent implements OnChanges {
 
   private loadImage(): void {
     const { preview_url } = this.apiDatum;
-    if (!preview_url) return;
+    if (!preview_url) {
+      this.imageSrc = this.placeholderImage;
+      this.isImageInQueue = false;
+      this.changeDetector.detectChanges();
+      return;
+    }
 
     this.imageFetchService
       .fetchImage(preview_url, {
         isPriority: this.priority === 'vip',
         label: this.label,
       })
-      .then(
-        (objUrl) => {
-          this.imageSrc = objUrl || this.placeholderImage;
-          // this.isImageLoaded = true;
-          this.isImageInQueue = false;
-          this.changeDetector.detectChanges();
-        },
-        (error) => {
-          this.isImageInQueue = false;
-          this.imageSrc = this.placeholderImage;
-        },
-      )
+      .then((objUrl) => {
+        this.imageSrc = objUrl || this.placeholderImage;
+        this.isImageInQueue = false;
+        this.changeDetector.detectChanges();
+      })
       .catch((_) => {
-        console.log('The following URL failed:', preview_url);
+        this.isImageInQueue = false;
+        this.imageSrc = this.placeholderImage;
+        this.changeDetector.detectChanges();
       });
   }
 
@@ -87,47 +84,7 @@ export class TableThumbnailComponent implements OnChanges {
    * Some surveys need to be flipped, etc. to have ra and dec increase +ve in consistent dirn
    */
   getSurveyScaleTransform() {
-    // return 'scale(1, 1)';
-    if (!this.isReorientated) return 'scale(1, 1)';
-    if (!this.apiDatum) return 'scale(1, 1)';
-    if (this.apiDatum.source.includes('neat')) {
-      return 'scale(1, 1)';
-      // return 'scale(-1, -1)';
-      // return 'rotate(-90deg)';
-    }
-    if (this.apiDatum.source.includes('atlas')) {
-      return 'scale(1, 1)';
-      // return 'scale(-1, 1)';
-      // return 'rotate(-90deg)';
-    }
-    if (this.apiDatum.source === 'loneos') {
-      return 'scale(-1, -1)';
-    }
-    if (this.apiDatum.source === 'skymapper_dr4') {
-      // return 'scale(-1, -1)';
-      return 'rotate(180deg)';
-    }
-    if (this.apiDatum.source === 'ps1dr2') {
-      return 'scale(-1, -1)';
-      // return 'rotate(180deg)';
-    }
-    if (this.apiDatum.source === 'spacewatch') {
-      return 'scale(-1, 1)';
-      // return 'rotate(180deg)';
-    }
-    if (
-      [
-        //
-        'catalina_bigelow',
-        'catalina_lemmon',
-        'catalina_bokneosurvey',
-      ].includes(this.apiDatum.source)
-    ) {
-      return 'scale(-1, -1)';
-      // return 'rotate(180deg)';
-    }
-
-    return 'scale(1, 1)';
+    return getTableThumbnailSurveyScaleTransform(this.apiDatum?.source, this.isReorientated);
   }
 
   getStyles() {

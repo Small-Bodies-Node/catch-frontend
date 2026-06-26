@@ -1,113 +1,174 @@
 <div #myContainer class="panstarrs-overlay-container">
-  @if (!isPanstarrsDataFound) {
-  <div class="no-data-found">No panstarrs data!</div>
+  @if (panstarrsStatusVariant) {
+    <div
+      class="panstarrs-status-chip"
+      [class.is-loading]="panstarrsStatusVariant === 'loading'"
+      [class.is-empty]="panstarrsStatusVariant === 'empty'"
+      [class.is-error]="panstarrsStatusVariant === 'error'"
+      aria-live="polite"
+    >
+      @if (panstarrsStatusVariant === 'loading') {
+        <span class="loading-dots" aria-hidden="true">
+          <span></span>
+          <span></span>
+          <span></span>
+        </span>
+      }
+      <span>{{ panstarrsStatusMessage }}</span>
+    </div>
   }
 
   <div class="image-wrapper">
     <!-- Crosshair: Top Vertical Segment -->
     <div
-      [style.position]="'absolute'"
+      class="crosshair-segment crosshair-segment-vertical"
+      [style.left.px]="getCrosshairCenterX()"
       [style.top.px]="0"
-      [style.left]="'50%'"
-      [style.transform]="'translateX(-50%)'"
-      [style.width.px]="2"
-      [style.height]="'calc(50% - ' + 50 * crosshairCenterCutoutFraction + '%)'"
-      [style.background-color]="'#90EE90'"
-      [style.z-index]="1"
+      [style.height.px]="getCrosshairTopSegmentHeight()"
     ></div>
 
     <!-- Crosshair: Bottom Vertical Segment -->
     <div
-      [style.position]="'absolute'"
-      [style.bottom.px]="0"
-      [style.left]="'50%'"
-      [style.transform]="'translateX(-50%)'"
-      [style.width.px]="2"
-      [style.height]="'calc(50% - ' + 50 * crosshairCenterCutoutFraction + '%)'"
-      [style.background-color]="'#90EE90'"
-      [style.z-index]="1"
+      class="crosshair-segment crosshair-segment-vertical"
+      [style.left.px]="getCrosshairCenterX()"
+      [style.top.px]="getCrosshairBottomSegmentTop()"
+      [style.height.px]="getCrosshairBottomSegmentHeight()"
     ></div>
 
     <!-- Crosshair: Left Horizontal Segment -->
     <div
-      [style.position]="'absolute'"
-      [style.top]="'50%'"
+      class="crosshair-segment crosshair-segment-horizontal"
+      [style.top.px]="getCrosshairCenterY()"
       [style.left.px]="0"
-      [style.transform]="'translateY(-50%)'"
-      [style.width]="'calc(50% - ' + 50 * crosshairCenterCutoutFraction + '%)'"
-      [style.height.px]="2"
-      [style.background-color]="'#90EE90'"
-      [style.z-index]="1"
+      [style.width.px]="getCrosshairLeftSegmentWidth()"
     ></div>
 
     <!-- Crosshair: Right Horizontal Segment -->
     <div
-      [style.position]="'absolute'"
-      [style.top]="'50%'"
-      [style.right.px]="0"
-      [style.transform]="'translateY(-50%)'"
-      [style.width]="'calc(50% - ' + 50 * crosshairCenterCutoutFraction + '%)'"
-      [style.height.px]="2"
-      [style.background-color]="'#90EE90'"
-      [style.z-index]="1"
+      class="crosshair-segment crosshair-segment-horizontal"
+      [style.top.px]="getCrosshairCenterY()"
+      [style.left.px]="getCrosshairRightSegmentLeft()"
+      [style.width.px]="getCrosshairRightSegmentWidth()"
     ></div>
-    @if(imageSrc){
-    <img
-      #overlayImage
-      [style.image-rendering]="'pixelated'"
-      [src]="imageSrc"
-      (load)="onImageLoad()"
-      alt="Astronomical Image"
-      [style.position]="'absolute'"
-      [style.width.px]="renderedImageWidth"
-      [style.height.px]="renderedImageHeight"
-      [style.left.px]="imageOffsetX"
-      [style.top.px]="imageOffsetY"
-      [style.transform]="surveyScaleTransform()"
-    />
+
+    <!-- Centroidized Crosshair: Top Vertical Segment -->
+    <div
+      class="crosshair-segment centroid-crosshair-segment crosshair-segment-vertical"
+      [class.is-active]="!!activeCentroidization"
+      [style.left.px]="getCentroidCrosshairCenterX()"
+      [style.top.px]="getCentroidCrosshairTopSegmentTop()"
+      [style.height.px]="getCentroidCrosshairTopSegmentHeight()"
+    ></div>
+
+    <!-- Centroidized Crosshair: Bottom Vertical Segment -->
+    <div
+      class="crosshair-segment centroid-crosshair-segment crosshair-segment-vertical"
+      [class.is-active]="!!activeCentroidization"
+      [style.left.px]="getCentroidCrosshairCenterX()"
+      [style.top.px]="getCentroidCrosshairBottomSegmentTop()"
+      [style.height.px]="getCentroidCrosshairBottomSegmentHeight()"
+    ></div>
+
+    <!-- Centroidized Crosshair: Left Horizontal Segment -->
+    <div
+      class="crosshair-segment centroid-crosshair-segment crosshair-segment-horizontal"
+      [class.is-active]="!!activeCentroidization"
+      [style.top.px]="getCentroidCrosshairCenterY()"
+      [style.left.px]="getCentroidCrosshairLeftSegmentLeft()"
+      [style.width.px]="getCentroidCrosshairLeftSegmentWidth()"
+    ></div>
+
+    <!-- Centroidized Crosshair: Right Horizontal Segment -->
+    <div
+      class="crosshair-segment centroid-crosshair-segment crosshair-segment-horizontal"
+      [class.is-active]="!!activeCentroidization"
+      [style.top.px]="getCentroidCrosshairCenterY()"
+      [style.left.px]="getCentroidCrosshairRightSegmentLeft()"
+      [style.width.px]="getCentroidCrosshairRightSegmentWidth()"
+    ></div>
+
+    @if (activeTargetPhotometryRun) {
+      <div
+        class="target-photometry-aperture target-aperture"
+        [style.left.px]="getTargetPhotometryApertureCenterX()"
+        [style.top.px]="getTargetPhotometryApertureCenterY()"
+        [style.width.px]="getTargetPhotometryApertureDiameter()"
+        [style.height.px]="getTargetPhotometryApertureDiameter()"
+      ></div>
+
+      <div
+        class="target-photometry-aperture background-aperture-inner"
+        [style.left.px]="getTargetPhotometryApertureCenterX()"
+        [style.top.px]="getTargetPhotometryApertureCenterY()"
+        [style.width.px]="getTargetPhotometryBackgroundInnerDiameter()"
+        [style.height.px]="getTargetPhotometryBackgroundInnerDiameter()"
+      ></div>
+
+      <div
+        class="target-photometry-aperture background-aperture-outer"
+        [style.left.px]="getTargetPhotometryApertureCenterX()"
+        [style.top.px]="getTargetPhotometryApertureCenterY()"
+        [style.width.px]="getTargetPhotometryBackgroundOuterDiameter()"
+        [style.height.px]="getTargetPhotometryBackgroundOuterDiameter()"
+      ></div>
+    }
+
+    @if (imageSrc) {
+      <img
+        #overlayImage
+        [style.image-rendering]="'pixelated'"
+        [src]="imageSrc"
+        (load)="onImageLoad()"
+        alt="Astronomical Image"
+        [style.position]="'absolute'"
+        [style.width.px]="renderedImageWidth"
+        [style.height.px]="renderedImageHeight"
+        [style.left.px]="imageOffsetX"
+        [style.top.px]="imageOffsetY"
+        [style.transform]="surveyScaleTransform()"
+      />
     }
   </div>
 
   <!--  -->
-  @if(isAtlasOrNeat){
-
-  <!-- WCS Derived Star Positions -->
-  @for (coord of pixelCoordinatesWCS; track coord.id) {
-  <div
-    class="ra-dec-div-wcs"
-    [style.left.px]="coord.x * imageScaleX + imageOffsetX - starDivDiameter / 2"
-    [style.top.px]="coord.y * imageScaleY + imageOffsetY - starDivDiameter / 2"
-    [style.width.px]="starDivDiameter"
-    [style.height.px]="starDivDiameter"
-    [title]="
-      'WCS - RA: ' +
-      coord.ra.toFixed(5) +
-      ', Dec: ' +
-      coord.dec.toFixed(5) +
-      ' | Pixel: (' +
-      coord.x.toFixed(1) +
-      ', ' +
-      coord.y.toFixed(1) +
-      ')'
-    "
-  ></div>
-  } } @else{
-
-  <!-- CRUDE APPROACH -->
-  @for (raDec of raDecs; track raDec ) {
-  <div
-    class="ra-dec-div"
-    [style.left.px]="getDivLeft(raDec.ra)"
-    [style.top.px]="getDivTop(raDec.dec)"
-    [style.width.px]="starDivDiameter"
-    [style.height.px]="starDivDiameter"
-    [style.opacity]="getOpacity(raDec.raErr)"
-  >
-    <div class="object-info">
-      Panstarrs RA: {{ raDec.ra }}, DEC: {{ raDec.dec }}
-    </div>
-  </div>
-  }
-  <!--  -->
+  @if (isAtlasOrNeat) {
+    <!-- WCS Derived Star Positions -->
+    @for (coord of pixelCoordinatesWCS; track coord.id) {
+      <div
+        class="ra-dec-div-wcs"
+        [class.is-centralized]="!!activeAstrometryCentralization"
+        [style.left.px]="getWcsDivLeft(coord)"
+        [style.top.px]="getWcsDivTop(coord)"
+        [style.width.px]="starDivDiameter"
+        [style.height.px]="starDivDiameter"
+        [title]="
+          'WCS - RA: ' +
+          coord.ra.toFixed(5) +
+          ', Dec: ' +
+          coord.dec.toFixed(5) +
+          ' | Pixel: (' +
+          coord.x.toFixed(1) +
+          ', ' +
+          coord.y.toFixed(1) +
+          ')'
+        "
+      ></div>
+    }
+  } @else {
+    <!-- CRUDE APPROACH -->
+    @for (raDec of raDecs; track raDec) {
+      <div
+        class="ra-dec-div"
+        [class.is-centralized]="!!activeAstrometryCentralization"
+        [style.left.px]="getDivLeft(raDec.ra)"
+        [style.top.px]="getDivTop(raDec.dec)"
+        [style.width.px]="starDivDiameter"
+        [style.height.px]="starDivDiameter"
+        [style.opacity]="getOpacity(raDec.raErr)"
+      >
+        <div class="object-info">Panstarrs RA: {{ raDec.ra }}, DEC: {{ raDec.dec }}</div>
+      </div>
+    }
+    <!--  -->
   }
 </div>

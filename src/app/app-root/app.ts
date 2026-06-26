@@ -1,5 +1,11 @@
-import { ChangeDetectorRef, Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
-import { isPlatformBrowser, NgClass } from '@angular/common';
+import {
+  ChangeDetectorRef,
+  Component,
+  Inject,
+  OnInit,
+  PLATFORM_ID,
+  isDevMode,
+} from '@angular/core';
 import { GoogleAnalyticsService } from '../core/services/google-analytics.service';
 import { MatSidenav, MatSidenavContent } from '@angular/material/sidenav';
 import { Store } from '@ngrx/store';
@@ -9,7 +15,6 @@ import {
   pageFadeDurationMs,
   toHomePageAnimationDelayMs,
 } from '../../utils/animation-constants';
-import { TPermittedTheme } from '../../models/ISiteSettings';
 import { IAppState } from '../ngrx/reducers';
 import { LocalStorageService } from '../core/services/local-storage/local-storage.service';
 import { SiteSettingsAction_LoadAllFromLocalStorage } from '../ngrx/actions/site-settings.actions';
@@ -19,7 +24,7 @@ import {
   selectIsNewRouteScheduled,
   selectNavigationRecords,
 } from '../ngrx/selectors/navigation.selectors';
-import { selectSiteSettingsEffectiveTheme } from '../ngrx/selectors/site-settings.selectors';
+import { selectSiteSettingsThemePreference } from '../ngrx/selectors/site-settings.selectors';
 import { selectApiDataStatus } from '../ngrx/selectors/api-data.selectors';
 import { footerHeightPx, headerHeightPx } from '../../utils/constants';
 
@@ -28,10 +33,14 @@ import { BackgroundComponent } from '../components/background/background.compone
 import { HeaderComponent } from '../components/header/header.component';
 import { FooterComponent } from '../components/footer/footer.component';
 import { StreamingMessagesComponent } from '../components/streaming-messages/streaming-messages.component';
+import { ThemeSettingsDrawerComponent } from '../components/theme-settings-drawer/theme-settings-drawer.component';
+import { SiteBannerComponent } from '../components/site-banner/site-banner.component';
 import { RouterModule, RouterOutlet } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { MatSidenavContainer } from '@angular/material/sidenav';
-import { NgStyle } from '@angular/common';
+import { NgStyle, isPlatformBrowser } from '@angular/common';
+import { ThemeService } from '../core/services/theme/theme.service';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-root',
@@ -46,6 +55,8 @@ import { NgStyle } from '@angular/common';
     SidenavComponent,
     FooterComponent,
     StreamingMessagesComponent,
+    ThemeSettingsDrawerComponent,
+    SiteBannerComponent,
     //
     MatSidenav,
     MatSidenavContainer,
@@ -60,19 +71,17 @@ export class AppComponent implements OnInit {
   delayTimeMs = defaultPageAnimationDelayMs;
   isAppLoaded = false;
   isStreamingMessage = false;
-  siteTheme: TPermittedTheme = 'DARK-THEME';
   isFooterHidden = false;
-  private isBrowser: boolean;
 
   constructor(
     private store$: Store<IAppState>,
     private localStorageService: LocalStorageService,
     private cdr: ChangeDetectorRef,
     private googleAnalyticsService: GoogleAnalyticsService,
-    @Inject(PLATFORM_ID) platformId: Object,
-  ) {
-    this.isBrowser = isPlatformBrowser(platformId);
-  }
+    private themeService: ThemeService,
+    private httpClient: HttpClient,
+    @Inject(PLATFORM_ID) private platformId: Object,
+  ) {}
 
   ngOnInit(): void {
     // this.googleAnalyticsService.initPageViewTracking();
@@ -90,6 +99,10 @@ export class AppComponent implements OnInit {
 
     // Load localStorage settings into ngrx store
     this.store$.dispatch(SiteSettingsAction_LoadAllFromLocalStorage());
+
+    if (isPlatformBrowser(this.platformId)) {
+      this.pingLocalApi();
+    }
 
     // Handle route updates
     this.store$
@@ -127,8 +140,8 @@ export class AppComponent implements OnInit {
         const newDelayTime = isToHomePage
           ? toHomePageAnimationDelayMs
           : isFromHomePage
-          ? fromHomePageAnimationDelayMs
-          : defaultPageAnimationDelayMs;
+            ? fromHomePageAnimationDelayMs
+            : defaultPageAnimationDelayMs;
 
         if (this.delayTimeMs !== newDelayTime) {
           this.delayTimeMs = newDelayTime;
@@ -138,29 +151,11 @@ export class AppComponent implements OnInit {
         this.isFooterHidden = !!navSubstate.presentRoute?.startsWith('/data');
       });
 
-    // Handle theme changes
+    // Apply theme preference to document-level Material tokens.
     this.store$
-      .select(selectSiteSettingsEffectiveTheme)
+      .select(selectSiteSettingsThemePreference)
       .pipe(takeUntil(this.destroy$))
-      .subscribe((siteTheme) => {
-        if (this.siteTheme !== siteTheme) {
-          this.siteTheme = siteTheme;
-
-          // Set body color based on siteTheme value
-          const isDark = siteTheme === 'DARK-THEME';
-          if (this.isBrowser) {
-            queueMicrotask(() => {
-              try {
-                document.body.style.backgroundColor = isDark ? '#303030' : 'white';
-              } catch (e) {
-                console.error("Couldn't set body color");
-              }
-            });
-          }
-
-          this.cdr.detectChanges();
-        }
-      });
+      .subscribe((themePreference) => this.themeService.setThemePreference(themePreference));
 
     // Monitor API Status
     this.store$
@@ -190,8 +185,69 @@ export class AppComponent implements OnInit {
     sidenav.open();
   }
 
+  private pingLocalApi(): void {
+    // Sanity check that same-origin API proxying is alive during local development.
+    const helloRequestId = createDebugRequestId('catch-hello-probe');
+    this.httpClient
+      .get('/api/hello', {
+        headers: {
+          'X-CATCH-Debug': 'true',
+          'X-CATCH-Request-Id': helloRequestId,
+        },
+        responseType: 'text',
+      })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (message) => console.log('[CATCH API sanity] /api/hello replied:', message),
+        error: (error) => console.error('[CATCH API sanity] /api/hello failed:', error),
+      });
+
+    if (isDevMode()) {
+      this.pingAstrometryRoute();
+    }
+  }
+
+  private pingAstrometryRoute(): void {
+    const requestId = createDebugRequestId('catch-astrometry-probe');
+    console.log(
+      `[CATCH API sanity ${requestId}] probing /api/cat/astrometry with intentionally invalid payload`,
+    );
+
+    this.httpClient
+      .post(
+        '/api/cat/astrometry',
+        {},
+        {
+          headers: {
+            'X-CATCH-Debug': 'true',
+            'X-CATCH-Request-Id': requestId,
+            'X-CATCH-Timeout-Ms': '15000',
+          },
+          responseType: 'text',
+        },
+      )
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (message) =>
+          console.log(`[CATCH API sanity ${requestId}] /api/cat/astrometry replied:`, message),
+        error: (error) =>
+          console.error(
+            `[CATCH API sanity ${requestId}] /api/cat/astrometry probe completed as error:`,
+            error,
+          ),
+      });
+  }
+
   closeSidenav(sidenav: MatSidenav) {
     setTimeout(() => sidenav.close(), 250); // Add slight delay before closing
+  }
+
+  openSettingsSidenav(sidenav: MatSidenav) {
+    sidenav.open();
+  }
+
+  closeSettingsSidenav(sidenav: MatSidenav) {
+    sidenav.close();
   }
 
   getHeaderWrapperStyle() {
@@ -225,4 +281,8 @@ export class AppComponent implements OnInit {
     const transition = `top ${pageFadeDurationMs}ms ease-in-out ${delayMs}ms`;
     return { top, transition };
   }
+}
+
+function createDebugRequestId(prefix: string): string {
+  return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2, 10)}`;
 }

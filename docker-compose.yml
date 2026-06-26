@@ -7,11 +7,16 @@ services:
       - .env
     environment:
       NODE_ENV: production
+      CATCH_SITE_BANNER_MESSAGE: ${CATCH_SITE_BANNER_MESSAGE:-}
+      CATCH_SITE_BANNER_LEVEL: ${CATCH_SITE_BANNER_LEVEL:-warning}
+      CATCH_SITE_BANNER_STARTS_AT: ${CATCH_SITE_BANNER_STARTS_AT:-}
+      CATCH_SITE_BANNER_EXPIRES_AT: ${CATCH_SITE_BANNER_EXPIRES_AT:-}
+      CATCH_DATA_ACCESS_DISABLED: ${CATCH_DATA_ACCESS_DISABLED:-false}
     ports:
-      - "${PORT:-4000}:${PORT:-4000}"
+      - '${PORT:-4000}:${PORT:-4000}'
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:${PORT:-4000}/ || exit 1"]
+      test: ['CMD-SHELL', 'wget -q --spider http://127.0.0.1:${PORT:-4000}/ || exit 1']
       interval: 30s
       timeout: 5s
       retries: 3

@@ -1,7 +1,7 @@
 import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
-import { OverlayContainer } from '@angular/cdk/overlay';
 import { isPlatformBrowser } from '@angular/common';
 import { ILocalStorageState } from '../../../../models/ILocalStorageState';
+import { themePreferences } from '../../../../models/ISiteSettings';
 
 type LSKey = keyof ILocalStorageState; // Define type for 'LocalStorageKeys'
 
@@ -16,18 +16,12 @@ export class LocalStorageService {
   private memoryStore: Record<string, string> = {};
 
   private defaultPermittedLocalStorageState: ILocalStorageState = {
-    siteTheme: 'DARK-THEME',
+    themePreference: 'system',
     isPageAnimated: true,
-    isAutoNightMode: false,
     isHappyWithCookies: false,
-    hour: new Date().getHours(),
-    testKey: 'foo',
   };
 
-  constructor(
-    private overlayContainer: OverlayContainer,
-    @Inject(PLATFORM_ID) platformId: Object,
-  ) {
+  constructor(@Inject(PLATFORM_ID) platformId: Object) {
     this.isBrowser = isPlatformBrowser(platformId);
   }
 
@@ -38,16 +32,15 @@ export class LocalStorageService {
         return { ...this.defaultPermittedLocalStorageState };
       }
 
-      // Only get app-specific keys (those with our prefix)
-      const appKeys = Object.keys(window.localStorage)
-        .filter((key) => key.startsWith(this.APP_PREFIX))
-        .map((key) => key.substring(this.APP_PREFIX.length));
+      const appKeys = Object.keys(this.defaultPermittedLocalStorageState) as LSKey[];
 
-      // Build copy of localStorage as JS object with only app-specific keys
-      return appKeys.reduce((accumState: any, key: string) => {
-        accumState[key] = this.getItem(key as LSKey);
+      return appKeys.reduce((accumState: Partial<ILocalStorageState>, key: LSKey) => {
+        const item = this.getItem(key);
+        if (item !== 'NO_ITEM_FOUND') {
+          accumState[key] = item;
+        }
         return accumState;
-      }, {});
+      }, {}) as ILocalStorageState;
     } catch (e) {
       return { ...this.defaultPermittedLocalStorageState };
     }
@@ -60,7 +53,7 @@ export class LocalStorageService {
       const item = this.isBrowser
         ? window.localStorage.getItem(prefixedKey)
         : this.memoryStore[prefixedKey];
-      
+
       try {
         return !!item ? JSON.parse(item) : 'NO_ITEM_FOUND';
       } catch (e) {
@@ -78,7 +71,6 @@ export class LocalStorageService {
       const prefixedKey = this.APP_PREFIX + key;
       if (this.isBrowser) {
         window.localStorage.setItem(prefixedKey, JSON.stringify(value));
-        if (key === 'siteTheme') this.updateCdkOverlayClass(value);
       } else {
         // Store in-memory on the server to avoid ReferenceError
         this.memoryStore[prefixedKey] = JSON.stringify(value);
@@ -112,27 +104,44 @@ export class LocalStorageService {
     const presentState: any = this.getLocalStorageState();
 
     // Ensure all required app keys exist with valid values
-    const newState: ILocalStorageState = (
-      Object.keys(defaultState) as LSKey[]
-    ).reduce((accumState: any, key: LSKey) => {
-      // Build tests that compare localStorage key-value pairs between
-      // present state and default state
-      const isValueUndefined = typeof presentState[key] === 'undefined';
-      const isBasicTypeWrong =
-        typeof presentState[key] !== typeof defaultState[key];
+    const newState: ILocalStorageState = (Object.keys(defaultState) as LSKey[]).reduce(
+      (accumState: any, key: LSKey) => {
+        // Build tests that compare localStorage key-value pairs between
+        // present state and default state
+        const isValueUndefined = typeof presentState[key] === 'undefined';
+        const isValueInvalid =
+          isValueUndefined || !this.isValidAppValue(key, presentState[key], defaultState[key]);
 
-      if (isValueUndefined || isBasicTypeWrong) {
-        // If problem is found with present key-value pair, use default
-        accumState[key] = defaultState[key];
-      } else {
-        // Else keep existing value
-        accumState[key] = presentState[key];
-      }
-      return accumState;
-    }, {});
+        if (isValueInvalid) {
+          // If problem is found with present key-value pair, use default
+          accumState[key] = defaultState[key];
+        } else {
+          // Else keep existing value
+          accumState[key] = presentState[key];
+        }
+        return accumState;
+      },
+      {},
+    );
 
     // Update localStorage key-value pairs for app-specific keys
     this.setLocalStorageState(newState);
+  }
+
+  private isValidAppValue<K extends LSKey>(
+    key: K,
+    value: unknown,
+    defaultValue: ILocalStorageState[K],
+  ): value is ILocalStorageState[K] {
+    if (typeof value !== typeof defaultValue) {
+      return false;
+    }
+
+    if (key === 'themePreference') {
+      return (themePreferences as readonly string[]).includes(value as string);
+    }
+
+    return true;
   }
 
   setLocalStorageState(newState: Partial<ILocalStorageState>) {
@@ -203,22 +212,5 @@ export class LocalStorageService {
       console.error('Error clearing API cache', e);
       return 0;
     }
-  }
-
-  /**
-   * Method to be triggered when SiteTheme is updated to update div of class
-   * 'cdk-overlay-container' to also be of class equal to the theme's name
-   */
-  updateCdkOverlayClass(newTheme: string) {
-    if (!this.isBrowser) return;
-
-    const classList: DOMTokenList = this.overlayContainer.getContainerElement().classList;
-    const toRemove = Array.from(classList).filter((item: string) =>
-      item.includes('-theme')
-    );
-    if (toRemove.length) {
-      classList.remove(...toRemove);
-    }
-    classList.add(newTheme.toLowerCase());
   }
 }

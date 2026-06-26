@@ -1,0 +1,32 @@
+<div class="cat-tools-stack" [class.is-detail-open]="isDetailOpen">
+  <section class="cat-tools-stack-panel cat-tools-list-panel">
+    @if (listTemplate) {
+      <ng-container [ngTemplateOutlet]="listTemplate"></ng-container>
+    }
+  </section>
+
+  <section class="cat-tools-stack-panel cat-tools-detail-panel">
+    <div class="cat-tools-detail-view">
+      <header class="cat-tools-detail-header">
+        <button type="button" class="cat-tools-back-button" (click)="onBackClick()">
+          <mat-icon aria-hidden="true">arrow_back</mat-icon>
+          <span>Back</span>
+        </button>
+
+        <h2 class="cat-tools-detail-title">{{ detailTitle }}</h2>
+
+        @if (detailActionsTemplate) {
+          <div class="cat-tools-detail-actions">
+            <ng-container [ngTemplateOutlet]="detailActionsTemplate"></ng-container>
+          </div>
+        }
+      </header>
+
+      <div #detailBody class="cat-tools-detail-body">
+        @if (detailTemplate) {
+          <ng-container [ngTemplateOutlet]="detailTemplate"></ng-container>
+        }
+      </div>
+    </div>
+  </section>
+</div>

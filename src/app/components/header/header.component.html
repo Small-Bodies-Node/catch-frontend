@@ -2,17 +2,42 @@
   <div class="nav-menu-in-header">
     <ul class="links-in-header">
       <li (click)="delayedRouting('home')">
-        <span style="font-size: 30px">CATCH<span style="font-size: 10px">V3</span></span>
+        <span class="brand-mark">CATCH<span class="version-badge">V4</span></span>
       </li>
-      @for (item of menuItems; track item.route) { @if (item.route !== 'home') {
-      <li (click)="delayedRouting(item.route)">{{ item.label }}</li>
-      } }
+      @for (item of menuItems; track item.route) {
+        @if (item.route !== 'home') {
+          <li (click)="delayedRouting(item.route)">{{ item.label }}</li>
+        }
+      }
     </ul>
     <!-- <a
       class="feedback-link"
       href="https://forms.office.com/pages/responsepage.aspx?id=0FRi_5BGikakrYKKzju2aMC3R0Ppo7dGlS2WNHkgVqNUOFNZVEQwWFU5NUJKVlRLOThLQ1NIQUxEWC4u&route=shorturl"
       >WE WANT YOUR FEEDBACK!</a
     > -->
+    @if (siteBannerAlert$ | async; as banner) {
+      <button
+        class="site-banner-alert"
+        matRipple
+        mat-icon-button
+        type="button"
+        [attr.aria-label]="'Site warning: ' + banner.message"
+        [matTooltip]="banner.message"
+        matTooltipPosition="below"
+      >
+        <mat-icon>warning</mat-icon>
+      </button>
+    }
+    <button
+      class="settings-button"
+      matRipple
+      mat-icon-button
+      type="button"
+      aria-label="Open appearance settings"
+      (click)="_openSettings()"
+    >
+      <mat-icon>settings</mat-icon>
+    </button>
   </div>
 
   <div class="nav-menu-in-side-nav">
@@ -21,7 +46,32 @@
     </button>
 
     <div class="title" (click)="delayedRouting('home')">
-      <span style="font-size: 30px">CATCH</span>
+      <span class="brand-mark">CATCH<span class="version-badge">V4</span></span>
     </div>
+
+    @if (siteBannerAlert$ | async; as banner) {
+      <button
+        class="site-banner-alert"
+        matRipple
+        mat-icon-button
+        type="button"
+        [attr.aria-label]="'Site warning: ' + banner.message"
+        [matTooltip]="banner.message"
+        matTooltipPosition="below"
+      >
+        <mat-icon>warning</mat-icon>
+      </button>
+    }
+
+    <button
+      class="settings-button"
+      matRipple
+      mat-icon-button
+      type="button"
+      aria-label="Open appearance settings"
+      (click)="_openSettings()"
+    >
+      <mat-icon>settings</mat-icon>
+    </button>
   </div>
 </mat-toolbar>

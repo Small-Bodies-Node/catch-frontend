@@ -1,0 +1,45 @@
+.site-banner {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 44px;
+  padding: 8px clamp(12px, 4vw, 36px);
+  border-bottom: 1px solid color-mix(in srgb, currentColor 22%, transparent);
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.site-banner__icon {
+  flex: 0 0 auto;
+}
+
+.site-banner__message {
+  min-width: 0;
+}
+
+.site-banner--warning {
+  background: color-mix(in srgb, var(--mat-sys-error-container) 55%, #fff4bf);
+  color: color-mix(in srgb, var(--mat-sys-on-error-container) 70%, #3f3000);
+}
+
+.site-banner--error {
+  background: var(--mat-sys-error-container);
+  color: var(--mat-sys-on-error-container);
+}
+
+.site-banner--info {
+  background: var(--mat-sys-secondary-container);
+  color: var(--mat-sys-on-secondary-container);
+}
+
+@media (max-width: 600px) {
+  .site-banner {
+    align-items: flex-start;
+    font-size: 13px;
+  }
+}

@@ -2,7 +2,11 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, OnDestroy, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { MatAutocomplete, MatAutocompleteTrigger } from '@angular/material/autocomplete';
+import {
+  MatAutocomplete,
+  MatAutocompleteSelectedEvent,
+  MatAutocompleteTrigger,
+} from '@angular/material/autocomplete';
 import { MatOption } from '@angular/material/core';
 import { Subscription } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
@@ -15,6 +19,7 @@ import { selectApiDataStatus } from '../../ngrx/selectors/api-data.selectors';
 import { ObjectNameMatchAction_FetchResults } from '../../ngrx/actions/object-name-match.actions';
 import { UnrecognizedNameDialogComponent } from './unrecognized-name-dialog.component';
 import { ApiDataAction_SetStatus } from '../../ngrx/actions/api-data.actions';
+import { SiteBannerService } from '../../core/services/site-banner/site-banner.service';
 import {
   formControlLabels,
   formControlDict,
@@ -27,7 +32,6 @@ import {
 import { toolTipTextDict } from '../../../utils/toolTipTextDict';
 import { intersectionTypeLabels, intersectionTypes } from '../../../models/TIntersectionType';
 import { fixedTargets } from '../../../utils/fixedTargets';
-import { pastelGreen, pastelPink } from '../../../utils/constants';
 import { TMovingVsFixed } from '../../../models/TMovingVsFixed';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -95,6 +99,7 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
   isAdvancedControls = false;
   isMovingTarget = true;
   isAllSourcesSelected = true;
+  isDataAccessDisabled = false;
 
   subscriptions = new Subscription();
 
@@ -102,6 +107,7 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
     private dialog: MatDialog,
     private store$: Store<IAppState>,
     private changeDetectorRef: ChangeDetectorRef,
+    private siteBannerService: SiteBannerService,
   ) {
     // --->>>
 
@@ -115,6 +121,11 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
           .reduce((acc, el) => {
             return Math.max(acc, el);
           }, 0);
+
+        if (this.latestInputText.trim().length > 0) {
+          this.updateSearchFieldErrors();
+        }
+        this.openAutocompletePanelIfSuggestionsAreReady();
       }),
     );
 
@@ -123,6 +134,12 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
         if (status.code === 'searching') {
           this.isAdvancedControls = false;
         }
+      }),
+    );
+
+    this.subscriptions.add(
+      this.siteBannerService.getBanner().subscribe((banner) => {
+        this.isDataAccessDisabled = banner.isDataAccessDisabled;
       }),
     );
 
@@ -194,7 +211,24 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
     }
     setTimeout(() => {
       this.updateSearchFieldErrors();
+      this.openAutocompletePanelIfSuggestionsAreReady();
     }, 2 * searchFormDebounceTimeMs);
+  }
+
+  private openAutocompletePanelIfSuggestionsAreReady(): void {
+    if (
+      !this.isMovingTarget ||
+      this.latestInputText.trim().length === 0 ||
+      this.objectNameMatchResults.length === 0 ||
+      !this.autocomplete
+    ) {
+      return;
+    }
+
+    setTimeout(() => {
+      this.autocomplete.openPanel();
+      this.changeDetectorRef.detectChanges();
+    });
   }
 
   updateMovingVsFixed(movingVsFixed: TMovingVsFixed | undefined) {
@@ -229,6 +263,8 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
 
   submitObjectNameMatch(e: MouseEvent) {
     e.stopPropagation();
+    if (this.isDataAccessDisabled) return;
+
     if (this.isMovingTarget) {
       this.tryLaunchingMovingObjectQuery();
     } else {
@@ -237,6 +273,10 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
   }
 
   getSearchMessageText() {
+    if (this.isDataAccessDisabled) {
+      return 'Search temporarily unavailable';
+    }
+
     if (this.latestInputText.length === 0) {
       return this.isMovingTarget ? 'Search for moving object' : 'Search for fixed target';
     }
@@ -299,6 +339,8 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
   }
 
   launchMovingObjectQuery(target: string) {
+    if (this.isDataAccessDisabled) return;
+
     this.autocomplete.closePanel();
     const sources = this.getSelectedSources();
     const controls = this.formGroup.controls;
@@ -328,9 +370,11 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
   }
 
   launchFixedObjectQuery(ra: string, dec: string) {
+    if (this.isDataAccessDisabled) return;
+
     this.autocomplete.closePanel();
     const controls = this.formGroup.controls;
-    const radius = controls.padding_input_control.value;
+    const radius = controls.radius_input_control.value;
     const intersection_type = controls.intersection_type_input_control.value;
     const start_date = controls.start_time_input_control.value;
     const stop_date = controls.stop_time_input_control.value;
@@ -357,6 +401,7 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
   }
 
   keyDownOnUpperFormInputText(event: KeyboardEvent) {
+    if (this.isDataAccessDisabled) return;
     if (this.isSearchFieldError()) return;
     // Handle browser inconsistency on keystrokes
     // Advised here: https://stackoverflow.com/a/35395154/8620332
@@ -376,16 +421,25 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
     }
   }
 
+  selectAutocompleteOption(event: MatAutocompleteSelectedEvent) {
+    const selectedValue = String(event.option.value ?? '').trim();
+    if (selectedValue.length === 0) return;
+
+    this.latestInputText = selectedValue;
+    this.formGroup.controls.search_field_control.setValue(selectedValue, {
+      emitEvent: false,
+    });
+    this.updateSearchFieldErrors();
+  }
+
   optionToText(option: IObjectNameMatchResult) {
-    // Neatly format displayed options to form:
-    // "LongName1_______|_COMET"
-    // "Name2___________|_ASTEROID"
+    // Keep body types aligned without visual separator marks.
     const wSpaces = this.lengthOfLongestDisplayText - option.display_text.length;
-    return option.display_text + ' '.repeat(wSpaces > 0 ? wSpaces : 0) + ' | ' + option.body_type;
+    return option.display_text + ' '.repeat(Math.max(wSpaces + 2, 2)) + option.body_type;
   }
 
   getInputTextColor() {
-    if (this.isTargetMatched()) return { color: pastelGreen };
+    if (this.isTargetMatched()) return { color: 'var(--home-search-confirmed-text)' };
     return null;
   }
 
@@ -405,16 +459,22 @@ export class SearchFieldComponent implements OnInit, OnDestroy {
   isSearchButtonDisabled() {
     const isAtleastOneSourceSelected = this.isAtleastOneSourceSelected();
     const isInputEmpty = this.latestInputText.trim().length === 0;
-    return isInputEmpty || !isAtleastOneSourceSelected;
+    return this.isDataAccessDisabled || isInputEmpty || !isAtleastOneSourceSelected;
   }
 
   getSearchButtonStyle() {
     const isInputEmpty = this.latestInputText.trim().length === 0;
     const isTargetMatched = this.isTargetMatched(this.latestInputText);
     if ((!isInputEmpty && isTargetMatched) || !this.isMovingTarget) {
-      return { 'background-color': pastelGreen, color: 'black' };
+      return {
+        'background-color': 'var(--home-search-ready-bg)',
+        color: 'var(--home-search-ready-text)',
+      };
     }
-    return { backgroundColor: pastelPink, color: 'black' };
+    return {
+      backgroundColor: 'var(--home-search-warning-bg)',
+      color: 'var(--home-search-warning-text)',
+    };
   }
 
   isSearchFieldError() {

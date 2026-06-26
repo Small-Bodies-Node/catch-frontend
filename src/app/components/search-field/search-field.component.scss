@@ -12,6 +12,7 @@ div.search-field-container {
   height: 100%;
   max-height: 100%;
   width: 100%;
+  color: var(--mat-sys-on-surface);
   // max-width: 70vw;
   // background-color: aqua;
 
@@ -31,16 +32,6 @@ div.search-field-container {
       position: relative;
       box-sizing: border-box;
       padding: 0px;
-
-      mat-autocomplete {
-        .name-search-result {
-          width: 50%;
-          border: 1px rgba(100, 100, 100, 1) solid;
-          padding: 5px;
-          border-radius: 5px;
-          font-family: "Lucida Console", Monaco, monospace;
-        }
-      }
 
       .search-button {
         margin-right: 5px;
@@ -70,9 +61,26 @@ div.search-field-container {
       width: 100%;
 
       mat-button-toggle-group {
+        --mat-button-toggle-legacy-selected-state-background-color: var(
+          --home-search-selected-control-bg
+        );
+        --mat-button-toggle-legacy-selected-state-text-color: var(
+          --home-search-selected-control-text
+        );
+        --mat-button-toggle-legacy-text-color: var(--mat-sys-on-surface);
+        --mat-button-toggle-legacy-state-layer-color: var(--mat-sys-on-surface);
+
         border-radius: 4px !important;
+        border-color: var(--home-search-control-outline);
+        background-color: var(--home-search-control-surface);
+
+        .mat-button-toggle {
+          color: var(--mat-sys-on-surface);
+        }
+
         .mat-button-toggle-checked {
-          background-color: rgba(0, 0, 0, 0.4) !important;
+          background-color: var(--home-search-selected-control-bg) !important;
+          color: var(--home-search-selected-control-text) !important;
         }
       }
     }
@@ -82,15 +90,17 @@ div.search-field-container {
       top: 0px;
       right: 0px;
       width: 42px;
+      overflow: hidden;
 
       * {
         border-radius: 4px !important;
       }
-      overflow: hidden;
+
       button.show-advanced-controls-button {
-        background-color: rgba(0, 0, 0, 0) !important;
-        border: 1px #8e9192 solid !important;
+        background-color: var(--home-search-control-surface) !important;
+        border: 1px var(--home-search-control-outline) solid !important;
         border-radius: 4px !important;
+        color: var(--mat-sys-on-surface);
         width: 42px !important; // Make it square
         height: 42px !important; // Make it square
         padding: 0 !important; // Remove default padding
@@ -135,11 +145,36 @@ div.search-field-container {
       }
 
       .advanced-search-controls {
-        // background-color: cyan;
-        border: 1px rgba(255, 255, 255, 0.4) solid;
-        background-color: rgba(0, 0, 0, 0.9) !important;
+        --mat-checkbox-label-text-color: var(--home-search-panel-text);
+        --mat-checkbox-selected-checkmark-color: var(--home-search-checkbox-checkmark);
+        --mat-checkbox-selected-focus-icon-color: var(--home-search-checkbox-selected);
+        --mat-checkbox-selected-hover-icon-color: var(--home-search-checkbox-selected);
+        --mat-checkbox-selected-icon-color: var(--home-search-checkbox-selected);
+        --mat-checkbox-selected-pressed-icon-color: var(--home-search-checkbox-selected);
+        --mat-checkbox-selected-focus-state-layer-color: var(--home-search-checkbox-selected);
+        --mat-checkbox-selected-hover-state-layer-color: var(--home-search-checkbox-selected);
+        --mat-checkbox-selected-pressed-state-layer-color: var(--home-search-checkbox-selected);
+        --mat-checkbox-unselected-focus-icon-color: var(--home-search-checkbox-unselected);
+        --mat-checkbox-unselected-hover-icon-color: var(--home-search-checkbox-unselected);
+        --mat-checkbox-unselected-icon-color: var(--home-search-checkbox-unselected);
+        --mat-checkbox-unselected-focus-state-layer-color: var(--home-search-panel-text);
+        --mat-checkbox-unselected-hover-state-layer-color: var(--home-search-panel-text);
+        --mat-checkbox-unselected-pressed-state-layer-color: var(--home-search-panel-text);
+        --mat-form-field-outlined-focus-label-text-color: var(--home-search-panel-text);
+        --mat-form-field-outlined-focus-outline-color: var(--home-search-panel-outline-strong);
+        --mat-form-field-outlined-hover-label-text-color: var(--home-search-panel-text);
+        --mat-form-field-outlined-hover-outline-color: var(--home-search-panel-outline-strong);
+        --mat-form-field-outlined-input-text-color: var(--home-search-panel-text);
+        --mat-form-field-outlined-label-text-color: var(--home-search-panel-muted-text);
+        --mat-form-field-outlined-outline-color: var(--home-search-panel-outline);
+        --mat-select-enabled-trigger-text-color: var(--home-search-panel-text);
+
+        border: 1px var(--home-search-panel-outline) solid;
+        background-color: var(--home-search-panel-bg) !important;
         box-sizing: border-box;
         border-radius: 5px;
+        box-shadow: var(--home-search-panel-shadow);
+        color: var(--home-search-panel-text);
         padding: 10px;
 
         position: absolute;
@@ -153,6 +188,8 @@ div.search-field-container {
 
         .data-sources-title {
           // margin-bottom: 10px;
+          color: var(--home-search-panel-text);
+          font-weight: 600;
         }
 
         .search-type-toggle-wrapper {
@@ -174,6 +211,11 @@ div.search-field-container {
             display: flex;
             justify-content: flex-start;
             align-items: center;
+
+            mat-icon {
+              color: var(--home-search-panel-muted-text);
+            }
+
             ::ng-deep mat-checkbox {
               display: flex;
               justify-content: flex-start;

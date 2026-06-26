@@ -1,0 +1,22 @@
+:host {
+  display: block;
+}
+
+#suburban-expander {
+  position: relative;
+  display: block;
+  width: 100%;
+}
+
+plotly-plot {
+  display: block;
+}
+
+.hideDisplayBar {
+  pointer-events: none;
+}
+
+.miniModeCovering {
+  position: absolute;
+  inset: 0;
+}

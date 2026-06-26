@@ -3,15 +3,63 @@
   height: 100%;
   position: relative;
   overflow: hidden;
+  background-color: #000;
 
-  .no-data-found {
+  .panstarrs-status-chip {
     position: absolute;
-    top: 15px;
-    left: 15px;
-    color: red;
-    font-size: 16px;
-    font-weight: bold;
+    top: 12px;
+    right: 12px;
     z-index: 10;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    max-width: calc(100% - 24px);
+    padding: 6px 10px;
+    border: 1px solid rgba(175, 190, 200, 0.3);
+    border-radius: 6px;
+    background-color: rgba(12, 18, 22, 0.82);
+    color: #d5dde2;
+    font-size: 12px;
+    line-height: 1;
+    letter-spacing: 0;
+    pointer-events: none;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+
+    &.is-loading {
+      color: #d7ebe1;
+    }
+
+    &.is-empty {
+      color: #c3ccd1;
+    }
+
+    &.is-error {
+      color: #f0c48c;
+      border-color: rgba(240, 196, 140, 0.35);
+    }
+
+    .loading-dots {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+
+      span {
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background-color: #8fdcc5;
+        opacity: 0.35;
+        animation: panstarrs-dot-pulse 1s ease-in-out infinite;
+      }
+
+      span:nth-child(2) {
+        animation-delay: 0.18s;
+      }
+
+      span:nth-child(3) {
+        animation-delay: 0.36s;
+      }
+    }
   }
 
   .ra-dec-div {
@@ -27,6 +75,16 @@
     // border: 1px solid blue;
     transform: translate(-50%, -50%);
     overflow: show;
+    transition:
+      left 520ms cubic-bezier(0.2, 0, 0, 1),
+      top 520ms cubic-bezier(0.2, 0, 0, 1),
+      border-color 180ms ease,
+      background-color 180ms ease;
+
+    &.is-centralized {
+      border-color: #20f0ff;
+      background-color: rgba(32, 240, 255, 0.1);
+    }
 
     .object-info {
       background-color: rgba(red, 0.5);
@@ -49,6 +107,70 @@
     height: 100%;
   }
 
+  .crosshair-segment {
+    position: absolute;
+    z-index: 2;
+    background-color: #90ee90;
+    pointer-events: none;
+    transition:
+      left 520ms cubic-bezier(0.2, 0, 0, 1),
+      top 520ms cubic-bezier(0.2, 0, 0, 1),
+      width 520ms cubic-bezier(0.2, 0, 0, 1),
+      height 520ms cubic-bezier(0.2, 0, 0, 1),
+      opacity 240ms ease;
+  }
+
+  .centroid-crosshair-segment {
+    z-index: 1;
+    background-color: #ff4fd8;
+    opacity: 0;
+
+    &.is-active {
+      opacity: 1;
+    }
+  }
+
+  .target-photometry-aperture {
+    position: absolute;
+    z-index: 4;
+    box-sizing: border-box;
+    border-radius: 50%;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    transition:
+      left 520ms cubic-bezier(0.2, 0, 0, 1),
+      top 520ms cubic-bezier(0.2, 0, 0, 1),
+      width 320ms ease,
+      height 320ms ease,
+      opacity 220ms ease;
+  }
+
+  .target-aperture {
+    border: 2px solid #ffe066;
+    background-color: rgba(255, 224, 102, 0.14);
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.55);
+  }
+
+  .background-aperture-inner {
+    border: 1px dashed #7dd3fc;
+  }
+
+  .background-aperture-outer {
+    border: 2px solid #38bdf8;
+    background-color: rgba(56, 189, 248, 0.08);
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.45);
+  }
+
+  .crosshair-segment-vertical {
+    width: 2px;
+    transform: translateX(-50%);
+  }
+
+  .crosshair-segment-horizontal {
+    height: 2px;
+    transform: translateY(-50%);
+  }
+
   .ra-dec-div-wcs {
     position: absolute;
     // border: 1px dotted #00ffff; // Cyan dotted border for distinction
@@ -58,5 +180,29 @@
     border-radius: 50%; // Circular markers
     box-sizing: border-box;
     pointer-events: none; // So they don't interfere with underlying image interactions
+    transition:
+      left 520ms cubic-bezier(0.2, 0, 0, 1),
+      top 520ms cubic-bezier(0.2, 0, 0, 1),
+      border-color 180ms ease,
+      background-color 180ms ease;
+
+    &.is-centralized {
+      border-color: #20f0ff;
+      background-color: rgba(32, 240, 255, 0.2);
+    }
+  }
+}
+
+@keyframes panstarrs-dot-pulse {
+  0%,
+  80%,
+  100% {
+    opacity: 0.35;
+    transform: scale(0.85);
+  }
+
+  40% {
+    opacity: 1;
+    transform: scale(1);
   }
 }

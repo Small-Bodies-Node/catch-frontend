@@ -2,11 +2,9 @@
  *
  */
 export const sourcesToUrlString = (sources?: string[]): string => {
-  const sourceStr = sources
-    ? sources.reduce((acc, source) => {
-        acc += '&sources=' + source;
-        return acc;
-      }, '')
-    : '';
-  return sourceStr;
+  if (!sources?.length) return '';
+
+  const params = new URLSearchParams();
+  sources.forEach((source) => params.append('sources', source));
+  return `&${params.toString()}`;
 };

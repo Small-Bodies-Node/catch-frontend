@@ -3,6 +3,8 @@ mat-sidenav-content {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  background: var(--mat-sys-surface);
+  color: var(--mat-sys-on-surface);
   overflow: hidden;
 
   .header-wrapper {
@@ -11,17 +13,16 @@ mat-sidenav-content {
   }
 
   .background-graphic-wrapper {
-    position: absolute;
-    top: 0px;
-    left: 0px;
-    right: 0px;
-    height: 100vh;
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
     // background-color: green;
-    z-index: -1;
+    z-index: 0;
   }
 
   .content-wrapper {
     position: relative;
+    z-index: 1;
     width: 100%;
     display: flex;
     flex: 1; // child will set to an equal size inside the container
@@ -64,6 +65,15 @@ mat-sidenav-content {
       overflow: hidden;
     }
   }
+}
+
+.theme-settings-sidenav {
+  --mat-sidenav-container-shape: 0;
+
+  border-left: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 0;
+  background: var(--mat-sys-surface);
+  color: var(--mat-sys-on-surface);
 }
 
 ////////////////////////////////

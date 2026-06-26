@@ -1,0 +1,25 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.table-filter-toolbar {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 12px;
+  padding-left: 10px;
+}
+
+.table-filter-summary,
+.table-filter-empty {
+  flex: none;
+  color: var(--mat-sys-on-surface-variant);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.table-filter-clear {
+  flex: none;
+  color: var(--mat-sys-primary);
+}

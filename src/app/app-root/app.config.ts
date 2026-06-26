@@ -6,7 +6,7 @@ import {
 import { provideRouter } from '@angular/router';
 
 import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
-import { provideHttpClient, withFetch } from '@angular/common/http';
+import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideStore } from '@ngrx/store';
 
@@ -20,6 +20,7 @@ import * as ObjectNameMatchEffects from '../ngrx/effects/object-name-match.effec
 import * as ScreenDeviceEffects from '../ngrx/effects/screen-device.effects';
 import * as SiteSettingsEffects from '../ngrx/effects/site-settings.effects';
 import { provideRouterStore } from '@ngrx/router-store';
+import { pipelineInterceptor } from '../core/interceptors/pipelineInterceptor';
 
 // Register PlotlyJS instance with angular-plotly.js once at startup via providers
 
@@ -29,7 +30,7 @@ export const appConfig: ApplicationConfig = {
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
     provideClientHydration(withEventReplay()),
-    provideHttpClient(withFetch()),
+    provideHttpClient(withFetch(), withInterceptors([pipelineInterceptor])),
     provideAnimations(),
     // Plotly
     // importProvidersFrom(PlotlyModule.forRoot(PlotlyJS)),

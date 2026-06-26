@@ -1,0 +1,140 @@
+:host {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.cat-tools-stack {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.cat-tools-stack-panel {
+  position: absolute;
+  inset: 0;
+  min-width: 0;
+  overflow-x: hidden;
+  transition:
+    transform 260ms ease,
+    opacity 180ms ease;
+}
+
+.cat-tools-list-panel {
+  overflow-y: auto;
+  transform: translateX(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.cat-tools-detail-panel {
+  overflow-y: hidden;
+  transform: translateX(100%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.cat-tools-stack.is-detail-open {
+  .cat-tools-list-panel {
+    transform: translateX(-28%);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .cat-tools-detail-panel {
+    transform: translateX(0);
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+.cat-tools-detail-view {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.cat-tools-detail-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 0 0 auto;
+  min-width: 0;
+  padding-bottom: 18px;
+}
+
+.cat-tools-detail-title {
+  min-width: 0;
+  flex: 1 1 auto;
+  margin: 0;
+  color: var(--mat-sys-primary);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cat-tools-detail-actions {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.cat-tools-detail-body {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+
+  > * {
+    box-sizing: border-box;
+    max-width: 100%;
+    min-width: 0;
+  }
+}
+
+.cat-tools-back-button {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  gap: 8px;
+  padding: 7px 10px;
+  border: 1px solid color-mix(in srgb, var(--mat-sys-primary) 28%, transparent);
+  border-radius: 4px;
+  background-color: color-mix(in srgb, var(--mat-sys-primary) 8%, transparent);
+  color: var(--mat-sys-primary);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0;
+  cursor: pointer;
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease;
+
+  &:hover {
+    border-color: color-mix(in srgb, var(--mat-sys-primary) 44%, transparent);
+    background-color: color-mix(in srgb, var(--mat-sys-primary) 14%, transparent);
+  }
+
+  mat-icon {
+    width: 18px;
+    height: 18px;
+    font-size: 18px;
+    line-height: 18px;
+  }
+}

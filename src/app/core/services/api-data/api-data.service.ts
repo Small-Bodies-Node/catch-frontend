@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, from, of } from 'rxjs';
+import { Observable, TimeoutError, from, of } from 'rxjs';
 import { map, switchMap, catchError, delay } from 'rxjs/operators';
 import { Store } from '@ngrx/store';
 
@@ -19,21 +19,25 @@ import { getUrlForCatchRoute } from '../../../../utils/getUrlForCatchRoute';
 import { IApiDataCatchResult } from '../../../../models/IApiDataCatchResult';
 import { TWrappedApiDataResultOrError } from '../../../../models/TWrappedApiDataResultOrError';
 import { TApiDataCatchResultOrError } from '../../../../models/TApiDataCatchResultOrError';
-import { apiBaseUrl, apiStreamTimeoutSecs, mockNetworkDelayMs } from '../../../../utils/constants';
+import {
+  apiBaseUrl,
+  apiDataRequestTimeoutMs,
+  apiStreamTimeoutSecs,
+  mockNetworkDelayMs,
+} from '../../../../utils/constants';
 import { TApiDataResult } from '../../../../models/TApiDataResult';
 import { environment } from '../../../../environments/environment.local';
 import { apiMockResultMoving } from '../../../../utils/apiMockResultMoving';
 import { getMockCatchResultOrError } from '../../../../utils/getMockCatchResultOrError';
 import { apiMockResultFixed } from '../../../../utils/apiMockResultFixed';
 import { MockEventSource } from './MockEventSource';
-import { networkErrorMessage } from '../../../../utils/networkErrorMessage';
+import { dataApiTimeoutMessage, networkErrorMessage } from '../../../../utils/networkErrorMessage';
 
 const isMock = environment.apiData === 'mock';
 
-const headers = new HttpHeaders({
+const dataRequestHeaders = new HttpHeaders({
   Accept: 'application/json',
-  'Cache-Control': 'no-cache',
-  Pragma: 'no-cache',
+  'X-CATCH-Timeout-Ms': String(apiDataRequestTimeoutMs),
 });
 
 @Injectable({ providedIn: 'root' })
@@ -55,7 +59,7 @@ export class ApiDataService implements IApiDataService {
     }
 
     const catchFixedUrl = getUrlForFixedRoute(input);
-    const httpRequest$ = this.httpClient.get<TApiDataResult>(catchFixedUrl, { headers }).pipe(
+    const httpRequest$ = this.httpClient.get<TApiDataResult>(catchFixedUrl, { headers: dataRequestHeaders }).pipe(
       map((apiDataResult) => {
         return {
           status: 'success',
@@ -67,7 +71,7 @@ export class ApiDataService implements IApiDataService {
         console.error('Err:', JSON.stringify(error.message));
         return of({
           status: 'error',
-          message: networkErrorMessage(),
+          message: getApiDataErrorMessage(error, '/fixed'),
           job_id: 'N/A',
         } as const);
       }),
@@ -92,7 +96,7 @@ export class ApiDataService implements IApiDataService {
           console.error('apiCatchResult', apiCatchResult);
           return of({
             status: 'error',
-            message: networkErrorMessage(),
+            message: apiCatchResult.message,
             job_id: 'N/A',
           } as const);
         }
@@ -114,7 +118,7 @@ export class ApiDataService implements IApiDataService {
                 console.error(`Err: ${apiCaughtRequest.message}`);
                 return {
                   status: 'error',
-                  message: networkErrorMessage(job_id),
+                  message: apiCaughtRequest.message,
                   job_id,
                 } as const;
               } else {
@@ -130,7 +134,7 @@ export class ApiDataService implements IApiDataService {
               return of({
                 job_id,
                 status: 'error',
-                message: networkErrorMessage(job_id),
+                message: getApiDataErrorMessage(e, '/caught', job_id),
               });
             }),
           );
@@ -158,7 +162,7 @@ export class ApiDataService implements IApiDataService {
                   console.error('caughtResult', caughtResult);
                   return {
                     status: 'error',
-                    message: networkErrorMessage(job_id),
+                    message: caughtResult.message,
                     job_id,
                   } as const;
                 }
@@ -168,7 +172,7 @@ export class ApiDataService implements IApiDataService {
                 console.error('Error in apiCaughtRequest:', e.message);
                 return of({
                   status: 'error',
-                  message: networkErrorMessage(job_id),
+                  message: getApiDataErrorMessage(e, '/caught', job_id),
                   job_id,
                 });
               }),
@@ -178,7 +182,7 @@ export class ApiDataService implements IApiDataService {
             console.error('Error in watchJobStream:', e.message);
             return of({
               status: 'error',
-              message: networkErrorMessage(job_id),
+              message: getApiDataErrorMessage(e, '/stream', job_id),
               job_id,
             });
           }),
@@ -188,7 +192,7 @@ export class ApiDataService implements IApiDataService {
         console.error('Error in fetchApiData:', e.message);
         return of({
           status: 'error',
-          message: networkErrorMessage(),
+          message: getApiDataErrorMessage(e, '/catch'),
           job_id: 'N/A',
         });
       }),
@@ -203,7 +207,7 @@ export class ApiDataService implements IApiDataService {
 
     const movingTargetUrl = getUrlForCatchRoute(searchParamsMoving);
     const httpRequest$ = this.httpClient
-      .get<IApiDataCatchResult>(movingTargetUrl, { headers })
+      .get<IApiDataCatchResult>(movingTargetUrl, { headers: dataRequestHeaders })
       .pipe(
         map((apiDataCatchResult) => {
           const { type } = apiDataCatchResult.query;
@@ -221,7 +225,7 @@ export class ApiDataService implements IApiDataService {
           console.error('HTTP Error details:', error);
           return of({
             status: 'error',
-            message: networkErrorMessage(),
+            message: getApiDataErrorMessage(error, '/catch'),
           } as const);
         }),
       );
@@ -239,7 +243,7 @@ export class ApiDataService implements IApiDataService {
 
     const caughtUrl = apiBaseUrl + `/caught/${job_id}`;
     try {
-      const httpRequest$ = this.httpClient.get<TApiDataResult>(caughtUrl).pipe(
+      const httpRequest$ = this.httpClient.get<TApiDataResult>(caughtUrl, { headers: dataRequestHeaders }).pipe(
         map((apiDataResult) => {
           return {
             status: 'success',
@@ -251,7 +255,7 @@ export class ApiDataService implements IApiDataService {
           console.error('HTTP Error details:', error.message);
           return of({
             status: 'error',
-            message: networkErrorMessage(job_id),
+            message: getApiDataErrorMessage(error, '/caught', job_id),
             job_id,
           } as const);
         }),
@@ -260,7 +264,7 @@ export class ApiDataService implements IApiDataService {
     } catch (e) {
       return of({
         status: 'error',
-        message: networkErrorMessage(job_id),
+        message: getApiDataErrorMessage(e, '/caught', job_id),
         job_id,
       } as const);
     }
@@ -291,7 +295,7 @@ export class ApiDataService implements IApiDataService {
         resolve({
           status: 'error',
           job_id: job_id,
-          message: 'Message stream timeout',
+          message: dataApiTimeoutMessage('/stream', job_id),
         });
         source.close();
       }, apiStreamTimeoutSecs * 1000);
@@ -345,4 +349,22 @@ export class ApiDataService implements IApiDataService {
       };
     });
   }
+}
+
+function getApiDataErrorMessage(error: unknown, routeName: string, jobId?: string): string {
+  if (isTimeoutError(error)) {
+    return dataApiTimeoutMessage(routeName, jobId);
+  }
+
+  return networkErrorMessage(jobId);
+}
+
+function isTimeoutError(error: unknown): boolean {
+  return (
+    error instanceof TimeoutError ||
+    (typeof error === 'object' &&
+      error !== null &&
+      'name' in error &&
+      error.name === 'TimeoutError')
+  );
 }

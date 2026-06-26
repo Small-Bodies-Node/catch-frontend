@@ -1,0 +1,16 @@
+@if (viewModel$ | async; as viewModel) {
+  @if (viewModel.banner.enabled && viewModel.isHomeRoute) {
+    <section
+      class="site-banner"
+      [class.site-banner--error]="viewModel.banner.level === 'error'"
+      [class.site-banner--info]="viewModel.banner.level === 'info'"
+      [class.site-banner--warning]="viewModel.banner.level === 'warning'"
+      aria-live="polite"
+    >
+      <mat-icon class="site-banner__icon" aria-hidden="true">
+        {{ getIconName(viewModel.banner.level) }}
+      </mat-icon>
+      <span class="site-banner__message">{{ viewModel.banner.message }}</span>
+    </section>
+  }
+}

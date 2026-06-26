@@ -1,20 +1,58 @@
-@use "@angular/material" as mat;
-@import "@angular/material/prebuilt-themes/cyan-orange.css";
+@use '@angular/material' as mat;
 
-:root {
-  @include mat.toolbar-overrides(
+html {
+  --catch-brand-surface: #004f4f;
+  --catch-brand-surface-light: #027171;
+  --catch-on-brand-surface: #ffffff;
+  --catch-on-brand-surface-muted: color-mix(
+    in srgb,
+    var(--catch-on-brand-surface) 72%,
+    transparent
+  );
+
+  color-scheme: light dark;
+
+  @include mat.theme(
     (
-      container-text-color: white,
-      container-background-color: var(--mat-sys-primary-container),
+      color: (
+        primary: mat.$cyan-palette,
+        tertiary: mat.$orange-palette,
+      ),
+      typography: Roboto,
+      density: 0,
     )
   );
+
+  @include mat.toolbar-overrides(
+    (
+      container-text-color: var(--catch-on-brand-surface),
+      container-background-color: var(--catch-brand-surface),
+    )
+  );
+}
+
+html.catch-theme-system {
+  color-scheme: light dark;
+}
+
+html.catch-theme-light {
+  color-scheme: light;
+}
+
+html.catch-theme-dark {
+  color-scheme: dark;
 }
 
 html,
 body {
   height: 100%;
   margin: 0;
-  font-family: Roboto, "Helvetica Neue", sans-serif;
+}
+
+body {
+  background-color: var(--mat-sys-surface);
+  color: var(--mat-sys-on-surface);
+  font: var(--mat-sys-body-medium);
 
   a:link,
   a:visited,
@@ -37,6 +75,124 @@ body {
       display: block;
       position: relative;
     }
+  }
+}
+
+.cdk-overlay-backdrop.cdk-overlay-dark-backdrop {
+  background: color-mix(in srgb, var(--mat-sys-scrim) 42%, transparent);
+}
+
+app-search-field .search-field-container {
+  --home-search-confirmed-text: var(--mat-sys-primary);
+  --home-search-ready-bg: #77dd77;
+  --home-search-ready-text: #001c12;
+  --home-search-warning-bg: #ffd1dc;
+  --home-search-warning-text: #220008;
+  --home-search-control-surface: color-mix(
+    in srgb,
+    var(--mat-sys-surface-container-lowest) 78%,
+    transparent
+  );
+  --home-search-control-outline: color-mix(in srgb, var(--mat-sys-on-surface) 38%, transparent);
+  --home-search-panel-bg: color-mix(
+    in srgb,
+    var(--mat-sys-surface-container-highest) 94%,
+    transparent
+  );
+  --home-search-panel-text: var(--mat-sys-on-surface);
+  --home-search-panel-muted-text: var(--mat-sys-on-surface-variant);
+  --home-search-panel-outline: var(--mat-sys-outline-variant);
+  --home-search-panel-outline-strong: var(--mat-sys-outline);
+  --home-search-panel-shadow: var(--mat-sys-level3);
+  --home-search-checkbox-selected: var(--mat-sys-primary);
+  --home-search-checkbox-checkmark: var(--mat-sys-on-primary);
+  --home-search-checkbox-unselected: var(--mat-sys-on-surface-variant);
+  --home-search-selected-control-bg: color-mix(in srgb, var(--mat-sys-primary) 22%, transparent);
+  --home-search-selected-control-text: var(--mat-sys-on-surface);
+}
+
+.catch-effective-light app-search-field .search-field-container {
+  --mat-form-field-outlined-focus-label-text-color: #003737;
+  --mat-form-field-outlined-focus-outline-color: #003737;
+  --mat-form-field-outlined-hover-label-text-color: #002020;
+  --mat-form-field-outlined-hover-outline-color: #003737;
+  --mat-form-field-outlined-input-text-color: #002020;
+  --mat-form-field-outlined-label-text-color: #003737;
+  --mat-form-field-outlined-outline-color: color-mix(
+    in srgb,
+    var(--catch-brand-surface) 48%,
+    transparent
+  );
+  --home-search-confirmed-text: #003737;
+  --home-search-ready-bg: color-mix(
+    in srgb,
+    var(--catch-brand-surface) 18%,
+    var(--mat-sys-surface-container-lowest)
+  );
+  --home-search-ready-text: #002020;
+  --home-search-warning-bg: color-mix(
+    in srgb,
+    var(--mat-sys-error) 16%,
+    var(--mat-sys-surface-container-lowest)
+  );
+  --home-search-warning-text: var(--mat-sys-error);
+  --home-search-control-surface: color-mix(
+    in srgb,
+    var(--mat-sys-surface-container-lowest) 84%,
+    transparent
+  );
+  --home-search-control-outline: color-mix(in srgb, var(--catch-brand-surface) 42%, transparent);
+  --home-search-panel-bg: var(--mat-sys-surface-container-high);
+  --home-search-panel-text: #1b1c1c;
+  --home-search-panel-muted-text: #3f4949;
+  --home-search-panel-outline: color-mix(in srgb, var(--catch-brand-surface) 36%, transparent);
+  --home-search-panel-outline-strong: var(--catch-brand-surface);
+  --home-search-panel-shadow: var(--mat-sys-level3);
+  --home-search-checkbox-selected: var(--catch-brand-surface);
+  --home-search-checkbox-checkmark: var(--catch-on-brand-surface);
+  --home-search-checkbox-unselected: #465251;
+  --home-search-selected-control-bg: color-mix(
+    in srgb,
+    var(--catch-brand-surface) 18%,
+    var(--mat-sys-surface-container-lowest)
+  );
+  --home-search-selected-control-text: #002020;
+}
+
+.home-search-autocomplete {
+  .name-search-result {
+    padding: 5px;
+    font-family: 'Lucida Console', Monaco, monospace;
+  }
+}
+
+.catch-effective-light .home-search-autocomplete {
+  --mat-autocomplete-background-color: color-mix(
+    in srgb,
+    var(--mat-sys-surface-container-lowest) 94%,
+    var(--catch-brand-surface)
+  );
+  --mat-option-label-text-color: var(--mat-sys-on-surface);
+  --mat-option-focus-state-layer-color: color-mix(
+    in srgb,
+    var(--catch-brand-surface) 14%,
+    transparent
+  );
+  --mat-option-hover-state-layer-color: color-mix(
+    in srgb,
+    var(--catch-brand-surface) 10%,
+    transparent
+  );
+  --mat-option-selected-state-label-text-color: #002020;
+  --mat-option-selected-state-layer-color: color-mix(
+    in srgb,
+    var(--catch-brand-surface) 18%,
+    var(--mat-sys-surface-container-lowest)
+  );
+  border: 1px solid color-mix(in srgb, var(--catch-brand-surface) 35%, transparent);
+
+  .name-search-result {
+    color: #002020;
   }
 }
 

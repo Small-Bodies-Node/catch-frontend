@@ -18,13 +18,13 @@ import { IApiDataStatus } from '../../../../models/TApiDataStatus';
 import { IApiMovum } from '../../../../models/IApiMovum';
 import { TApiDataLabels } from '../../../../models/TApiDataLabels';
 import { apiDataLabels } from '../../../../utils/apiDataLabels';
-import { TDownloadRowsState } from '../../../../models/TDownloadRowsState';
+import { TAnalysisSelectionState } from '../../../../models/TAnalysisSelectionState';
 import { IApiFixum } from '../../../../models/IApiFixum';
 import { getUrlForCaughtOrFixedRoute } from '../../../../utils/getUrlForCaughtOrFixedRoute';
 import { getSearchDescriptor } from '../../../../utils/getSearchDescriptor';
 import {
   selectApiData,
-  selectApiDataDownloadRowState,
+  selectApiDataAnalysisSelectionState,
   selectApiDataJobId,
   selectApiDataStatus,
 } from '../../../ngrx/selectors/api-data.selectors';
@@ -56,7 +56,7 @@ export class TitleDataComponent implements OnInit {
   dataLink?: string;
   apiDataForDownload?: IApiMovum[] | IApiFixum[];
   apiDataLabels: TApiDataLabels = apiDataLabels;
-  dataDownloadRowState?: TDownloadRowsState;
+  analysisSelectionState?: TAnalysisSelectionState;
   rowsInTable?: number;
 
   isMobile = false;
@@ -66,15 +66,18 @@ export class TitleDataComponent implements OnInit {
   fitsUrlsForDownload?: string[];
   isDownloadButtonShown = true;
 
-  constructor(private store$: Store<IAppState>, private imageFetchService: ImageFetchService) {
+  constructor(
+    private store$: Store<IAppState>,
+    private imageFetchService: ImageFetchService,
+  ) {
     this.subscriptions.add(
       combineLatest([
         this.store$.select(selectApiDataStatus).pipe(take(1)),
         this.store$.select(selectApiData).pipe(take(1)),
-        this.store$.select(selectApiDataDownloadRowState),
+        this.store$.select(selectApiDataAnalysisSelectionState),
         this.store$.select(selectApiDataJobId),
         this.store$.select(selectScreenDeviceEffectiveDevice),
-      ]).subscribe(([apiStatus, apiData, dataDownloadRowState, job_id, device]) => {
+      ]).subscribe(([apiStatus, apiData, analysisSelectionState, job_id, device]) => {
         // --->>
 
         if (!apiStatus.search || !apiData) return;
@@ -87,19 +90,19 @@ export class TitleDataComponent implements OnInit {
         this.isMobile = device === 'mobile';
         this.jobId = this.isMoving ? job_id : 'API Link';
         this.queryStatus = apiStatus;
-        this.dataDownloadRowState = dataDownloadRowState;
+        this.analysisSelectionState = analysisSelectionState;
         this.dataLink = job_id ? getUrlForCaughtOrFixedRoute(search, job_id) : undefined;
         this.searchDescriptor = getSearchDescriptor(search);
 
         if (!this.apiData) return;
-        if (!this.dataDownloadRowState) return;
+        if (!this.analysisSelectionState) return;
 
         this.rowsInTable = this.apiData.length;
 
         // Filter data to be downloaded:
         this.apiDataForDownload = this.apiData.filter((apiDatum) => {
-          if (!this.dataDownloadRowState) return false;
-          return this.dataDownloadRowState[apiDatum.product_id];
+          if (!this.analysisSelectionState) return false;
+          return this.analysisSelectionState[apiDatum.product_id];
         });
 
         // Choose image urls for download
@@ -109,7 +112,7 @@ export class TitleDataComponent implements OnInit {
         this.fitsUrlsForDownload = this.apiDataForDownload
           .map((apiDatum) => apiDatum.cutout_url || '')
           .filter(Boolean);
-      })
+      }),
     );
   }
 
@@ -130,7 +133,7 @@ export class TitleDataComponent implements OnInit {
         ? searchParams.target
         : `${searchParams.ra} ${searchParams.dec}`.replace(
             /[\s!@#$%^&*()+={}\[\]|\\:;"'<>?,./`~]/g,
-            '_'
+            '_',
           );
 
     const jpegUrls: { url: string; product_id: string }[] = this.apiDataForDownload
@@ -163,7 +166,7 @@ export class TitleDataComponent implements OnInit {
               .catch((_) => null);
           });
         return { url, product_id, blob } as const;
-      })
+      }),
     );
 
     // Convert FITS urls to blobs directly (avoid service which adds '&align=true')
@@ -179,7 +182,7 @@ export class TitleDataComponent implements OnInit {
           console.error('Error fetching FITS', cleanUrl, e);
           return { url: cleanUrl, product_id, blob: null as any };
         }
-      })
+      }),
     );
 
     // Convert blobs to 'File's with productid as name

@@ -1,0 +1,54 @@
+@if (apiData) {
+  <div class="layout-container" [ngClass]="movingOrFixed" [ngStyle]="containerStyle">
+    <div class="viewers-column">
+      <div class="viewer-panel fits-viewer-panel">
+        <div class="fits-jpg-toggler-wrapper">
+          <app-fits-jpg-toggler></app-fits-jpg-toggler>
+        </div>
+      </div>
+
+      <div class="viewer-panel solar-viewer-panel">
+        <div class="solar-viewer-wrapper">
+          <app-solar-viewer></app-solar-viewer>
+        </div>
+      </div>
+    </div>
+
+    <div class="results-column" [ngClass]="{ 'is-table-compact': isTableCompact }">
+      <div class="title-row">
+        <button
+          type="button"
+          class="table-mode-toggle mat-elevation-z8"
+          [attr.aria-label]="isTableCompact ? 'Hide CAT Tools' : 'Show CAT Tools'"
+          (click)="toggleTableDisplayMode()"
+        >
+          @if (isTableCompact) {
+            <span>Hide CAT Tools</span>
+          } @else {
+            <span>Show CAT Tools</span>
+          }
+        </button>
+
+        <div class="title-wrapper mat-elevation-z8">
+          <app-title-data></app-title-data>
+        </div>
+      </div>
+
+      <div class="results-workspace" #resultsStage [ngStyle]="resultsWorkspaceStyle">
+        <div class="cat-drawer">
+          <div class="cat-drawer-content mat-elevation-z8">
+            <app-cat-tools></app-cat-tools>
+          </div>
+        </div>
+
+        <div class="table-wrapper">
+          <app-table-data [tableDisplayMode]="tableDisplayMode"></app-table-data>
+        </div>
+      </div>
+    </div>
+  </div>
+} @else {
+  <div class="no-data">
+    {{ 'The data did not load properly! Please contact admin.' }}
+  </div>
+}

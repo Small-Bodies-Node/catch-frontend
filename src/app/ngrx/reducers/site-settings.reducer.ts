@@ -2,19 +2,15 @@ import { ISiteSettings } from '../../../models/ISiteSettings';
 import { createReducer, on } from '@ngrx/store';
 import {
   SiteSettingsAction_SetAll,
-  SiteSettingsAction_SetHour,
-  SiteSettingsAction_SetIsAutoNightMode,
   SiteSettingsAction_SetIsHappyWithCookies,
-  SiteSettingsAction_SetSiteTheme,
+  SiteSettingsAction_SetThemePreference,
 } from '../actions/site-settings.actions';
 
 export interface ISiteSettingsSubstate extends ISiteSettings {}
 
 export const initialState: ISiteSettingsSubstate = {
-  siteTheme: 'DARK-THEME',
-  hour: new Date().getHours(),
+  themePreference: 'system',
   isPageAnimated: true,
-  isAutoNightMode: false,
   isHappyWithCookies: false,
 };
 
@@ -23,23 +19,12 @@ export const siteSettingsReducer = createReducer(
   on(SiteSettingsAction_SetAll, (state, { siteSettings }) => ({
     ...siteSettings,
   })),
-  on(SiteSettingsAction_SetHour, (state, { hour }) => ({
+  on(SiteSettingsAction_SetIsHappyWithCookies, (state, { isHappyWithCookies }) => ({
     ...state,
-    hour,
+    isHappyWithCookies,
   })),
-  on(SiteSettingsAction_SetIsAutoNightMode, (state, { isAutoNightMode }) => ({
+  on(SiteSettingsAction_SetThemePreference, (state, { themePreference }) => ({
     ...state,
-    isAutoNightMode,
+    themePreference,
   })),
-  on(
-    SiteSettingsAction_SetIsHappyWithCookies,
-    (state, { isHappyWithCookies }) => ({
-      ...state,
-      isHappyWithCookies,
-    })
-  ),
-  on(SiteSettingsAction_SetSiteTheme, (state, { theme }) => ({
-    ...state,
-    siteTheme: theme,
-  }))
 );

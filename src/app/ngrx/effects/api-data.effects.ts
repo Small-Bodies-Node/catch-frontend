@@ -1,15 +1,26 @@
 import { createEffect, Actions, ofType } from '@ngrx/effects';
 import { inject } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { of, concat, EMPTY, from } from 'rxjs';
-import { filter, map, switchMap, takeUntil, tap, take } from 'rxjs/operators';
+import { catchError, filter, map, mergeMap, switchMap, takeUntil, tap, take } from 'rxjs/operators';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import {
+  ApiDataAction_ClearActiveDatum,
   ApiDataAction_FetchData,
+  ApiDataAction_SetActiveDatum,
+  ApiDataAction_SetAnalysisSelectionState,
+  ApiDataAction_BeginAstrometryRun,
+  ApiDataAction_CompleteAstrometryRun,
   ApiDataAction_SetData,
-  ApiDataAction_SetDownloadRowState,
+  ApiDataAction_FailAstrometryRun,
+  ApiDataAction_BeginCentroidRun,
+  ApiDataAction_CompleteCentroidRun,
+  ApiDataAction_FailCentroidRun,
+  ApiDataAction_BeginTargetPhotometryRun,
+  ApiDataAction_CompleteTargetPhotometryRun,
+  ApiDataAction_FailTargetPhotometryRun,
   ApiDataAction_SetJobId,
-  ApiDataAction_SetSelectedDatum,
   ApiDataAction_SetShownColState,
   ApiDataAction_SetStatus,
   ApiDataAction_SetSmallBodyType,
@@ -18,7 +29,7 @@ import { ApiDataService } from '../../core/services/api-data/api-data.service';
 import { DelayedRouterService } from '../../core/services/delayed-router/delayed-router.service';
 import { ISearchParamsMoving } from '../../../models/ISearchParamsMoving';
 import { ISearchParamsFixed } from '../../../models/ISearchParamsFixed';
-import { getNewDownloadState } from '../../../utils/getNewDownloadState';
+import { getNewAnalysisSelectionState } from '../../../utils/getNewAnalysisSelectionState';
 import { getSearchDescriptor } from '../../../utils/getSearchDescriptor';
 import { colog } from '../../../utils/colog';
 import { summarizeAction } from '../../../utils/summarizeAction';
@@ -28,9 +39,15 @@ import { IndexedDbCacheService } from '../../core/services/indexeddb-cache/index
 import { IApiMovum } from '../../../models/IApiMovum';
 import { IApiFixum } from '../../../models/IApiFixum';
 import { TApiDataSearch } from '../../../models/TApiDataSearch';
-import { Store } from '@ngrx/store';
+import { Action, Store } from '@ngrx/store';
 import { IAppState } from '../reducers';
 import { selectApiSmallBodyType } from '../selectors/api-data.selectors';
+import { CatApiService } from '../../core/services/cat-api/cat-api.service';
+import { TColStateMoving } from '../../../models/TColStateMoving';
+import { TColStateFixed } from '../../../models/TColStateFixed';
+import { CentroidService } from '../../core/services/centroid/centroid.service';
+import { IAstrometryErrorResponse } from '../../../models/IAstrometryRun';
+import { TargetPhotometryService } from '../../core/services/target-photometry/target-photometry.service';
 
 const CACHE_PREFIX = 'api_cache_';
 function normalizeForKey(v: any): string {
@@ -40,7 +57,8 @@ function normalizeForKey(v: any): string {
 }
 function buildCacheKeyForSearch(search: TApiDataSearch): string {
   if (search.searchType === 'moving') {
-    const { target, padding, uncertainty_ellipse, start_date, stop_date, sources } = search.searchParams;
+    const { target, padding, uncertainty_ellipse, start_date, stop_date, sources } =
+      search.searchParams;
     const sourcesStr = sources && sources.length ? [...sources].sort().join('-') : 'none';
     return [
       'moving',
@@ -52,7 +70,8 @@ function buildCacheKeyForSearch(search: TApiDataSearch): string {
       sourcesStr,
     ].join('_');
   } else {
-    const { ra, dec, radius, intersection_type, start_date, stop_date, sources } = search.searchParams as any;
+    const { ra, dec, radius, intersection_type, start_date, stop_date, sources } =
+      search.searchParams as any;
     const sourcesStr = sources && sources.length ? [...sources].sort().join('-') : 'none';
     return [
       'fixed',
@@ -67,11 +86,49 @@ function buildCacheKeyForSearch(search: TApiDataSearch): string {
   }
 }
 
+function buildApiDataLoadedActions({
+  apiData,
+  apiDataShownColState,
+  jobId,
+  message,
+  search,
+  smallBodyType,
+}: {
+  apiData: (IApiMovum | IApiFixum)[];
+  apiDataShownColState: Readonly<TColStateMoving> | Readonly<TColStateFixed>;
+  jobId?: string;
+  message: string;
+  search: TApiDataSearch;
+  smallBodyType?: 'asteroid' | 'comet';
+}) {
+  const isDataFound = apiData.length > 0;
+  const newAnalysisSelectionState = getNewAnalysisSelectionState(apiData);
+  const activeDatumAction: Action = isDataFound
+    ? ApiDataAction_SetActiveDatum({ apiDatum: apiData[0] })
+    : ApiDataAction_ClearActiveDatum();
+
+  return concat(
+    of(ApiDataAction_SetData({ apiData })),
+    of(ApiDataAction_SetJobId({ job_id: jobId || 'N/A' })),
+    of(activeDatumAction),
+    of(ApiDataAction_SetAnalysisSelectionState({ newAnalysisSelectionState })),
+    of(ApiDataAction_SetShownColState({ apiDataShownColState })),
+    ...(smallBodyType ? [of(ApiDataAction_SetSmallBodyType({ smallBodyType }))] : []),
+    of(
+      ApiDataAction_SetStatus({
+        search,
+        message: message || 'N/A',
+        code: isDataFound ? 'found' : 'notfound',
+      }),
+    ),
+  );
+}
+
 export const setApiStatus$ = createEffect(
   (
     actions$ = inject(Actions),
     snackBar = inject(MatSnackBar),
-    delayedRouter = inject(DelayedRouterService)
+    delayedRouter = inject(DelayedRouterService),
   ) => {
     return actions$.pipe(
       map((action) => {
@@ -102,7 +159,7 @@ export const setApiStatus$ = createEffect(
               search: undefined,
               message: 'Ready to fetch data',
               code: 'unset',
-            })
+            }),
           );
         } else if (code === 'found') {
           const queryParams: ISearchParamsMoving | ISearchParamsFixed = {
@@ -112,17 +169,14 @@ export const setApiStatus$ = createEffect(
           delayedRouter.delayedRouter('data', { queryParams });
         } else if (code === 'notfound') {
           const searchDescriptor = getSearchDescriptor(search);
-          snackBar.open(
-            `Search did not yield data for '${searchDescriptor}'.`,
-            'Close'
-          );
+          snackBar.open(`Search did not yield data for '${searchDescriptor}'.`, 'Close');
           console.error(`The following query did not yield data: ${search}`);
           return of(
             ApiDataAction_SetStatus({
               search: undefined,
               message: 'Ready to fetch data',
               code: 'unset',
-            })
+            }),
           );
         } else if (code === 'initiated') {
           return concat(
@@ -131,18 +185,18 @@ export const setApiStatus$ = createEffect(
                 search,
                 message: 'Waiting for server response...',
                 code: 'searching',
-              })
+              }),
             ),
-            of(ApiDataAction_FetchData(apiDataSetStatus))
+            of(ApiDataAction_FetchData(apiDataSetStatus)),
           );
         } else if (code === 'unset') {
           return of(ApiDataAction_FetchData(apiDataSetStatus));
         }
         return EMPTY;
-      })
+      }),
     );
   },
-  { functional: true, dispatch: true }
+  { functional: true, dispatch: true },
 );
 
 export const fetchApiDataResults$ = createEffect(
@@ -166,10 +220,13 @@ export const fetchApiDataResults$ = createEffect(
       switchMap((apiDataSetStatus) => {
         const { search } = apiDataSetStatus;
         if (!search) {
-          return of(
-            ApiDataAction_SetData({
-              apiData: undefined,
-            })
+          return concat(
+            of(
+              ApiDataAction_SetData({
+                apiData: undefined,
+              }),
+            ),
+            of(ApiDataAction_ClearActiveDatum()),
           );
         }
 
@@ -182,51 +239,36 @@ export const fetchApiDataResults$ = createEffect(
               job_id?: string;
               smallBodyType?: 'asteroid' | 'comet';
               cachedAt?: string;
-            }>(cacheKey)
+            }>(cacheKey),
           ).pipe(
             switchMap((cached) => {
               if (cached && Array.isArray(cached.apiData) && cached.apiData.length) {
                 const apiData = cached.apiData;
-                const newDownloadRowState = getNewDownloadState(apiData);
                 const apiDataShownColState = initColStateMoving;
-                return concat(
-                  of(ApiDataAction_SetData({ apiData })),
-                  of(ApiDataAction_SetJobId({ job_id: cached.job_id || 'LOCAL_CACHE' })),
-                  of(ApiDataAction_SetSelectedDatum({ apiDatum: apiData[0] })),
-                  of(ApiDataAction_SetDownloadRowState({ newDownloadRowState })),
-                  of(ApiDataAction_SetShownColState({ apiDataShownColState })),
-                  ...(cached.smallBodyType
-                    ? [of(ApiDataAction_SetSmallBodyType({ smallBodyType: cached.smallBodyType }))]
-                    : []),
-                  of(
-                    ApiDataAction_SetStatus({
-                      search,
-                      message: 'Loaded cached results',
-                      code: 'found',
-                    })
-                  )
-                );
+                return buildApiDataLoadedActions({
+                  apiData,
+                  apiDataShownColState,
+                  jobId: cached.job_id || 'LOCAL_CACHE',
+                  message: 'Loaded cached results',
+                  search,
+                  smallBodyType: cached.smallBodyType,
+                });
               }
 
               // Else fall through to network fetch below (we are in a 'moving' branch)
-              const dataFetchObservable =
-                apiDataService.fetchApiDataMoving(
-                  search.searchParams as ISearchParamsMoving
-                );
+              const dataFetchObservable = apiDataService.fetchApiDataMoving(
+                search.searchParams as ISearchParamsMoving,
+              );
 
               return dataFetchObservable.pipe(
                 switchMap((wrappedApiDataResultOrError) => {
                   const { status, message, job_id } = wrappedApiDataResultOrError;
                   if (status === 'error') {
-                    return of(
-                      ApiDataAction_SetStatus({ search, message, code: 'error' })
-                    );
+                    return of(ApiDataAction_SetStatus({ search, message, code: 'error' }));
                   }
 
                   const { apiDataResult } = wrappedApiDataResultOrError;
                   const apiData = apiDataResult.data;
-                  const isDataFound = !!apiData.length;
-                  const newDownloadRowState = getNewDownloadState(apiData);
                   const apiDataShownColState =
                     search.searchType === 'moving' ? initColStateMoving : initColStateFixed;
 
@@ -257,20 +299,13 @@ export const fetchApiDataResults$ = createEffect(
                     console.error('Error caching API data to IndexedDB', e);
                   }
 
-                  return concat(
-                    of(ApiDataAction_SetData({ apiData })),
-                    of(ApiDataAction_SetJobId({ job_id: job_id || 'N/A' })),
-                    of(ApiDataAction_SetSelectedDatum({ apiDatum: apiData[0] })),
-                    of(ApiDataAction_SetDownloadRowState({ newDownloadRowState })),
-                    of(ApiDataAction_SetShownColState({ apiDataShownColState })),
-                    of(
-                      ApiDataAction_SetStatus({
-                        search,
-                        message: message || 'N/A',
-                        code: isDataFound ? 'found' : 'notfound',
-                      })
-                    )
-                  );
+                  return buildApiDataLoadedActions({
+                    apiData,
+                    apiDataShownColState,
+                    jobId: job_id || 'N/A',
+                    message: message || 'N/A',
+                    search,
+                  });
                 }),
                 takeUntil(
                   actions$.pipe(
@@ -279,11 +314,11 @@ export const fetchApiDataResults$ = createEffect(
                       console.log('Cancel Action ?:', !action.search);
                       return !action.search;
                     }),
-                    filter(Boolean)
-                  )
-                )
+                    filter(Boolean),
+                  ),
+                ),
               );
-            })
+            }),
           );
         }
 
@@ -300,16 +335,13 @@ export const fetchApiDataResults$ = createEffect(
             // Handle error
             if (status === 'error') {
               console.log('Error received', wrappedApiDataResultOrError);
-              return of(
-                ApiDataAction_SetStatus({ search, message, code: 'error' })
-              );
+              return of(ApiDataAction_SetStatus({ search, message, code: 'error' }));
             }
 
             // Continue without errors
             const { apiDataResult } = wrappedApiDataResultOrError;
             const apiData = apiDataResult.data;
-            const isDataFound = !!apiData.length;
-            const newDownloadRowState = getNewDownloadState(apiData);
+            const isDataFound = apiData.length > 0;
             const apiDataShownColState =
               search.searchType === 'moving' ? initColStateMoving : initColStateFixed;
 
@@ -319,11 +351,7 @@ export const fetchApiDataResults$ = createEffect(
               colog('Summary of fetch:', 'cyan');
               colog('isDataFound:', isDataFound, 'cyan');
               colog('job_id:', job_id, 'cyan');
-              colog(
-                'newShownColState:',
-                JSON.stringify(apiDataShownColState, null, 2),
-                'cyan'
-              );
+              colog('newShownColState:', JSON.stringify(apiDataShownColState, null, 2), 'cyan');
             }
 
             // Save to cache if requested (persist smallBodyType and timestamp) - IndexedDB
@@ -335,7 +363,10 @@ export const fetchApiDataResults$ = createEffect(
                 const cacheKey = CACHE_PREFIX + buildCacheKeyForSearch(search as TApiDataSearch);
                 let smallBodyType: 'asteroid' | 'comet' | undefined = undefined;
                 try {
-                  store$.select(selectApiSmallBodyType).pipe(take(1)).subscribe((sbt) => (smallBodyType = sbt || undefined));
+                  store$
+                    .select(selectApiSmallBodyType)
+                    .pipe(take(1))
+                    .subscribe((sbt) => (smallBodyType = sbt || undefined));
                 } catch (e) {
                   console.warn('Unable to read smallBodyType from store for caching');
                 }
@@ -354,20 +385,13 @@ export const fetchApiDataResults$ = createEffect(
             /**
              * Return multiple actions in specific order using concat operator
              */
-            return concat(
-              of(ApiDataAction_SetData({ apiData })),
-              of(ApiDataAction_SetJobId({ job_id: job_id || 'N/A' })),
-              of(ApiDataAction_SetSelectedDatum({ apiDatum: apiData[0] })),
-              of(ApiDataAction_SetDownloadRowState({ newDownloadRowState })),
-              of(ApiDataAction_SetShownColState({ apiDataShownColState })),
-              of(
-                ApiDataAction_SetStatus({
-                  search,
-                  message: message || 'N/A',
-                  code: isDataFound ? 'found' : 'notfound',
-                })
-              )
-            );
+            return buildApiDataLoadedActions({
+              apiData,
+              apiDataShownColState,
+              jobId: job_id || 'N/A',
+              message: message || 'N/A',
+              search,
+            });
           }),
           // ...
           takeUntil(
@@ -377,14 +401,189 @@ export const fetchApiDataResults$ = createEffect(
                 console.log('Cancel Action ?:', !action.search);
                 return !action.search;
               }),
-              filter(Boolean)
-            )
-          )
+              filter(Boolean),
+            ),
+          ),
 
           //
         );
-      })
+      }),
     );
   },
-  { functional: true, dispatch: true }
+  { functional: true, dispatch: true },
 );
+
+export const runAstrometry$ = createEffect(
+  (actions$ = inject(Actions), catApiService = inject(CatApiService)) => {
+    return actions$.pipe(
+      ofType(ApiDataAction_BeginAstrometryRun),
+      mergeMap(({ productId, runId, inputs }) =>
+        catApiService.fetchAstrometry(inputs).pipe(
+          map((result) =>
+            ApiDataAction_CompleteAstrometryRun({
+              productId,
+              runId,
+              result,
+              completedAt: new Date().toISOString(),
+            }),
+          ),
+          catchError((error) =>
+            of(
+              ApiDataAction_FailAstrometryRun({
+                productId,
+                runId,
+                error: appendCatToolsDownSuffix(formatAstrometryError(error)),
+                completedAt: new Date().toISOString(),
+              }),
+            ),
+          ),
+        ),
+      ),
+    );
+  },
+  { functional: true, dispatch: true },
+);
+
+function formatAstrometryError(error: unknown): string {
+  const body = getAstrometryErrorBody(error);
+  if (body) {
+    const details = [
+      body.message,
+      body.status ? `Status: ${body.status}.` : null,
+      body.error_type ? `Error type: ${body.error_type}.` : null,
+      body.stage ? `Stage: ${body.stage}.` : null,
+      body.request_id ? `Request ID: ${body.request_id}.` : null,
+      body.image_url ? `Image URL: ${body.image_url}.` : null,
+    ].filter((detail): detail is string => !!detail);
+
+    if (details.length > 0) {
+      return details.join(' ');
+    }
+  }
+
+  if (error instanceof HttpErrorResponse) {
+    return error.message || 'Unable to run astrometry.';
+  }
+
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return 'Unable to run astrometry.';
+}
+
+function getAstrometryErrorBody(error: unknown): IAstrometryErrorResponse | null {
+  if (!(error instanceof HttpErrorResponse)) {
+    return null;
+  }
+
+  if (isAstrometryErrorResponse(error.error)) {
+    return error.error;
+  }
+
+  if (typeof error.error === 'string') {
+    try {
+      const parsed: unknown = JSON.parse(error.error);
+      return isAstrometryErrorResponse(parsed) ? parsed : null;
+    } catch {
+      return null;
+    }
+  }
+
+  return null;
+}
+
+function isAstrometryErrorResponse(value: unknown): value is IAstrometryErrorResponse {
+  return typeof value === 'object' && value !== null;
+}
+
+export const runCentroid$ = createEffect(
+  (actions$ = inject(Actions), centroidService = inject(CentroidService)) => {
+    return actions$.pipe(
+      ofType(ApiDataAction_BeginCentroidRun),
+      mergeMap(({ productId, astrometryRunId, runId, inputs }) =>
+        centroidService.runCentroid(inputs).pipe(
+          map((result) =>
+            ApiDataAction_CompleteCentroidRun({
+              productId,
+              astrometryRunId,
+              runId,
+              result,
+              completedAt: new Date().toISOString(),
+            }),
+          ),
+          catchError((error) =>
+            of(
+              ApiDataAction_FailCentroidRun({
+                productId,
+                astrometryRunId,
+                runId,
+                error: appendCatToolsDownSuffix(
+                  getHttpErrorMessage(error, 'Unable to run centroid.'),
+                ),
+                completedAt: new Date().toISOString(),
+              }),
+            ),
+          ),
+        ),
+      ),
+    );
+  },
+  { functional: true, dispatch: true },
+);
+
+export const runTargetPhotometry$ = createEffect(
+  (actions$ = inject(Actions), targetPhotometryService = inject(TargetPhotometryService)) => {
+    return actions$.pipe(
+      ofType(ApiDataAction_BeginTargetPhotometryRun),
+      mergeMap(({ productId, astrometryRunId, centroidRunId, runId, inputs }) =>
+        targetPhotometryService.runTargetPhotometry(inputs).pipe(
+          map((result) =>
+            ApiDataAction_CompleteTargetPhotometryRun({
+              productId,
+              astrometryRunId,
+              centroidRunId,
+              runId,
+              result,
+              completedAt: new Date().toISOString(),
+            }),
+          ),
+          catchError((error) =>
+            of(
+              ApiDataAction_FailTargetPhotometryRun({
+                productId,
+                astrometryRunId,
+                centroidRunId,
+                runId,
+                error: appendCatToolsDownSuffix(
+                  getHttpErrorMessage(error, 'Unable to run target photometry.'),
+                ),
+                completedAt: new Date().toISOString(),
+              }),
+            ),
+          ),
+        ),
+      ),
+    );
+  },
+  { functional: true, dispatch: true },
+);
+
+function getHttpErrorMessage(error: any, fallback: string): string {
+  const message = error?.error?.detail || error?.error?.message || error?.message || fallback;
+
+  if (
+    fallback.toLowerCase().includes('centroid') &&
+    typeof message === 'string' &&
+    (message.includes('NaN') || message.includes('not valid JSON'))
+  ) {
+    return 'Centroid service returned NaN. Try a different X/Y point or search radius.';
+  }
+
+  return message;
+}
+
+function appendCatToolsDownSuffix(message: string): string {
+  const suffix = 'CAT Tools Down';
+  return message.includes(suffix) ? message : `${message} ${suffix}`;
+}

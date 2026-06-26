@@ -15,8 +15,8 @@ import { Directive, ElementRef } from '@angular/core';
 
 // @Directive({ selector: 'table > tbody > tr' })
 @Directive({
-    selector: 'table tbody tr',
-    standalone: false
+    selector: '[selectTableRowsDirective]',
+    standalone: true
 })
 export class SelectTableRowsDirective {
   // --->>>

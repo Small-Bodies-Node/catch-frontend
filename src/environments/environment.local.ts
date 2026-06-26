@@ -10,6 +10,7 @@ export const environment: IEnvironment = {
   production: false,
   // apiData: 'catch-dev',
   apiData: 'mock',
+  CAT_BASE_URL: 'http://sbn-cat-alb-2030771433.us-west-2.elb.amazonaws.com',
   hmr: true,
   awsWafConfig,
 };

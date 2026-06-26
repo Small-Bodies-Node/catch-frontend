@@ -1,14 +1,14 @@
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
 import { MatCheckbox, MatCheckboxChange } from '@angular/material/checkbox';
 import { Store } from '@ngrx/store';
-import { combineLatest, distinctUntilChanged, interval, map, Subscription } from 'rxjs';
+import { combineLatest, distinctUntilChanged, Subscription } from 'rxjs';
 
 import { IAppState } from '../../../ngrx/reducers';
 import { apiDataLabels } from '../../../../utils/apiDataLabels';
 import { TApiDataLabels } from '../../../../models/TApiDataLabels';
 import { TApiDataColName } from '../../../../models/TApiDataColName';
 import { getOrderedColNames } from '../../../../utils/getOrderedColNames';
-import { MatDialogContent, MatDialogRef } from '@angular/material/dialog';
+import { MatDialogContent, MatDialogRef, MatDialogTitle } from '@angular/material/dialog';
 import { selectScreenDeviceEffectiveDevice } from '../../../ngrx/selectors/screen-device.selectors';
 import {
   selectApiDataShownColState,
@@ -29,8 +29,8 @@ import { NgClass } from '@angular/common';
   templateUrl: './table-data-checkboxes.component.html',
   styleUrls: ['./table-data-checkboxes.component.scss'],
   imports: [
-    //
     MatProgressSpinner,
+    MatDialogTitle,
     MatDialogContent,
     MatIcon,
     MatCheckbox,
@@ -39,11 +39,13 @@ import { NgClass } from '@angular/common';
   ],
   standalone: true,
 })
-export class TableDataCheckboxesComponent implements OnInit {
+export class TableDataCheckboxesComponent implements AfterViewInit, OnDestroy {
   // --->>>
 
-  @ViewChild('checkboxesContainer')
-  checkboxesContainer?: ElementRef<HTMLDivElement>;
+  readonly nonConfigurableCols: readonly TApiDataColName[] = ['date', 'preview_url', 'source_name'];
+
+  @ViewChild('dialogContainer')
+  dialogContainer?: ElementRef<HTMLDivElement>;
 
   subscriptions = new Subscription();
   colState?: TColStateData;
@@ -52,6 +54,8 @@ export class TableDataCheckboxesComponent implements OnInit {
   isSpinner = true;
   isMobile = false;
   searchType?: TMovingVsFixed;
+  private resizeObserver?: ResizeObserver;
+  private timeoutIds = new Set<ReturnType<typeof setTimeout>>();
 
   // allColNames?: (keyof IApiMovum)[] | (keyof IApiFixum)[];
   // allColNames?: (keyof IApiMovum | keyof IApiFixum)[];
@@ -75,9 +79,11 @@ export class TableDataCheckboxesComponent implements OnInit {
           const { searchType } = search;
           this.searchType = searchType;
           const isMoving = searchType === 'moving';
-          this.allColNames = getOrderedColNames(isMoving);
+          this.allColNames = getOrderedColNames(isMoving).filter(
+            (colName) => !this.nonConfigurableCols.includes(colName),
+          );
           this.colState = { ...colState };
-          setTimeout(() => {
+          this.scheduleTimeout(() => {
             this.isSpinner = false;
           }, 1000);
         }),
@@ -88,25 +94,30 @@ export class TableDataCheckboxesComponent implements OnInit {
         this.isMobile = device === 'mobile';
       }),
     );
-
-    this.subscriptions.add(
-      interval(50)
-        .pipe(
-          map((_) => {
-            const w = this.checkboxesContainer
-              ? this.checkboxesContainer.nativeElement.offsetWidth
-              : 100;
-            return w;
-          }),
-          distinctUntilChanged(),
-        )
-        .subscribe((w) => (this.containerWidth = w)),
-    );
   }
 
-  ngOnInit() {}
+  ngAfterViewInit(): void {
+    const container = this.dialogContainer?.nativeElement;
+    if (!container) return;
 
-  ngOnDestroy() {}
+    this.updateContainerWidth(container.offsetWidth);
+
+    if (typeof ResizeObserver === 'undefined') {
+      return;
+    }
+
+    this.resizeObserver = new ResizeObserver(([entry]) => {
+      this.updateContainerWidth(entry.contentRect.width);
+    });
+    this.resizeObserver.observe(container);
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.unsubscribe();
+    this.resizeObserver?.disconnect();
+    this.timeoutIds.forEach((timeoutId) => clearTimeout(timeoutId));
+    this.timeoutIds.clear();
+  }
 
   updateColState(e: MatCheckboxChange, colName: TApiDataColName) {
     if (!this.colState || !this.searchType) return;
@@ -126,13 +137,8 @@ export class TableDataCheckboxesComponent implements OnInit {
     });
     this.isSpinner = true;
 
-    console.log('>>> ', newColState);
-
-    setTimeout(() => {
+    this.scheduleTimeout(() => {
       this.$store.dispatch(
-        // TableDataCheckboxAction_SetState({
-        //   newTableDataCheckboxState: { ...newColState },
-        // })
         ApiDataAction_SetShownColState({
           apiDataShownColState: newColState,
         }),
@@ -143,7 +149,7 @@ export class TableDataCheckboxesComponent implements OnInit {
   resetAll() {
     if (!this.searchType) return;
     this.isSpinner = true;
-    setTimeout(() => {
+    this.scheduleTimeout(() => {
       this.$store.dispatch(
         ApiDataAction_SetShownColState({
           apiDataShownColState:
@@ -157,22 +163,8 @@ export class TableDataCheckboxesComponent implements OnInit {
     this.dialogRef.close();
   }
 
-  temp(labels: any, colName: any) {
-    //
-    false &&
-      console.log(
-        '>>> labels',
-        labels,
-        colName,
-        labels && labels[colName] && labels[colName]?.label,
-      );
-
-    return (labels && labels[colName] && labels[colName]?.label) || '';
-  }
-
   isChecked(colName: keyof TColStateData) {
     if (!this.colState) return false;
-    const x = this.colState;
     return this.colState[colName];
   }
 
@@ -183,5 +175,17 @@ export class TableDataCheckboxesComponent implements OnInit {
     return this.labels[colName]?.description || null;
 
     // <!-- // (labels && labels[colName] && labels[colName]?.description) || '' -->
+  }
+
+  private scheduleTimeout(callback: () => void, delayMs: number): void {
+    const timeoutId = setTimeout(() => {
+      this.timeoutIds.delete(timeoutId);
+      callback();
+    }, delayMs);
+    this.timeoutIds.add(timeoutId);
+  }
+
+  private updateContainerWidth(width: number): void {
+    this.containerWidth = Math.floor(width);
   }
 }

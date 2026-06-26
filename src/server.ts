@@ -9,6 +9,7 @@ import express from 'express';
 import { createServer } from 'node:http';
 import { join } from 'node:path';
 import { configureAPI } from './server/index';
+import { getSiteBannerFromEnv } from './server/routes/site-banner';
 
 const browserDistFolder = join(import.meta.dirname, '../browser');
 
@@ -34,6 +35,15 @@ app.use(express.urlencoded({ extended: false }));
 // Mount API before SSR
 app.use('/api', configureAPI());
 
+app.use((req, res, next) => {
+  if (isDataRoute(req.path) && getSiteBannerFromEnv(process.env).isDataAccessDisabled) {
+    res.redirect(302, '/');
+    return;
+  }
+
+  next();
+});
+
 /**
  * Serve static files from /browser
  */
@@ -42,7 +52,7 @@ app.use(
     maxAge: '1y',
     index: false,
     redirect: false,
-  })
+  }),
 );
 
 /**
@@ -69,7 +79,9 @@ if (isMainModule(import.meta.url)) {
 
   server.on('error', (error: NodeJS.ErrnoException) => {
     if (error.code === 'EADDRINUSE') {
-      console.error(`Port ${port} is already in use. Stop the conflicting process or set PORT to another value.`);
+      console.error(
+        `Port ${port} is already in use. Stop the conflicting process or set PORT to another value.`,
+      );
     } else {
       console.error('Node Express server failed to start:', error);
     }
@@ -81,3 +93,7 @@ if (isMainModule(import.meta.url)) {
  * Request handler used by the Angular CLI (for dev-server and during build) or Firebase Cloud Functions.
  */
 export const reqHandler = createNodeRequestHandler(app);
+
+function isDataRoute(path: string): boolean {
+  return path === '/data' || path.startsWith('/data/');
+}

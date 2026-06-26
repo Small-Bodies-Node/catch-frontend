@@ -12,7 +12,8 @@ $desktop-font-size: 16px;
   align-items: center;
   justify-content: center;
   gap: 10px;
-  background-color: #101414;
+  background-color: var(--data-page-panel-color, var(--mat-sys-surface-container-lowest));
+  color: var(--mat-sys-on-surface);
   font-size: $desktop-font-size;
 
   // Mobile: smaller text and fixed height
@@ -67,7 +68,7 @@ $desktop-font-size: 16px;
     flex-wrap: wrap;
     min-width: 0;
     a {
-      color: #004f4f;
+      color: var(--mat-sys-primary);
     }
   }
 
@@ -77,7 +78,7 @@ $desktop-font-size: 16px;
     justify-content: center;
     flex-wrap: wrap;
     button {
-      color: #004f4f;
+      color: var(--mat-sys-primary);
       white-space: normal;
     }
   }

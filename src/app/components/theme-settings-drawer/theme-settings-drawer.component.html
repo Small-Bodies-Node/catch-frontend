@@ -1,0 +1,40 @@
+<div class="theme-settings-drawer">
+  <div class="drawer-header">
+    <p>Settings</p>
+
+    <button
+      mat-icon-button
+      type="button"
+      aria-label="Close settings"
+      (click)="closeSettings.emit()"
+    >
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <section class="theme-section" aria-labelledby="theme-settings-heading">
+    <h3 id="theme-settings-heading">Theme</h3>
+
+    @if (themePreference$ | async; as themePreference) {
+      <div class="theme-mode-control" role="group" aria-label="Theme mode">
+        @for (themePreferenceOption of themePreferences; track themePreferenceOption) {
+          <button
+            type="button"
+            class="theme-mode-option"
+            [class.is-selected]="themePreference === themePreferenceOption"
+            [attr.aria-pressed]="themePreference === themePreferenceOption"
+            (click)="setThemePreference(themePreferenceOption)"
+          >
+            {{ themePreferenceOption }}
+          </button>
+        }
+      </div>
+    }
+
+    @if (effectiveTheme$ | async; as effectiveTheme) {
+      <p class="theme-mode-status">
+        Currently rendering in <strong>{{ effectiveTheme }}</strong> mode.
+      </p>
+    }
+  </section>
+</div>

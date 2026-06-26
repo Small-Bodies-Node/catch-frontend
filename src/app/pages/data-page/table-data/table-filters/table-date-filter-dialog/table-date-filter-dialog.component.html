@@ -1,0 +1,102 @@
+<h2 mat-dialog-title>Date Filter</h2>
+
+<mat-dialog-content>
+  <section class="table-date-filter-section">
+    <p>
+      Enter inclusive UTC bounds. Leave a row blank for no bound. Blank time fields default to the
+      start of the day for After, and the end of the day for Before.
+    </p>
+
+    <div class="date-bound-group">
+      <h3>After</h3>
+      <div class="date-bound-grid">
+        <mat-form-field appearance="outline">
+          <mat-label>YYYY</mat-label>
+          <input matInput type="number" min="1" max="9999" [(ngModel)]="afterInputs.year" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>MM</mat-label>
+          <input matInput type="number" min="1" max="12" [(ngModel)]="afterInputs.month" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>DD</mat-label>
+          <input matInput type="number" min="1" max="31" [(ngModel)]="afterInputs.day" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>HH</mat-label>
+          <input matInput type="number" min="0" max="23" [(ngModel)]="afterInputs.hour" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>mm</mat-label>
+          <input matInput type="number" min="0" max="59" [(ngModel)]="afterInputs.minute" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>ss</mat-label>
+          <input matInput type="number" min="0" max="59" [(ngModel)]="afterInputs.second" />
+        </mat-form-field>
+      </div>
+    </div>
+
+    <div class="date-bound-group">
+      <h3>Before</h3>
+      <div class="date-bound-grid">
+        <mat-form-field appearance="outline">
+          <mat-label>YYYY</mat-label>
+          <input matInput type="number" min="1" max="9999" [(ngModel)]="beforeInputs.year" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>MM</mat-label>
+          <input matInput type="number" min="1" max="12" [(ngModel)]="beforeInputs.month" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>DD</mat-label>
+          <input matInput type="number" min="1" max="31" [(ngModel)]="beforeInputs.day" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>HH</mat-label>
+          <input matInput type="number" min="0" max="23" [(ngModel)]="beforeInputs.hour" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>mm</mat-label>
+          <input matInput type="number" min="0" max="59" [(ngModel)]="beforeInputs.minute" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>ss</mat-label>
+          <input matInput type="number" min="0" max="59" [(ngModel)]="beforeInputs.second" />
+        </mat-form-field>
+      </div>
+    </div>
+
+    @if (validationError) {
+      <div class="table-date-filter-error">{{ validationError }}</div>
+    } @else {
+      <div class="table-date-filter-preview" [class.is-empty]="isPreviewEmpty">
+        {{ previewLabel }}
+      </div>
+    }
+  </section>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button type="button" mat-button (click)="clear()">Clear</button>
+  <button type="button" mat-button mat-dialog-close>Cancel</button>
+  <button
+    type="button"
+    mat-flat-button
+    color="accent"
+    [disabled]="isApplyDisabled"
+    (click)="apply()"
+  >
+    Apply
+  </button>
+</mat-dialog-actions>

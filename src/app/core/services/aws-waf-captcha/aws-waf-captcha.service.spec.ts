@@ -1,9 +1,7 @@
-import { TestBed } from '@angular/core/testing';
+import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { PLATFORM_ID } from '@angular/core';
-import { of } from 'rxjs';
 
 import { AwsWafCaptchaService } from './aws-waf-captcha.service';
-import { environment } from '../../../../environments/environment.local';
 
 describe('AwsWafCaptchaService', () => {
   let service: AwsWafCaptchaService;
@@ -15,78 +13,114 @@ describe('AwsWafCaptchaService', () => {
     service = TestBed.inject(AwsWafCaptchaService);
   });
 
+  afterEach(() => {
+    delete (window as any).AwsWafCaptcha;
+    document.getElementById('test-container')?.remove();
+    document.getElementById('waf-captcha-container')?.remove();
+  });
+
   it('should be created', () => {
     expect(service).toBeTruthy();
   });
 
   describe('initCaptcha', () => {
-    it('should return a mock token in test environment', (done) => {
-      // Mock the environment to be test/development
-      spyOnProperty(environment, 'envName').and.returnValue('test');
+    it('should render AWS WAF Captcha and emit the success token', fakeAsync(() => {
+      const container = document.createElement('div');
+      container.id = 'test-container';
+      document.body.appendChild(container);
+
+      (service as any).isCaptchaLoaded = true;
+      (window as any).AwsWafCaptcha = {
+        renderCaptcha: jasmine.createSpy('renderCaptcha').and.callFake(
+          (_container: HTMLElement, captchaConfig: { onSuccess: (token: string) => void }) => {
+            captchaConfig.onSuccess('test-token');
+            return true;
+          },
+        ),
+      };
 
       const config = {
         container: 'test-container',
         onSuccess: jasmine.createSpy('onSuccess'),
+        onError: jasmine.createSpy('onError'),
+        onExpired: jasmine.createSpy('onExpired'),
       };
 
+      let emittedToken: string | undefined;
       service.initCaptcha(config).subscribe((token) => {
-        expect(token).toBe('mock-token-for-testing');
-        expect(config.onSuccess).toHaveBeenCalledWith('mock-token-for-testing');
-        done();
+        emittedToken = token;
       });
-    });
 
-    it('should try to initialize AWS WAF Captcha in production', () => {
-      // Mock window object
+      tick(300);
+
+      expect((window as any).AwsWafCaptcha.renderCaptcha).toHaveBeenCalledWith(
+        container,
+        jasmine.objectContaining({
+          onSuccess: jasmine.any(Function),
+          onError: jasmine.any(Function),
+          onExpired: jasmine.any(Function),
+        }),
+      );
+      expect(emittedToken).toBe('test-token');
+      expect(config.onSuccess).toHaveBeenCalledWith('test-token');
+    }));
+
+    it('should report an error when the configured container is missing', fakeAsync(() => {
+      (service as any).isCaptchaLoaded = true;
       (window as any).AwsWafCaptcha = {
         renderCaptcha: jasmine.createSpy('renderCaptcha'),
       };
-
-      spyOnProperty(environment, 'envName').and.returnValue('production');
+      spyOn(console, 'error');
 
       const config = {
         container: 'test-container',
         onSuccess: jasmine.createSpy('onSuccess'),
+        onError: jasmine.createSpy('onError'),
+        onExpired: jasmine.createSpy('onExpired'),
       };
 
       service.initCaptcha(config).subscribe();
+      tick(300);
 
-      // This should call setTimeout, so we need to flush
-      jasmine.clock().install();
-      jasmine.clock().tick(200);
-
-      expect((window as any).AwsWafCaptcha.renderCaptcha).toHaveBeenCalled();
-
-      jasmine.clock().uninstall();
-    });
+      expect((window as any).AwsWafCaptcha.renderCaptcha).not.toHaveBeenCalled();
+      expect(config.onError).toHaveBeenCalledWith(jasmine.any(Error));
+    }));
   });
 
   describe('resetCaptcha', () => {
-    it('should call AWS WAF captcha reset if available', () => {
-      // Mock window object
+    it('should clear and re-render the captcha container', fakeAsync(() => {
+      const container = document.createElement('div');
+      container.id = 'waf-captcha-container';
+      container.innerHTML = 'old captcha';
+      document.body.appendChild(container);
+
+      (service as any).isCaptchaLoaded = true;
       (window as any).AwsWafCaptcha = {
-        resetCaptcha: jasmine.createSpy('resetCaptcha'),
+        renderCaptcha: jasmine.createSpy('renderCaptcha').and.returnValue(true),
       };
 
       service.resetCaptcha();
+      tick(300);
 
-      expect((window as any).AwsWafCaptcha.resetCaptcha).toHaveBeenCalled();
-    });
+      expect(container.innerHTML).toBe('');
+      expect((window as any).AwsWafCaptcha.renderCaptcha).toHaveBeenCalled();
+    }));
 
-    it('should handle errors when resetting captcha', () => {
-      // Mock window object with a function that throws
+    it('should handle errors when resetting captcha', fakeAsync(() => {
+      const container = document.createElement('div');
+      container.id = 'waf-captcha-container';
+      document.body.appendChild(container);
+
+      (service as any).isCaptchaLoaded = true;
       (window as any).AwsWafCaptcha = {
-        resetCaptcha: jasmine.createSpy('resetCaptcha').and.throwError('Test error'),
+        renderCaptcha: jasmine.createSpy('renderCaptcha').and.throwError('Test error'),
       };
-
-      // Spy on console.error
       spyOn(console, 'error');
 
-      // This should not throw
       expect(() => service.resetCaptcha()).not.toThrow();
+      tick(300);
 
-      // But should log an error
       expect(console.error).toHaveBeenCalled();
-    });
+    }));
   });
 });

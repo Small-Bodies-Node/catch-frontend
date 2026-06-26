@@ -10,7 +10,6 @@ RUN npm ci
 COPY . .
 RUN npm run build:docker
 
-
 FROM node:24-alpine AS runner
 ENV NODE_ENV=production
 WORKDIR /app

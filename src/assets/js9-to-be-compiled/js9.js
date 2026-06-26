@@ -356,8 +356,8 @@ var JS9 = (function () {
       "progress",
     ],
     infoBoxResize: true, // is size based on wcs?
-    // menuBar: ["file", "edit", "view", "zoom", "scale", "color", "region", "wcs", "analysis", "help"],
-    menuBar: ["file", "edit", "view"],
+    menuBar: ["file", "edit", "view", "zoom", "scale", "color", "region", "wcs", "analysis", "help"],
+    // menuBar: ["file", "edit", "view"],
     menubarStyle: "classic", // mac or classic
     menuPosition: "right-5 bottom-5", // where menus pop up
     menuClickEvent: "mouseup", // "click" or "mouseup"

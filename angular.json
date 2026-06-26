@@ -64,8 +64,8 @@
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "4kB",
-                  "maximumError": "8kB"
+                  "maximumWarning": "14kB",
+                  "maximumError": "18kB"
                 }
               ],
               "outputHashing": "all",
@@ -86,8 +86,8 @@
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "4kB",
-                  "maximumError": "8kB"
+                  "maximumWarning": "14kB",
+                  "maximumError": "18kB"
                 }
               ],
               "outputHashing": "all",
@@ -106,7 +106,7 @@
               "outputPath": "dist/catch-frontend-ng20"
             }
           },
-          "defaultConfiguration": "production"
+          "defaultConfiguration": "prod-deployment"
         },
         "serve": {
           "builder": "@angular/build:dev-server",

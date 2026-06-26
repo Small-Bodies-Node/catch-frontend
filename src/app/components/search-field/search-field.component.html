@@ -16,7 +16,11 @@
         [ngStyle]="getInputTextColor()"
         (keydown)="keyDownOnUpperFormInputText($event)"
       />
-      <mat-autocomplete #auto="matAutocomplete">
+      <mat-autocomplete
+        #auto="matAutocomplete"
+        class="home-search-autocomplete"
+        (optionSelected)="selectAutocompleteOption($event)"
+      >
         @if(isMovingTarget){
         <!--  -->
         @for (option of objectNameMatchResults; track option) {

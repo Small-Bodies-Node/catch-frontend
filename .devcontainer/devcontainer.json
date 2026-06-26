@@ -1,0 +1,39 @@
+{
+  "name": "catch-frontend-ng20",
+  "image": "master-vscode-devcontainer:latest",
+  "runArgs": ["--name", "catch-frontend-ng20"],
+  "workspaceFolder": "/workspaces/catch-frontend-ng20",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/catch-frontend-ng20,type=bind,consistency=cached",
+  "remoteUser": "vscode",
+  "overrideCommand": false,
+  "shutdownAction": "stopContainer",
+  "forwardPorts": [],
+  "otherPortsAttributes": {
+    "onAutoForward": "ignore"
+  },
+  "mounts": [
+    "source=catch-frontend-ng20-codex,target=/home/vscode/.codex,type=volume",
+    "source=catch-frontend-ng20-vscode-extensions,target=/home/vscode/.vscode-server/extensions,type=volume",
+    "source=master-uv-cache,target=/home/vscode/.cache/uv,type=volume",
+    "source=master-pip-cache,target=/home/vscode/.cache/pip,type=volume",
+    "source=master-npm-cache,target=/home/vscode/.cache/npm,type=volume",
+    "source=master-pnpm-store,target=/home/vscode/.local/share/pnpm/store,type=volume",
+    "source=catch-frontend-ng20-node-modules,target=/workspaces/catch-frontend-ng20/node_modules,type=volume"
+  ],
+  "remoteEnv": {
+    "NPM_CONFIG_CACHE": "/home/vscode/.cache/npm",
+    "NPM_CONFIG_UPDATE_NOTIFIER": "false"
+  },
+  "postCreateCommand": "mkdir -p /home/vscode/.codex /home/vscode/.vscode-server/extensions /home/vscode/.cache/uv /home/vscode/.cache/pip /home/vscode/.cache/npm /home/vscode/.local/share/pnpm/store /workspaces/catch-frontend-ng20/node_modules && sudo chown -R vscode:vscode /home/vscode/.codex /home/vscode/.vscode-server/extensions /home/vscode/.cache /home/vscode/.local /workspaces/catch-frontend-ng20/node_modules && npm ci",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash",
+        "terminal.integrated.enablePersistentSessions": false,
+        "terminal.integrated.persistentSessionReviveProcess": "never",
+        "remote.autoForwardPorts": false,
+        "remote.restoreForwardedPorts": false
+      }
+    }
+  }
+}

@@ -1,0 +1,860 @@
+<div class="cat-tools-container">
+  <app-cat-tools-stack
+    [isDetailOpen]="!!activeDetailView"
+    [detailTitle]="activeDetailView?.title || ''"
+    [listTemplate]="analysisListTemplate"
+    [detailTemplate]="analysisDetailTemplate"
+    [detailActionsTemplate]="analysisDetailActionsTemplate"
+    (back)="closeDetailView()"
+  ></app-cat-tools-stack>
+</div>
+
+<ng-template #analysisListTemplate>
+  @if (analysisSelectionSummary$ | async; as analysisSelectionSummary) {
+    <div class="cat-tools-section">
+      <h2 class="cat-tools-title">Selections for Analysis</h2>
+
+      @if (analysisSelectionSummary.totalCount > 0) {
+        <div class="cat-tools-analysis-summary">
+          {{ analysisSelectionSummary.totalCount }} selected
+        </div>
+
+        <div class="cat-tools-analysis-list">
+          @for (item of analysisSelectionSummary.items; track item.productId) {
+            <div class="cat-tools-analysis-item" [class.is-active]="item.isActive">
+              <button
+                type="button"
+                class="cat-tools-analysis-main"
+                (click)="activateAnalysisItem(item)"
+              >
+                <span class="cat-tools-analysis-product">{{ item.sourceName }}</span>
+                <span class="cat-tools-analysis-meta">{{ item.date }}</span>
+              </button>
+
+              <div class="cat-tools-analysis-actions">
+                <button
+                  type="button"
+                  class="cat-tools-analysis-add-button"
+                  (click)="openAstrometryLauncher(item)"
+                >
+                  + Astrometry
+                </button>
+
+                <button
+                  type="button"
+                  class="cat-tools-analysis-share-button"
+                  (click)="copyCatShareLink(item)"
+                >
+                  Share
+                </button>
+              </div>
+
+              @if (item.astrometryRuns.length > 0) {
+                <div class="cat-tools-run-chip-list">
+                  @for (run of item.astrometryRuns; track run.id) {
+                    <button
+                      type="button"
+                      class="cat-tools-run-chip"
+                      [class.is-running]="run.status === 'running'"
+                      [class.is-complete]="run.status === 'complete'"
+                      [class.is-error]="run.status === 'error'"
+                      (click)="openAstrometryReview(item, run.id)"
+                    >
+                      @if (run.status === 'running') {
+                        <span class="cat-tools-run-spinner" aria-hidden="true"></span>
+                      }
+                      <span>Astrometry #{{ run.sequence }}</span>
+                      <span>{{ getAstrometryRunStatusLabel(run) }}</span>
+                    </button>
+                  }
+                </div>
+              }
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="cat-tools-empty-state">Select rows in table for analysis</div>
+      }
+    </div>
+  }
+</ng-template>
+
+<ng-template #analysisDetailActionsTemplate>
+  @if (getCatWorkflowDownloadContext(); as context) {
+    <button
+      type="button"
+      class="cat-tools-detail-action cat-tools-download-action"
+      (click)="downloadCatWorkflowJson(context.item, context.run)"
+    >
+      Download CAT JSON
+    </button>
+  }
+</ng-template>
+
+<ng-template #analysisDetailTemplate>
+  @if (activeDetailView && (analysisSelectionSummary$ | async); as analysisSelectionSummary) {
+    @if (getDetailItem(analysisSelectionSummary); as item) {
+      <div class="cat-tools-detail-context">
+        <span>{{ item.sourceName }}</span>
+        <span>{{ item.date }}</span>
+      </div>
+
+      @if (activeDetailView.kind === 'astrometry-launcher' && astrometryDraft; as draft) {
+        <form
+          class="cat-tools-form-panel"
+          style="border-left-width: 4px; border-left-color: #2e7d32"
+          (ngSubmit)="launchAstrometry()"
+        >
+          <h3 class="cat-tools-step-label">STEP 1: Inputs for Astrometric Corrections</h3>
+
+          <div class="cat-tools-form-grid">
+            <label>
+              <span class="cat-tools-field-label">
+                <span>RA</span>
+                <app-cat-field-info
+                  label="RA"
+                  [text]="catInputHelp.astrometryRa"
+                ></app-cat-field-info>
+              </span>
+              <input type="number" name="ra" step="any" [(ngModel)]="draft.ra" />
+            </label>
+
+            <label>
+              <span class="cat-tools-field-label">
+                <span>Dec</span>
+                <app-cat-field-info
+                  label="Dec"
+                  [text]="catInputHelp.astrometryDec"
+                ></app-cat-field-info>
+              </span>
+              <input type="number" name="dec" step="any" [(ngModel)]="draft.dec" />
+            </label>
+
+            <label>
+              <span class="cat-tools-field-label">
+                <span>Pixel scale</span>
+                <app-cat-field-info
+                  label="Pixel scale"
+                  [text]="catInputHelp.astrometryPixelScale"
+                ></app-cat-field-info>
+              </span>
+              <input type="number" name="pixel_scale" step="any" [(ngModel)]="draft.pixel_scale" />
+            </label>
+
+            <label>
+              <span class="cat-tools-field-label">
+                <span>Scale low</span>
+                <app-cat-field-info
+                  label="Scale low"
+                  [text]="catInputHelp.astrometryScaleLow"
+                ></app-cat-field-info>
+              </span>
+              <input type="number" name="scale_low" step="any" [(ngModel)]="draft.scale_low" />
+            </label>
+
+            <label>
+              <span class="cat-tools-field-label">
+                <span>Scale high</span>
+                <app-cat-field-info
+                  label="Scale high"
+                  [text]="catInputHelp.astrometryScaleHigh"
+                ></app-cat-field-info>
+              </span>
+              <input type="number" name="scale_high" step="any" [(ngModel)]="draft.scale_high" />
+            </label>
+
+            <label>
+              <span class="cat-tools-field-label">
+                <span>Search radius</span>
+                <app-cat-field-info
+                  label="Search radius"
+                  [text]="catInputHelp.astrometrySearchRadius"
+                ></app-cat-field-info>
+              </span>
+              <input
+                type="number"
+                name="astrometry_search_radius"
+                step="any"
+                min="0"
+                [(ngModel)]="draft.search_radius"
+              />
+            </label>
+
+            <label>
+              <span class="cat-tools-field-label">
+                <span>SNR threshold</span>
+                <app-cat-field-info
+                  label="SNR threshold"
+                  [text]="catInputHelp.astrometrySnrThreshold"
+                ></app-cat-field-info>
+              </span>
+              <input
+                type="number"
+                name="snr_threshold"
+                step="any"
+                [(ngModel)]="draft.snr_threshold"
+              />
+            </label>
+
+            <label>
+              <span class="cat-tools-field-label">
+                <span>Aperture radius</span>
+                <app-cat-field-info
+                  label="Aperture radius"
+                  [text]="catInputHelp.astrometryApertureRadius"
+                ></app-cat-field-info>
+              </span>
+              <input
+                type="number"
+                name="aperture_radius"
+                step="any"
+                [(ngModel)]="draft.aperture_radius"
+              />
+            </label>
+
+            <label>
+              <span class="cat-tools-field-label">
+                <span>Catalog</span>
+                <app-cat-field-info
+                  label="Catalog"
+                  [text]="catInputHelp.astrometryCatalog"
+                ></app-cat-field-info>
+              </span>
+              <input type="text" name="catalog" [ngModel]="draft.catalog" disabled />
+            </label>
+
+            <label>
+              <span class="cat-tools-field-label">
+                <span>Observation band</span>
+                <app-cat-field-info
+                  label="Observation band"
+                  [text]="catInputHelp.astrometryObsBand"
+                ></app-cat-field-info>
+              </span>
+              <select name="obs_band" [(ngModel)]="draft.obs_band">
+                @for (band of astrometryBands; track band) {
+                  <option [ngValue]="band">{{ band }}</option>
+                }
+              </select>
+            </label>
+
+            <label>
+              <span class="cat-tools-field-label">
+                <span>Calibration band</span>
+                <app-cat-field-info
+                  label="Calibration band"
+                  [text]="catInputHelp.astrometryCalBand"
+                ></app-cat-field-info>
+              </span>
+              <select name="cal_band" [(ngModel)]="draft.cal_band">
+                @for (band of astrometryBands; track band) {
+                  <option [ngValue]="band">{{ band }}</option>
+                }
+              </select>
+            </label>
+          </div>
+
+          @if (!draft.image_url) {
+            <div class="cat-tools-warning">No FITS image URL is available for this item.</div>
+          }
+
+          <button
+            type="submit"
+            class="cat-tools-detail-action"
+            [disabled]="isAstrometryLaunchDisabled()"
+          >
+            Launch Astrometry
+          </button>
+        </form>
+      }
+
+      @if (activeDetailView.kind === 'astrometry-review') {
+        @if (getActiveReviewRun(item); as run) {
+          <div class="cat-tools-review-nav">
+            <button
+              type="button"
+              class="cat-tools-detail-action"
+              [disabled]="!isAdjacentReviewRunAvailable(item, -1)"
+              (click)="goToAdjacentReviewRun(item, -1)"
+            >
+              Previous
+            </button>
+
+            <span>{{ getReviewRunPosition(item) }}</span>
+
+            <button
+              type="button"
+              class="cat-tools-detail-action"
+              [disabled]="!isAdjacentReviewRunAvailable(item, 1)"
+              (click)="goToAdjacentReviewRun(item, 1)"
+            >
+              Next
+            </button>
+
+            <button
+              type="button"
+              class="cat-tools-detail-action"
+              (click)="openAstrometryLauncherForDetailItem(item)"
+            >
+              New Astrometry
+            </button>
+          </div>
+
+          <div
+            class="cat-tools-status-panel"
+            [class.is-running]="run.status === 'running'"
+            [class.is-complete]="run.status === 'complete' && !isAstrometryPartialSuccess(run)"
+            [class.is-warning]="isAstrometryPartialSuccess(run)"
+            [class.is-error]="run.status === 'error'"
+          >
+            @if (run.status === 'running') {
+              <span class="cat-tools-run-spinner" aria-hidden="true"></span>
+            }
+            <span>Astrometry #{{ run.sequence }}: {{ getAstrometryRunStatusLabel(run) }}</span>
+          </div>
+
+          <section
+            class="cat-tools-table-section"
+            style="border-left-width: 4px; border-left-color: #2e7d32"
+          >
+            <h3>STEP 1: Inputs for Astrometric Corrections</h3>
+            <table>
+              <tbody>
+                @for (row of getAstrometryInputRows(run.inputs); track row.label) {
+                  <tr>
+                    <th scope="row">{{ row.label }}</th>
+                    <td>{{ formatDatumValue(row.value) }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </section>
+
+          @if (run.result) {
+            <section
+              class="cat-tools-table-section cat-tools-output-section"
+              style="border-left-width: 4px; border-left-color: #1976d2"
+              [attr.data-cat-scroll-target]="getAstrometryOutputScrollTarget(run)"
+            >
+              <h3>STEP 1: Outputs for Astrometric Corrections</h3>
+
+              @if (getAstrometryPhotometryWarning(run.result); as warning) {
+                <div class="cat-tools-status-panel is-warning">
+                  {{ warning }}
+                </div>
+              }
+
+              @for (group of getAstrometryResultGroups(run.result); track group.title) {
+                <div class="cat-tools-output-group">
+                  <h4>{{ group.title }}</h4>
+                  <table>
+                    <tbody>
+                      @for (row of group.rows; track row.label) {
+                        <tr>
+                          <th scope="row">{{ row.label }}</th>
+                          <td>{{ formatDatumValue(row.value) }}</td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              }
+
+              <div class="cat-tools-output-actions">
+                @if (isAstrometryCentralizationAvailable(run)) {
+                  <button
+                    type="button"
+                    class="cat-tools-detail-action cat-tools-centralization-action"
+                    [class.is-applied]="isAstrometryCentralizationApplied(item, run)"
+                    [attr.data-cat-scroll-target]="getAstrometryCentralizationScrollTarget(run)"
+                    (click)="toggleAstrometryCentralization(item, run)"
+                  >
+                    {{ getAstrometryCentralizationActionLabel(item, run) }}
+                  </button>
+                }
+
+                <button
+                  type="button"
+                  class="cat-tools-detail-action cat-tools-share-action"
+                  (click)="copyCatShareLink(item)"
+                >
+                  Share CAT Link
+                </button>
+              </div>
+            </section>
+
+            @if (isCentroidSectionVisible(item, run)) {
+              @if (centroidDraft; as draft) {
+                <form
+                  class="cat-tools-form-panel cat-tools-centroid-panel"
+                  style="border-left-width: 4px; border-left-color: #2e7d32"
+                  [attr.data-cat-scroll-target]="getCentroidInputScrollTarget(run)"
+                  (ngSubmit)="launchCentroid(item, run)"
+                >
+                  <h3>STEP 2: Inputs for Object Centroidization</h3>
+
+                  <div class="cat-tools-form-grid">
+                    <label>
+                      <span class="cat-tools-field-label">
+                        <span>X (pixel)</span>
+                        <app-cat-field-info
+                          label="Centroid X pixel"
+                          [text]="catInputHelp.centroidX"
+                        ></app-cat-field-info>
+                      </span>
+                      <input
+                        type="number"
+                        name="centroid_target_x"
+                        step="1"
+                        [(ngModel)]="draft.target_x"
+                        (ngModelChange)="markCentroidDraftEdited()"
+                        (blur)="roundCentroidDraftPixels()"
+                      />
+                    </label>
+
+                    <label>
+                      <span class="cat-tools-field-label">
+                        <span>Y (pixel)</span>
+                        <app-cat-field-info
+                          label="Centroid Y pixel"
+                          [text]="catInputHelp.centroidY"
+                        ></app-cat-field-info>
+                      </span>
+                      <input
+                        type="number"
+                        name="centroid_target_y"
+                        step="1"
+                        [(ngModel)]="draft.target_y"
+                        (ngModelChange)="markCentroidDraftEdited()"
+                        (blur)="roundCentroidDraftPixels()"
+                      />
+                    </label>
+
+                    <label>
+                      <span class="cat-tools-field-label">
+                        <span>Search radius (pixels)</span>
+                        <app-cat-field-info
+                          label="Centroid search radius"
+                          [text]="catInputHelp.centroidSearchRadius"
+                        ></app-cat-field-info>
+                      </span>
+                      <input
+                        type="number"
+                        name="centroid_search_radius"
+                        step="1"
+                        min="0"
+                        [(ngModel)]="draft.search_radius"
+                        (ngModelChange)="markCentroidDraftEdited()"
+                        (blur)="roundCentroidDraftPixels()"
+                      />
+                    </label>
+                  </div>
+
+                  @if (!draft.file) {
+                    <div class="cat-tools-warning">
+                      No FITS image URL is available for this item.
+                    </div>
+                  }
+
+                  <div class="cat-tools-hint">{{ getCentroidInputHint() }}</div>
+
+                  <button
+                    type="submit"
+                    class="cat-tools-detail-action"
+                    [disabled]="isCentroidLaunchDisabled()"
+                  >
+                    Launch Centroid
+                  </button>
+                </form>
+
+                @if (getCentroidRuns(item, run).length > 0) {
+                  <section
+                    class="cat-tools-table-section cat-tools-output-section"
+                    style="border-left-width: 4px; border-left-color: #1976d2"
+                  >
+                    @if (hasSuccessfulCentroidRun(item, run)) {
+                      <h3>STEP 2: Outputs for Object Centroidization</h3>
+                    }
+
+                    @for (centroidRun of getCentroidRuns(item, run); track centroidRun.id) {
+                      <div
+                        class="cat-tools-output-group"
+                        [attr.data-cat-scroll-target]="getCentroidOutputScrollTarget(centroidRun)"
+                      >
+                        <div
+                          class="cat-tools-status-panel"
+                          [class.is-running]="centroidRun.status === 'running'"
+                          [class.is-complete]="centroidRun.status === 'complete'"
+                          [class.is-error]="centroidRun.status === 'error'"
+                        >
+                          @if (centroidRun.status === 'running') {
+                            <span class="cat-tools-run-spinner" aria-hidden="true"></span>
+                          }
+                          <span>
+                            Centroid #{{ centroidRun.sequence }}:
+                            {{ getCentroidRunStatusLabel(centroidRun) }}
+                          </span>
+                        </div>
+
+                        @if (centroidRun.result) {
+                          <table>
+                            <tbody>
+                              @for (row of getCentroidResultRows(centroidRun); track row.label) {
+                                <tr>
+                                  <th scope="row">{{ row.label }}</th>
+                                  <td>{{ formatDatumValue(row.value) }}</td>
+                                </tr>
+                              }
+                            </tbody>
+                          </table>
+
+                          @if (getCentroidFigureUrl(centroidRun.result); as centroidFigureUrl) {
+                            <figure class="cat-tools-output-image">
+                              <img [src]="centroidFigureUrl" alt="Centroid result" loading="lazy" />
+                              <figcaption>Centroid figure</figcaption>
+                            </figure>
+                          } @else if (centroidRun.result.centroid_figure) {
+                            <div class="cat-tools-figure-reference">
+                              <strong>Centroid figure:</strong>
+                              {{ getCatOutputFigureReference(centroidRun.result.centroid_figure) }}
+                              <span>
+                                The CAT API returned a legacy filename instead of a public image
+                                URL.
+                              </span>
+                            </div>
+                          }
+
+                          @if (isCentroidizationAvailable(centroidRun)) {
+                            <button
+                              type="button"
+                              class="cat-tools-detail-action cat-tools-centralization-action"
+                              [class.is-applied]="isCentroidizationApplied(item, centroidRun)"
+                              (click)="toggleCentroidization(item, centroidRun)"
+                            >
+                              {{ getCentroidizationActionLabel(item, centroidRun) }}
+                            </button>
+                          }
+                        } @else if (centroidRun.error) {
+                          <div class="cat-tools-error-panel">{{ centroidRun.error }}</div>
+                        }
+                      </div>
+                    }
+                  </section>
+                }
+
+                @if (getAppliedCentroidRun(item, run); as appliedCentroidRun) {
+                  @if (targetPhotometryDraft; as photometryDraft) {
+                    <form
+                      class="cat-tools-form-panel"
+                      style="border-left-width: 4px; border-left-color: #2e7d32"
+                      [attr.data-cat-scroll-target]="
+                        getTargetPhotometryInputScrollTarget(appliedCentroidRun)
+                      "
+                      (ngSubmit)="launchTargetPhotometry(item, run, appliedCentroidRun)"
+                    >
+                      <h3 class="cat-tools-step-label">STEP 3: Inputs for Target Photometry</h3>
+
+                      <h3
+                        style="
+                          margin: 0;
+                          color: var(--mat-sys-on-surface);
+                          font-size: 14px;
+                          font-weight: 700;
+                        "
+                      >
+                        Target Aperture
+                      </h3>
+
+                      <div class="cat-tools-form-grid">
+                        <label>
+                          <span class="cat-tools-field-label">
+                            <span>Shape</span>
+                            <app-cat-field-info
+                              label="Target aperture shape"
+                              [text]="catInputHelp.targetShape"
+                            ></app-cat-field-info>
+                          </span>
+                          <input
+                            type="text"
+                            name="target_aperture_shape"
+                            [ngModel]="photometryDraft.target_aperture_params.shape"
+                            disabled
+                          />
+                        </label>
+
+                        <label>
+                          <span class="cat-tools-field-label">
+                            <span>Size (pixels)</span>
+                            <app-cat-field-info
+                              label="Target aperture size"
+                              [text]="catInputHelp.targetSize"
+                            ></app-cat-field-info>
+                          </span>
+                          <input
+                            type="number"
+                            name="target_aperture_size"
+                            step="1"
+                            min="0"
+                            [ngModel]="photometryDraft.target_aperture_params.size"
+                            (ngModelChange)="setTargetPhotometrySize($event)"
+                          />
+                        </label>
+
+                        <label>
+                          <span class="cat-tools-field-label">
+                            <span>X (pixel)</span>
+                            <app-cat-field-info
+                              label="Target aperture X pixel"
+                              [text]="catInputHelp.targetX"
+                            ></app-cat-field-info>
+                          </span>
+                          <input
+                            type="number"
+                            name="target_aperture_x"
+                            [ngModel]="photometryDraft.target_aperture_params.position[0]"
+                            disabled
+                          />
+                        </label>
+
+                        <label>
+                          <span class="cat-tools-field-label">
+                            <span>Y (pixel)</span>
+                            <app-cat-field-info
+                              label="Target aperture Y pixel"
+                              [text]="catInputHelp.targetY"
+                            ></app-cat-field-info>
+                          </span>
+                          <input
+                            type="number"
+                            name="target_aperture_y"
+                            [ngModel]="photometryDraft.target_aperture_params.position[1]"
+                            disabled
+                          />
+                        </label>
+                      </div>
+
+                      <h3
+                        style="
+                          margin: 0;
+                          color: var(--mat-sys-on-surface);
+                          font-size: 14px;
+                          font-weight: 700;
+                        "
+                      >
+                        Background Aperture
+                      </h3>
+
+                      <div class="cat-tools-form-grid">
+                        <label>
+                          <span class="cat-tools-field-label">
+                            <span>Shape</span>
+                            <app-cat-field-info
+                              label="Background aperture shape"
+                              [text]="catInputHelp.backgroundShape"
+                            ></app-cat-field-info>
+                          </span>
+                          <input
+                            type="text"
+                            name="background_aperture_shape"
+                            [ngModel]="photometryDraft.background_aperture_params.shape"
+                            disabled
+                          />
+                        </label>
+
+                        <label>
+                          <span class="cat-tools-field-label">
+                            <span>Size (pixels)</span>
+                            <app-cat-field-info
+                              label="Background aperture size"
+                              [text]="catInputHelp.backgroundSize"
+                            ></app-cat-field-info>
+                          </span>
+                          <input
+                            type="number"
+                            name="background_aperture_size"
+                            [ngModel]="photometryDraft.background_aperture_params.size"
+                            disabled
+                          />
+                        </label>
+
+                        <label>
+                          <span class="cat-tools-field-label">
+                            <span>Inner radius (pixels)</span>
+                            <app-cat-field-info
+                              label="Background inner radius"
+                              [text]="catInputHelp.backgroundInnerRadius"
+                            ></app-cat-field-info>
+                          </span>
+                          <input
+                            type="number"
+                            name="background_aperture_inner_r"
+                            [ngModel]="photometryDraft.background_aperture_params.inner_r"
+                            disabled
+                          />
+                        </label>
+
+                        <label>
+                          <span class="cat-tools-field-label">
+                            <span>Outer radius (pixels)</span>
+                            <app-cat-field-info
+                              label="Background outer radius"
+                              [text]="catInputHelp.backgroundOuterRadius"
+                            ></app-cat-field-info>
+                          </span>
+                          <input
+                            type="number"
+                            name="background_aperture_outer_r"
+                            [ngModel]="photometryDraft.background_aperture_params.outer_r"
+                            disabled
+                          />
+                        </label>
+
+                        <label>
+                          <span class="cat-tools-field-label">
+                            <span>X (pixel)</span>
+                            <app-cat-field-info
+                              label="Background aperture X pixel"
+                              [text]="catInputHelp.backgroundX"
+                            ></app-cat-field-info>
+                          </span>
+                          <input
+                            type="number"
+                            name="background_aperture_x"
+                            [ngModel]="photometryDraft.background_aperture_params.position[0]"
+                            disabled
+                          />
+                        </label>
+
+                        <label>
+                          <span class="cat-tools-field-label">
+                            <span>Y (pixel)</span>
+                            <app-cat-field-info
+                              label="Background aperture Y pixel"
+                              [text]="catInputHelp.backgroundY"
+                            ></app-cat-field-info>
+                          </span>
+                          <input
+                            type="number"
+                            name="background_aperture_y"
+                            [ngModel]="photometryDraft.background_aperture_params.position[1]"
+                            disabled
+                          />
+                        </label>
+                      </div>
+
+                      @if (!photometryDraft.file) {
+                        <div class="cat-tools-warning">
+                          No FITS image URL is available for this item.
+                        </div>
+                      }
+
+                      <button
+                        type="submit"
+                        class="cat-tools-detail-action"
+                        [disabled]="isTargetPhotometryLaunchDisabled()"
+                      >
+                        Launch Target Photometry
+                      </button>
+                    </form>
+
+                    @if (getTargetPhotometryRuns(item, appliedCentroidRun).length > 0) {
+                      <section
+                        class="cat-tools-table-section cat-tools-output-section"
+                        style="border-left-width: 4px; border-left-color: #1976d2"
+                      >
+                        @if (hasSuccessfulTargetPhotometryRun(item, appliedCentroidRun)) {
+                          <h3>STEP 3: Outputs for Target Photometry</h3>
+                        }
+
+                        @for (
+                          photometryRun of getTargetPhotometryRuns(item, appliedCentroidRun);
+                          track photometryRun.id
+                        ) {
+                          <div
+                            class="cat-tools-output-group"
+                            [attr.data-cat-scroll-target]="
+                              getTargetPhotometryOutputScrollTarget(photometryRun)
+                            "
+                          >
+                            <div
+                              class="cat-tools-status-panel"
+                              [class.is-running]="photometryRun.status === 'running'"
+                              [class.is-complete]="photometryRun.status === 'complete'"
+                              [class.is-error]="photometryRun.status === 'error'"
+                            >
+                              @if (photometryRun.status === 'running') {
+                                <span class="cat-tools-run-spinner" aria-hidden="true"></span>
+                              }
+                              <span>
+                                Target Photometry #{{ photometryRun.sequence }}:
+                                {{ getTargetPhotometryRunStatusLabel(photometryRun) }}
+                              </span>
+                            </div>
+
+                            @if (photometryRun.result) {
+                              <table>
+                                <tbody>
+                                  @for (
+                                    row of getTargetPhotometryResultRows(photometryRun);
+                                    track row.label
+                                  ) {
+                                    <tr>
+                                      <th scope="row">{{ row.label }}</th>
+                                      <td>{{ formatDatumValue(row.value) }}</td>
+                                    </tr>
+                                  }
+                                </tbody>
+                              </table>
+
+                              @if (
+                                getTargetPhotometryFigureUrl(photometryRun.result);
+                                as apertureFigureUrl
+                              ) {
+                                <figure class="cat-tools-output-image">
+                                  <img
+                                    [src]="apertureFigureUrl"
+                                    alt="Target photometry aperture"
+                                    loading="lazy"
+                                  />
+                                  <figcaption>Aperture figure</figcaption>
+                                </figure>
+                              } @else if (photometryRun.result.aperture_figure) {
+                                <div class="cat-tools-figure-reference">
+                                  <strong>Aperture figure:</strong>
+                                  {{
+                                    getCatOutputFigureReference(
+                                      photometryRun.result.aperture_figure
+                                    )
+                                  }}
+                                  <span>
+                                    The CAT API returned a legacy filename instead of a public image
+                                    URL.
+                                  </span>
+                                </div>
+                              }
+                            } @else if (photometryRun.error) {
+                              <div class="cat-tools-error-panel">{{ photometryRun.error }}</div>
+                            }
+                          </div>
+                        }
+                      </section>
+                    }
+                  }
+                }
+              }
+            }
+          } @else if (run.error) {
+            <div
+              class="cat-tools-error-panel"
+              [attr.data-cat-scroll-target]="getAstrometryErrorScrollTarget(run)"
+            >
+              {{ run.error }}
+            </div>
+          } @else {
+            <div class="cat-tools-pending-panel">Astrometry is running.</div>
+          }
+        }
+      }
+    }
+  }
+</ng-template>

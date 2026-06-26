@@ -1,6 +1,5 @@
 .dark-theme {
-  #JS9_Menubar,
-  #JS9_Menubar,
+  .JS9Menubar,
   .JS9MenubarContainer-flat,
   .js9-my-menu-button-class {
     white-space: nowrap;
@@ -8,14 +7,45 @@
     color: white;
   }
 
-  #JS9_Menubar {
-    // overflow-x: scroll;
+  .JS9Menubar {
+    overflow-x: auto;
+  }
+}
+
+.ngx-js9-host {
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+
+  .JS9Menubar,
+  .JS9,
+  .JS9Colorbar {
+    box-sizing: border-box;
+  }
+
+  .JS9Colorbar {
+    min-height: 64px;
+    overflow: visible;
+    padding-bottom: 8px;
+  }
+
+  .JS9ColorbarCanvas,
+  .JS9ColorbarTextCanvas {
+    display: block;
+  }
+
+  .JS9Colorbar,
+  .JS9ColorbarCanvas,
+  .JS9ColorbarTextCanvas {
+    cursor: crosshair;
+    touch-action: none;
+    user-select: none;
   }
 }
 
 .light-theme {
-  #JS9_Menubar,
-  #JS9_Menubar,
+  .JS9Menubar,
   .JS9MenubarContainer-flat,
   .js9-my-menu-button-class {
     white-space: nowrap;
@@ -23,7 +53,7 @@
     color: white;
   }
 
-  #JS9_Menubar {
+  .JS9Menubar {
     overflow-x: scroll;
   }
 }

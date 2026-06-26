@@ -51,7 +51,6 @@ export const initColStateMoving: Readonly<TColStateMoving> = {
   // selong: false,
   source: false,
   source_name: false, // permanent col
-  // tmtp: false,
   true_anomaly: false,
   unc_a: false,
   unc_b: false,

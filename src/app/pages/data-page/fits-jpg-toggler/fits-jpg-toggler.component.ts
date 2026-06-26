@@ -1,24 +1,27 @@
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { distinctUntilChanged, interval, map, Subscription } from 'rxjs';
+import { Subscription } from 'rxjs';
 
 import { IAppState } from '../../../ngrx/reducers';
 import { IApiMovum } from '../../../../models/IApiMovum';
 import {
   selectApiData,
   selectApiDataStatus,
-  selectApiSelectedDatum,
+  selectApiActiveDatum,
 } from '../../../ngrx/selectors/api-data.selectors';
 import { IApiFixum } from '../../../../models/IApiFixum';
 import { TApiDataStatus } from '../../../../models/TApiDataStatus';
 import { MatIcon } from '@angular/material/icon';
-import { NgxJs9Module } from '../../../../../projects/ngx-js9/src/public-api';
+import {
+  IJs9ImageClickCoordinates,
+  NgxJs9Component,
+  NgxJs9Module,
+} from '../../../../../projects/ngx-js9/src/public-api';
 import { PanstarrsOverlayComponent } from '../panstarrs-overlay/panstarrs-overlay.component';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { NgClass } from '@angular/common';
 import { MatFabButton } from '@angular/material/button';
-
-const placeholderUrl = 'assets/images/pngs/sbn_logo_v0.png';
+import { FitsClickCoordinatesService } from '../fits-click-coordinates.service';
 
 @Component({
   selector: 'app-fits-jpg-toggler',
@@ -35,26 +38,36 @@ const placeholderUrl = 'assets/images/pngs/sbn_logo_v0.png';
   ],
   standalone: true,
 })
-export class FitsJpgTogglerComponent implements OnInit {
+export class FitsJpgTogglerComponent implements AfterViewInit, OnDestroy {
   // --->>>
 
   subscriptions = new Subscription();
   apiData?: IApiMovum[] | IApiFixum[];
   apiDataStatus?: TApiDataStatus;
-  apiSelectedDatum?: IApiMovum | IApiFixum;
+  apiActiveDatum?: IApiMovum | IApiFixum;
   isButtonRaised = false;
   isFits = false;
-  fitsUrl = '';
+  desiredFitsUrl = '';
+  viewerFitsUrl = '';
   widthPxls = 0;
   heightPxls = 0;
   isFitsLoaded = false;
   apiDataWithProblematicFitsUrls: string[] = [];
   isThumbnailReorientated = true;
+  private loadingProductId = '';
+  private requestedWorldToImageCoordinatesFile: string | null = null;
+  private resizeObserver?: ResizeObserver;
 
   @ViewChild('FitsJpgTogglerContainer')
   fitsJpgTogglerContainer?: ElementRef<HTMLDivElement>;
 
-  constructor(private store$: Store<IAppState>) {
+  @ViewChild(NgxJs9Component)
+  js9Component?: NgxJs9Component;
+
+  constructor(
+    private store$: Store<IAppState>,
+    private fitsClickCoordinatesService: FitsClickCoordinatesService,
+  ) {
     // --->>
 
     this.subscriptions.add(
@@ -74,84 +87,144 @@ export class FitsJpgTogglerComponent implements OnInit {
     );
 
     this.subscriptions.add(
-      this.store$.select(selectApiSelectedDatum).subscribe((apiSelectedDatum) => {
-        this.isFits = false;
-        this.isButtonRaised = false;
-        this.apiSelectedDatum = apiSelectedDatum;
-        this.fitsUrl = this.apiSelectedDatum?.cutout_url || '';
+      this.store$.select(selectApiActiveDatum).subscribe((apiActiveDatum) => {
+        this.apiActiveDatum = apiActiveDatum;
+        this.desiredFitsUrl = this.apiActiveDatum?.cutout_url || '';
+        this.isFitsLoaded = this.viewerFitsUrl === this.desiredFitsUrl && !!this.viewerFitsUrl;
+        if (!this.isFitsLoaded) {
+          this.fitsClickCoordinatesService.clearCoordinates();
+          this.fitsClickCoordinatesService.clearWorldToImageCoordinatesMapper();
+        }
+
+        if (this.isFitsButtonDisabled()) {
+          if (this.isFits) {
+            this.hideFitsViewer();
+          }
+          this.isButtonRaised = false;
+          return;
+        }
+
+        if (!this.isFits && this.requestedWorldToImageCoordinatesFile !== this.desiredFitsUrl) {
+          this.isButtonRaised = false;
+          return;
+        }
+
+        this.requestFitsLoadForCurrentSelection();
       }),
     );
 
     this.subscriptions.add(
-      interval(1000)
-        .pipe(
-          map((_) => ({
-            width: this.fitsJpgTogglerContainer
-              ? this.fitsJpgTogglerContainer.nativeElement.clientWidth
-              : 100,
-            height: this.fitsJpgTogglerContainer
-              ? this.fitsJpgTogglerContainer.nativeElement.clientHeight
-              : 100,
-          })),
-          distinctUntilChanged(),
-        )
-        .subscribe(({ width, height }) => {
-          // Make sure we have a square, contained fit
-          if (width < height) {
-            this.widthPxls = width;
-            this.heightPxls = width;
-          } else {
-            this.widthPxls = height;
-            this.heightPxls = height;
-          }
-        }),
+      this.fitsClickCoordinatesService.worldToImageCoordinatesRequest$.subscribe((file) => {
+        this.requestedWorldToImageCoordinatesFile = file;
+        if (!file || file !== this.desiredFitsUrl || this.isFitsButtonDisabled()) {
+          return;
+        }
+
+        this.requestFitsLoadForCurrentSelection();
+      }),
     );
   }
 
-  ngOnChanges() {
-    //
+  ngAfterViewInit(): void {
+    if (!this.fitsJpgTogglerContainer?.nativeElement) {
+      return;
+    }
+
+    const container = this.fitsJpgTogglerContainer.nativeElement;
+    this.updateViewerSize(container.clientWidth, container.clientHeight);
+
+    if (typeof ResizeObserver === 'undefined') {
+      return;
+    }
+
+    this.resizeObserver = new ResizeObserver(([entry]) => {
+      this.updateViewerSize(entry.contentRect.width, entry.contentRect.height);
+    });
+    this.resizeObserver.observe(container);
   }
 
-  ngOnInit(): void {}
-
-  ngOnDestroy() {
+  ngOnDestroy(): void {
     this.subscriptions.unsubscribe();
+    this.resizeObserver?.disconnect();
   }
 
-  chooseImage() {
-    return this.apiSelectedDatum?.preview_url || placeholderUrl;
+  toggleFits(): void {
+    if (this.isFits) {
+      this.hideFitsViewer();
+      return;
+    }
+
+    if (this.isFitsButtonDisabled()) {
+      return;
+    }
+
+    this.isFits = true;
+    this.requestFitsLoadForCurrentSelection();
   }
 
-  toggleFits() {
-    this.isFits = !this.isFits;
-    if (!this.isFits) this.isButtonRaised = false;
-  }
-
-  onFitsLoadStatusUpdate(event: any) {
-    console.error('Fits-loading event', event);
+  onFitsLoadStatusUpdate(event: 'pending' | 'success' | 'error'): void {
     if (event === 'error') {
-      this.isFits = false;
-      this.isButtonRaised = false;
-      const product_id = this.apiSelectedDatum?.product_id;
-      if (product_id) this.apiDataWithProblematicFitsUrls.push(product_id);
+      this.fitsClickCoordinatesService.clearWorldToImageCoordinatesMapper();
+      if (
+        this.loadingProductId &&
+        !this.apiDataWithProblematicFitsUrls.includes(this.loadingProductId)
+      ) {
+        this.apiDataWithProblematicFitsUrls.push(this.loadingProductId);
+      }
+      this.isFitsLoaded = false;
+      this.hideFitsViewer();
     } else if (event === 'success') {
-      this.isButtonRaised = true;
+      this.isFitsLoaded = this.viewerFitsUrl === this.desiredFitsUrl && !!this.viewerFitsUrl;
+      this.isButtonRaised = this.isFits && this.isFitsLoaded;
+      if (this.viewerFitsUrl) {
+        this.fitsClickCoordinatesService.setWorldToImageCoordinatesMapper(
+          this.viewerFitsUrl,
+          (ra, dec) => {
+            const coords = this.js9Component?.getImageCoordinatesFromWorld(ra, dec);
+            return coords
+              ? {
+                  imageX: coords.imageX,
+                  imageY: coords.imageY,
+                  wcsPixelX: coords.wcsPixelX,
+                  wcsPixelY: coords.wcsPixelY,
+                  wcsPixelAsPhysicalX: coords.wcsPixelAsPhysicalX,
+                  wcsPixelAsPhysicalY: coords.wcsPixelAsPhysicalY,
+                  wcsPixelAsImageX: coords.wcsPixelAsImageX,
+                  wcsPixelAsImageY: coords.wcsPixelAsImageY,
+                  wcsString: coords.wcsString,
+                }
+              : null;
+          },
+        );
+        this.fitsClickCoordinatesService.setImageToWorldCoordinatesMapper(
+          this.viewerFitsUrl,
+          (imageX, imageY) =>
+            this.js9Component?.getWorldCoordinatesFromImage(imageX, imageY) ?? null,
+        );
+      }
     } else {
+      this.fitsClickCoordinatesService.clearCoordinates();
+      this.fitsClickCoordinatesService.clearWorldToImageCoordinatesMapper();
+      this.isFitsLoaded = false;
       this.isButtonRaised = false;
     }
   }
 
-  isFitsButtonDisabled() {
-    if (!this.fitsUrl) return true;
-    return this.apiDataWithProblematicFitsUrls.includes(this.apiSelectedDatum?.product_id || '');
+  onFitsImageClick(coordinates: IJs9ImageClickCoordinates): void {
+    this.fitsClickCoordinatesService.setCoordinates(coordinates);
+  }
+
+  isFitsButtonDisabled(): boolean {
+    if (!this.desiredFitsUrl) return true;
+    return this.apiDataWithProblematicFitsUrls.includes(this.apiActiveDatum?.product_id || '');
   }
 
   getLabel() {
     // Create a label for this image from the carousel
-    this.apiSelectedDatum;
+    this.apiActiveDatum;
     const i = this.apiData
       ?.map((apiDatum) => apiDatum.product_id)
-      .indexOf(this.apiSelectedDatum?.product_id || '');
+      .indexOf(this.apiActiveDatum?.product_id || '');
     return '*C' + i;
   }
 
@@ -164,5 +237,34 @@ export class FitsJpgTogglerComponent implements OnInit {
     if (!search) return false;
     const { searchType } = search;
     return searchType === 'moving';
+  }
+
+  private hideFitsViewer(): void {
+    this.isFits = false;
+    this.isButtonRaised = false;
+  }
+
+  private requestFitsLoadForCurrentSelection(): void {
+    if (!this.desiredFitsUrl) {
+      this.isFitsLoaded = false;
+      this.isButtonRaised = false;
+      return;
+    }
+
+    if (this.viewerFitsUrl === this.desiredFitsUrl && this.isFitsLoaded) {
+      this.isButtonRaised = this.isFits;
+      return;
+    }
+
+    this.loadingProductId = this.apiActiveDatum?.product_id || '';
+    this.viewerFitsUrl = this.desiredFitsUrl;
+    this.isFitsLoaded = false;
+    this.isButtonRaised = false;
+  }
+
+  private updateViewerSize(width: number, height: number): void {
+    const squareSize = Math.floor(Math.min(width, height));
+    this.widthPxls = squareSize;
+    this.heightPxls = squareSize;
   }
 }

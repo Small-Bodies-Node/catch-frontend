@@ -3,13 +3,13 @@ import { Store } from '@ngrx/store';
 import { CommonModule } from '@angular/common';
 
 import { IAppState } from '../../ngrx/reducers';
-import { TPermittedTheme } from '../../../models/ISiteSettings';
+import { TEffectiveTheme } from '../../../models/ISiteSettings';
 import { selectNavigationRecords } from '../../ngrx/selectors/navigation.selectors';
-import { selectSiteSettingsEffectiveTheme } from '../../ngrx/selectors/site-settings.selectors';
 import {
   backgroundSwipeIntervalMs as intervalMs,
   backgroundSwipeDurationMs as durationMs,
 } from '../../../utils/animation-constants';
+import { ThemeService } from '../../core/services/theme/theme.service';
 
 @Component({
   selector: 'app-background',
@@ -25,9 +25,12 @@ export class BackgroundComponent implements OnInit {
   isBackgroundShown = true;
   isAnimating = false;
   selectedRoute = '';
-  siteTheme: TPermittedTheme = 'DARK-THEME';
+  effectiveTheme: TEffectiveTheme = 'light';
 
-  constructor(private store$: Store<IAppState>) {
+  constructor(
+    private store$: Store<IAppState>,
+    private themeService: ThemeService,
+  ) {
     // --->>
 
     this.store$.select(selectNavigationRecords).subscribe((navRecords) => {
@@ -36,22 +39,21 @@ export class BackgroundComponent implements OnInit {
       // Remove query params from url
       const urlPath = (navRecords.presentRoute || '').split('?')[0];
       if (!false) {
-        this.isBackgroundShown =
-          ['/', '/home'].includes(urlPath) || urlPath === '';
+        this.isBackgroundShown = ['/', '/home'].includes(urlPath) || urlPath === '';
       }
-      this.varHostClassName = 'host-' + this.siteTheme.toLowerCase();
+      this.varHostClassName = `host-${this.effectiveTheme}-theme`;
     });
 
-    this.store$.select(selectSiteSettingsEffectiveTheme).subscribe((theme) => {
-      this.siteTheme = theme;
+    this.themeService.effectiveTheme$.subscribe((theme) => {
+      this.effectiveTheme = theme;
+      this.varHostClassName = `host-${theme}-theme`;
     });
   }
 
   ngOnInit() {}
 
   backgroundImageClassLogic() {
-    const className =
-      this.varHostClassName + (this.isBackgroundShown ? '' : ' fade-out');
+    const className = this.varHostClassName + (this.isBackgroundShown ? '' : ' fade-out');
     return className;
   }
 
@@ -65,11 +67,8 @@ export class BackgroundComponent implements OnInit {
 
   getAnimatedImageStyle(imageLabel: string, imageIndex: number) {
     // Build file path:
-    const fileName =
-      this.siteTheme.toLowerCase().replace('-theme', '') +
-      '_' +
-      imageLabel +
-      '_v3.png';
+    const imageVersion = this.effectiveTheme === 'dark' ? 'v3' : 'v1';
+    const fileName = `${this.effectiveTheme}_${imageLabel}_${imageVersion}.png`;
     const filePath = `assets/images/pngs/${fileName}`;
 
     const delayBeforeTransitionMs = imageIndex * intervalMs;

@@ -2,6 +2,7 @@ import { environment } from '../environments/environment.local';
 
 // Define the time client will wait for API to return
 export const apiDefaultTimeoutMs = 5000;
+export const apiDataRequestTimeoutMs = 20 * 60 * 1000;
 
 /**
  * There are two remote deployments: "prod" and "dev"

@@ -20,7 +20,8 @@ export class ObjectNameMatchService {
   objectNameMatch(userSubmittedText: string): TOONMR {
     // --->>
 
-    const url = ROOT_URL + 'name?name=' + userSubmittedText;
+    const params = new URLSearchParams({ name: userSubmittedText });
+    const url = `${ROOT_URL}name?${params.toString()}`;
     return this.httpClient.get<any>(url).pipe(
       map((data: { matches: IObjectNameMatchResult[]; name: string }) => {
         return data.matches;

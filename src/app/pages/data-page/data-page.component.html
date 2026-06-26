@@ -1,3 +1,7 @@
 @if(apiData) {
-<app-layout></app-layout>
+  @if (isMobile) {
+    <app-mobile-layout></app-mobile-layout>
+  } @else {
+    <app-desktop-layout></app-desktop-layout>
+  }
 }

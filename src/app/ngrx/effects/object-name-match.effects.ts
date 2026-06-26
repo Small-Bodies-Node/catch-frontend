@@ -1,5 +1,6 @@
 import { createEffect, ofType, Actions } from '@ngrx/effects';
-import { map, switchMap } from 'rxjs/operators';
+import { of } from 'rxjs';
+import { catchError, map, switchMap } from 'rxjs/operators';
 import { inject } from '@angular/core';
 
 import {
@@ -22,10 +23,19 @@ export const fetchObjectNameMatchResults$ = createEffect(
     return actions$.pipe(
       ofType(ObjectNameMatchAction_FetchResults),
       switchMap((action) => {
-        const searchTerm = action.searchTerm;
-        return objectNameMatcher
-          .objectNameMatch(searchTerm)
-          .pipe(map((results) => ObjectNameMatchAction_SetResults({ results })));
+        const searchTerm = action.searchTerm.trim();
+
+        if (!searchTerm) {
+          return of(ObjectNameMatchAction_SetResults({ results: [] }));
+        }
+
+        return objectNameMatcher.objectNameMatch(searchTerm).pipe(
+          map((results) => ObjectNameMatchAction_SetResults({ results })),
+          catchError((error) => {
+            console.error('Object name match lookup failed:', error);
+            return of(ObjectNameMatchAction_SetResults({ results: [] }));
+          }),
+        );
       }),
     );
   },

@@ -7,6 +7,7 @@ const isDebug = false;
 interface IFetchTask {
   url: string;
   isPriority: boolean;
+  generation: number;
   resolve: (value: string) => void; // value === objectUrl or 'retry'
   reject: (value: 'retry') => void;
   label: string;
@@ -31,7 +32,7 @@ export class ImageFetchService {
   private activeRequests: number = 0;
   private imageCache: { [url: string]: string } = {}; // Cache object URLs
   private retryLimit: number = 200;
-  private retryCount: number = 0;
+  private queueGeneration = 0;
   private mostRecentTaskErrorDate?: Date;
   private mostRecentTaskFinishDate?: Date;
   private mostRecentTaskStartDate?: Date;
@@ -52,7 +53,7 @@ export class ImageFetchService {
 
   resetQueue() {
     this.queue = [];
-    this.activeRequests = 0;
+    this.queueGeneration++;
   }
 
   /**
@@ -61,7 +62,8 @@ export class ImageFetchService {
    */
   async fetchImage(
     url: string,
-    options?: IOptions
+    options?: IOptions,
+    attempt = 0,
   ): Promise<string | undefined> {
     if (!this.startDate) this.startDate = new Date();
 
@@ -75,7 +77,7 @@ export class ImageFetchService {
       url.includes('neat');
 
     if (!isQueueNeeded) {
-      const objectUrl = await fetch(`${url}&align=true`)
+      const objectUrl = await fetch(this.withAlignParam(url))
         .then((response) => response.blob())
         .then((blob) => URL.createObjectURL(blob))
         .catch((_) => {
@@ -107,7 +109,14 @@ export class ImageFetchService {
     // Add task to queue
     const taskResult = await new Promise<string>((resolve, reject) => {
       const { isPriority, label } = { ...defaultOptions, ...options };
-      const task: IFetchTask = { url, isPriority, resolve, reject, label };
+      const task: IFetchTask = {
+        url,
+        isPriority,
+        generation: this.queueGeneration,
+        resolve,
+        reject,
+        label,
+      };
       isPriority ? this.queue.unshift(task) : this.queue.push(task);
       this.checkQueue();
     }).catch((_) => {
@@ -116,10 +125,9 @@ export class ImageFetchService {
 
     // Recursive retry logic
     if (taskResult === 'retry') {
-      if (this.retryCount < this.retryLimit) {
-        console.log('Retrying fetchImage', this.retryCount, url);
-        this.retryCount++;
-        return this.fetchImage(url, options);
+      if (attempt < this.retryLimit) {
+        if (isDebug) console.log('Retrying fetchImage', attempt, url);
+        return this.fetchImage(url, options, attempt + 1);
       } else {
         return undefined;
       }
@@ -146,8 +154,10 @@ export class ImageFetchService {
   private async processTask(task: IFetchTask) {
     const onProcessCompletion = () => {
       this.logTaskFinish();
-      this.activeRequests--;
-      this.checkQueue();
+      this.activeRequests = Math.max(0, this.activeRequests - 1);
+      if (task.generation === this.queueGeneration) {
+        this.checkQueue();
+      }
     };
 
     try {
@@ -155,7 +165,7 @@ export class ImageFetchService {
       if (isDebug) {
         colog('>>> Fetch Call Count', this.fetchCallCount, task.label, 'green');
       }
-      const objectUrl = await fetch(task.url + '&align=true')
+      const objectUrl = await fetch(this.withAlignParam(task.url))
         .then((res) => res.blob())
         .then((blob) => URL.createObjectURL(blob))
         .catch((_) => {
@@ -197,6 +207,19 @@ export class ImageFetchService {
       if (isDebug) console.log('Caught error:', err);
       return undefined;
     }
+  }
+
+  private withAlignParam(url: string): string {
+    const hashIndex = url.indexOf('#');
+    const urlWithoutHash = hashIndex >= 0 ? url.slice(0, hashIndex) : url;
+    const hash = hashIndex >= 0 ? url.slice(hashIndex) : '';
+
+    if (/[?&]align=/.test(urlWithoutHash)) {
+      return url;
+    }
+
+    const separator = urlWithoutHash.includes('?') ? '&' : '?';
+    return `${urlWithoutHash}${separator}align=true${hash}`;
   }
 
   private convertUrlToFileNameInS3Bucket(fullUrl: string): string {

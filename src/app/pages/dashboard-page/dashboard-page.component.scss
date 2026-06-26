@@ -1,5 +1,11 @@
 @import '../../../styles/variables';
 
+:host {
+  display: block;
+  min-height: 100%;
+  color: var(--mat-sys-on-surface);
+}
+
 .dashboard-container {
   width: $page-width;
   padding: $page-padding;

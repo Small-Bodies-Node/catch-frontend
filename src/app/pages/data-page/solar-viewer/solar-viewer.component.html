@@ -1,7 +1,5 @@
-@if(target){
-<div
-  class="solar-viewer-container"
-  [id]="sbnSolarViewerId"
-  style="width: 100%; height: 100%; background-color: none"
-></div>
-}
+<div #solarViewerContainer class="solar-viewer-container" [id]="sbnSolarViewerId">
+  @if (!target) {
+    <div class="solar-viewer-placeholder">Solar viewer available for moving targets.</div>
+  }
+</div>

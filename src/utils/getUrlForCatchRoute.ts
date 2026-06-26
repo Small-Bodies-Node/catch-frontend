@@ -1,6 +1,5 @@
 import { ISearchParamsMoving } from '../models/ISearchParamsMoving';
 import { apiBaseUrl } from './constants';
-import { sourcesToUrlString } from './sourcesToUrlString';
 
 export function getUrlForCatchRoute(input: ISearchParamsMoving): string {
   const {
@@ -12,30 +11,22 @@ export function getUrlForCatchRoute(input: ISearchParamsMoving): string {
     start_date,
     stop_date,
   } = input;
+  const params = new URLSearchParams();
 
-  // Required
-  const targetStr = `target=${target}`;
+  params.set('target', target);
+  params.set('cached', cached ? 'true' : 'false');
+  params.set('padding', String(padding ?? 0));
 
-  // Optional
-  const cachedStr = `&cached=${cached ? 'true' : 'false'}`;
-  const startDateStr = start_date ? `&start_date=${start_date}` : '';
-  const stopDateStr = stop_date ? `&stop_date=${stop_date}` : '';
-  const sourcesStr = sourcesToUrlString(sources);
-  const paddingStr = padding ? `&padding=${padding}` : '&padding=0';
-  const uncertaintyEllipseStr = uncertainty_ellipse
-    ? `&uncertainty_ellipse=true`
-    : '';
+  if (uncertainty_ellipse) {
+    params.set('uncertainty_ellipse', 'true');
+  }
+  if (start_date) {
+    params.set('start_date', start_date);
+  }
+  if (stop_date) {
+    params.set('stop_date', stop_date);
+  }
+  sources?.forEach((source) => params.append('sources', source));
 
-  const movingTargetUrl =
-    apiBaseUrl +
-    `/catch?` +
-    targetStr +
-    cachedStr +
-    paddingStr +
-    uncertaintyEllipseStr +
-    startDateStr +
-    stopDateStr +
-    sourcesStr;
-
-  return movingTargetUrl;
+  return `${apiBaseUrl}/catch?${params.toString()}`;
 }

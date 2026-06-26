@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { ComponentType } from '@angular/cdk/portal';
 import { DataPageComponent } from '../pages/data-page/data-page.component';
+import { dataAccessGuard } from '../core/guards/data-access.guard';
 
 const pageLinks = [
   '',
@@ -55,7 +56,7 @@ export const routes: Routes | ILinkedRoute[] = [
     path: 'dashboard',
     loadComponent: () =>
       import('../pages/dashboard-page/dashboard-page.component').then(
-        (m) => m.DashboardPageComponent
+        (m) => m.DashboardPageComponent,
       ),
   },
   {
@@ -65,6 +66,7 @@ export const routes: Routes | ILinkedRoute[] = [
   },
   {
     path: 'data',
+    canActivate: [dataAccessGuard],
     loadComponent: () =>
       import('../pages/data-page/data-page.component').then((m) => m.DataPageComponent),
   },
