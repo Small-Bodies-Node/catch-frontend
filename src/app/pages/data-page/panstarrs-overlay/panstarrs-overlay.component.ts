@@ -233,7 +233,7 @@ export class PanstarrsOverlayComponent implements OnInit, OnDestroy, AfterViewIn
           this.activeCentroidization = centroidization;
           this.activeTargetPhotometryRun = targetPhotometryRun;
           this.updateWcsCentralizationShift();
-          this.changeDetector.detectChanges();
+          this.changeDetector.markForCheck();
         }),
     );
   }

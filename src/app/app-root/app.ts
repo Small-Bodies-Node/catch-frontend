@@ -40,7 +40,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { MatSidenavContainer } from '@angular/material/sidenav';
 import { NgStyle, isPlatformBrowser } from '@angular/common';
 import { ThemeService } from '../core/services/theme/theme.service';
-import { HttpClient } from '@angular/common/http';
+import { CatApiService } from '../core/services/cat-api/cat-api.service';
 
 @Component({
   selector: 'app-root',
@@ -79,7 +79,7 @@ export class AppComponent implements OnInit {
     private cdr: ChangeDetectorRef,
     private googleAnalyticsService: GoogleAnalyticsService,
     private themeService: ThemeService,
-    private httpClient: HttpClient,
+    private catApiService: CatApiService,
     @Inject(PLATFORM_ID) private platformId: Object,
   ) {}
 
@@ -100,8 +100,8 @@ export class AppComponent implements OnInit {
     // Load localStorage settings into ngrx store
     this.store$.dispatch(SiteSettingsAction_LoadAllFromLocalStorage());
 
-    if (isPlatformBrowser(this.platformId)) {
-      this.pingLocalApi();
+    if (isPlatformBrowser(this.platformId) && isDevMode()) {
+      this.pingCatHealth();
     }
 
     // Handle route updates
@@ -185,57 +185,11 @@ export class AppComponent implements OnInit {
     sidenav.open();
   }
 
-  private pingLocalApi(): void {
-    // Sanity check that same-origin API proxying is alive during local development.
-    const helloRequestId = createDebugRequestId('catch-hello-probe');
-    this.httpClient
-      .get('/api/hello', {
-        headers: {
-          'X-CATCH-Debug': 'true',
-          'X-CATCH-Request-Id': helloRequestId,
-        },
-        responseType: 'text',
-      })
+  private pingCatHealth(): void {
+    this.catApiService
+      .fetchHealth()
       .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (message) => console.log('[CATCH API sanity] /api/hello replied:', message),
-        error: (error) => console.error('[CATCH API sanity] /api/hello failed:', error),
-      });
-
-    if (isDevMode()) {
-      this.pingAstrometryRoute();
-    }
-  }
-
-  private pingAstrometryRoute(): void {
-    const requestId = createDebugRequestId('catch-astrometry-probe');
-    console.log(
-      `[CATCH API sanity ${requestId}] probing /api/cat/astrometry with intentionally invalid payload`,
-    );
-
-    this.httpClient
-      .post(
-        '/api/cat/astrometry',
-        {},
-        {
-          headers: {
-            'X-CATCH-Debug': 'true',
-            'X-CATCH-Request-Id': requestId,
-            'X-CATCH-Timeout-Ms': '15000',
-          },
-          responseType: 'text',
-        },
-      )
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (message) =>
-          console.log(`[CATCH API sanity ${requestId}] /api/cat/astrometry replied:`, message),
-        error: (error) =>
-          console.error(
-            `[CATCH API sanity ${requestId}] /api/cat/astrometry probe completed as error:`,
-            error,
-          ),
-      });
+      .subscribe((message) => console.log('[CATCH API sanity] /api/cat/health replied:', message));
   }
 
   closeSidenav(sidenav: MatSidenav) {
@@ -281,8 +235,4 @@ export class AppComponent implements OnInit {
     const transition = `top ${pageFadeDurationMs}ms ease-in-out ${delayMs}ms`;
     return { top, transition };
   }
-}
-
-function createDebugRequestId(prefix: string): string {
-  return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2, 10)}`;
 }
