@@ -57,6 +57,7 @@ export class FitsJpgTogglerComponent implements AfterViewInit, OnDestroy {
   private loadingProductId = '';
   private requestedWorldToImageCoordinatesFile: string | null = null;
   private resizeObserver?: ResizeObserver;
+  private initialViewerSizeTimeout?: ReturnType<typeof setTimeout>;
 
   @ViewChild('FitsJpgTogglerContainer')
   fitsJpgTogglerContainer?: ElementRef<HTMLDivElement>;
@@ -131,7 +132,10 @@ export class FitsJpgTogglerComponent implements AfterViewInit, OnDestroy {
     }
 
     const container = this.fitsJpgTogglerContainer.nativeElement;
-    this.updateViewerSize(container.clientWidth, container.clientHeight);
+    this.initialViewerSizeTimeout = setTimeout(() => {
+      this.updateViewerSize(container.clientWidth, container.clientHeight);
+      this.initialViewerSizeTimeout = undefined;
+    });
 
     if (typeof ResizeObserver === 'undefined') {
       return;
@@ -145,6 +149,9 @@ export class FitsJpgTogglerComponent implements AfterViewInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();
+    if (this.initialViewerSizeTimeout) {
+      clearTimeout(this.initialViewerSizeTimeout);
+    }
     this.resizeObserver?.disconnect();
   }
 
@@ -264,6 +271,10 @@ export class FitsJpgTogglerComponent implements AfterViewInit, OnDestroy {
 
   private updateViewerSize(width: number, height: number): void {
     const squareSize = Math.floor(Math.min(width, height));
+    if (this.widthPxls === squareSize && this.heightPxls === squareSize) {
+      return;
+    }
+
     this.widthPxls = squareSize;
     this.heightPxls = squareSize;
   }
