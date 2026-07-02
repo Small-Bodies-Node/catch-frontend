@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, throwError, of } from 'rxjs';
 import { switchMap, catchError, map, shareReplay, tap } from 'rxjs/operators';
 import ExifReader, { type Tags } from 'exifreader';
-import { getWCSfromXMP, world_to_pixel } from '../../../../utils/avm';
+import { getWCSfromXMP, pixel_to_world, world_to_pixel } from '../../../../utils/avm';
 
 // Define an interface for the WCS object for better type safety
 export interface IWcs {
@@ -41,7 +41,14 @@ export class ImageWcsService {
             return throwError(() => new Error('Failed to load XMP data or XMP data is empty.'));
           }
           const wcs: IWcs = getWCSfromXMP(xmpData as any);
-          if (!wcs || !wcs.referenceValue || !wcs.referencePixel || !wcs.size || !wcs.scale || wcs.rotation === undefined) {
+          if (
+            !wcs ||
+            !wcs.referenceValue ||
+            !wcs.referencePixel ||
+            !wcs.size ||
+            !wcs.scale ||
+            wcs.rotation === undefined
+          ) {
             return throwError(() => new Error('Failed to derive complete WCS information.'));
           }
           return of(wcs);
@@ -51,9 +58,9 @@ export class ImageWcsService {
       }),
       tap({
         // On error, remove from cache so subsequent calls retry.
-        error: () => this.wcsCache.delete(imageUrl)
+        error: () => this.wcsCache.delete(imageUrl),
       }),
-      shareReplay(1) // Cache the IWcs object and replay for subsequent subscribers.
+      shareReplay(1), // Cache the IWcs object and replay for subsequent subscribers.
     );
 
     this.wcsCache.set(imageUrl, wcsObservable);
@@ -72,7 +79,7 @@ export class ImageWcsService {
   public getPixelCoordinatesFromUrl(
     imageUrl: string,
     ra: number,
-    dec: number
+    dec: number,
   ): Observable<[number, number]> {
     return this.getWcsObservable(imageUrl).pipe(
       map((wcs: IWcs) => {
@@ -83,8 +90,31 @@ export class ImageWcsService {
       catchError((error) => {
         // Catch errors from getWcsObservable or the map operation
         console.error('Error getting pixel coordinates for URL:', imageUrl, error);
-        return throwError(() => new Error(`Failed to get pixel coordinates for ${imageUrl}: ${error.message || error}`));
-      })
+        return throwError(
+          () =>
+            new Error(`Failed to get pixel coordinates for ${imageUrl}: ${error.message || error}`),
+        );
+      }),
+    );
+  }
+
+  public getWorldCoordinatesFromPixel(
+    imageUrl: string,
+    x: number,
+    y: number,
+  ): Observable<{ ra: number; dec: number }> {
+    return this.getWcsObservable(imageUrl).pipe(
+      map((wcs: IWcs) => {
+        const [ra, dec] = pixel_to_world(wcs, x, y);
+        return { ra, dec };
+      }),
+      catchError((error) => {
+        console.error('Error getting world coordinates for URL:', imageUrl, error);
+        return throwError(
+          () =>
+            new Error(`Failed to get world coordinates for ${imageUrl}: ${error.message || error}`),
+        );
+      }),
     );
   }
 }

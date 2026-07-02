@@ -218,7 +218,12 @@ export class FitsJpgTogglerComponent implements AfterViewInit, OnDestroy {
   }
 
   onFitsImageClick(coordinates: IJs9ImageClickCoordinates): void {
-    this.fitsClickCoordinatesService.setCoordinates(coordinates);
+    this.fitsClickCoordinatesService.setCoordinates({
+      ...coordinates,
+      file: this.viewerFitsUrl || this.desiredFitsUrl,
+      productId: this.apiActiveDatum?.product_id,
+      coordinateSource: 'fits-viewer',
+    });
   }
 
   isFitsButtonDisabled(): boolean {
