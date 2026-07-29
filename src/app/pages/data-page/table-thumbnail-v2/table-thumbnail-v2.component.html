@@ -1,0 +1,36 @@
+<div class="thumbnail-shell" [ngStyle]="getWrapperStyles()">
+  @if (imageState.status === 'success') {
+    <img
+      [ngStyle]="getImageStyles()"
+      [style.image-rendering]="'pixelated'"
+      [src]="imageState.objectUrl"
+      alt="Loaded Image"
+      [width]="width"
+      [height]="height"
+    />
+  } @else if (imageState.status === 'error') {
+    <div class="thumbnail-failure" [ngStyle]="getWrapperStyles()">
+      <img
+        class="placeholder-image"
+        [src]="placeholderImage"
+        alt=""
+        [width]="width"
+        [height]="height"
+      />
+      <button
+        type="button"
+        mat-icon-button
+        class="retry-button"
+        matTooltip="Retry thumbnail"
+        aria-label="Retry thumbnail"
+        (click)="retryImage($event)"
+      >
+        <mat-icon>refresh</mat-icon>
+      </button>
+    </div>
+  } @else {
+    <div class="spinner-wrapper" [ngStyle]="getWrapperStyles()">
+      <mat-progress-spinner class="my-spinner" [diameter]="diameterPxls"></mat-progress-spinner>
+    </div>
+  }
+</div>

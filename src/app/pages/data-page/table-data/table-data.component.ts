@@ -45,8 +45,10 @@ import { MatTableModule } from '@angular/material/table';
 import { NgClass, NgStyle, TitleCasePipe } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { TableThumbnailComponent } from '../table-thumbnail/table-thumbnail.component';
+import { TableThumbnailV2Component } from '../table-thumbnail-v2/table-thumbnail-v2.component';
 import { SelectTableRowsDirective } from '../../../core/directives/select-table-rows.directive';
 import { getDataViewLayoutCssVars } from '../data-view-layout.constants';
+import { ThumbnailImageCacheService } from '../../../core/services/thumbnail-image-cache/thumbnail-image-cache.service';
 import {
   ITableFilterDialogData,
   TableFilterDialogComponent,
@@ -102,6 +104,7 @@ type TPlotlyHistogramColumn = 'ra' | 'dec' | 'true_anomaly';
     SelectTableRowsDirective,
     TableFilterToolbarComponent,
     TableThumbnailComponent,
+    TableThumbnailV2Component,
     PlotlyGraphComponent,
     //
     NgClass,
@@ -150,6 +153,7 @@ export class TableDataComponent implements AfterViewInit, OnDestroy {
     'dec',
     'true_anomaly',
   ];
+  readonly useThumbnailLoaderV2 = true;
   readonly tableLayoutVars = getDataViewLayoutCssVars();
   allShownCols: string[] = [];
 
@@ -178,6 +182,7 @@ export class TableDataComponent implements AfterViewInit, OnDestroy {
     private store$: Store<IAppState>,
     private dialog: MatDialog,
     private fetchImageService: ImageFetchService,
+    private thumbnailImageCacheService: ThumbnailImageCacheService,
   ) {
     this.subscriptions.add(
       this.store$.select(selectApiData).subscribe((apiData) => {
@@ -262,7 +267,7 @@ export class TableDataComponent implements AfterViewInit, OnDestroy {
     // console.log('Page event: ', event);
     this.pageIndex = event.pageIndex;
     this.pageSize = event.pageSize;
-    this.fetchImageService.resetQueue();
+    this.resetThumbnailQueues();
     if (this.isRevealingActiveDatumPage) {
       this.queueScrollToActiveRow();
       return;
@@ -655,10 +660,15 @@ export class TableDataComponent implements AfterViewInit, OnDestroy {
   private setTableFilters(tableFilters: ITableFilterState): void {
     this.tableFilters = tableFilters;
     this.pageIndex = 0;
-    this.fetchImageService.resetQueue();
+    this.resetThumbnailQueues();
     this.setPaginatorAndSort();
     this.syncActiveDatumWithFilteredData();
     this.queueScrollToActiveRow();
+  }
+
+  private resetThumbnailQueues(): void {
+    this.fetchImageService.resetQueue();
+    this.thumbnailImageCacheService.resetQueues();
   }
 
   private reconcileSourceFilterSelection(): void {

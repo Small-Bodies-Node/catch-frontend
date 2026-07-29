@@ -33,7 +33,7 @@ export function getWCSfromXMP(xmp: any) {
     const scale = Math.sqrt(Math.abs(det));
     const rot = Math.atan2(
       ((sign * Math.PI) / 180) * cd[0][1],
-      ((sign * Math.PI) / 180) * cd[0][0]
+      ((sign * Math.PI) / 180) * cd[0][0],
     );
 
     wcs.scale = [-scale, scale]; // degrees / pixel
@@ -59,12 +59,7 @@ export function getWCSfromXMP(xmp: any) {
  *
  * @returns distance [radians]
  */
-export function angular_separation(
-  lon1: number,
-  lat1: number,
-  lon2: number,
-  lat2: number
-) {
+export function angular_separation(lon1: number, lat1: number, lon2: number, lat2: number) {
   const sdlon = Math.sin(((lon2 - lon1) * Math.PI) / 180);
   const cdlon = Math.cos(((lon2 - lon1) * Math.PI) / 180);
   const slat1 = Math.sin((lat1 * Math.PI) / 180);
@@ -92,12 +87,7 @@ export function angular_separation(
  * @returns The position angle from point 1 to point 2, where the direction
  * towards north is 0, and towards east is pi/2.
  */
-export function position_angle(
-  lon1: number,
-  lat1: number,
-  lon2: number,
-  lat2: number
-) {
+export function position_angle(lon1: number, lat1: number, lon2: number, lat2: number) {
   const sdlon = Math.sin(((lon2 - lon1) * Math.PI) / 180);
   const cdlon = Math.cos(((lon2 - lon1) * Math.PI) / 180);
   const slat1 = Math.sin((lat1 * Math.PI) / 180);
@@ -122,24 +112,67 @@ export function position_angle(
 export function world_to_pixel(wcs: any, ra: number, dec: number) {
   // angular distance (rho) to the reference value [degrees]
   const rho =
-    (angular_separation(wcs.referenceValue[0], wcs.referenceValue[1], ra, dec) *
-      180) /
-    Math.PI;
+    (angular_separation(wcs.referenceValue[0], wcs.referenceValue[1], ra, dec) * 180) / Math.PI;
 
   // position angle (phi) of coordinates with respect to the reference value [radians]
-  const phi = position_angle(
-    wcs.referenceValue[0],
-    wcs.referenceValue[1],
-    ra,
-    dec
-  );
+  const phi = position_angle(wcs.referenceValue[0], wcs.referenceValue[1], ra, dec);
 
   // now, get the pixel coordinates for 1-based index, origin in lower-left
-  const x =
-    (rho * Math.sin(phi + wcs.rotation)) / wcs.scale[0] + wcs.referencePixel[0];
-  const y =
-    (rho * Math.cos(phi + wcs.rotation)) / wcs.scale[1] + wcs.referencePixel[1];
+  const x = (rho * Math.sin(phi + wcs.rotation)) / wcs.scale[0] + wcs.referencePixel[0];
+  const y = (rho * Math.cos(phi + wcs.rotation)) / wcs.scale[1] + wcs.referencePixel[1];
 
   // transform to origin in upper-left
   return [x, wcs.size[1] - y + 1];
+}
+
+/**
+ * Convert an upper-left-origin image pixel position to world coordinates.
+ *
+ * This is the inverse of world_to_pixel for the local tangent-plane WCS
+ * approximation used by the AVM helper above.
+ */
+export function pixel_to_world(wcs: any, x: number, y: number): [number, number] {
+  const lowerLeftY = wcs.size[1] - y + 1;
+  const dxDeg = (x - wcs.referencePixel[0]) * wcs.scale[0];
+  const dyDeg = (lowerLeftY - wcs.referencePixel[1]) * wcs.scale[1];
+  const rhoDeg = Math.hypot(dxDeg, dyDeg);
+
+  if (rhoDeg === 0) {
+    return [normalizeDegrees(wcs.referenceValue[0]), wcs.referenceValue[1]];
+  }
+
+  const phi = Math.atan2(dxDeg, dyDeg) - wcs.rotation;
+  return offset_world_coordinate(wcs.referenceValue[0], wcs.referenceValue[1], rhoDeg, phi);
+}
+
+export function offset_world_coordinate(
+  ra: number,
+  dec: number,
+  separationDeg: number,
+  positionAngleRad: number,
+): [number, number] {
+  const lon1 = (ra * Math.PI) / 180;
+  const lat1 = (dec * Math.PI) / 180;
+  const distance = (separationDeg * Math.PI) / 180;
+
+  const sinLat1 = Math.sin(lat1);
+  const cosLat1 = Math.cos(lat1);
+  const sinDistance = Math.sin(distance);
+  const cosDistance = Math.cos(distance);
+
+  const lat2 = Math.asin(
+    sinLat1 * cosDistance + cosLat1 * sinDistance * Math.cos(positionAngleRad),
+  );
+  const lon2 =
+    lon1 +
+    Math.atan2(
+      Math.sin(positionAngleRad) * sinDistance * cosLat1,
+      cosDistance - sinLat1 * Math.sin(lat2),
+    );
+
+  return [normalizeDegrees((lon2 * 180) / Math.PI), (lat2 * 180) / Math.PI];
+}
+
+function normalizeDegrees(degrees: number): number {
+  return ((degrees % 360) + 360) % 360;
 }

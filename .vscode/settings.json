@@ -17,6 +17,6 @@
     "statusBar.background": "#209BBA",
     "statusBar.foreground": "#e6f0ff"
   },
-  "window.title": "LBR • ${rootName}"
-  // "workbench.colorTheme": "Default Light Modern"
+  "window.title": "LBR • ${rootName}",
+  "workbench.colorTheme": "Dark 2026"
 }

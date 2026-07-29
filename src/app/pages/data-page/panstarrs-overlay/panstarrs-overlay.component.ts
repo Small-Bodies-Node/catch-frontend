@@ -33,6 +33,15 @@ import { ImageWcsService } from '../../../core/services/image-wcs/image-wcs.serv
 import { ImageFetchService } from '../../../core/services/fetch-image/fetch-image.service';
 import { getOverlaySurveyScaleTransform } from '../../../../utils/image-orientation';
 import {
+  FitsClickCoordinatesService,
+  IFitsImageCoordinates,
+} from '../fits-click-coordinates.service';
+import {
+  getDisplayPointFromNativeImagePixel,
+  getNativeImagePixelFromJpegClick,
+  INativeImagePixel,
+} from './domain/jpeg-click-coordinate-mapping';
+import {
   DEFAULT_CRUDE_OVERLAY_ANGULAR_FOV_DEG,
   type ICrudeOverlayAngularFov,
   getAspectAwareCrudeOverlayAngularFov,
@@ -59,11 +68,23 @@ import {
   ICrudeOverlayProjectionInput,
   IImageRenderState,
   IOverlayActiveContext,
+  IOverlayPoint,
   IPanstarrsRaDec,
   IWcsCentralizationShift,
   IWcsPixelCoordinate,
   TPanstarrsStatusVariant,
 } from './domain/panstarrs-overlay.types';
+
+interface IJpegCentroidClick {
+  file: string;
+  productId: string;
+  nativeX: number;
+  nativeY: number;
+  displayX: number;
+  displayY: number;
+  ra?: number;
+  dec?: number;
+}
 
 @Component({
   selector: 'app-panstarrs-overlay',
@@ -118,6 +139,7 @@ export class PanstarrsOverlayComponent implements OnInit, OnDestroy, AfterViewIn
   private panstarrsDataSubscription = new Subscription();
   private wcsPixelCoordSubscription = new Subscription();
   private wcsCentralizationShiftSubscription = new Subscription();
+  private jpegClickWcsSubscription = new Subscription();
   private resizeObserver!: ResizeObserver;
   private selectionVersion = 0;
   private activeImageUrl = '';
@@ -129,12 +151,16 @@ export class PanstarrsOverlayComponent implements OnInit, OnDestroy, AfterViewIn
   private readonly postLoadIndicatorMs = 1000;
   private readonly isFiniteNumber = isFiniteNumber;
   private suppressInitialStatusChip = true;
+  private jpegCentroidClick?: IJpegCentroidClick;
+  private pendingJpegCentroidClick?: IJpegCentroidClick;
+  isJpegCentroidClickPending = false;
 
   constructor(
     private store$: Store<IAppState>,
     private pansstarrsApiService: PanstarrsApiService,
     private imageWcsService: ImageWcsService,
     private imageFetchService: ImageFetchService,
+    private fitsClickCoordinatesService: FitsClickCoordinatesService,
     private changeDetector: ChangeDetectorRef,
   ) {
     this.subscriptions.add(
@@ -233,8 +259,14 @@ export class PanstarrsOverlayComponent implements OnInit, OnDestroy, AfterViewIn
           this.activeCentroidization = centroidization;
           this.activeTargetPhotometryRun = targetPhotometryRun;
           this.updateWcsCentralizationShift();
-          this.changeDetector.detectChanges();
+          this.changeDetector.markForCheck();
         }),
+    );
+
+    this.subscriptions.add(
+      this.fitsClickCoordinatesService.mapperVersion$.subscribe(() => {
+        this.applyPendingJpegCentroidClick();
+      }),
     );
   }
 
@@ -271,6 +303,7 @@ export class PanstarrsOverlayComponent implements OnInit, OnDestroy, AfterViewIn
     this.panstarrsDataSubscription.unsubscribe();
     this.wcsPixelCoordSubscription.unsubscribe();
     this.wcsCentralizationShiftSubscription.unsubscribe();
+    this.jpegClickWcsSubscription.unsubscribe();
     this.clearLoadingIndicatorTimeout();
     if (this.resizeObserver) {
       this.resizeObserver.disconnect(); // Disconnect observer to prevent memory leaks
@@ -283,6 +316,7 @@ export class PanstarrsOverlayComponent implements OnInit, OnDestroy, AfterViewIn
     this.suppressInitialStatusChip = false;
 
     this.cancelInFlightRequests();
+    this.clearJpegCentroidClick();
 
     this.apiActiveDatum = activeContext.apiActiveDatum;
     this.ra = activeContext.ra;
@@ -375,7 +409,7 @@ export class PanstarrsOverlayComponent implements OnInit, OnDestroy, AfterViewIn
 
     const coordObservables = this.raDecs.map((raDecItem) =>
       this.imageWcsService
-        .getPixelCoordinatesFromUrl(imageUrl + '&align=true', raDecItem.ra, raDecItem.dec)
+        .getPixelCoordinatesFromUrl(this.getAlignedImageUrl(imageUrl), raDecItem.ra, raDecItem.dec)
         .pipe(
           map(([x, y]) => ({
             x,
@@ -437,7 +471,7 @@ export class PanstarrsOverlayComponent implements OnInit, OnDestroy, AfterViewIn
       return;
     }
 
-    const imageUrl = this.activeImageUrl + '&align=true';
+    const imageUrl = this.getAlignedImageUrl(this.activeImageUrl);
 
     this.wcsCentralizationShiftSubscription = forkJoin({
       originalCenter: this.imageWcsService.getPixelCoordinatesFromUrl(
@@ -490,6 +524,9 @@ export class PanstarrsOverlayComponent implements OnInit, OnDestroy, AfterViewIn
 
     this.wcsCentralizationShiftSubscription.unsubscribe();
     this.wcsCentralizationShiftSubscription = new Subscription();
+
+    this.jpegClickWcsSubscription.unsubscribe();
+    this.jpegClickWcsSubscription = new Subscription();
   }
 
   private resetOverlayState(): void {
@@ -509,6 +546,7 @@ export class PanstarrsOverlayComponent implements OnInit, OnDestroy, AfterViewIn
     this.pixelCoordinatesWCS = [];
     this.isPanstarrsDataFound = false;
     this.isAtlasOrNeat = false;
+    this.clearJpegCentroidClick();
     this.resetRenderedImageState();
     this.clearPanstarrsStatus();
   }
@@ -677,6 +715,195 @@ export class PanstarrsOverlayComponent implements OnInit, OnDestroy, AfterViewIn
       this.calculateImageRenderDimensions();
       this.changeDetector.detectChanges();
     }
+  }
+
+  onJpegOverlayClick(event: MouseEvent): void {
+    if (!this.apiActiveDatum || !this.activeImageUrl) {
+      return;
+    }
+
+    const file = this.apiActiveDatum.cutout_url;
+    if (!file) {
+      return;
+    }
+
+    const displayPoint = this.getJpegClickDisplayPoint(event);
+    const nativePixel = displayPoint
+      ? getNativeImagePixelFromJpegClick({
+          source: this.apiActiveDatum.source,
+          renderState: this.getImageRenderState(),
+          displayX: displayPoint.x,
+          displayY: displayPoint.y,
+        })
+      : null;
+
+    if (!displayPoint || !nativePixel) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    const selectionVersion = this.selectionVersion;
+    this.jpegClickWcsSubscription.unsubscribe();
+    this.jpegClickWcsSubscription = new Subscription();
+    this.jpegCentroidClick = this.createJpegCentroidClick({
+      file,
+      displayX: displayPoint.x,
+      displayY: displayPoint.y,
+      nativePixel,
+    });
+    this.pendingJpegCentroidClick = undefined;
+    this.isJpegCentroidClickPending = true;
+    this.changeDetector.markForCheck();
+
+    this.jpegClickWcsSubscription = this.imageWcsService
+      .getWorldCoordinatesFromPixel(
+        this.getAlignedImageUrl(this.activeImageUrl),
+        nativePixel.x,
+        nativePixel.y,
+      )
+      .subscribe({
+        next: ({ ra, dec }) => {
+          if (!this.isCurrentSelection(selectionVersion) || !this.jpegCentroidClick) {
+            return;
+          }
+
+          this.jpegCentroidClick = {
+            ...this.jpegCentroidClick,
+            ra,
+            dec,
+          };
+          this.applyJpegCentroidClick(this.jpegCentroidClick);
+        },
+        error: (error) => {
+          if (!this.isCurrentSelection(selectionVersion)) {
+            return;
+          }
+
+          console.warn('Unable to convert JPEG click to world coordinates.', error);
+          this.pendingJpegCentroidClick = undefined;
+          this.isJpegCentroidClickPending = false;
+          this.changeDetector.markForCheck();
+        },
+      });
+  }
+
+  getJpegCentroidClickMarker(): IOverlayPoint | null {
+    if (!this.jpegCentroidClick) {
+      return null;
+    }
+
+    return getDisplayPointFromNativeImagePixel({
+      source: this.apiActiveDatum?.source,
+      renderState: this.getImageRenderState(),
+      nativeX: this.jpegCentroidClick.nativeX,
+      nativeY: this.jpegCentroidClick.nativeY,
+    });
+  }
+
+  private getJpegClickDisplayPoint(event: MouseEvent): IOverlayPoint | null {
+    const container = this.myDiv?.nativeElement;
+    if (!container) {
+      return null;
+    }
+
+    const rect = container.getBoundingClientRect();
+    return {
+      x: event.clientX - rect.left,
+      y: event.clientY - rect.top,
+    };
+  }
+
+  private createJpegCentroidClick(input: {
+    file: string;
+    displayX: number;
+    displayY: number;
+    nativePixel: INativeImagePixel;
+  }): IJpegCentroidClick {
+    return {
+      file: input.file,
+      productId: this.apiActiveDatum?.product_id ?? '',
+      nativeX: input.nativePixel.x,
+      nativeY: input.nativePixel.y,
+      displayX: input.displayX,
+      displayY: input.displayY,
+    };
+  }
+
+  private applyPendingJpegCentroidClick(): void {
+    if (!this.pendingJpegCentroidClick) {
+      return;
+    }
+
+    this.applyJpegCentroidClick(this.pendingJpegCentroidClick);
+  }
+
+  private applyJpegCentroidClick(click: IJpegCentroidClick): void {
+    if (
+      !this.isJpegCentroidClickCurrent(click) ||
+      !this.isFiniteNumber(click.ra) ||
+      !this.isFiniteNumber(click.dec)
+    ) {
+      return;
+    }
+
+    const fitsCoordinates = this.fitsClickCoordinatesService.getImageCoordinatesFromWorld(
+      click.file,
+      click.ra,
+      click.dec,
+    );
+
+    if (!fitsCoordinates) {
+      this.pendingJpegCentroidClick = click;
+      this.isJpegCentroidClickPending = true;
+      this.fitsClickCoordinatesService.requestWorldToImageCoordinatesMapper(click.file);
+      this.changeDetector.markForCheck();
+      return;
+    }
+
+    this.pendingJpegCentroidClick = undefined;
+    this.isJpegCentroidClickPending = false;
+    this.fitsClickCoordinatesService.setCoordinates(
+      this.createFitsClickCoordinatesFromJpegClick(click, fitsCoordinates),
+    );
+    this.changeDetector.markForCheck();
+  }
+
+  private createFitsClickCoordinatesFromJpegClick(
+    click: IJpegCentroidClick,
+    fitsCoordinates: IFitsImageCoordinates,
+  ) {
+    return {
+      displayX: click.displayX,
+      displayY: click.displayY,
+      imageX: fitsCoordinates.imageX,
+      imageY: fitsCoordinates.imageY,
+      imageFrameX: fitsCoordinates.wcsPixelAsImageX,
+      imageFrameY: fitsCoordinates.wcsPixelAsImageY,
+      physicalX: fitsCoordinates.wcsPixelAsPhysicalX,
+      physicalY: fitsCoordinates.wcsPixelAsPhysicalY,
+      ra: click.ra,
+      dec: click.dec,
+      wcsString: fitsCoordinates.wcsString,
+      file: click.file,
+      productId: click.productId,
+      coordinateSource: 'jpeg-preview' as const,
+    };
+  }
+
+  private isJpegCentroidClickCurrent(click: IJpegCentroidClick): boolean {
+    return (
+      !!this.apiActiveDatum &&
+      click.productId === this.apiActiveDatum.product_id &&
+      click.file === this.apiActiveDatum.cutout_url
+    );
+  }
+
+  private clearJpegCentroidClick(): void {
+    this.jpegCentroidClick = undefined;
+    this.pendingJpegCentroidClick = undefined;
+    this.isJpegCentroidClickPending = false;
   }
 
   private getImageRenderState(): IImageRenderState {
@@ -1011,5 +1238,18 @@ export class PanstarrsOverlayComponent implements OnInit, OnDestroy, AfterViewIn
   //
   surveyScaleTransform() {
     return getOverlaySurveyScaleTransform(this.apiActiveDatum?.source);
+  }
+
+  private getAlignedImageUrl(imageUrl: string): string {
+    const hashIndex = imageUrl.indexOf('#');
+    const urlWithoutHash = hashIndex >= 0 ? imageUrl.slice(0, hashIndex) : imageUrl;
+    const hash = hashIndex >= 0 ? imageUrl.slice(hashIndex) : '';
+
+    if (/[?&]align=/.test(urlWithoutHash)) {
+      return imageUrl;
+    }
+
+    const separator = urlWithoutHash.includes('?') ? '&' : '?';
+    return `${urlWithoutHash}${separator}align=true${hash}`;
   }
 }

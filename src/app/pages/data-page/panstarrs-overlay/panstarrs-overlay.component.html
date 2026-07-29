@@ -1,4 +1,4 @@
-<div #myContainer class="panstarrs-overlay-container">
+<div #myContainer class="panstarrs-overlay-container" (click)="onJpegOverlayClick($event)">
   @if (panstarrsStatusVariant) {
     <div
       class="panstarrs-status-chip"
@@ -127,6 +127,16 @@
         [style.top.px]="imageOffsetY"
         [style.transform]="surveyScaleTransform()"
       />
+    }
+
+    @if (getJpegCentroidClickMarker(); as marker) {
+      <div
+        class="jpeg-centroid-click-marker"
+        [class.is-pending]="isJpegCentroidClickPending"
+        [style.left.px]="marker.x"
+        [style.top.px]="marker.y"
+        title="JPEG centroid seed"
+      ></div>
     }
   </div>
 

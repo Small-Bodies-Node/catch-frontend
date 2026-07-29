@@ -15,6 +15,9 @@ export interface IFitsClickCoordinates {
   dec?: number;
   wcsSystem?: string;
   wcsString?: string;
+  file?: string;
+  productId?: string;
+  coordinateSource?: 'fits-viewer' | 'jpeg-preview';
 }
 
 export interface IFitsImageCoordinates {

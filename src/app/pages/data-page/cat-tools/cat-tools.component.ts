@@ -916,7 +916,7 @@ export class CatToolsComponent implements OnDestroy {
     }
 
     const centerCoordinates = this.getCentralizedFitsPixelCoordinates(file, run);
-    const fallbackCoordinates = this.latestFitsClickCoordinates;
+    const fallbackCoordinates = this.getLatestFitsClickCoordinatesForFile(file, item.productId);
 
     const draft = {
       file,
@@ -1121,7 +1121,12 @@ export class CatToolsComponent implements OnDestroy {
   }
 
   private applyFitsClickToCentroidDraft(coordinates: IFitsClickCoordinates | null): void {
-    if (!coordinates || !this.centroidDraft || !this.isCentroidDraftActive()) {
+    if (
+      !coordinates ||
+      !this.centroidDraft ||
+      !this.isCentroidDraftActive() ||
+      !this.isFitsClickForCentroidDraft(coordinates)
+    ) {
       return;
     }
 
@@ -1211,6 +1216,9 @@ export class CatToolsComponent implements OnDestroy {
           dec: this.latestFitsClickCoordinates.dec,
           wcsSystem: this.latestFitsClickCoordinates.wcsSystem,
           wcsString: this.latestFitsClickCoordinates.wcsString,
+          file: this.latestFitsClickCoordinates.file,
+          productId: this.latestFitsClickCoordinates.productId,
+          coordinateSource: this.latestFitsClickCoordinates.coordinateSource,
         }
       : null;
     const draftPoint = { imageX: draft.target_x, imageY: draft.target_y };
@@ -1343,6 +1351,42 @@ export class CatToolsComponent implements OnDestroy {
         (candidate) => candidate.productId === this.centroidDraftContext?.productId,
       ) ?? null
     );
+  }
+
+  private getLatestFitsClickCoordinatesForFile(
+    file: string,
+    productId: string,
+  ): IFitsClickCoordinates | null {
+    const latestClick = this.latestFitsClickCoordinates;
+    if (!latestClick) {
+      return null;
+    }
+
+    if (latestClick.file && latestClick.file !== file) {
+      return null;
+    }
+
+    if (latestClick.productId && latestClick.productId !== productId) {
+      return null;
+    }
+
+    return latestClick;
+  }
+
+  private isFitsClickForCentroidDraft(coordinates: IFitsClickCoordinates): boolean {
+    if (coordinates.file && coordinates.file !== this.centroidDraft?.file) {
+      return false;
+    }
+
+    if (
+      coordinates.productId &&
+      this.centroidDraftContext &&
+      coordinates.productId !== this.centroidDraftContext.productId
+    ) {
+      return false;
+    }
+
+    return true;
   }
 
   private getCentroidDraftAstrometryRun(): IAstrometryRun | null {
