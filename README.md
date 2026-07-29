@@ -31,12 +31,13 @@ See: [catch.astro.umd.edu](https://catch.astro.umd.edu/).
 
 - Open the repo in VS Code and run `Dev Containers: Reopen in Container`.
 - The devcontainer uses the shared `master-vscode-devcontainer:latest` image directly.
+- The development container is named `catch-frontend-ng20`.
 - The repo is bind-mounted at `/workspaces/catch-frontend-ng20`.
 - Codex state is persisted on the project-specific Docker volume `catch-frontend-ng20-codex`.
-- VS Code server extensions are persisted on the project-specific Docker volume `catch-frontend-ng20-vscode-extensions`.
-- `node_modules` is persisted on the project-specific Docker volume `catch-frontend-ng20-node-modules`.
-- Shared package-manager caches are mounted for npm, pnpm, pip, and uv.
+- `node_modules` is persisted on the project-specific Docker volume `catch-frontend-ng20-node-modules` to isolate Linux packages from this checkout's macOS packages.
+- Package-manager caches, Claude state, VS Code Server binaries, and remote extension installations are disposable.
 - Dependencies are installed with `npm ci` during `postCreateCommand`; the app is not started automatically.
+- See [`.devcontainer/README.md`](.devcontainer/README.md) for persistence and Codex recovery details.
 
 ## Docker (production)
 
