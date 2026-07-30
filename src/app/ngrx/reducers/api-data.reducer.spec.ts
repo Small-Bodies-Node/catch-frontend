@@ -6,7 +6,7 @@ import {
 import { apiDataReducer, IApiDataSubstate, initialState } from './api-data.reducer';
 
 describe('apiDataReducer CAT workflow', () => {
-  it('stores the complete astrometry response including wcs_image_url', () => {
+  it('stores and automatically applies the complete astrometry response', () => {
     const running = apiDataReducer(
       initialState,
       ApiDataAction_BeginAstrometryRun({
@@ -52,6 +52,12 @@ describe('apiDataReducer CAT workflow', () => {
     expect(completed.apiDataAstrometryRunsState['product-1'][0].result).not.toEqual(
       jasmine.objectContaining({ photometry: jasmine.anything() }),
     );
+    expect(completed.apiDataAstrometryCentralizationState['product-1']).toEqual({
+      productId: 'product-1',
+      runId: 'astrometry-1',
+      centerRaDeg: 1,
+      centerDecDeg: 2,
+    });
   });
 
   it('starts a photometric rerun without creating a new astrometry run', () => {

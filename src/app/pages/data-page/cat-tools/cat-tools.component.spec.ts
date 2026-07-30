@@ -9,7 +9,16 @@ import { FitsClickCoordinatesService } from '../fits-click-coordinates.service';
 import { CatToolsComponent } from './cat-tools.component';
 
 describe('CatToolsComponent calibration workflow', () => {
-  it('renders both Stage 2 plot URLs and initializes centroidization from photometry_image_url', async () => {
+  it('renders both Stage 2 plots and initializes centroid X/Y from the displayed FITS WCS', async () => {
+    const requestWorldToImageCoordinatesMapper = jasmine.createSpy(
+      'requestWorldToImageCoordinatesMapper',
+    );
+    const getImageCoordinatesFromWorld = jasmine
+      .createSpy('getImageCoordinatesFromWorld')
+      .and.callFake((file: string) =>
+        file === 'https://example.test/input.fits' ? { imageX: 123.4, imageY: 234.6 } : null,
+      );
+
     await TestBed.configureTestingModule({
       imports: [CatToolsComponent, NoopAnimationsModule],
       providers: [
@@ -148,12 +157,8 @@ describe('CatToolsComponent calibration workflow', () => {
           useValue: {
             coordinates$: of(null),
             mapperVersion$: of(0),
-            requestWorldToImageCoordinatesMapper: jasmine.createSpy(
-              'requestWorldToImageCoordinatesMapper',
-            ),
-            getImageCoordinatesFromWorld: jasmine
-              .createSpy('getImageCoordinatesFromWorld')
-              .and.returnValue(null),
+            requestWorldToImageCoordinatesMapper,
+            getImageCoordinatesFromWorld,
             getWorldCoordinatesFromImage: jasmine
               .createSpy('getWorldCoordinatesFromImage')
               .and.returnValue(null),
@@ -181,7 +186,19 @@ describe('CatToolsComponent calibration workflow', () => {
       'https://example.test/color.png',
       'https://example.test/overlay.png',
     ]);
-    expect(fixture.componentInstance.centroidDraft?.file).toBe(
+    expect(fixture.componentInstance.centroidDraft).toEqual(
+      jasmine.objectContaining({
+        file: 'https://example.test/photometry.fits',
+        target_x: 123,
+        target_y: 235,
+        astrometry_center_x: 123,
+        astrometry_center_y: 235,
+      }),
+    );
+    expect(requestWorldToImageCoordinatesMapper).toHaveBeenCalledWith(
+      'https://example.test/input.fits',
+    );
+    expect(requestWorldToImageCoordinatesMapper).not.toHaveBeenCalledWith(
       'https://example.test/photometry.fits',
     );
   });

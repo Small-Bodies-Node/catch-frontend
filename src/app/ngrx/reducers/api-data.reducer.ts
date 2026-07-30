@@ -35,6 +35,7 @@ import { TAnalysisSelectionState } from '../../../models/TAnalysisSelectionState
 import { IApiFixum } from '../../../models/IApiFixum';
 import { TColStateFixed } from '../../../models/TColStateFixed';
 import {
+  IAstrometryCentralization,
   IAstrometryRun,
   TAstrometryCentralizationsState,
   TAstrometryRunsState,
@@ -89,6 +90,28 @@ export const initialState: IApiDataSubstate = {
   apiDataSourceMagnitudeState: {},
   apiSmallBodyType: undefined,
 };
+
+function withAppliedAstrometryCentralization(
+  state: IApiDataSubstate,
+  centralization: IAstrometryCentralization,
+): IApiDataSubstate {
+  const activeCentroidization = state.apiDataCentroidizationState[centralization.productId];
+  const shouldRemoveCentroidization =
+    activeCentroidization && activeCentroidization.astrometryRunId !== centralization.runId;
+  const { [centralization.productId]: _removed, ...remainingCentroidizations } =
+    state.apiDataCentroidizationState;
+
+  return {
+    ...state,
+    apiDataAstrometryCentralizationState: {
+      ...state.apiDataAstrometryCentralizationState,
+      [centralization.productId]: { ...centralization },
+    },
+    apiDataCentroidizationState: shouldRemoveCentroidization
+      ? remainingCentroidizations
+      : state.apiDataCentroidizationState,
+  };
+}
 
 function updateAstrometryRun(
   runsState: TAstrometryRunsState,
@@ -244,15 +267,25 @@ export const apiDataReducer = createReducer<IApiDataSubstate>(
     };
   }),
 
-  on(ApiDataAction_CompleteAstrometryRun, (state, { productId, runId, result, completedAt }) => ({
-    ...state,
-    apiDataAstrometryRunsState: updateAstrometryRun(
-      state.apiDataAstrometryRunsState,
-      productId,
-      runId,
-      (run) => ({ ...run, status: 'complete', result: { ...result }, completedAt }),
+  on(ApiDataAction_CompleteAstrometryRun, (state, { productId, runId, result, completedAt }) =>
+    withAppliedAstrometryCentralization(
+      {
+        ...state,
+        apiDataAstrometryRunsState: updateAstrometryRun(
+          state.apiDataAstrometryRunsState,
+          productId,
+          runId,
+          (run) => ({ ...run, status: 'complete', result: { ...result }, completedAt }),
+        ),
+      },
+      {
+        productId,
+        runId,
+        centerRaDeg: result.center_ra_deg,
+        centerDecDeg: result.center_dec_deg,
+      },
     ),
-  })),
+  ),
 
   on(ApiDataAction_FailAstrometryRun, (state, { productId, runId, error, completedAt }) => ({
     ...state,
@@ -264,24 +297,9 @@ export const apiDataReducer = createReducer<IApiDataSubstate>(
     ),
   })),
 
-  on(ApiDataAction_ApplyAstrometryCentralization, (state, { centralization }) => {
-    const activeCentroidization = state.apiDataCentroidizationState[centralization.productId];
-    const shouldRemoveCentroidization =
-      activeCentroidization && activeCentroidization.astrometryRunId !== centralization.runId;
-    const { [centralization.productId]: _removed, ...remainingCentroidizations } =
-      state.apiDataCentroidizationState;
-
-    return {
-      ...state,
-      apiDataAstrometryCentralizationState: {
-        ...state.apiDataAstrometryCentralizationState,
-        [centralization.productId]: { ...centralization },
-      },
-      apiDataCentroidizationState: shouldRemoveCentroidization
-        ? remainingCentroidizations
-        : state.apiDataCentroidizationState,
-    };
-  }),
+  on(ApiDataAction_ApplyAstrometryCentralization, (state, { centralization }) =>
+    withAppliedAstrometryCentralization(state, centralization),
+  ),
 
   on(ApiDataAction_RemoveAstrometryCentralization, (state, { productId }) => {
     const { [productId]: _removed, ...remainingCentralizations } =

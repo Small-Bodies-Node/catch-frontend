@@ -783,12 +783,12 @@ export class CatToolsComponent implements OnDestroy {
 
     if (this.centroidDraft.target_x === 0 && this.centroidDraft.target_y === 0) {
       return (
-        'Loading calibrated FITS WCS to initialize X/Y from astrometry RA/Dec. ' +
+        'Loading the displayed FITS WCS to initialize X/Y from astrometry RA/Dec. ' +
         'You can still click a FITS pixel to override.'
       );
     }
 
-    return 'X/Y are initialized on the calibrated FITS; click a FITS pixel to override.';
+    return 'X/Y are initialized from astrometry on the displayed FITS; click a FITS pixel to override.';
   }
 
   getCentroidResultRows(run: ICentroidRun): ICatToolsDatumRow[] {
@@ -1207,12 +1207,18 @@ export class CatToolsComponent implements OnDestroy {
     calibrationRun: IPhotometricCalibrationRun,
   ): ICentroidRequest {
     const file = calibrationRun.result?.photometry_image_url ?? '';
-    if (file) {
-      this.fitsClickCoordinatesService.requestWorldToImageCoordinatesMapper(file);
+    const coordinateReferenceFile = this.getCentroidCoordinateReferenceFile(item, run, file);
+    if (coordinateReferenceFile) {
+      this.fitsClickCoordinatesService.requestWorldToImageCoordinatesMapper(
+        coordinateReferenceFile,
+      );
     }
 
-    const centerCoordinates = this.getCentralizedFitsPixelCoordinates(file, run);
-    const fallbackCoordinates = this.getLatestFitsClickCoordinatesForFile(file, item.productId);
+    const centerCoordinates = this.getCentralizedFitsPixelCoordinates(coordinateReferenceFile, run);
+    const fallbackCoordinates = this.getLatestFitsClickCoordinatesForFile(
+      coordinateReferenceFile,
+      item.productId,
+    );
 
     const draft = {
       file,
@@ -1227,6 +1233,18 @@ export class CatToolsComponent implements OnDestroy {
 
     this.logCentroidCoordinateDiagnostics('initial default', item, run, draft);
     return draft;
+  }
+
+  /**
+   * CAT's calibrated FITS files preserve the source pixel grid, while JS9 registers its WCS
+   * mapper against the original FITS URL displayed for the row.
+   */
+  private getCentroidCoordinateReferenceFile(
+    item: IAnalysisItem,
+    run: IAstrometryRun,
+    fallbackFile: string,
+  ): string {
+    return item.apiDatum.cutout_url || run.inputs.image_url || fallbackFile;
   }
 
   private refreshTargetPhotometryDraftForActiveView(): void {
@@ -1399,14 +1417,19 @@ export class CatToolsComponent implements OnDestroy {
       return;
     }
 
-    if (this.centroidDraft.file) {
+    const coordinateReferenceFile = this.getCentroidCoordinateReferenceFile(
+      activeItem,
+      activeRun,
+      this.centroidDraft.file,
+    );
+    if (coordinateReferenceFile) {
       this.fitsClickCoordinatesService.requestWorldToImageCoordinatesMapper(
-        this.centroidDraft.file,
+        coordinateReferenceFile,
       );
     }
 
     const centerCoordinates = this.getCentralizedFitsPixelCoordinates(
-      this.centroidDraft.file,
+      coordinateReferenceFile,
       activeRun,
     );
     if (!centerCoordinates) {
@@ -1512,7 +1535,7 @@ export class CatToolsComponent implements OnDestroy {
     run: IAstrometryRun,
     draft: ICentroidRequest,
   ): void {
-    const file = draft.file;
+    const file = this.getCentroidCoordinateReferenceFile(item, run, draft.file);
     const rowRa = getNumberFromDatumOrCutoutUrl(item.apiDatum, 'ra');
     const rowDec = getNumberFromDatumOrCutoutUrl(item.apiDatum, 'dec');
     const resultRa = run.result?.center_ra_deg;
@@ -1611,7 +1634,8 @@ export class CatToolsComponent implements OnDestroy {
       productId: item.productId,
       sourceName: item.sourceName,
       date: item.date,
-      file,
+      centroidRequestFile: draft.file,
+      coordinateReferenceFile: file,
       run: {
         id: run.id,
         sequence: run.sequence,
@@ -1692,7 +1716,21 @@ export class CatToolsComponent implements OnDestroy {
   }
 
   private isFitsClickForCentroidDraft(coordinates: IFitsClickCoordinates): boolean {
-    if (coordinates.file && coordinates.file !== this.centroidDraft?.file) {
+    const activeItem = this.getCentroidDraftAnalysisItem();
+    const activeRun = this.getCentroidDraftAstrometryRun();
+    const coordinateReferenceFile =
+      activeItem && activeRun
+        ? this.getCentroidCoordinateReferenceFile(
+            activeItem,
+            activeRun,
+            this.centroidDraft?.file ?? '',
+          )
+        : '';
+    if (
+      coordinates.file &&
+      coordinates.file !== this.centroidDraft?.file &&
+      coordinates.file !== coordinateReferenceFile
+    ) {
       return false;
     }
 
