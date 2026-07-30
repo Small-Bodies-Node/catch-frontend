@@ -34,6 +34,7 @@ export interface ITargetPhotometryRun {
   id: string;
   productId: string;
   astrometryRunId: string;
+  photometricCalibrationRunId: string;
   centroidRunId: string;
   sequence: number;
   status: TTargetPhotometryRunStatus;
@@ -47,7 +48,9 @@ export interface ITargetPhotometryRun {
 export type TTargetPhotometryRunsState = {
   [productId: string]: {
     [astrometryRunId: string]: {
-      [centroidRunId: string]: ITargetPhotometryRun[];
+      [photometricCalibrationRunId: string]: {
+        [centroidRunId: string]: ITargetPhotometryRun[];
+      };
     };
   };
 };

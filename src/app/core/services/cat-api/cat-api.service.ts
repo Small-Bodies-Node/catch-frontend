@@ -4,9 +4,13 @@ import { Observable, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
 import { IAstrometryInputs, IAstrometryResult } from '../../../../models/IAstrometryRun';
+import {
+  IPhotometricCalibrationInputs,
+  IPhotometricCalibrationResult,
+} from '../../../../models/IPhotometricCalibrationRun';
 
 const catProxyBaseUrl = '/api/cat';
-const astrometryTimeoutMs = 120_000;
+const calibrationTimeoutMs = 120_000;
 
 @Injectable({ providedIn: 'root' })
 export class CatApiService {
@@ -32,22 +36,44 @@ export class CatApiService {
 
   fetchAstrometry(payload: IAstrometryInputs): Observable<IAstrometryResult> {
     const requestId = createRequestId('catch-astrometry');
-    console.log(`[CAT API ${requestId}] launching astrometry`, {
-      url: this.getCatUrl('astrometry'),
+    console.log(`[CAT API ${requestId}] launching astrometric calibration`, {
+      url: this.getCatUrl('calibration/astrometry'),
       imageUrl: payload.image_url,
       ra: payload.ra,
       dec: payload.dec,
       pixelScale: payload.pixel_scale,
-      timeoutMs: astrometryTimeoutMs,
+      timeoutMs: calibrationTimeoutMs,
     });
 
-    return this.httpClient.post<IAstrometryResult>(this.getCatUrl('astrometry'), payload, {
-      headers: {
-        'X-CATCH-Debug': 'true',
-        'X-CATCH-Request-Id': requestId,
-        'X-CATCH-Timeout-Ms': String(astrometryTimeoutMs),
+    return this.httpClient.post<IAstrometryResult>(
+      this.getCatUrl('calibration/astrometry'),
+      payload,
+      {
+        headers: createCalibrationHeaders(requestId),
       },
+    );
+  }
+
+  fetchPhotometricCalibration(
+    payload: IPhotometricCalibrationInputs,
+  ): Observable<IPhotometricCalibrationResult> {
+    const requestId = createRequestId('catch-photometry');
+    console.log(`[CAT API ${requestId}] launching photometric calibration`, {
+      url: this.getCatUrl('calibration/photometry'),
+      wcsImageUrl: payload.wcs_image_url,
+      catalog: payload.catalog,
+      calibrationBand: payload.cal_band,
+      colorIndex: payload.color_term,
+      timeoutMs: calibrationTimeoutMs,
     });
+
+    return this.httpClient.post<IPhotometricCalibrationResult>(
+      this.getCatUrl('calibration/photometry'),
+      payload,
+      {
+        headers: createCalibrationHeaders(requestId),
+      },
+    );
   }
 
   private fetchText(path: string): Observable<string> {
@@ -58,6 +84,14 @@ export class CatApiService {
     const normalizedPath = path.replace(/^\/+/, '');
     return `${catProxyBaseUrl}/${normalizedPath}`;
   }
+}
+
+function createCalibrationHeaders(requestId: string): Record<string, string> {
+  return {
+    'X-CATCH-Debug': 'true',
+    'X-CATCH-Request-Id': requestId,
+    'X-CATCH-Timeout-Ms': String(calibrationTimeoutMs),
+  };
 }
 
 function createRequestId(prefix: string): string {

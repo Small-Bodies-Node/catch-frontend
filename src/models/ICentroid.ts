@@ -31,6 +31,7 @@ export interface ICentroidRun {
   id: string;
   productId: string;
   astrometryRunId: string;
+  photometricCalibrationRunId: string;
   sequence: number;
   status: TCentroidRunStatus;
   inputs: ICentroidRequest;
@@ -42,13 +43,16 @@ export interface ICentroidRun {
 
 export type TCentroidRunsState = {
   [productId: string]: {
-    [astrometryRunId: string]: ICentroidRun[];
+    [astrometryRunId: string]: {
+      [photometricCalibrationRunId: string]: ICentroidRun[];
+    };
   };
 };
 
 export interface ICentroidization {
   productId: string;
   astrometryRunId: string;
+  photometricCalibrationRunId: string;
   centroidRunId: string;
   initX: number;
   initY: number;

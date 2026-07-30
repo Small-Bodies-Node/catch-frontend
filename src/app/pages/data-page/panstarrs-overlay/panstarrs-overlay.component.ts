@@ -234,7 +234,9 @@ export class PanstarrsOverlayComponent implements OnInit, OnDestroy, AfterViewIn
                   ? this.getLatestTargetPhotometryRun(
                       targetPhotometryRunsState[apiActiveDatum.product_id]?.[
                         centroidization.astrometryRunId
-                      ]?.[centroidization.centroidRunId],
+                      ]?.[centroidization.photometricCalibrationRunId]?.[
+                        centroidization.centroidRunId
+                      ],
                     )
                   : undefined;
 
@@ -574,6 +576,7 @@ export class PanstarrsOverlayComponent implements OnInit, OnDestroy, AfterViewIn
     return (
       previous.productId === current.productId &&
       previous.astrometryRunId === current.astrometryRunId &&
+      previous.photometricCalibrationRunId === current.photometricCalibrationRunId &&
       previous.centroidRunId === current.centroidRunId &&
       previous.initX === current.initX &&
       previous.initY === current.initY &&

@@ -68,3 +68,13 @@ export const selectApiDataTargetPhotometryRunsState = createSelector(
   (state: IAppState) => state.apiData,
   (substate: IApiDataSubstate) => substate.apiDataTargetPhotometryRunsState,
 );
+
+export const selectApiDataPhotometricCalibrationRunsState = createSelector(
+  (state: IAppState) => state.apiData,
+  (substate: IApiDataSubstate) => substate.apiDataPhotometricCalibrationRunsState,
+);
+
+export const selectApiDataSourceMagnitudeState = createSelector(
+  (state: IAppState) => state.apiData,
+  (substate: IApiDataSubstate) => substate.apiDataSourceMagnitudeState,
+);

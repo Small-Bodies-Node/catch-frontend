@@ -85,10 +85,15 @@ function summarizePayload(payload: unknown): string {
 
   const body = payload as Record<string, unknown>;
   const keys = Object.keys(body);
-  const imageUrl = typeof body['image_url'] === 'string' ? body['image_url'] : '';
-  const imageUrlSummary = imageUrl
-    ? `${imageUrl.slice(0, 90)}${imageUrl.length > 90 ? '...' : ''}`
+  const fitsUrl =
+    typeof body['wcs_image_url'] === 'string'
+      ? body['wcs_image_url']
+      : typeof body['image_url'] === 'string'
+        ? body['image_url']
+        : '';
+  const fitsUrlSummary = fitsUrl
+    ? `${fitsUrl.slice(0, 90)}${fitsUrl.length > 90 ? '...' : ''}`
     : 'missing';
 
-  return `keys=[${keys.join(',') || 'none'}] image_url=${imageUrlSummary}`;
+  return `keys=[${keys.join(',') || 'none'}] fits_url=${fitsUrlSummary}`;
 }

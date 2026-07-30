@@ -1,5 +1,6 @@
 import { IAstrometryRun } from '../../../../../models/IAstrometryRun';
 import { ICentroidRequest, ICentroidRun } from '../../../../../models/ICentroid';
+import { IPhotometricCalibrationRun } from '../../../../../models/IPhotometricCalibrationRun';
 import {
   getCacheRows,
   isFiniteNumber,
@@ -24,11 +25,7 @@ export function getCentroidRunStatusLabel(run: ICentroidRun): string {
     return 'Running';
   }
 
-  if (run.status === 'complete') {
-    return 'Complete';
-  }
-
-  return 'Failed';
+  return run.status === 'complete' ? 'Complete' : 'Failed';
 }
 
 export function isCentroidizationAvailable(run: ICentroidRun): boolean {
@@ -42,6 +39,7 @@ export function isCentroidizationAvailable(run: ICentroidRun): boolean {
 export function isCentroidizationApplied(item: IAnalysisItem, run: ICentroidRun): boolean {
   return (
     item.centroidization?.astrometryRunId === run.astrometryRunId &&
+    item.centroidization?.photometricCalibrationRunId === run.photometricCalibrationRunId &&
     item.centroidization?.centroidRunId === run.id
   );
 }
@@ -50,8 +48,12 @@ export function getCentroidizationActionLabel(item: IAnalysisItem, run: ICentroi
   return isCentroidizationApplied(item, run) ? 'Remove Centroidization' : 'Apply Centroidization';
 }
 
-export function getCentroidRuns(item: IAnalysisItem, run: IAstrometryRun): ICentroidRun[] {
-  return item.centroidRunsState?.[run.id] ?? [];
+export function getCentroidRuns(
+  item: IAnalysisItem,
+  astrometryRun: IAstrometryRun,
+  photometricCalibrationRun: IPhotometricCalibrationRun,
+): ICentroidRun[] {
+  return item.centroidRunsState?.[astrometryRun.id]?.[photometricCalibrationRun.id] ?? [];
 }
 
 export function getCentroidResultRows(
