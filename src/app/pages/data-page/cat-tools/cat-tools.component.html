@@ -929,7 +929,13 @@
                                   </button>
 
                                   @if (getSourceMagnitudeValidationError(targetRun); as error) {
-                                    <div class="cat-tools-error-panel" role="alert">
+                                    <div
+                                      class="cat-tools-error-panel"
+                                      role="alert"
+                                      [attr.data-cat-scroll-target]="
+                                        getSourceMagnitudeOutputScrollTarget(targetRun)
+                                      "
+                                    >
                                       {{ error }}
                                     </div>
                                   }
@@ -939,8 +945,14 @@
                                   getSourceMagnitudeCalculation(item, targetRun);
                                   as magnitudeCalculation
                                 ) {
-                                  <section class="cat-tools-magnitude-result" aria-live="polite">
-                                    <span class="cat-tools-firework" aria-hidden="true">🎆</span>
+                                  <section
+                                    class="cat-tools-magnitude-result"
+                                    aria-live="polite"
+                                    [attr.data-cat-scroll-target]="
+                                      getSourceMagnitudeOutputScrollTarget(targetRun)
+                                    "
+                                  >
+                                    <app-cat-firework aria-hidden="true"></app-cat-firework>
                                     <div>
                                       <strong>Calibrated source magnitude</strong>
                                       <span>{{
@@ -957,7 +969,10 @@
                                         }}
                                       </span>
                                     </div>
-                                    <span class="cat-tools-firework" aria-hidden="true">🎆</span>
+                                    <app-cat-firework
+                                      class="cat-firework--delayed"
+                                      aria-hidden="true"
+                                    ></app-cat-firework>
                                   </section>
                                 }
                               } @else if (targetRun.error) {
@@ -984,7 +999,12 @@
               {{ run.error }}
             </div>
           } @else {
-            <div class="cat-tools-pending-panel">Astrometric calibration is running.</div>
+            <div
+              class="cat-tools-pending-panel"
+              [attr.data-cat-scroll-target]="getAstrometryOutputScrollTarget(run)"
+            >
+              Astrometric calibration is running.
+            </div>
           }
         }
       }

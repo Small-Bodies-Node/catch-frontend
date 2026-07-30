@@ -3,10 +3,12 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { TestBed } from '@angular/core/testing';
 import { provideMockStore } from '@ngrx/store/testing';
-import { of } from 'rxjs';
+import { firstValueFrom, of } from 'rxjs';
+import { IAstrometryRun } from '../../../../models/IAstrometryRun';
 import { initialState } from '../../../ngrx/reducers/api-data.reducer';
 import { FitsClickCoordinatesService } from '../fits-click-coordinates.service';
 import { CatToolsComponent } from './cat-tools.component';
+import { IAnalysisItem } from './domain/cat-tools.types';
 
 describe('CatToolsComponent calibration workflow', () => {
   it('renders both Stage 2 plots and initializes centroid X/Y from the displayed FITS WCS', async () => {
@@ -201,5 +203,35 @@ describe('CatToolsComponent calibration workflow', () => {
     expect(requestWorldToImageCoordinatesMapper).not.toHaveBeenCalledWith(
       'https://example.test/photometry.fits',
     );
+
+    const summary = await firstValueFrom(fixture.componentInstance.analysisSelectionSummary$);
+    const runningRun: IAstrometryRun = {
+      ...summary.items[0].astrometryRuns[0],
+      status: 'running',
+      result: undefined,
+    };
+    const runningItem: IAnalysisItem = {
+      ...summary.items[0],
+      astrometryRuns: [runningRun],
+      astrometryCentralization: undefined,
+      photometricCalibrationRunsState: {},
+      centroidRunsState: {},
+      centroidization: undefined,
+      targetPhotometryRunsState: {},
+      sourceMagnitudeState: {},
+    };
+    const outputState = (
+      fixture.componentInstance as unknown as {
+        getOutputAutoscrollState: (
+          item: IAnalysisItem,
+          run: IAstrometryRun,
+        ) => { signature: string; target: string | null };
+      }
+    ).getOutputAutoscrollState(runningItem, runningRun);
+
+    expect(outputState).toEqual({
+      signature: 'astrometry-running:astrometry-1',
+      target: 'astrometry-output-astrometry-1',
+    });
   });
 });

@@ -38,6 +38,7 @@ import {
   selectApiDataSourceMagnitudeState,
 } from '../../../ngrx/selectors/api-data.selectors';
 import { CatToolsStackComponent } from './cat-tools-stack/cat-tools-stack.component';
+import { CatFireworkComponent } from './cat-firework/cat-firework.component';
 import {
   ICentroidRequest,
   ICentroidResponse,
@@ -187,7 +188,13 @@ export class CatFieldInfoComponent {
   selector: 'app-cat-tools',
   templateUrl: './cat-tools.component.html',
   styleUrls: ['./cat-tools.component.scss'],
-  imports: [AsyncPipe, CatToolsStackComponent, FormsModule, CatFieldInfoComponent],
+  imports: [
+    AsyncPipe,
+    CatFireworkComponent,
+    CatToolsStackComponent,
+    FormsModule,
+    CatFieldInfoComponent,
+  ],
   standalone: true,
 })
 export class CatToolsComponent implements OnDestroy {
@@ -960,6 +967,9 @@ export class CatToolsComponent implements OnDestroy {
         targetRun.id,
         'Photometric calibration and aperture photometry must both be complete.',
       );
+      this.catToolsStack?.scrollDetailTargetIntoView(
+        this.getSourceMagnitudeOutputScrollTarget(targetRun),
+      );
       return;
     }
 
@@ -970,6 +980,9 @@ export class CatToolsComponent implements OnDestroy {
     });
     if (!result.success) {
       this.setSourceMagnitudeValidationError(targetRun.id, result.error);
+      this.catToolsStack?.scrollDetailTargetIntoView(
+        this.getSourceMagnitudeOutputScrollTarget(targetRun),
+      );
       return;
     }
 
@@ -986,6 +999,9 @@ export class CatToolsComponent implements OnDestroy {
     };
     this.store$.dispatch(ApiDataAction_SetSourceMagnitudeCalculation({ calculation }));
     this.setSourceMagnitudeValidationError(targetRun.id, '');
+    this.catToolsStack?.scrollDetailTargetIntoView(
+      this.getSourceMagnitudeOutputScrollTarget(targetRun),
+    );
   }
 
   getSourceMagnitudeCalculation(
@@ -1057,6 +1073,10 @@ export class CatToolsComponent implements OnDestroy {
 
   getTargetPhotometryOutputScrollTarget(run: ITargetPhotometryRun): string {
     return `target-photometry-output-${run.id}`;
+  }
+
+  getSourceMagnitudeOutputScrollTarget(run: ITargetPhotometryRun): string {
+    return 'source-magnitude-output-' + run.id;
   }
 
   toggleCentroidization(item: IAnalysisItem, run: ICentroidRun): void {
@@ -1356,7 +1376,10 @@ export class CatToolsComponent implements OnDestroy {
     const outputKeys: string[] = [];
     let target: string | null = null;
 
-    if (run.result) {
+    if (run.status === 'running') {
+      outputKeys.push('astrometry-running:' + run.id);
+      target = this.getAstrometryOutputScrollTarget(run);
+    } else if (run.result) {
       outputKeys.push(`astrometry-result:${run.id}`);
       target = this.isAstrometryCentralizationAvailable(run)
         ? this.getAstrometryCentralizationScrollTarget(run)
@@ -1367,7 +1390,10 @@ export class CatToolsComponent implements OnDestroy {
     }
 
     for (const calibrationRun of this.getPhotometricCalibrationRuns(item, run)) {
-      if (calibrationRun.result) {
+      if (calibrationRun.status === 'running') {
+        outputKeys.push('photometric-calibration-running:' + calibrationRun.id);
+        target = this.getPhotometricCalibrationOutputScrollTarget(calibrationRun);
+      } else if (calibrationRun.result) {
         outputKeys.push(`photometric-calibration-result:${calibrationRun.id}`);
         target = this.getPhotometricCalibrationOutputScrollTarget(calibrationRun);
       } else if (calibrationRun.error) {
@@ -1376,7 +1402,10 @@ export class CatToolsComponent implements OnDestroy {
       }
 
       for (const centroidRun of this.getCentroidRuns(item, run, calibrationRun)) {
-        if (centroidRun.result) {
+        if (centroidRun.status === 'running') {
+          outputKeys.push('centroid-running:' + centroidRun.id);
+          target = this.getCentroidOutputScrollTarget(centroidRun);
+        } else if (centroidRun.result) {
           outputKeys.push(`centroid-result:${centroidRun.id}`);
           target = this.getCentroidOutputScrollTarget(centroidRun);
         } else if (centroidRun.error) {
@@ -1385,7 +1414,10 @@ export class CatToolsComponent implements OnDestroy {
         }
 
         for (const targetRun of this.getTargetPhotometryRuns(item, centroidRun)) {
-          if (targetRun.result) {
+          if (targetRun.status === 'running') {
+            outputKeys.push('target-photometry-running:' + targetRun.id);
+            target = this.getTargetPhotometryOutputScrollTarget(targetRun);
+          } else if (targetRun.result) {
             outputKeys.push(`target-photometry-result:${targetRun.id}`);
             target = this.getTargetPhotometryOutputScrollTarget(targetRun);
           } else if (targetRun.error) {
@@ -1394,7 +1426,8 @@ export class CatToolsComponent implements OnDestroy {
           }
 
           if (this.getSourceMagnitudeCalculation(item, targetRun)) {
-            outputKeys.push(`source-magnitude:${targetRun.id}`);
+            outputKeys.push('source-magnitude:' + targetRun.id);
+            target = this.getSourceMagnitudeOutputScrollTarget(targetRun);
           }
         }
       }
