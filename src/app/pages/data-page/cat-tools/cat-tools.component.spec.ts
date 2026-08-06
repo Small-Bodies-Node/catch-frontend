@@ -2,7 +2,7 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { TestBed } from '@angular/core/testing';
-import { provideMockStore } from '@ngrx/store/testing';
+import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { firstValueFrom, of } from 'rxjs';
 import { IAstrometryRun } from '../../../../models/IAstrometryRun';
 import { initialState } from '../../../ngrx/reducers/api-data.reducer';
@@ -188,6 +188,7 @@ describe('CatToolsComponent calibration workflow', () => {
       'https://example.test/color.png',
       'https://example.test/overlay.png',
     ]);
+    expect(element.querySelector('input[name="wcs_image_url"]')).toBeNull();
     expect(fixture.componentInstance.centroidDraft).toEqual(
       jasmine.objectContaining({
         file: 'https://example.test/photometry.fits',
@@ -205,6 +206,21 @@ describe('CatToolsComponent calibration workflow', () => {
     );
 
     const summary = await firstValueFrom(fixture.componentInstance.analysisSelectionSummary$);
+    const completedRun = summary.items[0].astrometryRuns[0];
+    fixture.componentInstance.photometricCalibrationDraft!.wcs_image_url =
+      'https://attacker.example/untrusted.fits';
+    const store = TestBed.inject(MockStore);
+    spyOn(store, 'dispatch');
+
+    fixture.componentInstance.launchPhotometricCalibration(summary.items[0], completedRun);
+
+    expect(store.dispatch).toHaveBeenCalledWith(
+      jasmine.objectContaining({
+        inputs: jasmine.objectContaining({
+          wcs_image_url: 'https://example.test/wcs.fits',
+        }),
+      }),
+    );
     const runningRun: IAstrometryRun = {
       ...summary.items[0].astrometryRuns[0],
       status: 'running',

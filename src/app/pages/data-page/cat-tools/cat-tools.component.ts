@@ -612,8 +612,10 @@ export class CatToolsComponent implements OnDestroy {
   }
 
   launchPhotometricCalibration(item: IAnalysisItem, run: IAstrometryRun): void {
+    const wcsImageUrl = run.result?.wcs_image_url;
     if (
       !this.photometricCalibrationDraft ||
+      !wcsImageUrl ||
       this.isPhotometricCalibrationLaunchDisabled(item, run)
     ) {
       return;
@@ -628,7 +630,11 @@ export class CatToolsComponent implements OnDestroy {
         productId: item.productId,
         astrometryRunId: run.id,
         runId: simpleUid(),
-        inputs: { ...this.photometricCalibrationDraft },
+        inputs: {
+          ...this.photometricCalibrationDraft,
+          // This is an internal workflow value, never a user-provided form value.
+          wcs_image_url: wcsImageUrl,
+        },
         createdAt: new Date().toISOString(),
       }),
     );
@@ -640,7 +646,6 @@ export class CatToolsComponent implements OnDestroy {
       !draft ||
       run.status !== 'complete' ||
       !run.result?.wcs_image_url ||
-      draft.wcs_image_url !== run.result.wcs_image_url ||
       !this.isFiniteNumber(draft.snr_threshold) ||
       draft.snr_threshold <= 0 ||
       !this.isFiniteNumber(draft.aperture_radius) ||
