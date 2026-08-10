@@ -56,13 +56,13 @@ describe('CatApiService', () => {
     expect(wcsImageUrl).toBe('https://example.test/wcs.fits');
   });
 
-  it('posts Stage 2 with wcs_image_url and color_term but never obs_band', () => {
+  it('posts SkyMapper with compatible fields and no obsolete fields', () => {
     const payload = {
       wcs_image_url: 'https://example.test/wcs.fits',
       snr_threshold: 3,
       aperture_radius: 7,
-      catalog: 'PanSTARRS1' as const,
-      cal_band: 'r',
+      catalog: 'SkyMapper' as const,
+      cal_band: 'r' as const,
       color_term: 'g-r',
     };
 
@@ -71,7 +71,9 @@ describe('CatApiService', () => {
     const request = httpTesting.expectOne('/api/cat/calibration/photometry');
     expect(request.request.method).toBe('POST');
     expect(request.request.body).toEqual(payload);
-    expect(request.request.body['obs_band']).toBeUndefined();
+    ['obs_band', 'color_index', 'return_plot', 'plot_type'].forEach((field) => {
+      expect(request.request.body[field]).toBeUndefined();
+    });
     request.flush({
       status: 'success',
       photometry: {
@@ -79,7 +81,7 @@ describe('CatApiService', () => {
         color_term: 0.1,
         uncertainty: 0.02,
         color_index: 'g-r',
-        catalog: 'PanSTARRS1',
+        catalog: 'SkyMapper',
         cal_band: 'r',
       },
       sources: { detected: 12, matched: 10 },

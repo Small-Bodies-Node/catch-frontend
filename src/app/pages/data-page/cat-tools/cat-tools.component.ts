@@ -49,6 +49,7 @@ import {
   IPhotometricCalibrationInputs,
   IPhotometricCalibrationResult,
   IPhotometricCalibrationRun,
+  photometricCalibrationCatalogs,
   TPhotometricCalibrationCatalog,
 } from '../../../../models/IPhotometricCalibrationRun';
 import { ISourceMagnitudeCalculation } from '../../../../models/ISourceMagnitude';
@@ -82,6 +83,12 @@ import {
   getPhotometricCalibrationRunStatusLabel,
   hasRunningPhotometricCalibration,
 } from './domain/cat-photometric-calibration';
+import {
+  getPhotometricCalibrationCatalogConfiguration,
+  isPhotometricCalibrationBandSupported,
+  isPhotometricCalibrationColorTermSupported,
+  reconcilePhotometricCalibrationCatalog,
+} from './domain/cat-photometric-catalog';
 import { calculateSourceMagnitude as calculateSourceMagnitudeResult } from './domain/cat-source-magnitude';
 import {
   getCentroidResultRows,
@@ -201,11 +208,9 @@ export class CatToolsComponent implements OnDestroy {
   @ViewChild(CatToolsStackComponent)
   private catToolsStack?: CatToolsStackComponent;
 
-  readonly photometricCalibrationCatalogs: readonly TPhotometricCalibrationCatalog[] = [
-    'PanSTARRS1',
-    'Gaia',
-    'SDSS',
-  ];
+  readonly photometricCalibrationCatalogs = photometricCalibrationCatalogs;
+  readonly getPhotometricCalibrationCatalogConfiguration =
+    getPhotometricCalibrationCatalogConfiguration;
   readonly formatDatumValue = formatDatumValue;
   readonly getAstrometryCentralizationActionLabel = getAstrometryCentralizationActionLabel;
   readonly getAstrometryInputRows = getAstrometryInputRows;
@@ -273,7 +278,7 @@ export class CatToolsComponent implements OnDestroy {
     photometryCatalog: 'Reference catalog used for photometric calibration.',
     photometryCalBand: 'Catalog band used as the photometric calibration reference.',
     photometryColorIndex:
-      'Color-index label sent as color_term, for example g-r. The fitted response coefficient is a separate numeric value.',
+      'Color-index label sent as color_term, for example g-r or bp-rp. The fitted response coefficient is a separate numeric value.',
     sourceColor:
       'Numeric source color for the displayed calibration color index. This value is required to calculate magnitude.',
     centroidX:
@@ -611,6 +616,14 @@ export class CatToolsComponent implements OnDestroy {
     return run.result?.photometry.color_index || run.inputs.color_term;
   }
 
+  onPhotometricCalibrationCatalogChange(catalog: TPhotometricCalibrationCatalog): void {
+    if (!this.photometricCalibrationDraft) return;
+    this.photometricCalibrationDraft = reconcilePhotometricCalibrationCatalog(
+      this.photometricCalibrationDraft,
+      catalog,
+    );
+  }
+
   launchPhotometricCalibration(item: IAnalysisItem, run: IAstrometryRun): void {
     const wcsImageUrl = run.result?.wcs_image_url;
     if (
@@ -651,8 +664,8 @@ export class CatToolsComponent implements OnDestroy {
       !this.isFiniteNumber(draft.aperture_radius) ||
       draft.aperture_radius <= 0 ||
       !draft.catalog ||
-      !draft.cal_band.trim() ||
-      !draft.color_term.trim() ||
+      !isPhotometricCalibrationBandSupported(draft.catalog, draft.cal_band) ||
+      !isPhotometricCalibrationColorTermSupported(draft.catalog, draft.color_term) ||
       hasRunningPhotometricCalibration(item, run)
     );
   }

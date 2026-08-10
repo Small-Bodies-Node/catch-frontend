@@ -1,6 +1,9 @@
 import { IAstrometryRun } from '../../../../../models/IAstrometryRun';
 import { ICentroidRun } from '../../../../../models/ICentroid';
-import { IPhotometricCalibrationRun } from '../../../../../models/IPhotometricCalibrationRun';
+import {
+  IPhotometricCalibrationRun,
+  photometricCalibrationCatalogs,
+} from '../../../../../models/IPhotometricCalibrationRun';
 import { ITargetPhotometryRun } from '../../../../../models/ITargetPhotometry';
 import { createDefaultAstrometryInputs, getAstrometryResultGroups } from './cat-astrometry';
 import {
@@ -8,6 +11,12 @@ import {
   getPhotometricCalibrationPlots,
 } from './cat-photometric-calibration';
 import { calculateSourceMagnitude } from './cat-source-magnitude';
+import {
+  getPhotometricCalibrationCatalogConfiguration,
+  isPhotometricCalibrationBandSupported,
+  isPhotometricCalibrationColorTermSupported,
+  reconcilePhotometricCalibrationCatalog,
+} from './cat-photometric-catalog';
 import {
   createDefaultTargetPhotometryInputs,
   roundTargetPhotometryRequestPixels,
@@ -70,6 +79,49 @@ describe('cat tools domain', () => {
       color_term: 'g-r',
     });
     expect(inputs).not.toEqual(jasmine.objectContaining({ obs_band: jasmine.anything() }));
+  });
+
+  it('defines the exact backend catalogues and compatible bands', () => {
+    expect(photometricCalibrationCatalogs).toEqual(['PanSTARRS1', 'Gaia', 'SkyMapper']);
+    expect(getPhotometricCalibrationCatalogConfiguration('PanSTARRS1').bands).toEqual([
+      'g',
+      'r',
+      'i',
+      'z',
+      'y',
+    ]);
+    expect(getPhotometricCalibrationCatalogConfiguration('Gaia').bands).toEqual(['G', 'bp', 'rp']);
+    expect(getPhotometricCalibrationCatalogConfiguration('SkyMapper').bands).toEqual([
+      'u',
+      'v',
+      'g',
+      'r',
+      'i',
+      'z',
+    ]);
+  });
+
+  it('preserves compatible catalogue values and resets incompatible values', () => {
+    const inputs = createDefaultPhotometricCalibrationInputs(createAstrometryRun());
+
+    expect(reconcilePhotometricCalibrationCatalog(inputs, 'SkyMapper')).toEqual(
+      jasmine.objectContaining({ catalog: 'SkyMapper', cal_band: 'r', color_term: 'g-r' }),
+    );
+    expect(reconcilePhotometricCalibrationCatalog(inputs, 'Gaia')).toEqual(
+      jasmine.objectContaining({ catalog: 'Gaia', cal_band: 'G', color_term: 'bp-rp' }),
+    );
+    expect(
+      reconcilePhotometricCalibrationCatalog(
+        { ...inputs, catalog: 'SkyMapper', cal_band: 'u', color_term: 'u-v' },
+        'PanSTARRS1',
+      ),
+    ).toEqual(
+      jasmine.objectContaining({ catalog: 'PanSTARRS1', cal_band: 'r', color_term: 'g-r' }),
+    );
+    expect(isPhotometricCalibrationBandSupported('Gaia', 'G')).toBeTrue();
+    expect(isPhotometricCalibrationBandSupported('Gaia', 'g')).toBeFalse();
+    expect(isPhotometricCalibrationColorTermSupported('Gaia', 'bp-rp')).toBeTrue();
+    expect(isPhotometricCalibrationColorTermSupported('Gaia', 'g-r')).toBeFalse();
   });
 
   it('returns both nested diagnostic plot URLs', () => {

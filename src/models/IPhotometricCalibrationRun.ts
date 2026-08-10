@@ -1,13 +1,17 @@
 import { ICatResponseCache } from './ICatResponseCache';
 
-export type TPhotometricCalibrationCatalog = 'PanSTARRS1' | 'Gaia' | 'SDSS';
+export const photometricCalibrationCatalogs = ['PanSTARRS1', 'Gaia', 'SkyMapper'] as const;
+
+export type TPhotometricCalibrationCatalog = (typeof photometricCalibrationCatalogs)[number];
+export type TPhotometricCalibrationBand =
+  'u' | 'v' | 'g' | 'r' | 'i' | 'z' | 'y' | 'G' | 'bp' | 'rp';
 
 export interface IPhotometricCalibrationInputs {
   wcs_image_url: string;
   snr_threshold: number;
   aperture_radius: number;
   catalog: TPhotometricCalibrationCatalog;
-  cal_band: string;
+  cal_band: TPhotometricCalibrationBand;
   color_term: string;
 }
 

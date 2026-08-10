@@ -5,6 +5,7 @@ import {
   IPhotometricCalibrationRun,
 } from '../../../../../models/IPhotometricCalibrationRun';
 import { getCacheRows } from './cat-tools-formatters';
+import { getPhotometricCalibrationCatalogConfiguration } from './cat-photometric-catalog';
 import { IAnalysisItem, ICatToolsDatumRow, ICatToolsResultGroup } from './cat-tools.types';
 
 export interface IPhotometricCalibrationPlot {
@@ -15,13 +16,15 @@ export interface IPhotometricCalibrationPlot {
 export function createDefaultPhotometricCalibrationInputs(
   astrometryRun: IAstrometryRun,
 ): IPhotometricCalibrationInputs {
+  const catalog = 'PanSTARRS1';
+  const configuration = getPhotometricCalibrationCatalogConfiguration(catalog);
   return {
     wcs_image_url: astrometryRun.result?.wcs_image_url ?? '',
     snr_threshold: 3,
     aperture_radius: 7,
-    catalog: 'PanSTARRS1',
-    cal_band: 'r',
-    color_term: 'g-r',
+    catalog,
+    cal_band: configuration.defaultBand,
+    color_term: configuration.defaultColorTerm,
   };
 }
 

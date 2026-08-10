@@ -364,7 +364,11 @@
                         [text]="catInputHelp.photometryCatalog"
                       />
                     </span>
-                    <select name="photometry_catalog" [(ngModel)]="calibrationDraft.catalog">
+                    <select
+                      name="photometry_catalog"
+                      [ngModel]="calibrationDraft.catalog"
+                      (ngModelChange)="onPhotometricCalibrationCatalogChange($event)"
+                    >
                       @for (catalog of photometricCalibrationCatalogs; track catalog) {
                         <option [ngValue]="catalog">{{ catalog }}</option>
                       }
@@ -379,12 +383,20 @@
                         [text]="catInputHelp.photometryCalBand"
                       />
                     </span>
-                    <input
-                      type="text"
+                    <select
                       name="photometry_cal_band"
                       required
                       [(ngModel)]="calibrationDraft.cal_band"
-                    />
+                    >
+                      @for (
+                        band of getPhotometricCalibrationCatalogConfiguration(
+                          calibrationDraft.catalog
+                        ).bands;
+                        track band
+                      ) {
+                        <option [ngValue]="band">{{ band }}</option>
+                      }
+                    </select>
                   </label>
 
                   <label>

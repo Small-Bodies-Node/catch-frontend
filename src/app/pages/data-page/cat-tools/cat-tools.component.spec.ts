@@ -189,6 +189,10 @@ describe('CatToolsComponent calibration workflow', () => {
       'https://example.test/overlay.png',
     ]);
     expect(element.querySelector('input[name="wcs_image_url"]')).toBeNull();
+    const catalogOptions = Array.from(
+      element.querySelectorAll<HTMLOptionElement>('select[name="photometry_catalog"] option'),
+    ).map((option) => option.textContent?.trim());
+    expect(catalogOptions).toEqual(['PanSTARRS1', 'Gaia', 'SkyMapper']);
     expect(fixture.componentInstance.centroidDraft).toEqual(
       jasmine.objectContaining({
         file: 'https://example.test/photometry.fits',
@@ -207,6 +211,14 @@ describe('CatToolsComponent calibration workflow', () => {
 
     const summary = await firstValueFrom(fixture.componentInstance.analysisSelectionSummary$);
     const completedRun = summary.items[0].astrometryRuns[0];
+    fixture.componentInstance.onPhotometricCalibrationCatalogChange('Gaia');
+    expect(fixture.componentInstance.photometricCalibrationDraft).toEqual(
+      jasmine.objectContaining({ catalog: 'Gaia', cal_band: 'G', color_term: 'bp-rp' }),
+    );
+    fixture.componentInstance.onPhotometricCalibrationCatalogChange('SkyMapper');
+    expect(fixture.componentInstance.photometricCalibrationDraft).toEqual(
+      jasmine.objectContaining({ catalog: 'SkyMapper', cal_band: 'r', color_term: 'g-r' }),
+    );
     fixture.componentInstance.photometricCalibrationDraft!.wcs_image_url =
       'https://attacker.example/untrusted.fits';
     const store = TestBed.inject(MockStore);
@@ -218,6 +230,9 @@ describe('CatToolsComponent calibration workflow', () => {
       jasmine.objectContaining({
         inputs: jasmine.objectContaining({
           wcs_image_url: 'https://example.test/wcs.fits',
+          catalog: 'SkyMapper',
+          cal_band: 'r',
+          color_term: 'g-r',
         }),
       }),
     );

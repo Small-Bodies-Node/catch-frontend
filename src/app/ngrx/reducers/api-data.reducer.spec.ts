@@ -75,7 +75,7 @@ describe('apiDataReducer CAT workflow', () => {
           aperture_radius: 9,
           catalog: 'Gaia',
           cal_band: 'G',
-          color_term: 'BP-RP',
+          color_term: 'bp-rp',
         },
       }),
     );
@@ -86,7 +86,7 @@ describe('apiDataReducer CAT workflow', () => {
     expect(next.apiDataPhotometricCalibrationRunsState['product-1']['astrometry-1']).toHaveSize(2);
     expect(
       next.apiDataPhotometricCalibrationRunsState['product-1']['astrometry-1'][1].inputs,
-    ).toEqual(jasmine.objectContaining({ wcs_image_url: 'wcs.fits', color_term: 'BP-RP' }));
+    ).toEqual(jasmine.objectContaining({ wcs_image_url: 'wcs.fits', color_term: 'bp-rp' }));
   });
 
   it('invalidates only the rerun astrometry branch downstream of Stage 2', () => {
