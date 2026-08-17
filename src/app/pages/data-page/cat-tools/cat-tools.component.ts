@@ -201,6 +201,7 @@ export class CatFieldInfoComponent {
     CatToolsStackComponent,
     FormsModule,
     CatFieldInfoComponent,
+    MatIcon,
   ],
   standalone: true,
 })
@@ -280,7 +281,7 @@ export class CatToolsComponent implements OnDestroy {
     photometryColorIndex:
       'Color-index label sent as color_term, for example g-r or bp-rp. The fitted response coefficient is a separate numeric value.',
     sourceColor:
-      'Numeric source color for the displayed calibration color index. This value is required to calculate magnitude.',
+      'Target color in the displayed index, such as g-r or bp-rp. It is multiplied by the fitted color-term coefficient to transform the measured magnitude onto the catalog system. The default of 0 applies no color correction.',
     centroidX:
       'Initial FITS image X pixel to search around for the target centroid. Clicking the FITS viewer updates this value.',
     centroidY:
@@ -945,7 +946,9 @@ export class CatToolsComponent implements OnDestroy {
   }
 
   getSourceColorDraft(run: ITargetPhotometryRun): number | null {
-    return this.sourceColorDrafts[run.id] ?? null;
+    return Object.prototype.hasOwnProperty.call(this.sourceColorDrafts, run.id)
+      ? this.sourceColorDrafts[run.id]
+      : 0;
   }
 
   setSourceColorDraft(

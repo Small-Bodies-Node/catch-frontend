@@ -19,13 +19,14 @@
         <button
           type="button"
           class="table-mode-toggle mat-elevation-z8"
-          [attr.aria-label]="isTableCompact ? 'Hide CAT Tools' : 'Show CAT Tools'"
+          [attr.aria-label]="isTableCompact ? 'Hide CAT Tools' : 'Show experimental CAT Tools'"
           (click)="toggleTableDisplayMode()"
         >
           @if (isTableCompact) {
             <span>Hide CAT Tools</span>
           } @else {
             <span>Show CAT Tools</span>
+            <span class="cat-tools-experimental-badge" aria-hidden="true">Experimental</span>
           }
         </button>
 

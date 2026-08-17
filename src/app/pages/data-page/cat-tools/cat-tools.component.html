@@ -1,4 +1,24 @@
 <div class="cat-tools-container">
+  <aside
+    class="cat-tools-experimental-notice"
+    role="note"
+    aria-labelledby="cat-tools-experimental-title"
+  >
+    <details>
+      <summary>
+        <mat-icon aria-hidden="true">warning_amber</mat-icon>
+        <strong id="cat-tools-experimental-title">Experimental</strong>
+        <mat-icon class="cat-tools-experimental-chevron" aria-hidden="true">
+          expand_more
+        </mat-icon>
+      </summary>
+      <p id="cat-tools-experimental-description">
+        CAT Tools is under active validation. Results may be incomplete or inaccurate;
+        independently verify them before scientific use or publication.
+      </p>
+    </details>
+  </aside>
+
   <app-cat-tools-stack
     [isDetailOpen]="!!activeDetailView"
     [detailTitle]="activeDetailView?.title || ''"

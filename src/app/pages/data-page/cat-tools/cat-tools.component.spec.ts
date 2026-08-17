@@ -5,6 +5,8 @@ import { TestBed } from '@angular/core/testing';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { firstValueFrom, of } from 'rxjs';
 import { IAstrometryRun } from '../../../../models/IAstrometryRun';
+import { ICentroidRun } from '../../../../models/ICentroid';
+import { ITargetPhotometryRun } from '../../../../models/ITargetPhotometry';
 import { initialState } from '../../../ngrx/reducers/api-data.reducer';
 import { FitsClickCoordinatesService } from '../fits-click-coordinates.service';
 import { CatToolsComponent } from './cat-tools.component';
@@ -181,6 +183,13 @@ describe('CatToolsComponent calibration workflow', () => {
     fixture.detectChanges();
 
     const element = fixture.nativeElement as HTMLElement;
+    const experimentalNotice = element.querySelector<HTMLElement>(
+      '.cat-tools-experimental-notice',
+    );
+    expect(experimentalNotice?.getAttribute('role')).toBe('note');
+    expect(experimentalNotice?.textContent).toContain('Experimental');
+    expect(experimentalNotice?.textContent).toContain('independently verify');
+    expect(experimentalNotice?.querySelector('details')?.hasAttribute('open')).toBeFalse();
     const imageSources = Array.from(
       element.querySelectorAll<HTMLImageElement>('.cat-tools-diagnostic-grid img'),
     ).map((image) => image.getAttribute('src'));
@@ -211,6 +220,24 @@ describe('CatToolsComponent calibration workflow', () => {
 
     const summary = await firstValueFrom(fixture.componentInstance.analysisSelectionSummary$);
     const completedRun = summary.items[0].astrometryRuns[0];
+    const calibrationRun = summary.items[0].photometricCalibrationRunsState['astrometry-1'][0];
+    const targetRun = {
+      id: 'target-photometry-1',
+      astrometryRunId: completedRun.id,
+      photometricCalibrationRunId: calibrationRun.id,
+      centroidRunId: 'centroid-1',
+    } as ITargetPhotometryRun;
+    expect(fixture.componentInstance.getSourceColorDraft(targetRun)).toBe(0);
+    fixture.componentInstance.setSourceColorDraft(
+      summary.items[0],
+      completedRun,
+      calibrationRun,
+      { id: 'centroid-1' } as ICentroidRun,
+      targetRun,
+      null,
+    );
+    expect(fixture.componentInstance.getSourceColorDraft(targetRun)).toBeNull();
+
     fixture.componentInstance.onPhotometricCalibrationCatalogChange('Gaia');
     expect(fixture.componentInstance.photometricCalibrationDraft).toEqual(
       jasmine.objectContaining({ catalog: 'Gaia', cal_band: 'G', color_term: 'bp-rp' }),

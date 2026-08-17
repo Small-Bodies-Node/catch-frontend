@@ -36,6 +36,77 @@
   color: var(--mat-sys-on-surface);
 }
 
+app-cat-tools-stack {
+  flex: 1 1 auto;
+  height: auto;
+  min-height: 0;
+}
+
+.cat-tools-experimental-notice {
+  flex: 0 0 auto;
+  margin-bottom: 14px;
+  border: 1px solid color-mix(in srgb, var(--mat-sys-tertiary) 58%, transparent);
+  border-left-width: 4px;
+  border-radius: 6px;
+  background-color: var(--mat-sys-tertiary-container);
+  color: var(--mat-sys-on-tertiary-container);
+  line-height: 1.35;
+  overflow: hidden;
+
+  details {
+    width: 100%;
+  }
+
+  summary {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 38px;
+    padding: 6px 10px;
+    box-sizing: border-box;
+    cursor: pointer;
+    list-style: none;
+
+    &::-webkit-details-marker {
+      display: none;
+    }
+
+    &:focus-visible {
+      outline: 2px solid currentcolor;
+      outline-offset: -3px;
+    }
+  }
+
+  mat-icon {
+    width: 20px;
+    height: 20px;
+    flex: 0 0 auto;
+    font-size: 20px;
+    line-height: 20px;
+  }
+
+  strong {
+    font-size: 14px;
+    font-weight: 800;
+  }
+
+  p {
+    margin: 0;
+    padding: 0 10px 10px 38px;
+    font-size: 13px;
+    overflow-wrap: anywhere;
+  }
+}
+
+.cat-tools-experimental-chevron {
+  margin-left: auto;
+  transition: transform 160ms ease;
+}
+
+.cat-tools-experimental-notice details[open] .cat-tools-experimental-chevron {
+  transform: rotate(180deg);
+}
+
 .cat-tools-section {
   flex: 0 0 auto;
   display: flex;
@@ -633,6 +704,10 @@ app-cat-firework {
 }
 
 @media (max-width: 640px) {
+  .cat-tools-experimental-notice p {
+    padding-left: 10px;
+  }
+
   .cat-tools-diagnostic-grid,
   .cat-tools-magnitude-result {
     grid-template-columns: minmax(0, 1fr);
