@@ -9,8 +9,10 @@ import {
   HostListener,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
+  Inject,
+  PLATFORM_ID,
 } from '@angular/core';
-import { CommonModule } from '@angular/common'; // Needed for bindings in template if used more broadly, good practice
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 
 // Define Point type for clarity
 interface Point {
@@ -111,7 +113,10 @@ export class GamePageComponent implements OnInit, AfterViewInit, OnDestroy {
   private lastTimestamp = 0;
 
   // Inject ChangeDetectorRef if using OnPush strategy
-  constructor(private cdr: ChangeDetectorRef) {}
+  constructor(
+    private cdr: ChangeDetectorRef,
+    @Inject(PLATFORM_ID) private readonly platformId: object,
+  ) {}
 
   ngOnInit(): void {
     // Initial calculations that don't depend on the view
@@ -121,6 +126,8 @@ export class GamePageComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+
     // Access canvas and context *after* view is initialized
     this.canvas = this.gameCanvasRef.nativeElement;
     this.gameContainer = this.gameContainerRef.nativeElement;

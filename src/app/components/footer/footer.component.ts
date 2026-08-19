@@ -35,14 +35,9 @@ export class FooterComponent {
     this.isHappyWithCookie$ = this.store$.select(
       selectSiteSettingsIsHappyWithCookies
     );
-
-    this.isHappyWithCookie$.subscribe((val) => {
-      console.log('Is happy with cookies:', val);
-    });
   }
 
   acceptTerms() {
-    console.log('Accepting terms');
     this.store$.dispatch(
       SiteSettingsAction_SetIsHappyWithCookies({ isHappyWithCookies: true })
     );

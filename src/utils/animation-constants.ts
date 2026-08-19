@@ -6,15 +6,13 @@
 export let winWidth = 500;
 export let winHeight = 500;
 
-try {
+if (typeof window !== 'undefined') {
   winWidth = window.innerWidth;
   winHeight = window.innerHeight;
   window.addEventListener('resize', () => {
     winWidth = window.innerWidth;
     winHeight = window.innerHeight;
   });
-} catch (err) {
-  console.log('Nope: window aint here');
 }
 
 /**

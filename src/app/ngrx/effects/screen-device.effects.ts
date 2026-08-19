@@ -17,7 +17,6 @@ const resizeEvent$ = new BehaviorSubject<Partial<IScreenDevice>>({
 });
 
 const handleResize = () => {
-  console.log('Screen Resize!!!');
   setTimeout(() => {
     resizeEvent$.next({
       device: getDevice(),
@@ -27,10 +26,8 @@ const handleResize = () => {
   }, 500);
 };
 
-try {
+if (typeof window !== 'undefined') {
   window.addEventListener('resize', handleResize);
-} catch (err) {
-  console.log('Nope: window aint here');
 }
 
 export const checkScreen$ = createEffect(

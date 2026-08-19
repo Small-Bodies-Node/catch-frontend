@@ -72,12 +72,10 @@ export class ContactPageComponent implements OnInit, AfterViewInit, OnDestroy {
    * Initialize the AWS WAF Captcha
    */
   private initAwsWafCaptcha(): void {
-    console.log('Initializing AWS WAF Captcha...');
     this.awsWafCaptchaService
       .initCaptcha({
         container: 'aws-waf-captcha-container',
         onSuccess: (token: string) => {
-          console.log('Captcha token received:', token.substring(0, 10) + '...');
           this.captchaToken = token;
           this.isMessageSendable = true;
           this.changeDetectorRef.detectChanges();

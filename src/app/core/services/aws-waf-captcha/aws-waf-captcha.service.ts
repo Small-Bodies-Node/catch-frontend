@@ -85,7 +85,6 @@ export class AwsWafCaptchaService {
             event.preventDefault();
             if (config.onSuccess) {
               const token = 'debug-token-' + Date.now();
-              console.log('Generated debug token:', token);
               config.onSuccess(token);
             }
           });
@@ -199,9 +198,7 @@ export class AwsWafCaptchaService {
         // Re-render the captcha widget
         this.initCaptcha({
           container: 'waf-captcha-container',
-          onSuccess: (token: string) => {
-            console.log('Captcha token:', token);
-          },
+          onSuccess: () => undefined,
           onError: (error: Error) => {
             console.error('Captcha error:', error);
           },
