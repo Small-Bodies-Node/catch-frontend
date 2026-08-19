@@ -71,7 +71,7 @@ function getTimeoutValue(...headerValues: Array<string | null>): number {
 }
 
 function isAstrometryRequest(url: string): boolean {
-  return /\/api\/cat\/astrometry(?:[/?#]|$)/.test(url);
+  return /\/api\/cat\/calibration\/(?:astrometry|photometry)(?:[/?#]|$)/.test(url);
 }
 
 function createRequestId(): string {

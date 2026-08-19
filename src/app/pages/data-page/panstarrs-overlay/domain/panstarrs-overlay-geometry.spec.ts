@@ -95,6 +95,7 @@ describe('panstarrs overlay geometry', () => {
     const centroidization = {
       productId: 'product-1',
       astrometryRunId: 'astrometry-1',
+      photometricCalibrationRunId: 'calibration-1',
       centroidRunId: 'centroid-1',
       initX: 10,
       initY: 20,

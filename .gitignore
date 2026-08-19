@@ -47,3 +47,5 @@ Thumbs.db
 .git-temp
 
 AGENTS.md
+/temp/
+*.orig

@@ -2,7 +2,6 @@ import { Component, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatDividerModule } from '@angular/material/divider';
 import { Subscription } from 'rxjs';
-import { ApiSelectorComponent } from './api-selector/api-selector.component';
 import { JobQueueComponent } from './job-queue/job-queue.component';
 import { QueriesComponent } from './queries/queries.component';
 import { ObservationsComponent } from './observations/observations.component';
@@ -14,7 +13,6 @@ import { CatchApiService } from '../../core/services/dashboard-api/catch-api.ser
   imports: [
     CommonModule,
     MatDividerModule,
-    ApiSelectorComponent,
     JobQueueComponent,
     QueriesComponent,
     ObservationsComponent,

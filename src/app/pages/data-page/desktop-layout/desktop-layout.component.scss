@@ -74,6 +74,10 @@
 
   .table-mode-toggle {
     flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
     min-width: var(--table-mode-toggle-min-width);
     padding: 0 18px;
     border: 1px solid var(--mat-sys-outline-variant);
@@ -98,6 +102,19 @@
     &:active {
       transform: translateY(1px);
     }
+  }
+
+  .cat-tools-experimental-badge {
+    padding: 2px 6px;
+    border: 1px solid var(--mat-sys-tertiary);
+    border-radius: 999px;
+    background-color: var(--mat-sys-tertiary-container);
+    color: var(--mat-sys-on-tertiary-container);
+    font-size: 10px;
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
   }
 
   .results-column.is-table-compact .table-mode-toggle {

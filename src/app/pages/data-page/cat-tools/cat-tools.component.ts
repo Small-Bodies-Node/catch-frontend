@@ -9,21 +9,20 @@ import { Store } from '@ngrx/store';
 import { combineLatest, Observable, Subscription } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
 
-import {
-  IAstrometryInputs,
-  IAstrometryRun,
-  TAstrometryBand,
-} from '../../../../models/IAstrometryRun';
+import { IAstrometryInputs, IAstrometryRun } from '../../../../models/IAstrometryRun';
 import { simpleUid } from '../../../../utils/simpleUid';
 import {
   ApiDataAction_ApplyAstrometryCentralization,
   ApiDataAction_ApplyCentroidization,
   ApiDataAction_BeginAstrometryRun,
+  ApiDataAction_BeginPhotometricCalibrationRun,
   ApiDataAction_BeginCentroidRun,
   ApiDataAction_BeginTargetPhotometryRun,
   ApiDataAction_RemoveCentroidization,
   ApiDataAction_RemoveAstrometryCentralization,
+  ApiDataAction_RemoveSourceMagnitudeCalculation,
   ApiDataAction_SetActiveDatum,
+  ApiDataAction_SetSourceMagnitudeCalculation,
 } from '../../../ngrx/actions/api-data.actions';
 import { IAppState } from '../../../ngrx/reducers';
 import {
@@ -32,17 +31,28 @@ import {
   selectApiDataAnalysisSelectionState,
   selectApiDataAstrometryCentralizationState,
   selectApiDataAstrometryRunsState,
+  selectApiDataPhotometricCalibrationRunsState,
   selectApiDataCentroidRunsState,
   selectApiDataCentroidizationState,
   selectApiDataTargetPhotometryRunsState,
+  selectApiDataSourceMagnitudeState,
 } from '../../../ngrx/selectors/api-data.selectors';
 import { CatToolsStackComponent } from './cat-tools-stack/cat-tools-stack.component';
+import { CatFireworkComponent } from './cat-firework/cat-firework.component';
 import {
   ICentroidRequest,
   ICentroidResponse,
   ICentroidRun,
   ICentroidization,
 } from '../../../../models/ICentroid';
+import {
+  IPhotometricCalibrationInputs,
+  IPhotometricCalibrationResult,
+  IPhotometricCalibrationRun,
+  photometricCalibrationCatalogs,
+  TPhotometricCalibrationCatalog,
+} from '../../../../models/IPhotometricCalibrationRun';
+import { ISourceMagnitudeCalculation } from '../../../../models/ISourceMagnitude';
 import {
   ITargetPhotometryRequest,
   ITargetPhotometryResponse,
@@ -58,13 +68,28 @@ import {
   createDefaultAstrometryInputs,
   getAstrometryCentralizationActionLabel,
   getAstrometryInputRows,
-  getAstrometryPhotometryWarning,
   getAstrometryResultGroups,
   getAstrometryRunStatusLabel,
   isAstrometryCentralizationApplied,
   isAstrometryCentralizationAvailable,
-  isAstrometryPartialSuccess,
 } from './domain/cat-astrometry';
+import {
+  createDefaultPhotometricCalibrationInputs,
+  getActivePhotometricCalibrationRun,
+  getPhotometricCalibrationInputRows,
+  getPhotometricCalibrationPlots,
+  getPhotometricCalibrationResultGroups,
+  getPhotometricCalibrationRuns,
+  getPhotometricCalibrationRunStatusLabel,
+  hasRunningPhotometricCalibration,
+} from './domain/cat-photometric-calibration';
+import {
+  getPhotometricCalibrationCatalogConfiguration,
+  isPhotometricCalibrationBandSupported,
+  isPhotometricCalibrationColorTermSupported,
+  reconcilePhotometricCalibrationCatalog,
+} from './domain/cat-photometric-catalog';
+import { calculateSourceMagnitude as calculateSourceMagnitudeResult } from './domain/cat-source-magnitude';
 import {
   getCentroidResultRows,
   getCentroidRunStatusLabel,
@@ -90,6 +115,7 @@ import {
   ICatWorkflowDownloadContext,
   ICentroidCoordinatePair,
   ICentroidDraftContext,
+  IPhotometricCalibrationDraftContext,
   ITargetPhotometryDraftContext,
 } from './domain/cat-tools.types';
 import {
@@ -169,31 +195,43 @@ export class CatFieldInfoComponent {
   selector: 'app-cat-tools',
   templateUrl: './cat-tools.component.html',
   styleUrls: ['./cat-tools.component.scss'],
-  imports: [AsyncPipe, CatToolsStackComponent, FormsModule, CatFieldInfoComponent],
+  imports: [
+    AsyncPipe,
+    CatFireworkComponent,
+    CatToolsStackComponent,
+    FormsModule,
+    CatFieldInfoComponent,
+    MatIcon,
+  ],
   standalone: true,
 })
 export class CatToolsComponent implements OnDestroy {
   @ViewChild(CatToolsStackComponent)
   private catToolsStack?: CatToolsStackComponent;
 
-  readonly astrometryBands: readonly TAstrometryBand[] = ['g', 'r', 'i', 'z', 'y'];
+  readonly photometricCalibrationCatalogs = photometricCalibrationCatalogs;
+  readonly getPhotometricCalibrationCatalogConfiguration =
+    getPhotometricCalibrationCatalogConfiguration;
   readonly formatDatumValue = formatDatumValue;
   readonly getAstrometryCentralizationActionLabel = getAstrometryCentralizationActionLabel;
   readonly getAstrometryInputRows = getAstrometryInputRows;
-  readonly getAstrometryPhotometryWarning = getAstrometryPhotometryWarning;
   readonly getAstrometryResultGroups = getAstrometryResultGroups;
   readonly getAstrometryRunStatusLabel = getAstrometryRunStatusLabel;
+  readonly getPhotometricCalibrationInputRows = getPhotometricCalibrationInputRows;
+  readonly getPhotometricCalibrationPlots = getPhotometricCalibrationPlots;
+  readonly getPhotometricCalibrationResultGroups = getPhotometricCalibrationResultGroups;
+  readonly getPhotometricCalibrationRunStatusLabel = getPhotometricCalibrationRunStatusLabel;
   readonly getCentroidRunStatusLabel = getCentroidRunStatusLabel;
   readonly getCentroidizationActionLabel = getCentroidizationActionLabel;
   readonly getTargetPhotometryResultRows = getTargetPhotometryResultRows;
   readonly getTargetPhotometryRunStatusLabel = getTargetPhotometryRunStatusLabel;
   readonly isAstrometryCentralizationApplied = isAstrometryCentralizationApplied;
   readonly isAstrometryCentralizationAvailable = isAstrometryCentralizationAvailable;
-  readonly isAstrometryPartialSuccess = isAstrometryPartialSuccess;
   readonly isCentroidizationApplied = isCentroidizationApplied;
   readonly isCentroidizationAvailable = isCentroidizationAvailable;
   readonly analysisSelectionSummary$: Observable<IAnalysisSelectionSummary>;
-  private readonly getCentroidRunsForAstrometry = getCentroidRuns;
+  private readonly getPhotometricCalibrationRunsForAstrometry = getPhotometricCalibrationRuns;
+  private readonly getCentroidRunsForCalibration = getCentroidRuns;
   private readonly getTargetPhotometryRunsForCentroid = getTargetPhotometryRuns;
   private readonly isFiniteNumber = isFiniteNumber;
   private readonly isOptionalFiniteNumber = isOptionalFiniteNumber;
@@ -210,11 +248,15 @@ export class CatToolsComponent implements OnDestroy {
 
   activeDetailView: ICatToolsDetailView | null = null;
   astrometryDraft: IAstrometryInputs | null = null;
+  photometricCalibrationDraft: IPhotometricCalibrationInputs | null = null;
   centroidDraft: ICentroidRequest | null = null;
   targetPhotometryDraft: ITargetPhotometryRequest | null = null;
+  private photometricCalibrationDraftContext: IPhotometricCalibrationDraftContext | null = null;
   private centroidDraftContext: ICentroidDraftContext | null = null;
   private targetPhotometryDraftContext: ITargetPhotometryDraftContext | null = null;
   private isCentroidDraftUserEdited = false;
+  private sourceColorDrafts: Record<string, number | null> = {};
+  private sourceMagnitudeValidationErrors: Record<string, string> = {};
   readonly catInputHelp = {
     astrometryRa:
       'RA coordinate about which to search for reference catalog objects to use for astrometric calibration.',
@@ -230,12 +272,16 @@ export class CatToolsComponent implements OnDestroy {
       'Search radius, in degrees, around RA/Dec for source matching and astrometric calibration.',
     astrometrySnrThreshold:
       'Minimum signal-to-noise ratio for image sources used by detection and matching.',
-    astrometryApertureRadius:
-      'Aperture radius, in pixels, used for source photometry during astrometry and calibration.',
-    astrometryCatalog:
-      'Reference catalog queried for astrometric and photometric calibration objects.',
-    astrometryObsBand: 'Filter band of the selected image observation.',
-    astrometryCalBand: 'Catalog band used as the photometric calibration reference.',
+    photometrySnrThreshold:
+      'Minimum signal-to-noise ratio for sources used by photometric calibration.',
+    photometryApertureRadius:
+      'Aperture radius, in pixels, used to measure calibration-source fluxes.',
+    photometryCatalog: 'Reference catalog used for photometric calibration.',
+    photometryCalBand: 'Catalog band used as the photometric calibration reference.',
+    photometryColorIndex:
+      'Color-index label sent as color_term, for example g-r or bp-rp. The fitted response coefficient is a separate numeric value.',
+    sourceColor:
+      'Target color in the displayed index, such as g-r or bp-rp. It is multiplied by the fitted color-term coefficient to transform the measured magnitude onto the catalog system. The default of 0 applies no color correction.',
     centroidX:
       'Initial FITS image X pixel to search around for the target centroid. Clicking the FITS viewer updates this value.',
     centroidY:
@@ -275,9 +321,11 @@ export class CatToolsComponent implements OnDestroy {
       this.store$.select(selectApiActiveDatum),
       this.store$.select(selectApiDataAstrometryRunsState),
       this.store$.select(selectApiDataAstrometryCentralizationState),
+      this.store$.select(selectApiDataPhotometricCalibrationRunsState),
       this.store$.select(selectApiDataCentroidRunsState),
       this.store$.select(selectApiDataCentroidizationState),
       this.store$.select(selectApiDataTargetPhotometryRunsState),
+      this.store$.select(selectApiDataSourceMagnitudeState),
     ]).pipe(
       map(
         ([
@@ -286,9 +334,11 @@ export class CatToolsComponent implements OnDestroy {
           activeDatum,
           astrometryRunsState,
           astrometryCentralizationState,
+          photometricCalibrationRunsState,
           centroidRunsState,
           centroidizationState,
           targetPhotometryRunsState,
+          sourceMagnitudeState,
         ]) => {
           const activeProductId = activeDatum?.product_id;
           const items = (apiData ?? [])
@@ -299,9 +349,11 @@ export class CatToolsComponent implements OnDestroy {
                 activeProductId,
                 astrometryRunsState[apiDatum.product_id],
                 astrometryCentralizationState[apiDatum.product_id],
+                photometricCalibrationRunsState[apiDatum.product_id],
                 centroidRunsState[apiDatum.product_id],
                 centroidizationState[apiDatum.product_id],
                 targetPhotometryRunsState[apiDatum.product_id],
+                sourceMagnitudeState[apiDatum.product_id],
               ),
             );
 
@@ -313,7 +365,8 @@ export class CatToolsComponent implements OnDestroy {
       ),
       tap((summary) => {
         this.latestAnalysisSelectionSummary = summary;
-        this.refreshCentroidDraftFromFitsWcs();
+        this.refreshPhotometricCalibrationDraftForActiveView();
+        this.refreshCentroidDraftForActiveView();
         this.refreshTargetPhotometryDraftForActiveView();
         this.scrollToNewOutputIfNeeded(summary);
       }),
@@ -350,8 +403,10 @@ export class CatToolsComponent implements OnDestroy {
   openAstrometryLauncher(item: IAnalysisItem): void {
     this.activateAnalysisItem(item);
     this.astrometryDraft = createDefaultAstrometryInputs(item.apiDatum);
+    this.clearPhotometricCalibrationDraft();
     this.clearCentroidDraft();
     this.clearTargetPhotometryDraft();
+    this.clearSourceMagnitudeDrafts();
     this.activeDetailView = {
       kind: 'astrometry-launcher',
       title: 'New Astrometry',
@@ -364,10 +419,14 @@ export class CatToolsComponent implements OnDestroy {
     this.astrometryDraft = null;
     this.activeDetailView = {
       kind: 'astrometry-review',
-      title: 'Astrometry Results',
+      title: 'Calibration Results',
       productId: item.productId,
       runId,
     };
+    this.initializePhotometricCalibrationDraftIfVisible(
+      item,
+      item.astrometryRuns.find((run) => run.id === runId),
+    );
     this.initializeCentroidDraftIfVisible(
       item,
       item.astrometryRuns.find((run) => run.id === runId),
@@ -402,11 +461,13 @@ export class CatToolsComponent implements OnDestroy {
       }),
     );
     this.astrometryDraft = null;
+    this.clearPhotometricCalibrationDraft();
     this.clearCentroidDraft();
     this.clearTargetPhotometryDraft();
+    this.clearSourceMagnitudeDrafts();
     this.activeDetailView = {
       kind: 'astrometry-review',
-      title: 'Astrometry Results',
+      title: 'Calibration Results',
       productId,
       runId,
     };
@@ -416,8 +477,10 @@ export class CatToolsComponent implements OnDestroy {
   closeDetailView(): void {
     this.activeDetailView = null;
     this.astrometryDraft = null;
+    this.clearPhotometricCalibrationDraft();
     this.clearCentroidDraft();
     this.clearTargetPhotometryDraft();
+    this.clearSourceMagnitudeDrafts();
     this.lastOutputAutoscrollSignature = '';
   }
 
@@ -434,8 +497,7 @@ export class CatToolsComponent implements OnDestroy {
       !this.isOptionalFiniteNumber(this.astrometryDraft.scale_low) ||
       !this.isOptionalFiniteNumber(this.astrometryDraft.scale_high) ||
       !this.isFiniteNumber(this.astrometryDraft.search_radius) ||
-      !this.isFiniteNumber(this.astrometryDraft.snr_threshold) ||
-      !this.isFiniteNumber(this.astrometryDraft.aperture_radius)
+      !this.isFiniteNumber(this.astrometryDraft.snr_threshold)
     );
   }
 
@@ -475,10 +537,11 @@ export class CatToolsComponent implements OnDestroy {
 
     this.activeDetailView = {
       kind: 'astrometry-review',
-      title: 'Astrometry Results',
+      title: 'Calibration Results',
       productId: item.productId,
       runId: nextRun.id,
     };
+    this.initializePhotometricCalibrationDraftIfVisible(item, nextRun);
     this.initializeCentroidDraftIfVisible(item, nextRun);
     this.initializeTargetPhotometryDraftIfVisible(item, nextRun);
     this.primeOutputAutoscrollSignature(item, nextRun);
@@ -536,6 +599,82 @@ export class CatToolsComponent implements OnDestroy {
     this.downloadJsonFile(filename, JSON.stringify(exportPayload, null, 2));
   }
 
+  getPhotometricCalibrationRuns(
+    item: IAnalysisItem,
+    run: IAstrometryRun,
+  ): IPhotometricCalibrationRun[] {
+    return this.getPhotometricCalibrationRunsForAstrometry(item, run);
+  }
+
+  getActivePhotometricCalibrationRun(
+    item: IAnalysisItem,
+    run: IAstrometryRun,
+  ): IPhotometricCalibrationRun | null {
+    return getActivePhotometricCalibrationRun(item, run);
+  }
+
+  getPhotometricCalibrationColorIndex(run: IPhotometricCalibrationRun): string {
+    return run.result?.photometry.color_index || run.inputs.color_term;
+  }
+
+  onPhotometricCalibrationCatalogChange(catalog: TPhotometricCalibrationCatalog): void {
+    if (!this.photometricCalibrationDraft) return;
+    this.photometricCalibrationDraft = reconcilePhotometricCalibrationCatalog(
+      this.photometricCalibrationDraft,
+      catalog,
+    );
+  }
+
+  launchPhotometricCalibration(item: IAnalysisItem, run: IAstrometryRun): void {
+    const wcsImageUrl = run.result?.wcs_image_url;
+    if (
+      !this.photometricCalibrationDraft ||
+      !wcsImageUrl ||
+      this.isPhotometricCalibrationLaunchDisabled(item, run)
+    ) {
+      return;
+    }
+
+    this.activateAnalysisItem(item);
+    this.clearCentroidDraft();
+    this.clearTargetPhotometryDraft();
+    this.clearSourceMagnitudeDrafts();
+    this.store$.dispatch(
+      ApiDataAction_BeginPhotometricCalibrationRun({
+        productId: item.productId,
+        astrometryRunId: run.id,
+        runId: simpleUid(),
+        inputs: {
+          ...this.photometricCalibrationDraft,
+          // This is an internal workflow value, never a user-provided form value.
+          wcs_image_url: wcsImageUrl,
+        },
+        createdAt: new Date().toISOString(),
+      }),
+    );
+  }
+
+  isPhotometricCalibrationLaunchDisabled(item: IAnalysisItem, run: IAstrometryRun): boolean {
+    const draft = this.photometricCalibrationDraft;
+    return (
+      !draft ||
+      run.status !== 'complete' ||
+      !run.result?.wcs_image_url ||
+      !this.isFiniteNumber(draft.snr_threshold) ||
+      draft.snr_threshold <= 0 ||
+      !this.isFiniteNumber(draft.aperture_radius) ||
+      draft.aperture_radius <= 0 ||
+      !draft.catalog ||
+      !isPhotometricCalibrationBandSupported(draft.catalog, draft.cal_band) ||
+      !isPhotometricCalibrationColorTermSupported(draft.catalog, draft.color_term) ||
+      hasRunningPhotometricCalibration(item, run)
+    );
+  }
+
+  getPhotometricCalibrationOutputScrollTarget(run: IPhotometricCalibrationRun): string {
+    return `photometric-calibration-output-${run.id}`;
+  }
+
   toggleAstrometryCentralization(item: IAnalysisItem, run: IAstrometryRun): void {
     this.activateAnalysisItem(item);
 
@@ -545,11 +684,12 @@ export class CatToolsComponent implements OnDestroy {
       );
       this.clearCentroidDraft();
       this.clearTargetPhotometryDraft();
+      this.clearSourceMagnitudeDrafts();
       return;
     }
 
-    const centerRaDeg = run.result?.astrometry.center_ra_deg;
-    const centerDecDeg = run.result?.astrometry.center_dec_deg;
+    const centerRaDeg = run.result?.center_ra_deg;
+    const centerDecDeg = run.result?.center_dec_deg;
 
     if (
       run.productId !== item.productId ||
@@ -570,15 +710,23 @@ export class CatToolsComponent implements OnDestroy {
         },
       }),
     );
-    this.initializeCentroidDraft(item, run, true);
+    const calibrationRun = this.getActivePhotometricCalibrationRun(item, run);
+    if (calibrationRun) {
+      this.initializeCentroidDraft(item, run, calibrationRun, true);
+    }
     this.clearTargetPhotometryDraft();
+    this.clearSourceMagnitudeDrafts();
     this.catToolsStack?.scrollDetailTargetIntoView(this.getCentroidInputScrollTarget(run));
   }
 
-  launchCentroid(item: IAnalysisItem, run: IAstrometryRun): void {
+  launchCentroid(
+    item: IAnalysisItem,
+    astrometryRun: IAstrometryRun,
+    calibrationRun: IPhotometricCalibrationRun,
+  ): void {
     if (
       !this.centroidDraft ||
-      !this.isCentroidSectionVisible(item, run) ||
+      !this.isCentroidSectionVisible(item, astrometryRun, calibrationRun) ||
       this.isCentroidLaunchDisabled()
     ) {
       return;
@@ -590,7 +738,8 @@ export class CatToolsComponent implements OnDestroy {
     this.store$.dispatch(
       ApiDataAction_BeginCentroidRun({
         productId: item.productId,
-        astrometryRunId: run.id,
+        astrometryRunId: astrometryRun.id,
+        photometricCalibrationRunId: calibrationRun.id,
         runId: simpleUid(),
         inputs,
         createdAt: new Date().toISOString(),
@@ -598,8 +747,16 @@ export class CatToolsComponent implements OnDestroy {
     );
   }
 
-  isCentroidSectionVisible(item: IAnalysisItem, run: IAstrometryRun): boolean {
-    return run.status === 'complete' && this.isAstrometryCentralizationApplied(item, run);
+  isCentroidSectionVisible(
+    item: IAnalysisItem,
+    astrometryRun: IAstrometryRun,
+    calibrationRun: IPhotometricCalibrationRun,
+  ): boolean {
+    return (
+      calibrationRun.status === 'complete' &&
+      !!calibrationRun.result?.photometry_image_url &&
+      this.isAstrometryCentralizationApplied(item, astrometryRun)
+    );
   }
 
   isCentroidLaunchDisabled(): boolean {
@@ -627,12 +784,20 @@ export class CatToolsComponent implements OnDestroy {
     this.centroidDraft = this.roundCentroidRequestPixels(this.centroidDraft);
   }
 
-  getCentroidRuns(item: IAnalysisItem, run: IAstrometryRun): ICentroidRun[] {
-    return this.getCentroidRunsForAstrometry(item, run);
+  getCentroidRuns(
+    item: IAnalysisItem,
+    astrometryRun: IAstrometryRun,
+    calibrationRun: IPhotometricCalibrationRun,
+  ): ICentroidRun[] {
+    return this.getCentroidRunsForCalibration(item, astrometryRun, calibrationRun);
   }
 
-  hasSuccessfulCentroidRun(item: IAnalysisItem, run: IAstrometryRun): boolean {
-    return this.getCentroidRuns(item, run).some(
+  hasSuccessfulCentroidRun(
+    item: IAnalysisItem,
+    astrometryRun: IAstrometryRun,
+    calibrationRun: IPhotometricCalibrationRun,
+  ): boolean {
+    return this.getCentroidRuns(item, astrometryRun, calibrationRun).some(
       (centroidRun) => centroidRun.status === 'complete' && !!centroidRun.result,
     );
   }
@@ -644,12 +809,12 @@ export class CatToolsComponent implements OnDestroy {
 
     if (this.centroidDraft.target_x === 0 && this.centroidDraft.target_y === 0) {
       return (
-        'Loading FITS WCS to initialize X/Y from astrometry RA/Dec. ' +
+        'Loading the displayed FITS WCS to initialize X/Y from astrometry RA/Dec. ' +
         'You can still click a FITS pixel to override.'
       );
     }
 
-    return 'X/Y are initialized from astrometry RA/Dec; click a FITS pixel to override.';
+    return 'X/Y are initialized from astrometry on the displayed FITS; click a FITS pixel to override.';
   }
 
   getCentroidResultRows(run: ICentroidRun): ICatToolsDatumRow[] {
@@ -674,14 +839,22 @@ export class CatToolsComponent implements OnDestroy {
     );
   }
 
-  getAppliedCentroidRun(item: IAnalysisItem, run: IAstrometryRun): ICentroidRun | null {
+  getAppliedCentroidRun(
+    item: IAnalysisItem,
+    astrometryRun: IAstrometryRun,
+    calibrationRun: IPhotometricCalibrationRun,
+  ): ICentroidRun | null {
     const centroidization = item.centroidization;
-    if (!centroidization || centroidization.astrometryRunId !== run.id) {
+    if (
+      !centroidization ||
+      centroidization.astrometryRunId !== astrometryRun.id ||
+      centroidization.photometricCalibrationRunId !== calibrationRun.id
+    ) {
       return null;
     }
 
     return (
-      this.getCentroidRuns(item, run).find(
+      this.getCentroidRuns(item, astrometryRun, calibrationRun).find(
         (centroidRun) => centroidRun.id === centroidization.centroidRunId,
       ) ?? null
     );
@@ -694,6 +867,7 @@ export class CatToolsComponent implements OnDestroy {
   launchTargetPhotometry(
     item: IAnalysisItem,
     astrometryRun: IAstrometryRun,
+    calibrationRun: IPhotometricCalibrationRun,
     centroidRun: ICentroidRun,
   ): void {
     if (
@@ -711,6 +885,7 @@ export class CatToolsComponent implements OnDestroy {
       ApiDataAction_BeginTargetPhotometryRun({
         productId: item.productId,
         astrometryRunId: astrometryRun.id,
+        photometricCalibrationRunId: calibrationRun.id,
         centroidRunId: centroidRun.id,
         runId: simpleUid(),
         inputs,
@@ -770,17 +945,108 @@ export class CatToolsComponent implements OnDestroy {
     );
   }
 
+  getSourceColorDraft(run: ITargetPhotometryRun): number | null {
+    return Object.prototype.hasOwnProperty.call(this.sourceColorDrafts, run.id)
+      ? this.sourceColorDrafts[run.id]
+      : 0;
+  }
+
+  setSourceColorDraft(
+    item: IAnalysisItem,
+    astrometryRun: IAstrometryRun,
+    calibrationRun: IPhotometricCalibrationRun,
+    centroidRun: ICentroidRun,
+    targetRun: ITargetPhotometryRun,
+    value: number | null,
+  ): void {
+    this.sourceColorDrafts = { ...this.sourceColorDrafts, [targetRun.id]: value };
+    const { [targetRun.id]: _removed, ...remainingErrors } = this.sourceMagnitudeValidationErrors;
+    this.sourceMagnitudeValidationErrors = remainingErrors;
+
+    if (this.getSourceMagnitudeCalculation(item, targetRun)) {
+      this.store$.dispatch(
+        ApiDataAction_RemoveSourceMagnitudeCalculation({
+          productId: item.productId,
+          astrometryRunId: astrometryRun.id,
+          photometricCalibrationRunId: calibrationRun.id,
+          centroidRunId: centroidRun.id,
+          targetPhotometryRunId: targetRun.id,
+        }),
+      );
+    }
+  }
+
+  calculateSourceMagnitude(
+    item: IAnalysisItem,
+    astrometryRun: IAstrometryRun,
+    calibrationRun: IPhotometricCalibrationRun,
+    centroidRun: ICentroidRun,
+    targetRun: ITargetPhotometryRun,
+  ): void {
+    if (!calibrationRun.result || !targetRun.result) {
+      this.setSourceMagnitudeValidationError(
+        targetRun.id,
+        'Photometric calibration and aperture photometry must both be complete.',
+      );
+      this.catToolsStack?.scrollDetailTargetIntoView(
+        this.getSourceMagnitudeOutputScrollTarget(targetRun),
+      );
+      return;
+    }
+
+    const result = calculateSourceMagnitudeResult({
+      sourceColor: this.getSourceColorDraft(targetRun),
+      targetPhotometryResult: targetRun.result,
+      photometricCalibrationResult: calibrationRun.result,
+    });
+    if (!result.success) {
+      this.setSourceMagnitudeValidationError(targetRun.id, result.error);
+      this.catToolsStack?.scrollDetailTargetIntoView(
+        this.getSourceMagnitudeOutputScrollTarget(targetRun),
+      );
+      return;
+    }
+
+    const calculation: ISourceMagnitudeCalculation = {
+      productId: item.productId,
+      astrometryRunId: astrometryRun.id,
+      photometricCalibrationRunId: calibrationRun.id,
+      centroidRunId: centroidRun.id,
+      targetPhotometryRunId: targetRun.id,
+      sourceColor: result.sourceColor,
+      magnitude: result.magnitude,
+      magnitudeUncertainty: result.magnitudeUncertainty,
+      calculatedAt: new Date().toISOString(),
+    };
+    this.store$.dispatch(ApiDataAction_SetSourceMagnitudeCalculation({ calculation }));
+    this.setSourceMagnitudeValidationError(targetRun.id, '');
+    this.catToolsStack?.scrollDetailTargetIntoView(
+      this.getSourceMagnitudeOutputScrollTarget(targetRun),
+    );
+  }
+
+  getSourceMagnitudeCalculation(
+    item: IAnalysisItem,
+    run: ITargetPhotometryRun,
+  ): ISourceMagnitudeCalculation | null {
+    return (
+      item.sourceMagnitudeState?.[run.astrometryRunId]?.[run.photometricCalibrationRunId]?.[
+        run.centroidRunId
+      ]?.[run.id] ?? null
+    );
+  }
+
+  getSourceMagnitudeValidationError(run: ITargetPhotometryRun): string {
+    return this.sourceMagnitudeValidationErrors[run.id] ?? '';
+  }
+
   getCatOutputImageUrl(path: string | null | undefined): string {
     const imagePath = path?.trim();
     if (!imagePath) {
       return '';
     }
 
-    if (this.isDisplayableCatOutputImage(path)) {
-      return imagePath;
-    }
-
-    return '';
+    return this.isDisplayableCatOutputImage(path) ? imagePath : '';
   }
 
   isDisplayableCatOutputImage(path: string | null | undefined): boolean {
@@ -830,12 +1096,17 @@ export class CatToolsComponent implements OnDestroy {
     return `target-photometry-output-${run.id}`;
   }
 
+  getSourceMagnitudeOutputScrollTarget(run: ITargetPhotometryRun): string {
+    return 'source-magnitude-output-' + run.id;
+  }
+
   toggleCentroidization(item: IAnalysisItem, run: ICentroidRun): void {
     this.activateAnalysisItem(item);
 
     if (this.isCentroidizationApplied(item, run)) {
       this.store$.dispatch(ApiDataAction_RemoveCentroidization({ productId: item.productId }));
       this.clearTargetPhotometryDraft();
+      this.clearSourceMagnitudeDrafts();
       return;
     }
 
@@ -855,6 +1126,7 @@ export class CatToolsComponent implements OnDestroy {
     const centroidization: ICentroidization = {
       productId: item.productId,
       astrometryRunId: run.astrometryRunId,
+      photometricCalibrationRunId: run.photometricCalibrationRunId,
       centroidRunId: run.id,
       initX: this.roundPixelCoordinate(run.inputs.target_x),
       initY: this.roundPixelCoordinate(run.inputs.target_y),
@@ -870,34 +1142,95 @@ export class CatToolsComponent implements OnDestroy {
 
     this.store$.dispatch(ApiDataAction_ApplyCentroidization({ centroidization }));
     this.initializeTargetPhotometryDraftIfVisible(
-      {
-        ...item,
-        centroidization,
-      },
+      { ...item, centroidization },
       item.astrometryRuns.find((astrometryRun) => astrometryRun.id === run.astrometryRunId),
       true,
     );
     this.catToolsStack?.scrollDetailTargetIntoView(this.getTargetPhotometryInputScrollTarget(run));
   }
 
-  private initializeCentroidDraftIfVisible(
-    item: IAnalysisItem,
-    run: IAstrometryRun | undefined,
-  ): void {
-    if (!run || !this.isCentroidSectionVisible(item, run)) {
+  private refreshCentroidDraftForActiveView(): void {
+    if (!this.activeDetailView || this.activeDetailView.kind !== 'astrometry-review') {
       this.clearCentroidDraft();
       return;
     }
 
-    this.initializeCentroidDraft(item, run, false);
+    const item =
+      this.latestAnalysisSelectionSummary?.items.find(
+        (candidate) => candidate.productId === this.activeDetailView?.productId,
+      ) ?? null;
+    const run = item?.astrometryRuns.find(
+      (candidate) => candidate.id === this.activeDetailView?.runId,
+    );
+    if (!item) {
+      this.clearCentroidDraft();
+      return;
+    }
+
+    this.initializeCentroidDraftIfVisible(item, run);
+  }
+
+  private refreshPhotometricCalibrationDraftForActiveView(): void {
+    if (!this.activeDetailView || this.activeDetailView.kind !== 'astrometry-review') {
+      this.clearPhotometricCalibrationDraft();
+      return;
+    }
+
+    const item =
+      this.latestAnalysisSelectionSummary?.items.find(
+        (candidate) => candidate.productId === this.activeDetailView?.productId,
+      ) ?? null;
+    const run = item?.astrometryRuns.find(
+      (candidate) => candidate.id === this.activeDetailView?.runId,
+    );
+    this.initializePhotometricCalibrationDraftIfVisible(item ?? undefined, run);
+  }
+
+  private initializePhotometricCalibrationDraftIfVisible(
+    item: IAnalysisItem | undefined,
+    run: IAstrometryRun | undefined,
+  ): void {
+    if (!item || run?.status !== 'complete' || !run.result?.wcs_image_url) {
+      this.clearPhotometricCalibrationDraft();
+      return;
+    }
+
+    const context = { productId: item.productId, astrometryRunId: run.id };
+    if (this.isSamePhotometricCalibrationDraftContext(context)) {
+      this.photometricCalibrationDraft = this.photometricCalibrationDraft
+        ? { ...this.photometricCalibrationDraft, wcs_image_url: run.result.wcs_image_url }
+        : createDefaultPhotometricCalibrationInputs(run);
+      return;
+    }
+
+    this.photometricCalibrationDraftContext = context;
+    this.photometricCalibrationDraft = createDefaultPhotometricCalibrationInputs(run);
+  }
+
+  private initializeCentroidDraftIfVisible(
+    item: IAnalysisItem,
+    run: IAstrometryRun | undefined,
+  ): void {
+    const calibrationRun = run ? this.getActivePhotometricCalibrationRun(item, run) : null;
+    if (!run || !calibrationRun || !this.isCentroidSectionVisible(item, run, calibrationRun)) {
+      this.clearCentroidDraft();
+      return;
+    }
+
+    this.initializeCentroidDraft(item, run, calibrationRun, false);
   }
 
   private initializeCentroidDraft(
     item: IAnalysisItem,
     run: IAstrometryRun,
+    calibrationRun: IPhotometricCalibrationRun,
     forceReset: boolean,
   ): void {
-    const context = { productId: item.productId, astrometryRunId: run.id };
+    const context = {
+      productId: item.productId,
+      astrometryRunId: run.id,
+      photometricCalibrationRunId: calibrationRun.id,
+    };
     if (!forceReset && this.isSameCentroidDraftContext(context)) {
       this.refreshCentroidDraftFromFitsWcs();
       return;
@@ -905,33 +1238,54 @@ export class CatToolsComponent implements OnDestroy {
 
     this.centroidDraftContext = context;
     this.isCentroidDraftUserEdited = false;
-    this.centroidDraft = this.createDefaultCentroidInputs(item, run);
+    this.centroidDraft = this.createDefaultCentroidInputs(item, run, calibrationRun);
     this.refreshCentroidDraftFromFitsWcs();
   }
 
-  private createDefaultCentroidInputs(item: IAnalysisItem, run: IAstrometryRun): ICentroidRequest {
-    const file = item.apiDatum.cutout_url || run.inputs.image_url || '';
-    if (file) {
-      this.fitsClickCoordinatesService.requestWorldToImageCoordinatesMapper(file);
+  private createDefaultCentroidInputs(
+    item: IAnalysisItem,
+    run: IAstrometryRun,
+    calibrationRun: IPhotometricCalibrationRun,
+  ): ICentroidRequest {
+    const file = calibrationRun.result?.photometry_image_url ?? '';
+    const coordinateReferenceFile = this.getCentroidCoordinateReferenceFile(item, run, file);
+    if (coordinateReferenceFile) {
+      this.fitsClickCoordinatesService.requestWorldToImageCoordinatesMapper(
+        coordinateReferenceFile,
+      );
     }
 
-    const centerCoordinates = this.getCentralizedFitsPixelCoordinates(file, run);
-    const fallbackCoordinates = this.getLatestFitsClickCoordinatesForFile(file, item.productId);
+    const centerCoordinates = this.getCentralizedFitsPixelCoordinates(coordinateReferenceFile, run);
+    const fallbackCoordinates = this.getLatestFitsClickCoordinatesForFile(
+      coordinateReferenceFile,
+      item.productId,
+    );
 
     const draft = {
       file,
       target_x: this.roundPixelCoordinate(centerCoordinates?.imageX ?? fallbackCoordinates?.imageX),
       target_y: this.roundPixelCoordinate(centerCoordinates?.imageY ?? fallbackCoordinates?.imageY),
-      search_radius: this.isFiniteNumber(run.inputs.aperture_radius)
-        ? this.roundPixelCoordinate(run.inputs.aperture_radius)
+      search_radius: this.isFiniteNumber(calibrationRun.inputs.aperture_radius)
+        ? this.roundPixelCoordinate(calibrationRun.inputs.aperture_radius)
         : 7,
       astrometry_center_x: this.roundOptionalPixelCoordinate(centerCoordinates?.imageX),
       astrometry_center_y: this.roundOptionalPixelCoordinate(centerCoordinates?.imageY),
     };
 
     this.logCentroidCoordinateDiagnostics('initial default', item, run, draft);
-
     return draft;
+  }
+
+  /**
+   * CAT's calibrated FITS files preserve the source pixel grid, while JS9 registers its WCS
+   * mapper against the original FITS URL displayed for the row.
+   */
+  private getCentroidCoordinateReferenceFile(
+    item: IAnalysisItem,
+    run: IAstrometryRun,
+    fallbackFile: string,
+  ): string {
+    return item.apiDatum.cutout_url || run.inputs.image_url || fallbackFile;
   }
 
   private refreshTargetPhotometryDraftForActiveView(): void {
@@ -966,24 +1320,33 @@ export class CatToolsComponent implements OnDestroy {
       return;
     }
 
-    const centroidRun = this.getAppliedCentroidRun(item, run);
-    if (!centroidRun || !this.isTargetPhotometrySectionVisible(item, centroidRun)) {
+    const calibrationRun = this.getActivePhotometricCalibrationRun(item, run);
+    const centroidRun = calibrationRun
+      ? this.getAppliedCentroidRun(item, run, calibrationRun)
+      : null;
+    if (
+      !calibrationRun ||
+      !centroidRun ||
+      !this.isTargetPhotometrySectionVisible(item, centroidRun)
+    ) {
       this.clearTargetPhotometryDraft();
       return;
     }
 
-    this.initializeTargetPhotometryDraft(item, run, centroidRun, forceReset);
+    this.initializeTargetPhotometryDraft(item, run, calibrationRun, centroidRun, forceReset);
   }
 
   private initializeTargetPhotometryDraft(
     item: IAnalysisItem,
     astrometryRun: IAstrometryRun,
+    calibrationRun: IPhotometricCalibrationRun,
     centroidRun: ICentroidRun,
     forceReset: boolean,
   ): void {
     const context = {
       productId: item.productId,
       astrometryRunId: astrometryRun.id,
+      photometricCalibrationRunId: calibrationRun.id,
       centroidRunId: centroidRun.id,
     };
     if (!forceReset && this.isSameTargetPhotometryDraftContext(context)) {
@@ -1034,7 +1397,10 @@ export class CatToolsComponent implements OnDestroy {
     const outputKeys: string[] = [];
     let target: string | null = null;
 
-    if (run.result) {
+    if (run.status === 'running') {
+      outputKeys.push('astrometry-running:' + run.id);
+      target = this.getAstrometryOutputScrollTarget(run);
+    } else if (run.result) {
       outputKeys.push(`astrometry-result:${run.id}`);
       target = this.isAstrometryCentralizationAvailable(run)
         ? this.getAstrometryCentralizationScrollTarget(run)
@@ -1044,22 +1410,46 @@ export class CatToolsComponent implements OnDestroy {
       target = this.getAstrometryErrorScrollTarget(run);
     }
 
-    for (const centroidRun of this.getCentroidRuns(item, run)) {
-      if (centroidRun.result) {
-        outputKeys.push(`centroid-result:${centroidRun.id}`);
-        target = this.getCentroidOutputScrollTarget(centroidRun);
-      } else if (centroidRun.error) {
-        outputKeys.push(`centroid-error:${centroidRun.id}`);
-        target = this.getCentroidOutputScrollTarget(centroidRun);
+    for (const calibrationRun of this.getPhotometricCalibrationRuns(item, run)) {
+      if (calibrationRun.status === 'running') {
+        outputKeys.push('photometric-calibration-running:' + calibrationRun.id);
+        target = this.getPhotometricCalibrationOutputScrollTarget(calibrationRun);
+      } else if (calibrationRun.result) {
+        outputKeys.push(`photometric-calibration-result:${calibrationRun.id}`);
+        target = this.getPhotometricCalibrationOutputScrollTarget(calibrationRun);
+      } else if (calibrationRun.error) {
+        outputKeys.push(`photometric-calibration-error:${calibrationRun.id}`);
+        target = this.getPhotometricCalibrationOutputScrollTarget(calibrationRun);
       }
 
-      for (const photometryRun of this.getTargetPhotometryRuns(item, centroidRun)) {
-        if (photometryRun.result) {
-          outputKeys.push(`target-photometry-result:${photometryRun.id}`);
-          target = this.getTargetPhotometryOutputScrollTarget(photometryRun);
-        } else if (photometryRun.error) {
-          outputKeys.push(`target-photometry-error:${photometryRun.id}`);
-          target = this.getTargetPhotometryOutputScrollTarget(photometryRun);
+      for (const centroidRun of this.getCentroidRuns(item, run, calibrationRun)) {
+        if (centroidRun.status === 'running') {
+          outputKeys.push('centroid-running:' + centroidRun.id);
+          target = this.getCentroidOutputScrollTarget(centroidRun);
+        } else if (centroidRun.result) {
+          outputKeys.push(`centroid-result:${centroidRun.id}`);
+          target = this.getCentroidOutputScrollTarget(centroidRun);
+        } else if (centroidRun.error) {
+          outputKeys.push(`centroid-error:${centroidRun.id}`);
+          target = this.getCentroidOutputScrollTarget(centroidRun);
+        }
+
+        for (const targetRun of this.getTargetPhotometryRuns(item, centroidRun)) {
+          if (targetRun.status === 'running') {
+            outputKeys.push('target-photometry-running:' + targetRun.id);
+            target = this.getTargetPhotometryOutputScrollTarget(targetRun);
+          } else if (targetRun.result) {
+            outputKeys.push(`target-photometry-result:${targetRun.id}`);
+            target = this.getTargetPhotometryOutputScrollTarget(targetRun);
+          } else if (targetRun.error) {
+            outputKeys.push(`target-photometry-error:${targetRun.id}`);
+            target = this.getTargetPhotometryOutputScrollTarget(targetRun);
+          }
+
+          if (this.getSourceMagnitudeCalculation(item, targetRun)) {
+            outputKeys.push('source-magnitude:' + targetRun.id);
+            target = this.getSourceMagnitudeOutputScrollTarget(targetRun);
+          }
         }
       }
     }
@@ -1081,14 +1471,19 @@ export class CatToolsComponent implements OnDestroy {
       return;
     }
 
-    if (this.centroidDraft.file) {
+    const coordinateReferenceFile = this.getCentroidCoordinateReferenceFile(
+      activeItem,
+      activeRun,
+      this.centroidDraft.file,
+    );
+    if (coordinateReferenceFile) {
       this.fitsClickCoordinatesService.requestWorldToImageCoordinatesMapper(
-        this.centroidDraft.file,
+        coordinateReferenceFile,
       );
     }
 
     const centerCoordinates = this.getCentralizedFitsPixelCoordinates(
-      this.centroidDraft.file,
+      coordinateReferenceFile,
       activeRun,
     );
     if (!centerCoordinates) {
@@ -1160,8 +1555,8 @@ export class CatToolsComponent implements OnDestroy {
     );
     const solvedCenterPixel = this.getFitsPixelCoordinatesForRaDec(
       file,
-      run.result?.astrometry.center_ra_deg,
-      run.result?.astrometry.center_dec_deg,
+      run.result?.center_ra_deg,
+      run.result?.center_dec_deg,
     );
 
     if (originalTargetPixel && solvedCenterPixel) {
@@ -1194,11 +1589,11 @@ export class CatToolsComponent implements OnDestroy {
     run: IAstrometryRun,
     draft: ICentroidRequest,
   ): void {
-    const file = draft.file;
+    const file = this.getCentroidCoordinateReferenceFile(item, run, draft.file);
     const rowRa = getNumberFromDatumOrCutoutUrl(item.apiDatum, 'ra');
     const rowDec = getNumberFromDatumOrCutoutUrl(item.apiDatum, 'dec');
-    const resultRa = run.result?.astrometry.center_ra_deg;
-    const resultDec = run.result?.astrometry.center_dec_deg;
+    const resultRa = run.result?.center_ra_deg;
+    const resultDec = run.result?.center_dec_deg;
     const rowPixel = this.getFitsPixelCoordinatesForRaDec(file, rowRa, rowDec);
     const inputPixel = this.getFitsPixelCoordinatesForRaDec(file, run.inputs.ra, run.inputs.dec);
     const resultPixel = this.getFitsPixelCoordinatesForRaDec(file, resultRa, resultDec);
@@ -1293,14 +1688,15 @@ export class CatToolsComponent implements OnDestroy {
       productId: item.productId,
       sourceName: item.sourceName,
       date: item.date,
-      file,
+      centroidRequestFile: draft.file,
+      coordinateReferenceFile: file,
       run: {
         id: run.id,
         sequence: run.sequence,
         status: run.status,
       },
       astrometryInputs: run.inputs,
-      astrometryResult: run.result?.astrometry ?? null,
+      astrometryResult: run.result ?? null,
       centroidDraft: { ...draft },
       latestFitsClick: latestClick,
       mappedPoints,
@@ -1374,7 +1770,21 @@ export class CatToolsComponent implements OnDestroy {
   }
 
   private isFitsClickForCentroidDraft(coordinates: IFitsClickCoordinates): boolean {
-    if (coordinates.file && coordinates.file !== this.centroidDraft?.file) {
+    const activeItem = this.getCentroidDraftAnalysisItem();
+    const activeRun = this.getCentroidDraftAstrometryRun();
+    const coordinateReferenceFile =
+      activeItem && activeRun
+        ? this.getCentroidCoordinateReferenceFile(
+            activeItem,
+            activeRun,
+            this.centroidDraft?.file ?? '',
+          )
+        : '';
+    if (
+      coordinates.file &&
+      coordinates.file !== this.centroidDraft?.file &&
+      coordinates.file !== coordinateReferenceFile
+    ) {
       return false;
     }
 
@@ -1413,10 +1823,25 @@ export class CatToolsComponent implements OnDestroy {
     );
   }
 
+  private isSamePhotometricCalibrationDraftContext(
+    context: IPhotometricCalibrationDraftContext,
+  ): boolean {
+    return (
+      this.photometricCalibrationDraftContext?.productId === context.productId &&
+      this.photometricCalibrationDraftContext?.astrometryRunId === context.astrometryRunId
+    );
+  }
+
+  private clearPhotometricCalibrationDraft(): void {
+    this.photometricCalibrationDraft = null;
+    this.photometricCalibrationDraftContext = null;
+  }
+
   private isSameCentroidDraftContext(context: ICentroidDraftContext): boolean {
     return (
       this.centroidDraftContext?.productId === context.productId &&
-      this.centroidDraftContext?.astrometryRunId === context.astrometryRunId
+      this.centroidDraftContext?.astrometryRunId === context.astrometryRunId &&
+      this.centroidDraftContext?.photometricCalibrationRunId === context.photometricCalibrationRunId
     );
   }
 
@@ -1430,6 +1855,8 @@ export class CatToolsComponent implements OnDestroy {
     return (
       this.targetPhotometryDraftContext?.productId === context.productId &&
       this.targetPhotometryDraftContext?.astrometryRunId === context.astrometryRunId &&
+      this.targetPhotometryDraftContext?.photometricCalibrationRunId ===
+        context.photometricCalibrationRunId &&
       this.targetPhotometryDraftContext?.centroidRunId === context.centroidRunId
     );
   }
@@ -1437,6 +1864,24 @@ export class CatToolsComponent implements OnDestroy {
   private clearTargetPhotometryDraft(): void {
     this.targetPhotometryDraft = null;
     this.targetPhotometryDraftContext = null;
+  }
+
+  private setSourceMagnitudeValidationError(runId: string, error: string): void {
+    if (!error) {
+      const { [runId]: _removed, ...remainingErrors } = this.sourceMagnitudeValidationErrors;
+      this.sourceMagnitudeValidationErrors = remainingErrors;
+      return;
+    }
+
+    this.sourceMagnitudeValidationErrors = {
+      ...this.sourceMagnitudeValidationErrors,
+      [runId]: error,
+    };
+  }
+
+  private clearSourceMagnitudeDrafts(): void {
+    this.sourceColorDrafts = {};
+    this.sourceMagnitudeValidationErrors = {};
   }
 
   private restoreCatShareDetailIntent(

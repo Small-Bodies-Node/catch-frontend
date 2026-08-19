@@ -82,7 +82,11 @@ export function getTargetPhotometryRuns(
   item: IAnalysisItem,
   run: ICentroidRun,
 ): ITargetPhotometryRun[] {
-  return item.targetPhotometryRunsState?.[run.astrometryRunId]?.[run.id] ?? [];
+  return (
+    item.targetPhotometryRunsState?.[run.astrometryRunId]?.[run.photometricCalibrationRunId]?.[
+      run.id
+    ] ?? []
+  );
 }
 
 export function getTargetPhotometryRunStatusLabel(run: ITargetPhotometryRun): string {
@@ -90,11 +94,7 @@ export function getTargetPhotometryRunStatusLabel(run: ITargetPhotometryRun): st
     return 'Running';
   }
 
-  if (run.status === 'complete') {
-    return 'Complete';
-  }
-
-  return 'Failed';
+  return run.status === 'complete' ? 'Complete' : 'Failed';
 }
 
 export function getTargetPhotometryResultRows(run: ITargetPhotometryRun): ICatToolsDatumRow[] {

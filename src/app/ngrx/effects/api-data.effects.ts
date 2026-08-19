@@ -1,6 +1,5 @@
 import { createEffect, Actions, ofType } from '@ngrx/effects';
 import { inject } from '@angular/core';
-import { HttpErrorResponse } from '@angular/common/http';
 import { of, concat, EMPTY, from } from 'rxjs';
 import { catchError, filter, map, mergeMap, switchMap, takeUntil, tap, take } from 'rxjs/operators';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -14,6 +13,9 @@ import {
   ApiDataAction_CompleteAstrometryRun,
   ApiDataAction_SetData,
   ApiDataAction_FailAstrometryRun,
+  ApiDataAction_BeginPhotometricCalibrationRun,
+  ApiDataAction_CompletePhotometricCalibrationRun,
+  ApiDataAction_FailPhotometricCalibrationRun,
   ApiDataAction_BeginCentroidRun,
   ApiDataAction_CompleteCentroidRun,
   ApiDataAction_FailCentroidRun,
@@ -46,8 +48,8 @@ import { CatApiService } from '../../core/services/cat-api/cat-api.service';
 import { TColStateMoving } from '../../../models/TColStateMoving';
 import { TColStateFixed } from '../../../models/TColStateFixed';
 import { CentroidService } from '../../core/services/centroid/centroid.service';
-import { IAstrometryErrorResponse } from '../../../models/IAstrometryRun';
 import { TargetPhotometryService } from '../../core/services/target-photometry/target-photometry.service';
+import { formatAstrometryError } from './cat-astrometry-error';
 
 const CACHE_PREFIX = 'api_cache_';
 function normalizeForKey(v: any): string {
@@ -444,69 +446,52 @@ export const runAstrometry$ = createEffect(
   { functional: true, dispatch: true },
 );
 
-function formatAstrometryError(error: unknown): string {
-  const body = getAstrometryErrorBody(error);
-  if (body) {
-    const details = [
-      body.message,
-      body.status ? `Status: ${body.status}.` : null,
-      body.error_type ? `Error type: ${body.error_type}.` : null,
-      body.stage ? `Stage: ${body.stage}.` : null,
-      body.request_id ? `Request ID: ${body.request_id}.` : null,
-      body.image_url ? `Image URL: ${body.image_url}.` : null,
-    ].filter((detail): detail is string => !!detail);
-
-    if (details.length > 0) {
-      return details.join(' ');
-    }
-  }
-
-  if (error instanceof HttpErrorResponse) {
-    return error.message || 'Unable to run astrometry.';
-  }
-
-  if (error instanceof Error) {
-    return error.message;
-  }
-
-  return 'Unable to run astrometry.';
-}
-
-function getAstrometryErrorBody(error: unknown): IAstrometryErrorResponse | null {
-  if (!(error instanceof HttpErrorResponse)) {
-    return null;
-  }
-
-  if (isAstrometryErrorResponse(error.error)) {
-    return error.error;
-  }
-
-  if (typeof error.error === 'string') {
-    try {
-      const parsed: unknown = JSON.parse(error.error);
-      return isAstrometryErrorResponse(parsed) ? parsed : null;
-    } catch {
-      return null;
-    }
-  }
-
-  return null;
-}
-
-function isAstrometryErrorResponse(value: unknown): value is IAstrometryErrorResponse {
-  return typeof value === 'object' && value !== null;
-}
+export const runPhotometricCalibration$ = createEffect(
+  (actions$ = inject(Actions), catApiService = inject(CatApiService)) => {
+    return actions$.pipe(
+      ofType(ApiDataAction_BeginPhotometricCalibrationRun),
+      mergeMap(({ productId, astrometryRunId, runId, inputs }) =>
+        catApiService.fetchPhotometricCalibration(inputs).pipe(
+          map((result) =>
+            ApiDataAction_CompletePhotometricCalibrationRun({
+              productId,
+              astrometryRunId,
+              runId,
+              result,
+              completedAt: new Date().toISOString(),
+            }),
+          ),
+          catchError((error) =>
+            of(
+              ApiDataAction_FailPhotometricCalibrationRun({
+                productId,
+                astrometryRunId,
+                runId,
+                error: appendCatToolsDownSuffix(
+                  getHttpErrorMessage(error, 'Unable to run photometric calibration.'),
+                ),
+                completedAt: new Date().toISOString(),
+              }),
+            ),
+          ),
+        ),
+      ),
+    );
+  },
+  { functional: true, dispatch: true },
+);
 
 export const runCentroid$ = createEffect(
   (actions$ = inject(Actions), centroidService = inject(CentroidService)) => {
     return actions$.pipe(
       ofType(ApiDataAction_BeginCentroidRun),
-      mergeMap(({ productId, astrometryRunId, runId, inputs }) =>
+      mergeMap(({ productId, astrometryRunId, photometricCalibrationRunId, runId, inputs }) =>
         centroidService.runCentroid(inputs).pipe(
           map((result) =>
             ApiDataAction_CompleteCentroidRun({
               productId,
               astrometryRunId,
+              photometricCalibrationRunId,
               runId,
               result,
               completedAt: new Date().toISOString(),
@@ -517,6 +502,7 @@ export const runCentroid$ = createEffect(
               ApiDataAction_FailCentroidRun({
                 productId,
                 astrometryRunId,
+                photometricCalibrationRunId,
                 runId,
                 error: appendCatToolsDownSuffix(
                   getHttpErrorMessage(error, 'Unable to run centroid.'),
@@ -536,33 +522,43 @@ export const runTargetPhotometry$ = createEffect(
   (actions$ = inject(Actions), targetPhotometryService = inject(TargetPhotometryService)) => {
     return actions$.pipe(
       ofType(ApiDataAction_BeginTargetPhotometryRun),
-      mergeMap(({ productId, astrometryRunId, centroidRunId, runId, inputs }) =>
-        targetPhotometryService.runTargetPhotometry(inputs).pipe(
-          map((result) =>
-            ApiDataAction_CompleteTargetPhotometryRun({
-              productId,
-              astrometryRunId,
-              centroidRunId,
-              runId,
-              result,
-              completedAt: new Date().toISOString(),
-            }),
-          ),
-          catchError((error) =>
-            of(
-              ApiDataAction_FailTargetPhotometryRun({
+      mergeMap(
+        ({
+          productId,
+          astrometryRunId,
+          photometricCalibrationRunId,
+          centroidRunId,
+          runId,
+          inputs,
+        }) =>
+          targetPhotometryService.runTargetPhotometry(inputs).pipe(
+            map((result) =>
+              ApiDataAction_CompleteTargetPhotometryRun({
                 productId,
                 astrometryRunId,
+                photometricCalibrationRunId,
                 centroidRunId,
                 runId,
-                error: appendCatToolsDownSuffix(
-                  getHttpErrorMessage(error, 'Unable to run target photometry.'),
-                ),
+                result,
                 completedAt: new Date().toISOString(),
               }),
             ),
+            catchError((error) =>
+              of(
+                ApiDataAction_FailTargetPhotometryRun({
+                  productId,
+                  astrometryRunId,
+                  photometricCalibrationRunId,
+                  centroidRunId,
+                  runId,
+                  error: appendCatToolsDownSuffix(
+                    getHttpErrorMessage(error, 'Unable to run target photometry.'),
+                  ),
+                  completedAt: new Date().toISOString(),
+                }),
+              ),
+            ),
           ),
-        ),
       ),
     );
   },

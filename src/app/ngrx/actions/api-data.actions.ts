@@ -11,6 +11,11 @@ import {
 } from '../../../models/IAstrometryRun';
 import { ICentroidRequest, ICentroidResponse, ICentroidization } from '../../../models/ICentroid';
 import {
+  IPhotometricCalibrationInputs,
+  IPhotometricCalibrationResult,
+} from '../../../models/IPhotometricCalibrationRun';
+import { ISourceMagnitudeCalculation } from '../../../models/ISourceMagnitude';
+import {
   ITargetPhotometryRequest,
   ITargetPhotometryResponse,
 } from '../../../models/ITargetPhotometry';
@@ -30,6 +35,9 @@ enum ApiDataActionTypes {
   FailAstrometryRun = '[ApiData] Fail Astrometry Run',
   ApplyAstrometryCentralization = '[ApiData] Apply Astrometry Centralization',
   RemoveAstrometryCentralization = '[ApiData] Remove Astrometry Centralization',
+  BeginPhotometricCalibrationRun = '[ApiData] Begin Photometric Calibration Run',
+  CompletePhotometricCalibrationRun = '[ApiData] Complete Photometric Calibration Run',
+  FailPhotometricCalibrationRun = '[ApiData] Fail Photometric Calibration Run',
   BeginCentroidRun = '[ApiData] Begin Centroid Run',
   CompleteCentroidRun = '[ApiData] Complete Centroid Run',
   FailCentroidRun = '[ApiData] Fail Centroid Run',
@@ -38,6 +46,8 @@ enum ApiDataActionTypes {
   BeginTargetPhotometryRun = '[ApiData] Begin Target Photometry Run',
   CompleteTargetPhotometryRun = '[ApiData] Complete Target Photometry Run',
   FailTargetPhotometryRun = '[ApiData] Fail Target Photometry Run',
+  SetSourceMagnitudeCalculation = '[ApiData] Set Source Magnitude Calculation',
+  RemoveSourceMagnitudeCalculation = '[ApiData] Remove Source Magnitude Calculation',
 }
 
 export const ApiDataAction_FetchData = createAction(
@@ -122,11 +132,45 @@ export const ApiDataAction_RemoveAstrometryCentralization = createAction(
   props<{ productId: string }>(),
 );
 
+export const ApiDataAction_BeginPhotometricCalibrationRun = createAction(
+  ApiDataActionTypes.BeginPhotometricCalibrationRun,
+  props<{
+    productId: string;
+    astrometryRunId: string;
+    runId: string;
+    inputs: IPhotometricCalibrationInputs;
+    createdAt: string;
+  }>(),
+);
+
+export const ApiDataAction_CompletePhotometricCalibrationRun = createAction(
+  ApiDataActionTypes.CompletePhotometricCalibrationRun,
+  props<{
+    productId: string;
+    astrometryRunId: string;
+    runId: string;
+    result: IPhotometricCalibrationResult;
+    completedAt: string;
+  }>(),
+);
+
+export const ApiDataAction_FailPhotometricCalibrationRun = createAction(
+  ApiDataActionTypes.FailPhotometricCalibrationRun,
+  props<{
+    productId: string;
+    astrometryRunId: string;
+    runId: string;
+    error: string;
+    completedAt: string;
+  }>(),
+);
+
 export const ApiDataAction_BeginCentroidRun = createAction(
   ApiDataActionTypes.BeginCentroidRun,
   props<{
     productId: string;
     astrometryRunId: string;
+    photometricCalibrationRunId: string;
     runId: string;
     inputs: ICentroidRequest;
     createdAt: string;
@@ -138,6 +182,7 @@ export const ApiDataAction_CompleteCentroidRun = createAction(
   props<{
     productId: string;
     astrometryRunId: string;
+    photometricCalibrationRunId: string;
     runId: string;
     result: ICentroidResponse;
     completedAt: string;
@@ -149,6 +194,7 @@ export const ApiDataAction_FailCentroidRun = createAction(
   props<{
     productId: string;
     astrometryRunId: string;
+    photometricCalibrationRunId: string;
     runId: string;
     error: string;
     completedAt: string;
@@ -170,6 +216,7 @@ export const ApiDataAction_BeginTargetPhotometryRun = createAction(
   props<{
     productId: string;
     astrometryRunId: string;
+    photometricCalibrationRunId: string;
     centroidRunId: string;
     runId: string;
     inputs: ITargetPhotometryRequest;
@@ -182,6 +229,7 @@ export const ApiDataAction_CompleteTargetPhotometryRun = createAction(
   props<{
     productId: string;
     astrometryRunId: string;
+    photometricCalibrationRunId: string;
     centroidRunId: string;
     runId: string;
     result: ITargetPhotometryResponse;
@@ -194,9 +242,26 @@ export const ApiDataAction_FailTargetPhotometryRun = createAction(
   props<{
     productId: string;
     astrometryRunId: string;
+    photometricCalibrationRunId: string;
     centroidRunId: string;
     runId: string;
     error: string;
     completedAt: string;
+  }>(),
+);
+
+export const ApiDataAction_SetSourceMagnitudeCalculation = createAction(
+  ApiDataActionTypes.SetSourceMagnitudeCalculation,
+  props<{ calculation: ISourceMagnitudeCalculation }>(),
+);
+
+export const ApiDataAction_RemoveSourceMagnitudeCalculation = createAction(
+  ApiDataActionTypes.RemoveSourceMagnitudeCalculation,
+  props<{
+    productId: string;
+    astrometryRunId: string;
+    photometricCalibrationRunId: string;
+    centroidRunId: string;
+    targetPhotometryRunId: string;
   }>(),
 );

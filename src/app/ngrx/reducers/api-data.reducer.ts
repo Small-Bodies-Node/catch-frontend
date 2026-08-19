@@ -14,6 +14,9 @@ import {
   ApiDataAction_FailAstrometryRun,
   ApiDataAction_ApplyAstrometryCentralization,
   ApiDataAction_RemoveAstrometryCentralization,
+  ApiDataAction_BeginPhotometricCalibrationRun,
+  ApiDataAction_CompletePhotometricCalibrationRun,
+  ApiDataAction_FailPhotometricCalibrationRun,
   ApiDataAction_ApplyCentroidization,
   ApiDataAction_BeginCentroidRun,
   ApiDataAction_CompleteCentroidRun,
@@ -22,6 +25,8 @@ import {
   ApiDataAction_BeginTargetPhotometryRun,
   ApiDataAction_CompleteTargetPhotometryRun,
   ApiDataAction_FailTargetPhotometryRun,
+  ApiDataAction_SetSourceMagnitudeCalculation,
+  ApiDataAction_RemoveSourceMagnitudeCalculation,
 } from '../actions/api-data.actions';
 import { TApiDataStatus } from '../../../models/TApiDataStatus';
 import { IApiMovum } from '../../../models/IApiMovum';
@@ -30,11 +35,17 @@ import { TAnalysisSelectionState } from '../../../models/TAnalysisSelectionState
 import { IApiFixum } from '../../../models/IApiFixum';
 import { TColStateFixed } from '../../../models/TColStateFixed';
 import {
+  IAstrometryCentralization,
   IAstrometryRun,
   TAstrometryCentralizationsState,
   TAstrometryRunsState,
 } from '../../../models/IAstrometryRun';
 import { ICentroidRun, TCentroidRunsState, TCentroidizationState } from '../../../models/ICentroid';
+import {
+  IPhotometricCalibrationRun,
+  TPhotometricCalibrationRunsState,
+} from '../../../models/IPhotometricCalibrationRun';
+import { TSourceMagnitudeState } from '../../../models/ISourceMagnitude';
 import {
   ITargetPhotometryRun,
   TTargetPhotometryRunsState,
@@ -50,9 +61,11 @@ export interface IApiDataSubstate {
   apiDataAnalysisSelectionState: TAnalysisSelectionState;
   apiDataAstrometryRunsState: TAstrometryRunsState;
   apiDataAstrometryCentralizationState: TAstrometryCentralizationsState;
+  apiDataPhotometricCalibrationRunsState: TPhotometricCalibrationRunsState;
   apiDataCentroidRunsState: TCentroidRunsState;
   apiDataCentroidizationState: TCentroidizationState;
   apiDataTargetPhotometryRunsState: TTargetPhotometryRunsState;
+  apiDataSourceMagnitudeState: TSourceMagnitudeState;
   apiSmallBodyType?: 'asteroid' | 'comet';
 }
 
@@ -70,11 +83,35 @@ export const initialState: IApiDataSubstate = {
   apiDataAnalysisSelectionState: {},
   apiDataAstrometryRunsState: {},
   apiDataAstrometryCentralizationState: {},
+  apiDataPhotometricCalibrationRunsState: {},
   apiDataCentroidRunsState: {},
   apiDataCentroidizationState: {},
   apiDataTargetPhotometryRunsState: {},
+  apiDataSourceMagnitudeState: {},
   apiSmallBodyType: undefined,
 };
+
+function withAppliedAstrometryCentralization(
+  state: IApiDataSubstate,
+  centralization: IAstrometryCentralization,
+): IApiDataSubstate {
+  const activeCentroidization = state.apiDataCentroidizationState[centralization.productId];
+  const shouldRemoveCentroidization =
+    activeCentroidization && activeCentroidization.astrometryRunId !== centralization.runId;
+  const { [centralization.productId]: _removed, ...remainingCentroidizations } =
+    state.apiDataCentroidizationState;
+
+  return {
+    ...state,
+    apiDataAstrometryCentralizationState: {
+      ...state.apiDataAstrometryCentralizationState,
+      [centralization.productId]: { ...centralization },
+    },
+    apiDataCentroidizationState: shouldRemoveCentroidization
+      ? remainingCentroidizations
+      : state.apiDataCentroidizationState,
+  };
+}
 
 function updateAstrometryRun(
   runsState: TAstrometryRunsState,
@@ -89,13 +126,13 @@ function updateAstrometryRun(
   };
 }
 
-function updateCentroidRun(
-  runsState: TCentroidRunsState,
+function updatePhotometricCalibrationRun(
+  runsState: TPhotometricCalibrationRunsState,
   productId: string,
   astrometryRunId: string,
   runId: string,
-  updater: (run: ICentroidRun) => ICentroidRun,
-): TCentroidRunsState {
+  updater: (run: IPhotometricCalibrationRun) => IPhotometricCalibrationRun,
+): TPhotometricCalibrationRunsState {
   const productRuns = runsState[productId] ?? {};
   const runs = productRuns[astrometryRunId] ?? [];
 
@@ -108,17 +145,17 @@ function updateCentroidRun(
   };
 }
 
-function updateTargetPhotometryRun(
-  runsState: TTargetPhotometryRunsState,
+function updateCentroidRun(
+  runsState: TCentroidRunsState,
   productId: string,
   astrometryRunId: string,
-  centroidRunId: string,
+  photometricCalibrationRunId: string,
   runId: string,
-  updater: (run: ITargetPhotometryRun) => ITargetPhotometryRun,
-): TTargetPhotometryRunsState {
+  updater: (run: ICentroidRun) => ICentroidRun,
+): TCentroidRunsState {
   const productRuns = runsState[productId] ?? {};
   const astrometryRuns = productRuns[astrometryRunId] ?? {};
-  const runs = astrometryRuns[centroidRunId] ?? [];
+  const runs = astrometryRuns[photometricCalibrationRunId] ?? [];
 
   return {
     ...runsState,
@@ -126,7 +163,36 @@ function updateTargetPhotometryRun(
       ...productRuns,
       [astrometryRunId]: {
         ...astrometryRuns,
-        [centroidRunId]: runs.map((run) => (run.id === runId ? updater(run) : run)),
+        [photometricCalibrationRunId]: runs.map((run) => (run.id === runId ? updater(run) : run)),
+      },
+    },
+  };
+}
+
+function updateTargetPhotometryRun(
+  runsState: TTargetPhotometryRunsState,
+  productId: string,
+  astrometryRunId: string,
+  photometricCalibrationRunId: string,
+  centroidRunId: string,
+  runId: string,
+  updater: (run: ITargetPhotometryRun) => ITargetPhotometryRun,
+): TTargetPhotometryRunsState {
+  const productRuns = runsState[productId] ?? {};
+  const astrometryRuns = productRuns[astrometryRunId] ?? {};
+  const calibrationRuns = astrometryRuns[photometricCalibrationRunId] ?? {};
+  const runs = calibrationRuns[centroidRunId] ?? [];
+
+  return {
+    ...runsState,
+    [productId]: {
+      ...productRuns,
+      [astrometryRunId]: {
+        ...astrometryRuns,
+        [photometricCalibrationRunId]: {
+          ...calibrationRuns,
+          [centroidRunId]: runs.map((run) => (run.id === runId ? updater(run) : run)),
+        },
       },
     },
   };
@@ -150,13 +216,10 @@ export const apiDataReducer = createReducer<IApiDataSubstate>(
     apiDataAnalysisSelectionState: { ...newAnalysisSelectionState },
   })),
 
-  on(ApiDataAction_SetShownColState, (state, { apiDataShownColState }) => {
-    const updatedState: IApiDataSubstate = {
-      ...state,
-      apiDataShownColState: { ...apiDataShownColState },
-    };
-    return updatedState;
-  }),
+  on(ApiDataAction_SetShownColState, (state, { apiDataShownColState }) => ({
+    ...state,
+    apiDataShownColState: { ...apiDataShownColState },
+  })),
 
   on(ApiDataAction_SetData, (state, { apiData }) => ({
     ...state,
@@ -188,6 +251,10 @@ export const apiDataReducer = createReducer<IApiDataSubstate>(
       inputs: { ...inputs },
       createdAt,
     };
+    const { [productId]: _centralization, ...remainingCentralizations } =
+      state.apiDataAstrometryCentralizationState;
+    const { [productId]: _centroidization, ...remainingCentroidizations } =
+      state.apiDataCentroidizationState;
 
     return {
       ...state,
@@ -195,23 +262,30 @@ export const apiDataReducer = createReducer<IApiDataSubstate>(
         ...state.apiDataAstrometryRunsState,
         [productId]: [...existingRuns, run],
       },
+      apiDataAstrometryCentralizationState: remainingCentralizations,
+      apiDataCentroidizationState: remainingCentroidizations,
     };
   }),
 
-  on(ApiDataAction_CompleteAstrometryRun, (state, { productId, runId, result, completedAt }) => ({
-    ...state,
-    apiDataAstrometryRunsState: updateAstrometryRun(
-      state.apiDataAstrometryRunsState,
-      productId,
-      runId,
-      (run) => ({
-        ...run,
-        status: 'complete',
-        result: { ...result },
-        completedAt,
-      }),
+  on(ApiDataAction_CompleteAstrometryRun, (state, { productId, runId, result, completedAt }) =>
+    withAppliedAstrometryCentralization(
+      {
+        ...state,
+        apiDataAstrometryRunsState: updateAstrometryRun(
+          state.apiDataAstrometryRunsState,
+          productId,
+          runId,
+          (run) => ({ ...run, status: 'complete', result: { ...result }, completedAt }),
+        ),
+      },
+      {
+        productId,
+        runId,
+        centerRaDeg: result.center_ra_deg,
+        centerDecDeg: result.center_dec_deg,
+      },
     ),
-  })),
+  ),
 
   on(ApiDataAction_FailAstrometryRun, (state, { productId, runId, error, completedAt }) => ({
     ...state,
@@ -219,33 +293,13 @@ export const apiDataReducer = createReducer<IApiDataSubstate>(
       state.apiDataAstrometryRunsState,
       productId,
       runId,
-      (run) => ({
-        ...run,
-        status: 'error',
-        error,
-        completedAt,
-      }),
+      (run) => ({ ...run, status: 'error', error, completedAt }),
     ),
   })),
 
-  on(ApiDataAction_ApplyAstrometryCentralization, (state, { centralization }) => {
-    const activeCentroidization = state.apiDataCentroidizationState[centralization.productId];
-    const shouldRemoveCentroidization =
-      activeCentroidization && activeCentroidization.astrometryRunId !== centralization.runId;
-    const { [centralization.productId]: _removed, ...remainingCentroidizations } =
-      state.apiDataCentroidizationState;
-
-    return {
-      ...state,
-      apiDataAstrometryCentralizationState: {
-        ...state.apiDataAstrometryCentralizationState,
-        [centralization.productId]: { ...centralization },
-      },
-      apiDataCentroidizationState: shouldRemoveCentroidization
-        ? remainingCentroidizations
-        : state.apiDataCentroidizationState,
-    };
-  }),
+  on(ApiDataAction_ApplyAstrometryCentralization, (state, { centralization }) =>
+    withAppliedAstrometryCentralization(state, centralization),
+  ),
 
   on(ApiDataAction_RemoveAstrometryCentralization, (state, { productId }) => {
     const { [productId]: _removed, ...remainingCentralizations } =
@@ -261,14 +315,102 @@ export const apiDataReducer = createReducer<IApiDataSubstate>(
   }),
 
   on(
-    ApiDataAction_BeginCentroidRun,
+    ApiDataAction_BeginPhotometricCalibrationRun,
     (state, { productId, astrometryRunId, runId, inputs, createdAt }) => {
-      const productRuns = state.apiDataCentroidRunsState[productId] ?? {};
+      const productRuns = state.apiDataPhotometricCalibrationRunsState[productId] ?? {};
       const existingRuns = productRuns[astrometryRunId] ?? [];
+      const run: IPhotometricCalibrationRun = {
+        id: runId,
+        productId,
+        astrometryRunId,
+        sequence: existingRuns.length + 1,
+        status: 'running',
+        inputs: { ...inputs },
+        createdAt,
+      };
+      const productCentroidRuns = state.apiDataCentroidRunsState[productId] ?? {};
+      const { [astrometryRunId]: _centroidRuns, ...remainingProductCentroidRuns } =
+        productCentroidRuns;
+      const productTargetRuns = state.apiDataTargetPhotometryRunsState[productId] ?? {};
+      const { [astrometryRunId]: _targetRuns, ...remainingProductTargetRuns } = productTargetRuns;
+      const productMagnitudeState = state.apiDataSourceMagnitudeState[productId] ?? {};
+      const { [astrometryRunId]: _magnitudes, ...remainingProductMagnitudes } =
+        productMagnitudeState;
+      const activeCentroidization = state.apiDataCentroidizationState[productId];
+      const { [productId]: _centroidization, ...remainingCentroidizations } =
+        state.apiDataCentroidizationState;
+
+      return {
+        ...state,
+        apiDataPhotometricCalibrationRunsState: {
+          ...state.apiDataPhotometricCalibrationRunsState,
+          [productId]: {
+            ...productRuns,
+            [astrometryRunId]: [...existingRuns, run],
+          },
+        },
+        apiDataCentroidRunsState: {
+          ...state.apiDataCentroidRunsState,
+          [productId]: remainingProductCentroidRuns,
+        },
+        apiDataTargetPhotometryRunsState: {
+          ...state.apiDataTargetPhotometryRunsState,
+          [productId]: remainingProductTargetRuns,
+        },
+        apiDataSourceMagnitudeState: {
+          ...state.apiDataSourceMagnitudeState,
+          [productId]: remainingProductMagnitudes,
+        },
+        apiDataCentroidizationState:
+          activeCentroidization?.astrometryRunId === astrometryRunId
+            ? remainingCentroidizations
+            : state.apiDataCentroidizationState,
+      };
+    },
+  ),
+
+  on(
+    ApiDataAction_CompletePhotometricCalibrationRun,
+    (state, { productId, astrometryRunId, runId, result, completedAt }) => ({
+      ...state,
+      apiDataPhotometricCalibrationRunsState: updatePhotometricCalibrationRun(
+        state.apiDataPhotometricCalibrationRunsState,
+        productId,
+        astrometryRunId,
+        runId,
+        (run) => ({ ...run, status: 'complete', result: { ...result }, completedAt }),
+      ),
+    }),
+  ),
+
+  on(
+    ApiDataAction_FailPhotometricCalibrationRun,
+    (state, { productId, astrometryRunId, runId, error, completedAt }) => ({
+      ...state,
+      apiDataPhotometricCalibrationRunsState: updatePhotometricCalibrationRun(
+        state.apiDataPhotometricCalibrationRunsState,
+        productId,
+        astrometryRunId,
+        runId,
+        (run) => ({ ...run, status: 'error', error, completedAt }),
+      ),
+    }),
+  ),
+
+  on(
+    ApiDataAction_BeginCentroidRun,
+    (
+      state,
+      { productId, astrometryRunId, photometricCalibrationRunId, runId, inputs, createdAt },
+    ) => {
+      const productRuns = state.apiDataCentroidRunsState[productId] ?? {};
+      const astrometryRuns = productRuns[astrometryRunId] ?? {};
+      const existingRuns = astrometryRuns[photometricCalibrationRunId] ?? [];
       const run: ICentroidRun = {
         id: runId,
         productId,
         astrometryRunId,
+        photometricCalibrationRunId,
         sequence: existingRuns.length + 1,
         status: 'running',
         inputs: { ...inputs },
@@ -281,7 +423,10 @@ export const apiDataReducer = createReducer<IApiDataSubstate>(
           ...state.apiDataCentroidRunsState,
           [productId]: {
             ...productRuns,
-            [astrometryRunId]: [...existingRuns, run],
+            [astrometryRunId]: {
+              ...astrometryRuns,
+              [photometricCalibrationRunId]: [...existingRuns, run],
+            },
           },
         },
       };
@@ -290,38 +435,36 @@ export const apiDataReducer = createReducer<IApiDataSubstate>(
 
   on(
     ApiDataAction_CompleteCentroidRun,
-    (state, { productId, astrometryRunId, runId, result, completedAt }) => ({
+    (
+      state,
+      { productId, astrometryRunId, photometricCalibrationRunId, runId, result, completedAt },
+    ) => ({
       ...state,
       apiDataCentroidRunsState: updateCentroidRun(
         state.apiDataCentroidRunsState,
         productId,
         astrometryRunId,
+        photometricCalibrationRunId,
         runId,
-        (run) => ({
-          ...run,
-          status: 'complete',
-          result: { ...result },
-          completedAt,
-        }),
+        (run) => ({ ...run, status: 'complete', result: { ...result }, completedAt }),
       ),
     }),
   ),
 
   on(
     ApiDataAction_FailCentroidRun,
-    (state, { productId, astrometryRunId, runId, error, completedAt }) => ({
+    (
+      state,
+      { productId, astrometryRunId, photometricCalibrationRunId, runId, error, completedAt },
+    ) => ({
       ...state,
       apiDataCentroidRunsState: updateCentroidRun(
         state.apiDataCentroidRunsState,
         productId,
         astrometryRunId,
+        photometricCalibrationRunId,
         runId,
-        (run) => ({
-          ...run,
-          status: 'error',
-          error,
-          completedAt,
-        }),
+        (run) => ({ ...run, status: 'error', error, completedAt }),
       ),
     }),
   ),
@@ -337,23 +480,32 @@ export const apiDataReducer = createReducer<IApiDataSubstate>(
   on(ApiDataAction_RemoveCentroidization, (state, { productId }) => {
     const { [productId]: _removed, ...remainingCentroidizations } =
       state.apiDataCentroidizationState;
-
-    return {
-      ...state,
-      apiDataCentroidizationState: remainingCentroidizations,
-    };
+    return { ...state, apiDataCentroidizationState: remainingCentroidizations };
   }),
 
   on(
     ApiDataAction_BeginTargetPhotometryRun,
-    (state, { productId, astrometryRunId, centroidRunId, runId, inputs, createdAt }) => {
+    (
+      state,
+      {
+        productId,
+        astrometryRunId,
+        photometricCalibrationRunId,
+        centroidRunId,
+        runId,
+        inputs,
+        createdAt,
+      },
+    ) => {
       const productRuns = state.apiDataTargetPhotometryRunsState[productId] ?? {};
       const astrometryRuns = productRuns[astrometryRunId] ?? {};
-      const existingRuns = astrometryRuns[centroidRunId] ?? [];
+      const calibrationRuns = astrometryRuns[photometricCalibrationRunId] ?? {};
+      const existingRuns = calibrationRuns[centroidRunId] ?? [];
       const run: ITargetPhotometryRun = {
         id: runId,
         productId,
         astrometryRunId,
+        photometricCalibrationRunId,
         centroidRunId,
         sequence: existingRuns.length + 1,
         status: 'running',
@@ -369,7 +521,10 @@ export const apiDataReducer = createReducer<IApiDataSubstate>(
             ...productRuns,
             [astrometryRunId]: {
               ...astrometryRuns,
-              [centroidRunId]: [...existingRuns, run],
+              [photometricCalibrationRunId]: {
+                ...calibrationRuns,
+                [centroidRunId]: [...existingRuns, run],
+              },
             },
           },
         },
@@ -379,41 +534,119 @@ export const apiDataReducer = createReducer<IApiDataSubstate>(
 
   on(
     ApiDataAction_CompleteTargetPhotometryRun,
-    (state, { productId, astrometryRunId, centroidRunId, runId, result, completedAt }) => ({
+    (
+      state,
+      {
+        productId,
+        astrometryRunId,
+        photometricCalibrationRunId,
+        centroidRunId,
+        runId,
+        result,
+        completedAt,
+      },
+    ) => ({
       ...state,
       apiDataTargetPhotometryRunsState: updateTargetPhotometryRun(
         state.apiDataTargetPhotometryRunsState,
         productId,
         astrometryRunId,
+        photometricCalibrationRunId,
         centroidRunId,
         runId,
-        (run) => ({
-          ...run,
-          status: 'complete',
-          result: { ...result },
-          completedAt,
-        }),
+        (run) => ({ ...run, status: 'complete', result: { ...result }, completedAt }),
       ),
     }),
   ),
 
   on(
     ApiDataAction_FailTargetPhotometryRun,
-    (state, { productId, astrometryRunId, centroidRunId, runId, error, completedAt }) => ({
+    (
+      state,
+      {
+        productId,
+        astrometryRunId,
+        photometricCalibrationRunId,
+        centroidRunId,
+        runId,
+        error,
+        completedAt,
+      },
+    ) => ({
       ...state,
       apiDataTargetPhotometryRunsState: updateTargetPhotometryRun(
         state.apiDataTargetPhotometryRunsState,
         productId,
         astrometryRunId,
+        photometricCalibrationRunId,
         centroidRunId,
         runId,
-        (run) => ({
-          ...run,
-          status: 'error',
-          error,
-          completedAt,
-        }),
+        (run) => ({ ...run, status: 'error', error, completedAt }),
       ),
     }),
+  ),
+
+  on(ApiDataAction_SetSourceMagnitudeCalculation, (state, { calculation }) => {
+    const productState = state.apiDataSourceMagnitudeState[calculation.productId] ?? {};
+    const astrometryState = productState[calculation.astrometryRunId] ?? {};
+    const calibrationState = astrometryState[calculation.photometricCalibrationRunId] ?? {};
+    const centroidState = calibrationState[calculation.centroidRunId] ?? {};
+
+    return {
+      ...state,
+      apiDataSourceMagnitudeState: {
+        ...state.apiDataSourceMagnitudeState,
+        [calculation.productId]: {
+          ...productState,
+          [calculation.astrometryRunId]: {
+            ...astrometryState,
+            [calculation.photometricCalibrationRunId]: {
+              ...calibrationState,
+              [calculation.centroidRunId]: {
+                ...centroidState,
+                [calculation.targetPhotometryRunId]: { ...calculation },
+              },
+            },
+          },
+        },
+      },
+    };
+  }),
+
+  on(
+    ApiDataAction_RemoveSourceMagnitudeCalculation,
+    (
+      state,
+      {
+        productId,
+        astrometryRunId,
+        photometricCalibrationRunId,
+        centroidRunId,
+        targetPhotometryRunId,
+      },
+    ) => {
+      const productState = state.apiDataSourceMagnitudeState[productId] ?? {};
+      const astrometryState = productState[astrometryRunId] ?? {};
+      const calibrationState = astrometryState[photometricCalibrationRunId] ?? {};
+      const centroidState = calibrationState[centroidRunId] ?? {};
+      const { [targetPhotometryRunId]: _removed, ...remainingCalculations } = centroidState;
+
+      return {
+        ...state,
+        apiDataSourceMagnitudeState: {
+          ...state.apiDataSourceMagnitudeState,
+          [productId]: {
+            ...productState,
+            [astrometryRunId]: {
+              ...astrometryState,
+              [photometricCalibrationRunId]: {
+                ...calibrationState,
+                [centroidRunId]: remainingCalculations,
+              },
+            },
+          },
+        },
+      };
+    },
   ),
 );
