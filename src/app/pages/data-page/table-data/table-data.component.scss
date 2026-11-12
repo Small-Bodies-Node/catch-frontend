@@ -244,8 +244,8 @@
     justify-content: space-between;
     align-items: center;
     position: relative;
-    height: $footerHeight;
-    overflow: hidden;
+    min-height: $footerHeight;
+    flex-wrap: wrap;
     background-color: var(--data-page-panel-color, var(--mat-sys-surface-container-lowest));
     color: var(--mat-sys-on-surface);
 
@@ -265,7 +265,11 @@
     }
 
     .paginator-wrapper {
-      flex: none;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: flex-end;
+      flex: 0 1 auto;
       min-width: 0;
       position: relative;
       z-index: 2;
@@ -273,6 +277,33 @@
 
       @media (max-width: 768px) {
         width: 100%;
+      }
+    }
+
+    .page-jump {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 0 8px;
+      font-size: 12px;
+      white-space: nowrap;
+
+      input {
+        box-sizing: content-box;
+        width: 5ch;
+        min-height: 28px;
+        margin: 0 4px;
+        padding: 2px 6px;
+        border: 1px solid var(--mat-sys-outline);
+        border-radius: 4px;
+        background: transparent;
+        color: inherit;
+        font: inherit;
+
+        &:focus-visible {
+          outline: 2px solid var(--mat-sys-primary);
+          outline-offset: 2px;
+        }
       }
     }
   }

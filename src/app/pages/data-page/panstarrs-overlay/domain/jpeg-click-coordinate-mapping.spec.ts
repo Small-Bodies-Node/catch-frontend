@@ -29,7 +29,7 @@ describe('jpeg click coordinate mapping', () => {
     ).toEqual({ x: 50, y: 25 });
   });
 
-  it('inverts horizontal overlay flips before returning native pixels', () => {
+  it('keeps provider geometry independent of survey names', () => {
     expect(
       getNativeImagePixelFromJpegClick({
         source: 'ps1dr2',
@@ -37,7 +37,7 @@ describe('jpeg click coordinate mapping', () => {
         displayX: 60,
         displayY: 70,
       }),
-    ).toEqual({ x: 80, y: 25 });
+    ).toEqual({ x: 20, y: 25 });
   });
 
   it('returns null for clicks outside the rendered image', () => {
@@ -59,7 +59,7 @@ describe('jpeg click coordinate mapping', () => {
       nativeY: 25,
     });
 
-    expect(displayPoint).toEqual({ x: 60, y: 70 });
+    expect(displayPoint).toEqual({ x: 180, y: 70 });
     expect(
       getNativeImagePixelFromJpegClick({
         source: 'skymapper_dr4',

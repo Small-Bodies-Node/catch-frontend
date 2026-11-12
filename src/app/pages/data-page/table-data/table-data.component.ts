@@ -9,7 +9,8 @@ import {
   ViewChild,
   ViewChildren,
 } from '@angular/core';
-import { Subscription } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
+import { selectPreviewUrls } from '../../../ngrx/selectors/preview-urls.selector';
 import { Store } from '@ngrx/store';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDialog } from '@angular/material/dialog';
@@ -35,20 +36,18 @@ import {
 } from '../../../ngrx/actions/api-data.actions';
 import { TAnalysisSelectionState } from '../../../../models/TAnalysisSelectionState';
 import { TableDataCheckboxesComponent } from '../table-data-checkboxes/table-data-checkboxes.component';
-import { ImageFetchService } from '../../../core/services/fetch-image/fetch-image.service';
 import {
   PlotlyGraphComponent,
   PlotlyGraphWrapperComponent,
 } from '../plotly-graph/plotly-graph.component';
 import { TColStateData } from '../../../../models/TColStateData';
 import { MatTableModule } from '@angular/material/table';
-import { NgClass, NgStyle, TitleCasePipe } from '@angular/common';
+import { AsyncPipe, NgClass, NgStyle, TitleCasePipe } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { TableThumbnailComponent } from '../table-thumbnail/table-thumbnail.component';
 import { TableThumbnailV2Component } from '../table-thumbnail-v2/table-thumbnail-v2.component';
 import { SelectTableRowsDirective } from '../../../core/directives/select-table-rows.directive';
 import { getDataViewLayoutCssVars } from '../data-view-layout.constants';
-import { ThumbnailImageCacheService } from '../../../core/services/thumbnail-image-cache/thumbnail-image-cache.service';
 import {
   ITableFilterDialogData,
   TableFilterDialogComponent,
@@ -108,6 +107,7 @@ type TPlotlyHistogramColumn = 'ra' | 'dec' | 'true_anomaly';
     PlotlyGraphComponent,
     //
     NgClass,
+    AsyncPipe,
     NgStyle,
     TitleCasePipe,
   ],
@@ -157,7 +157,7 @@ export class TableDataComponent implements AfterViewInit, OnDestroy {
   readonly tableLayoutVars = getDataViewLayoutCssVars();
   allShownCols: string[] = [];
 
-  dataSource?: MatTableDataSource<IApiMovum | IApiFixum>;
+  readonly dataSource = new MatTableDataSource<IApiMovum | IApiFixum>([]);
   apiActiveDatum?: IApiMovum | IApiFixum;
   allApiData?: Array<IApiMovum | IApiFixum>;
   colState?: TColStateData;
@@ -170,8 +170,15 @@ export class TableDataComponent implements AfterViewInit, OnDestroy {
   private pendingScroll = false;
   private isRevealingActiveDatumPage = false;
   private _tableDisplayMode: TTableDisplayMode = 'expanded';
+  private sortedDataCache?: {
+    data: Array<IApiMovum | IApiFixum>;
+    active: string;
+    direction: string;
+    rows: Array<IApiMovum | IApiFixum>;
+  };
 
   pageSizeOptions = [25, 50, 100, 200];
+  readonly previewUrls$: Observable<Record<string, string>>;
   pageSize = 100;
   pageIndex = 0;
   sourceFilterOptions: ITableSourceFilterOption[] = [];
@@ -181,9 +188,8 @@ export class TableDataComponent implements AfterViewInit, OnDestroy {
   constructor(
     private store$: Store<IAppState>,
     private dialog: MatDialog,
-    private fetchImageService: ImageFetchService,
-    private thumbnailImageCacheService: ThumbnailImageCacheService,
   ) {
+    this.previewUrls$ = store$.select(selectPreviewUrls);
     this.subscriptions.add(
       this.store$.select(selectApiData).subscribe((apiData) => {
         this.allApiData = apiData?.filter((_, ind) => ind < 70000000000);
@@ -243,6 +249,7 @@ export class TableDataComponent implements AfterViewInit, OnDestroy {
 
   ngOnDestroy() {
     this.subscriptions.unsubscribe();
+    this.dataSource.disconnect();
   }
 
   ///////////////////////////////////
@@ -253,21 +260,48 @@ export class TableDataComponent implements AfterViewInit, OnDestroy {
     if (!this.allApiData) return;
     const filteredApiData = this.getFilteredApiData();
     this.filteredResultCount = filteredApiData.length;
-    this.dataSource = new MatTableDataSource(filteredApiData);
-
+    this.pageIndex = Math.min(this.pageIndex, Math.max(0, this.pageCount - 1));
+    // Attach pagination before supplying rows: the first render must never create
+    // thumbnail components for the entire result set.
     if (!this.paginator) return;
-    this.dataSource.paginator = this.paginator;
     this.paginator.pageIndex = this.pageIndex;
+    if (this.dataSource.paginator !== this.paginator) this.dataSource.paginator = this.paginator;
+    if (this.sort && this.dataSource.sort !== this.sort) this.dataSource.sort = this.sort;
+    this.dataSource.data = filteredApiData;
+  }
 
-    if (!this.sort) return;
-    this.dataSource.sort = this.sort;
+  get pageCount(): number {
+    return Math.ceil(this.filteredResultCount / this.pageSize);
+  }
+
+  get currentPageNumber(): number {
+    return this.pageCount === 0 ? 0 : this.pageIndex + 1;
+  }
+
+  goToPage(value: string): void {
+    const page = Number(value);
+    if (!Number.isInteger(page) || page < 1 || page > this.pageCount) return;
+    this.navigateToPage(page - 1);
+  }
+
+  private navigateToPage(pageIndex: number): void {
+    if (!this.paginator || pageIndex === this.pageIndex) return;
+    const previousPageIndex = this.pageIndex;
+    this.paginator.pageIndex = pageIndex;
+    // Emit the same public event used by First/Last and Previous/Next so the
+    // rendered rows, selection, viewer and keyboard navigation stay in sync.
+    this.paginator.page.emit({
+      length: this.filteredResultCount,
+      pageIndex,
+      pageSize: this.pageSize,
+      previousPageIndex,
+    });
   }
 
   onPaginateChange(event: PageEvent) {
     // console.log('Page event: ', event);
     this.pageIndex = event.pageIndex;
     this.pageSize = event.pageSize;
-    this.resetThumbnailQueues();
     if (this.isRevealingActiveDatumPage) {
       this.queueScrollToActiveRow();
       return;
@@ -282,29 +316,14 @@ export class TableDataComponent implements AfterViewInit, OnDestroy {
       .map((_) => _.product_id)
       .indexOf(apiActiveDatum?.product_id ?? '');
     // Make sure the active datum is within the bounds of the current page
-    if (indexOfActiveDatum < this.pageIndex * this.pageSize)
-      indexOfActiveDatum = this.pageIndex * this.pageSize;
-    if (indexOfActiveDatum >= (this.pageIndex + 1) * this.pageSize)
-      indexOfActiveDatum = (this.pageIndex + 1) * this.pageSize - 1;
+    const pageStart = this.pageIndex * this.pageSize;
+    const pageEnd = Math.min(pageStart + this.pageSize, sortedApiData.length) - 1;
+    indexOfActiveDatum = Math.min(Math.max(indexOfActiveDatum, pageStart), pageEnd);
     this.store$.dispatch(
       ApiDataAction_SetActiveDatum({
         apiDatum: sortedApiData[indexOfActiveDatum],
       }),
     );
-  }
-
-  isRowDisplayed(row: IApiMovum | IApiFixum) {
-    const sortedData = this.getSortedApiData();
-    if (!sortedData) return false;
-    const rowIndex = sortedData.findIndex((apiDatum) => apiDatum.product_id === row.product_id);
-    if (rowIndex === -1) return false;
-    if (
-      rowIndex >= this.pageIndex * this.pageSize &&
-      rowIndex < (this.pageIndex + 1) * this.pageSize
-    ) {
-      return true;
-    }
-    return false;
   }
 
   ///////////////////////////////////
@@ -525,12 +544,20 @@ export class TableDataComponent implements AfterViewInit, OnDestroy {
   }
 
   getSortedApiData(): Array<IApiMovum | IApiFixum> | undefined {
-    if (!this.dataSource) return undefined;
-    let data = [...this.dataSource.data];
-
+    const data = this.dataSource.data;
     const sort = this.dataSource.sort;
-    if (!sort) return data;
-    return this.dataSource.sortData(data, sort);
+    const active = sort?.active ?? '';
+    const direction = sort?.direction ?? '';
+    if (
+      this.sortedDataCache?.data === data &&
+      this.sortedDataCache.active === active &&
+      this.sortedDataCache.direction === direction
+    )
+      return this.sortedDataCache.rows;
+
+    const rows = sort ? this.dataSource.sortData([...data], sort) : [...data];
+    this.sortedDataCache = { data, active, direction, rows };
+    return rows;
   }
 
   /////////////////////////////////////////////
@@ -660,15 +687,9 @@ export class TableDataComponent implements AfterViewInit, OnDestroy {
   private setTableFilters(tableFilters: ITableFilterState): void {
     this.tableFilters = tableFilters;
     this.pageIndex = 0;
-    this.resetThumbnailQueues();
     this.setPaginatorAndSort();
     this.syncActiveDatumWithFilteredData();
     this.queueScrollToActiveRow();
-  }
-
-  private resetThumbnailQueues(): void {
-    this.fetchImageService.resetQueue();
-    this.thumbnailImageCacheService.resetQueues();
   }
 
   private reconcileSourceFilterSelection(): void {
@@ -734,17 +755,9 @@ export class TableDataComponent implements AfterViewInit, OnDestroy {
     const activePageIndex = Math.floor(activeIndex / this.pageSize);
     if (activePageIndex === this.pageIndex) return;
 
-    const previousPageIndex = this.pageIndex;
-    this.pageIndex = activePageIndex;
     this.isRevealingActiveDatumPage = true;
     try {
-      this.paginator.pageIndex = activePageIndex;
-      this.paginator.page.emit({
-        length: sortedApiData.length,
-        pageIndex: activePageIndex,
-        pageSize: this.pageSize,
-        previousPageIndex,
-      });
+      this.navigateToPage(activePageIndex);
     } finally {
       this.isRevealingActiveDatumPage = false;
     }

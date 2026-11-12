@@ -106,7 +106,7 @@ describe('panstarrs overlay geometry', () => {
     };
 
     expect(getCentroidAstrometryAnchorX(centroidization)).toBe(10);
-    expect(getCentroidOverlayDelta('ps1dr2', centroidization)).toEqual({ x: -2, y: -3 });
+    expect(getCentroidOverlayDelta('ps1dr2', centroidization)).toEqual({ x: 2, y: 3 });
     expect(
       getApertureOverlayCenter({
         source: 'ps1dr2',
@@ -117,7 +117,7 @@ describe('panstarrs overlay geometry', () => {
         centroidization,
         aperturePosition: [14, 16],
       }),
-    ).toEqual({ x: 92, y: 188 });
+    ).toEqual({ x: 108, y: 212 });
   });
 
   it('scales aperture diameters from average rendered image scale', () => {

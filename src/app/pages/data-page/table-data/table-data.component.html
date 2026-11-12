@@ -8,7 +8,7 @@
   </div>
 
   <div class="table-wrapper mat-elevation-z8" #tableContainerDiv>
-    <table mat-table [dataSource]="dataSource || []" matSort>
+    <table mat-table [dataSource]="dataSource" matSort>
       <!--  -->
 
       <!-- Checkbox Column -->
@@ -61,22 +61,20 @@
           [ngClass]="{ 'highlighted-sticky-cell': isRowActive(element) }"
           (click)="activateRowDatum(element)"
         >
-          @if (isRowDisplayed(element)) {
-            @if (useThumbnailLoaderV2) {
-              <app-table-thumbnail-v2
-                [apiDatum]="element"
-                [priority]="isRowActive(element) ? 'vip' : 'nip'"
-                [label]="getThumbnailLabel(element)"
-              ></app-table-thumbnail-v2>
-            } @else {
-              <app-table-thumbnail
-                [apiDatum]="element"
-                [priority]="isRowActive(element) ? 'vip' : 'nip'"
-                [label]="getThumbnailLabel(element)"
-              ></app-table-thumbnail>
-            }
+          @if (useThumbnailLoaderV2) {
+            <app-table-thumbnail-v2
+              [previewUrl]="(previewUrls$ | async)?.[element.product_id]"
+              [apiDatum]="element"
+              [priority]="isRowActive(element) ? 'vip' : 'nip'"
+              [label]="getThumbnailLabel(element)"
+            ></app-table-thumbnail-v2>
           } @else {
-            <div>Placeholder</div>
+            <app-table-thumbnail
+              [previewUrl]="(previewUrls$ | async)?.[element.product_id]"
+              [apiDatum]="element"
+              [priority]="isRowActive(element) ? 'vip' : 'nip'"
+              [label]="getThumbnailLabel(element)"
+            ></app-table-thumbnail>
           }
         </td>
       </ng-container>
@@ -216,9 +214,30 @@
         [length]="filteredResultCount"
         [pageSizeOptions]="pageSizeOptions"
         [pageSize]="pageSize"
+        [pageIndex]="pageIndex"
+        [showFirstLastButtons]="true"
         (page)="onPaginateChange($event)"
         aria-label="Select page of table results"
       ></mat-paginator>
+      <form class="page-jump" (submit)="goToPage(pageJumpInput.value); $event.preventDefault()">
+        <label>
+          Page
+          <input
+            #pageJumpInput
+            type="number"
+            inputmode="numeric"
+            aria-label="Page number"
+            min="1"
+            [max]="pageCount"
+            step="1"
+            required
+            [value]="currentPageNumber"
+            [disabled]="pageCount === 0"
+          />
+          of {{ pageCount }}
+        </label>
+        <button type="submit" mat-button [disabled]="pageCount === 0">Go</button>
+      </form>
     </div>
   </div>
 </div>

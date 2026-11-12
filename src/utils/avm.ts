@@ -1,3 +1,5 @@
+import { previewPixelToWorld } from '../../projects/ngx-js9/src/lib/utils/previewPixelToWorld';
+
 /**
  * Get the world coordinate system metadata from an image's XMP tags.
  *
@@ -14,6 +16,9 @@ export function getWCSfromXMP(xmp: any) {
     referencePixel: getTwo(xmp, 'Spatial.ReferencePixel'), // pixel coordinates at referenceValue
     size: [xmp['Image Width'].value, xmp['Image Height'].value], // pixels
   };
+  const projection = xmp['Spatial.CoordsystemProjection']?.value;
+  if (projection !== 'TAN') throw new Error('Preview WCS must describe a TAN projection.');
+  wcs.coordinateFrame = xmp['Spatial.CoordinateFrame']?.value ?? 'ICRS';
 
   // scale and rotation may be in CDMatrix or Scale+Rotation
   if (xmp['Spatial.CDMatrix'] !== undefined) {
@@ -27,6 +32,7 @@ export function getWCSfromXMP(xmp: any) {
         Number(xmp['Spatial.CDMatrix'].value[3].value),
       ],
     ];
+    wcs.cdMatrix = cd;
 
     const det = cd[0][0] * cd[1][1] - cd[0][1] * cd[1][0];
     const sign = Math.sign(det);
@@ -41,6 +47,12 @@ export function getWCSfromXMP(xmp: any) {
   } else {
     wcs.scale = getTwo(xmp, 'Spatial.Scale'); // degrees / pixel
     wcs.rotation = (Math.PI / 180) * Number(xmp['Spatial.Rotation'].value); // radians
+    const cos = Math.cos(wcs.rotation);
+    const sin = Math.sin(wcs.rotation);
+    wcs.cdMatrix = [
+      [wcs.scale[0] * cos, -wcs.scale[1] * sin],
+      [wcs.scale[0] * sin, wcs.scale[1] * cos],
+    ];
   }
 
   return wcs;
@@ -103,46 +115,51 @@ export function position_angle(lon1: number, lat1: number, lon2: number, lat2: n
 
 /**
  * Convert world coordinates right ascension and declination to pixel position,
- * where (x, y) = (1, 1) is the upper-left corner of the image.
+ * measured from the upper-left image edge; the first pixel center is (.5, .5).
  *
  * @param wcs The world coordinate system transformation parameters (see getWCS).
  * @param ra Right ascension [degrees]
  * @param dec Declination [degrees]
  */
 export function world_to_pixel(wcs: any, ra: number, dec: number) {
-  // angular distance (rho) to the reference value [degrees]
-  const rho =
-    (angular_separation(wcs.referenceValue[0], wcs.referenceValue[1], ra, dec) * 180) / Math.PI;
-
-  // position angle (phi) of coordinates with respect to the reference value [radians]
-  const phi = position_angle(wcs.referenceValue[0], wcs.referenceValue[1], ra, dec);
-
-  // now, get the pixel coordinates for 1-based index, origin in lower-left
-  const x = (rho * Math.sin(phi + wcs.rotation)) / wcs.scale[0] + wcs.referencePixel[0];
-  const y = (rho * Math.cos(phi + wcs.rotation)) / wcs.scale[1] + wcs.referencePixel[1];
-
-  // transform to origin in upper-left
-  return [x, wcs.size[1] - y + 1];
+  const radians = Math.PI / 180;
+  const lat = dec * radians;
+  const lat0 = wcs.referenceValue[1] * radians;
+  const delta = (ra - wcs.referenceValue[0]) * radians;
+  const denominator =
+    Math.sin(lat0) * Math.sin(lat) + Math.cos(lat0) * Math.cos(lat) * Math.cos(delta);
+  if (denominator <= 0) throw new Error('Coordinate is outside the tangent-plane hemisphere.');
+  const xi = (Math.cos(lat) * Math.sin(delta)) / denominator / radians;
+  const eta =
+    (Math.cos(lat0) * Math.sin(lat) - Math.sin(lat0) * Math.cos(lat) * Math.cos(delta)) /
+    denominator /
+    radians;
+  const cd = getCdMatrix(wcs);
+  const determinant = cd[0][0] * cd[1][1] - cd[0][1] * cd[1][0];
+  if (!Number.isFinite(determinant) || determinant === 0) throw new Error('Singular preview WCS.');
+  const dx = (cd[1][1] * xi - cd[0][1] * eta) / determinant;
+  const dy = (-cd[1][0] * xi + cd[0][0] * eta) / determinant;
+  // Browser coordinates are measured from top-left edges; pixel centers are .5.
+  return [wcs.referencePixel[0] + dx - 0.5, wcs.size[1] - wcs.referencePixel[1] - dy + 0.5];
 }
 
 /**
  * Convert an upper-left-origin image pixel position to world coordinates.
  *
- * This is the inverse of world_to_pixel for the local tangent-plane WCS
- * approximation used by the AVM helper above.
+ * Exact inverse TAN projection, including the full CD matrix.
  */
 export function pixel_to_world(wcs: any, x: number, y: number): [number, number] {
-  const lowerLeftY = wcs.size[1] - y + 1;
-  const dxDeg = (x - wcs.referencePixel[0]) * wcs.scale[0];
-  const dyDeg = (lowerLeftY - wcs.referencePixel[1]) * wcs.scale[1];
-  const rhoDeg = Math.hypot(dxDeg, dyDeg);
+  return previewPixelToWorld(wcs, x - 0.5, wcs.size[1] - y - 0.5);
+}
 
-  if (rhoDeg === 0) {
-    return [normalizeDegrees(wcs.referenceValue[0]), wcs.referenceValue[1]];
-  }
-
-  const phi = Math.atan2(dxDeg, dyDeg) - wcs.rotation;
-  return offset_world_coordinate(wcs.referenceValue[0], wcs.referenceValue[1], rhoDeg, phi);
+function getCdMatrix(wcs: any): [[number, number], [number, number]] {
+  if (wcs.cdMatrix) return wcs.cdMatrix;
+  const cos = Math.cos(wcs.rotation);
+  const sin = Math.sin(wcs.rotation);
+  return [
+    [wcs.scale[0] * cos, -wcs.scale[1] * sin],
+    [wcs.scale[0] * sin, wcs.scale[1] * cos],
+  ];
 }
 
 export function offset_world_coordinate(

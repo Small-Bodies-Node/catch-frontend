@@ -87,6 +87,7 @@ import {
   getPhotometricCalibrationCatalogConfiguration,
   isPhotometricCalibrationBandSupported,
   isPhotometricCalibrationColorTermSupported,
+  normalizePhotometricCalibrationColorTerm,
   reconcilePhotometricCalibrationCatalog,
 } from './domain/cat-photometric-catalog';
 import { calculateSourceMagnitude as calculateSourceMagnitudeResult } from './domain/cat-source-magnitude';
@@ -277,9 +278,9 @@ export class CatToolsComponent implements OnDestroy {
     photometryApertureRadius:
       'Aperture radius, in pixels, used to measure calibration-source fluxes.',
     photometryCatalog: 'Reference catalog used for photometric calibration.',
-    photometryCalBand: 'Catalog band used as the photometric calibration reference.',
+    photometryCalBand: 'Catalog band used for the calibrated magnitude.',
     photometryColorIndex:
-      'Color-index label sent as color_term, for example g-r or bp-rp. The fitted response coefficient is a separate numeric value.',
+      'Optional catalog color index. Leave blank if no color index is specified. The fitted color-term coefficient is a separate numeric value.',
     sourceColor:
       'Target color in the displayed index, such as g-r or bp-rp. It is multiplied by the fitted color-term coefficient to transform the measured magnitude onto the catalog system. The default of 0 applies no color correction.',
     centroidX:
@@ -614,7 +615,7 @@ export class CatToolsComponent implements OnDestroy {
   }
 
   getPhotometricCalibrationColorIndex(run: IPhotometricCalibrationRun): string {
-    return run.result?.photometry.color_index || run.inputs.color_term;
+    return run.result?.photometry.color_index || run.inputs.color_term || 'not specified';
   }
 
   onPhotometricCalibrationCatalogChange(catalog: TPhotometricCalibrationCatalog): void {
@@ -646,6 +647,9 @@ export class CatToolsComponent implements OnDestroy {
         runId: simpleUid(),
         inputs: {
           ...this.photometricCalibrationDraft,
+          color_term: normalizePhotometricCalibrationColorTerm(
+            this.photometricCalibrationDraft.color_term,
+          ),
           // This is an internal workflow value, never a user-provided form value.
           wcs_image_url: wcsImageUrl,
         },
@@ -1277,15 +1281,15 @@ export class CatToolsComponent implements OnDestroy {
   }
 
   /**
-   * CAT's calibrated FITS files preserve the source pixel grid, while JS9 registers its WCS
-   * mapper against the original FITS URL displayed for the row.
+   * CAT preserves the source pixel array. Locate the requested sky position
+   * through this run's solved WCS, regardless of the visible image revision.
    */
   private getCentroidCoordinateReferenceFile(
     item: IAnalysisItem,
     run: IAstrometryRun,
     fallbackFile: string,
   ): string {
-    return item.apiDatum.cutout_url || run.inputs.image_url || fallbackFile;
+    return run.result?.wcs_image_url || fallbackFile || item.apiDatum.cutout_url || '';
   }
 
   private refreshTargetPhotometryDraftForActiveView(): void {
@@ -1558,15 +1562,6 @@ export class CatToolsComponent implements OnDestroy {
       run.result?.center_ra_deg,
       run.result?.center_dec_deg,
     );
-
-    if (originalTargetPixel && solvedCenterPixel) {
-      return {
-        imageX:
-          originalTargetPixel.imageX + (originalTargetPixel.imageX - solvedCenterPixel.imageX),
-        imageY:
-          originalTargetPixel.imageY + (originalTargetPixel.imageY - solvedCenterPixel.imageY),
-      };
-    }
 
     return originalTargetPixel ?? solvedCenterPixel;
   }

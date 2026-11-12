@@ -104,6 +104,14 @@
               "extractLicenses": false,
               "sourceMap": true,
               "outputPath": "dist/catch-frontend-ng20"
+            },
+            "local-images": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.local.ts",
+                  "with": "src/environments/environment.local-images.ts"
+                }
+              ]
             }
           },
           "defaultConfiguration": "prod-deployment"
@@ -122,6 +130,9 @@
             },
             "local": {
               "buildTarget": "catch-frontend-ng20:build:local"
+            },
+            "local-images": {
+              "buildTarget": "catch-frontend-ng20:build:local,local-images"
             }
           },
           "defaultConfiguration": "local"

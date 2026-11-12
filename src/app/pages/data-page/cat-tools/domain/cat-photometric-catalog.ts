@@ -45,11 +45,19 @@ export function isPhotometricCalibrationBandSupported(
   );
 }
 
+export function normalizePhotometricCalibrationColorTerm(colorTerm: string | null): string | null {
+  // Empty form fields represent an explicit null in the CAT request.
+  return colorTerm?.trim() || null;
+}
+
 export function isPhotometricCalibrationColorTermSupported(
   catalog: TPhotometricCalibrationCatalog,
-  colorTerm: string,
+  colorTerm: string | null,
 ): boolean {
-  const [firstBand, secondBand, ...extraBands] = colorTerm.trim().split('-');
+  const normalizedColorTerm = normalizePhotometricCalibrationColorTerm(colorTerm);
+  if (normalizedColorTerm === null) return true;
+
+  const [firstBand, secondBand, ...extraBands] = normalizedColorTerm.split('-');
   return (
     extraBands.length === 0 &&
     firstBand !== secondBand &&
@@ -70,7 +78,7 @@ export function reconcilePhotometricCalibrationCatalog(
       ? inputs.cal_band
       : configuration.defaultBand,
     color_term: isPhotometricCalibrationColorTermSupported(catalog, inputs.color_term)
-      ? inputs.color_term
+      ? normalizePhotometricCalibrationColorTerm(inputs.color_term)
       : configuration.defaultColorTerm,
   };
 }

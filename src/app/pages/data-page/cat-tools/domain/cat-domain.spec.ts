@@ -15,6 +15,7 @@ import {
   getPhotometricCalibrationCatalogConfiguration,
   isPhotometricCalibrationBandSupported,
   isPhotometricCalibrationColorTermSupported,
+  normalizePhotometricCalibrationColorTerm,
   reconcilePhotometricCalibrationCatalog,
 } from './cat-photometric-catalog';
 import {
@@ -122,6 +123,24 @@ describe('cat tools domain', () => {
     expect(isPhotometricCalibrationBandSupported('Gaia', 'g')).toBeFalse();
     expect(isPhotometricCalibrationColorTermSupported('Gaia', 'bp-rp')).toBeTrue();
     expect(isPhotometricCalibrationColorTermSupported('Gaia', 'g-r')).toBeFalse();
+  });
+
+  it('accepts an omitted color index and preserves it when switching catalogues', () => {
+    const inputs = createDefaultPhotometricCalibrationInputs(createAstrometryRun());
+
+    for (const catalog of photometricCalibrationCatalogs) {
+      for (const colorTerm of [null, '', '   ']) {
+        expect(isPhotometricCalibrationColorTermSupported(catalog, colorTerm)).toBeTrue();
+        expect(
+          reconcilePhotometricCalibrationCatalog({ ...inputs, color_term: colorTerm }, catalog)
+            .color_term,
+        ).toBeNull();
+      }
+      for (const colorTerm of ['null', 'None', 'g', 'g-g', 'g-r-i']) {
+        expect(isPhotometricCalibrationColorTermSupported(catalog, colorTerm)).toBeFalse();
+      }
+    }
+    expect(normalizePhotometricCalibrationColorTerm('  g-r  ')).toBe('g-r');
   });
 
   it('returns both nested diagnostic plot URLs', () => {

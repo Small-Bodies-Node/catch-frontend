@@ -4,6 +4,7 @@ import {
   Component,
   Input,
   OnChanges,
+  OnDestroy,
   SimpleChanges,
 } from '@angular/core';
 import { ImageFetchService } from '../../../core/services/fetch-image/fetch-image.service';
@@ -12,6 +13,7 @@ import { IApiFixum } from '../../../../models/IApiFixum';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { NgStyle } from '@angular/common';
 import { getTableThumbnailSurveyScaleTransform } from '../../../../utils/image-orientation';
+import { nativePreviewUrl } from '../../../../utils/nativePreviewUrl';
 // import { colog } from '../../../utils/colog';
 
 @Component({
@@ -22,11 +24,12 @@ import { getTableThumbnailSurveyScaleTransform } from '../../../../utils/image-o
   imports: [MatProgressSpinner, NgStyle],
   standalone: true,
 })
-export class TableThumbnailComponent implements OnChanges {
+export class TableThumbnailComponent implements OnChanges, OnDestroy {
   // --->>>
 
   // Required inputs
   @Input() apiDatum!: IApiMovum | IApiFixum;
+  @Input() previewUrl?: string | null;
   @Input() label!: string;
   @Input() priority!: 'vip' | 'nip';
 
@@ -38,6 +41,8 @@ export class TableThumbnailComponent implements OnChanges {
   imageSrc?: string;
   isImageInQueue: boolean = false;
   readonly placeholderImage: string = 'assets/images/placeholder.png';
+  private loadVersion = 0;
+  private loadAbort?: AbortController;
 
   constructor(
     private imageFetchService: ImageFetchService,
@@ -45,18 +50,26 @@ export class TableThumbnailComponent implements OnChanges {
   ) {}
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['priority'] || changes['label'] || changes['apiDatum']) {
+    if (changes['priority'] || changes['label'] || changes['apiDatum'] || changes['previewUrl']) {
       if (!this.priority || !this.label || !this.apiDatum) return;
-      if (!this.isImageInQueue || changes['priority']) {
-        this.isImageInQueue = true;
-        this.loadImage();
-      }
+      this.isImageInQueue = true;
+      this.loadImage();
     }
   }
 
+  ngOnDestroy(): void {
+    this.loadVersion++;
+    this.loadAbort?.abort();
+  }
+
   private loadImage(): void {
-    const { preview_url } = this.apiDatum;
+    const version = ++this.loadVersion;
+    const previousAbort = this.loadAbort;
+    this.loadAbort = new AbortController();
+    const preview_url =
+      this.previewUrl ?? nativePreviewUrl(this.apiDatum.preview_url, this.apiDatum.cutout_url);
     if (!preview_url) {
+      previousAbort?.abort();
       this.imageSrc = this.placeholderImage;
       this.isImageInQueue = false;
       this.changeDetector.detectChanges();
@@ -67,17 +80,21 @@ export class TableThumbnailComponent implements OnChanges {
       .fetchImage(preview_url, {
         isPriority: this.priority === 'vip',
         label: this.label,
+        signal: this.loadAbort.signal,
       })
       .then((objUrl) => {
+        if (version !== this.loadVersion) return;
         this.imageSrc = objUrl || this.placeholderImage;
         this.isImageInQueue = false;
         this.changeDetector.detectChanges();
       })
       .catch((_) => {
+        if (version !== this.loadVersion) return;
         this.isImageInQueue = false;
         this.imageSrc = this.placeholderImage;
         this.changeDetector.detectChanges();
       });
+    previousAbort?.abort();
   }
 
   /**

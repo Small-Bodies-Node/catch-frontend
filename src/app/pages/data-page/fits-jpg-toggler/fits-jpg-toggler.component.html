@@ -1,36 +1,71 @@
 @if (apiData) {
   <div class="fits-jpg-toggler-container" #FitsJpgTogglerContainer>
-    <div class="viewer-layer lib-ngx-js9-wrapper">
-      <lib-ngx-js9
-        [widthPxls]="widthPxls"
-        [heightPxls]="heightPxls"
-        [siteTheme]="'DARK-THEME'"
-        [fitsUrl]="viewerFitsUrl"
-        [globalOpts]="{
-          menuBar: ['view', 'zoom', 'scale', 'color', 'region'],
-          alerts: false,
-        }"
-        (fitsLoadStatus)="onFitsLoadStatusUpdate($event)"
-        (imageClickCoordinates)="onFitsImageClick($event)"
-      ></lib-ngx-js9>
+    <app-fits-coordinate-loader></app-fits-coordinate-loader>
+    <div
+      class="viewer-layer lib-ngx-js9-wrapper"
+      [class.viewer-layer-hidden]="!isFits"
+      [style.visibility]="isFits ? 'visible' : 'hidden'"
+    >
+      @if (widthPxls > 0 && heightPxls > 0) {
+        <lib-ngx-js9
+          [widthPxls]="widthPxls"
+          [heightPxls]="heightPxls"
+          [siteTheme]="'DARK-THEME'"
+          [fitsUrl]="viewerFitsUrl"
+          [fitsBlob]="fitsBlob"
+          [previewWcs]="previewWcs"
+          [globalOpts]="{
+            menuBar: ['view', 'zoom', 'scale', 'color', 'region'],
+            alerts: false,
+            resizeHandle: false,
+          }"
+          (fitsLoadStatus)="onFitsLoadStatusUpdate($event)"
+          (imageClickCoordinates)="onFitsImageClick($event)"
+          (imageViewport)="onImageViewport($event)"
+          (viewChanged)="onViewChanged()"
+        ></lib-ngx-js9>
+      }
     </div>
 
     <div class="viewer-layer panstarrs-overlay-wrapper" [class.viewer-layer-hidden]="isFits">
-      <app-panstarrs-overlay></app-panstarrs-overlay>
+      <app-panstarrs-overlay [viewTransform]="viewTransform"></app-panstarrs-overlay>
     </div>
 
     <button
       mat-fab
-      [disabled]="isFitsButtonDisabled()"
+      type="button"
+      class="image-mode-toggle"
+      [disabled]="!isFits && !desiredFitsUrl"
+      [attr.aria-label]="isFits ? 'Show JPEG preview' : 'Show FITS'"
       (click)="toggleFits()"
-      [ngClass]="{ 'raise-button': isButtonRaised }"
     >
       @if (isFits) {
-        <mat-icon>{{ 'image' }}</mat-icon>
+        <mat-icon>image</mat-icon>
       } @else {
-        <span style="font-weight: bold">{{ 'FITS' }}</span>
+        <span class="fits-label">FITS</span>
       }
     </button>
+
+    @if (northAngle !== null && (!isFits || isFitsLoaded)) {
+      <div
+        class="north-indicator"
+        role="img"
+        aria-label="North direction"
+        [style.top.px]="10 + (isFits ? (viewport?.top ?? 32) : 0)"
+      >
+        <span aria-hidden="true">N</span>
+        <svg
+          viewBox="0 0 32 32"
+          aria-hidden="true"
+          [style.transform]="'rotate(' + northAngle + 'deg)'"
+        >
+          <path d="M16 27V5M10 11L16 5L22 11" />
+        </svg>
+      </div>
+    }
+    @if (isFits && !isFitsLoaded) {
+      <div class="view-status" role="status">{{ fitsError || 'Loading FITS…' }}</div>
+    }
   </div>
 } @else {
   <mat-progress-spinner></mat-progress-spinner>

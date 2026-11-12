@@ -1,41 +1,43 @@
 import { pixel_to_world, world_to_pixel } from './avm';
-
-describe('AVM WCS coordinate conversion', () => {
+describe('exact TAN preview coordinates', () => {
   const wcs = {
-    referenceValue: [174.62, 17.96],
-    referencePixel: [149, 149],
-    size: [298, 298],
-    scale: [-0.00028, 0.00028],
-    rotation: (12 * Math.PI) / 180,
+    referenceValue: [359.99, -16.2],
+    referencePixel: [288.5, 303.5],
+    size: [576, 606],
+    scale: [-0.000138, 0.0001379],
+    rotation: 0,
+    cdMatrix: [
+      [-0.000138, 0.000002],
+      [0.000001, 0.0001379],
+    ],
   };
-
-  it('round-trips world coordinates through image pixels', () => {
-    const expectedRa = 174.6214;
-    const expectedDec = 17.9683;
-    const [x, y] = world_to_pixel(wcs, expectedRa, expectedDec);
-    const [actualRa, actualDec] = pixel_to_world(wcs, x, y);
-
-    expect(actualRa).toBeCloseTo(expectedRa, 8);
-    expect(actualDec).toBeCloseTo(expectedDec, 8);
+  it('matches independent Astropy output across the RA zero boundary', () => {
+    const [x, y] = world_to_pixel(wcs, 0.001, -16.196);
+    expect(x).toBeCloseTo(211.88165223641772, 7);
+    expect(y).toBeCloseTo(273.4435422751628, 7);
+    const [ra, dec] = pixel_to_world(wcs, x, y);
+    expect(ra).toBeCloseTo(0.001, 9);
+    expect(dec).toBeCloseTo(-16.196, 9);
   });
-
-  it('returns the reference value for the reference pixel', () => {
-    const y = wcs.size[1] - wcs.referencePixel[1] + 1;
-    const [ra, dec] = pixel_to_world(wcs, wcs.referencePixel[0], y);
-
-    expect(ra).toBeCloseTo(wcs.referenceValue[0], 10);
-    expect(dec).toBeCloseTo(wcs.referenceValue[1], 10);
+  it('places the reference pixel on browser pixel centers', () => {
+    expect(world_to_pixel(wcs, 359.99, -16.2)).toEqual([288, 303]);
+    const [ra, dec] = pixel_to_world(wcs, 288, 303);
+    expect(ra).toBeCloseTo(359.99, 10);
+    expect(dec).toBeCloseTo(-16.2, 10);
   });
-
-  it('normalizes right ascension near zero degrees', () => {
-    const wrapWcs = {
+  it('points north up and east left in a canonical view', () => {
+    const canonical = {
       ...wcs,
-      referenceValue: [0.001, 0],
-      rotation: 0,
+      cdMatrix: [
+        [-0.000138, 0],
+        [0, 0.0001379],
+      ],
     };
-    const [ra] = pixel_to_world(wrapWcs, wrapWcs.referencePixel[0] + 20, 150);
-
-    expect(ra).toBeGreaterThanOrEqual(0);
-    expect(ra).toBeLessThan(360);
+    const center = world_to_pixel(canonical, 359.99, -16.2);
+    const north = world_to_pixel(canonical, 359.99, -16.199);
+    const east = world_to_pixel(canonical, 359.991, -16.2);
+    expect(north[1]).toBeLessThan(center[1]);
+    expect(north[0]).toBeCloseTo(center[0], 7);
+    expect(east[0]).toBeLessThan(center[0]);
   });
 });

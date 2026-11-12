@@ -24,25 +24,33 @@
   </div>
 
   <div *ngIf="!isLoading && !isError && queriesData" class="queries-content">
+    @let summary = getThirtyDaySummary();
     <!-- Summary Cards -->
+    <h3 class="mat-subtitle-1 summary-period">Past 30 days</h3>
     <div class="summary-cards">
       <mat-card appearance="outlined" class="summary-card">
         <mat-card-content>
-          <div class="summary-number">{{ getTotalJobs() }}</div>
+          <div class="summary-number" [class.summary-unavailable]="summary?.jobs == null">
+            {{ summary?.jobs ?? 'Unavailable' }}
+          </div>
           <div class="summary-label">Total Jobs</div>
         </mat-card-content>
       </mat-card>
 
       <mat-card appearance="outlined" class="summary-card">
         <mat-card-content>
-          <div class="summary-number">{{ getTotalCached() }}</div>
+          <div class="summary-number" [class.summary-unavailable]="summary?.cached == null">
+            {{ summary?.cached ?? 'Unavailable' }}
+          </div>
           <div class="summary-label">Cached Searches</div>
         </mat-card-content>
       </mat-card>
 
       <mat-card appearance="outlined" class="summary-card">
         <mat-card-content>
-          <div class="summary-number">{{ getTotalErrored() }}</div>
+          <div class="summary-number" [class.summary-unavailable]="summary?.errored == null">
+            {{ summary?.errored ?? 'Unavailable' }}
+          </div>
           <div class="summary-label">Errored</div>
         </mat-card-content>
       </mat-card>

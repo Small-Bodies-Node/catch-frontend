@@ -20,7 +20,7 @@ describe('CatToolsComponent calibration workflow', () => {
     const getImageCoordinatesFromWorld = jasmine
       .createSpy('getImageCoordinatesFromWorld')
       .and.callFake((file: string) =>
-        file === 'https://example.test/input.fits' ? { imageX: 123.4, imageY: 234.6 } : null,
+        file === 'https://example.test/wcs.fits' ? { imageX: 123.4, imageY: 234.6 } : null,
       );
 
     await TestBed.configureTestingModule({
@@ -183,9 +183,7 @@ describe('CatToolsComponent calibration workflow', () => {
     fixture.detectChanges();
 
     const element = fixture.nativeElement as HTMLElement;
-    const experimentalNotice = element.querySelector<HTMLElement>(
-      '.cat-tools-experimental-notice',
-    );
+    const experimentalNotice = element.querySelector<HTMLElement>('.cat-tools-experimental-notice');
     expect(experimentalNotice?.getAttribute('role')).toBe('note');
     expect(experimentalNotice?.textContent).toContain('Experimental');
     expect(experimentalNotice?.textContent).toContain('independently verify');
@@ -212,7 +210,7 @@ describe('CatToolsComponent calibration workflow', () => {
       }),
     );
     expect(requestWorldToImageCoordinatesMapper).toHaveBeenCalledWith(
-      'https://example.test/input.fits',
+      'https://example.test/wcs.fits',
     );
     expect(requestWorldToImageCoordinatesMapper).not.toHaveBeenCalledWith(
       'https://example.test/photometry.fits',
@@ -249,7 +247,7 @@ describe('CatToolsComponent calibration workflow', () => {
     fixture.componentInstance.photometricCalibrationDraft!.wcs_image_url =
       'https://attacker.example/untrusted.fits';
     const store = TestBed.inject(MockStore);
-    spyOn(store, 'dispatch');
+    const dispatch = spyOn(store, 'dispatch');
 
     fixture.componentInstance.launchPhotometricCalibration(summary.items[0], completedRun);
 
@@ -263,6 +261,49 @@ describe('CatToolsComponent calibration workflow', () => {
         }),
       }),
     );
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const colorIndexInput = element.querySelector<HTMLInputElement>(
+      'input[name="photometry_color_term"]',
+    )!;
+    expect(colorIndexInput.required).toBeFalse();
+    for (const emptyValue of ['', '   ']) {
+      colorIndexInput.value = emptyValue;
+      colorIndexInput.dispatchEvent(new Event('input', { bubbles: true }));
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect(
+        fixture.componentInstance.isPhotometricCalibrationLaunchDisabled(
+          summary.items[0],
+          completedRun,
+        ),
+      ).toBeFalse();
+
+      dispatch.calls.reset();
+      fixture.componentInstance.launchPhotometricCalibration(summary.items[0], completedRun);
+      expect(store.dispatch).toHaveBeenCalledWith(
+        jasmine.objectContaining({
+          inputs: jasmine.objectContaining({ color_term: null }),
+        }),
+      );
+    }
+
+    fixture.componentInstance.onPhotometricCalibrationCatalogChange('Gaia');
+    expect(fixture.componentInstance.photometricCalibrationDraft!.color_term).toBeNull();
+    expect(
+      fixture.componentInstance.isPhotometricCalibrationLaunchDisabled(
+        summary.items[0],
+        completedRun,
+      ),
+    ).toBeFalse();
+    fixture.componentInstance.photometricCalibrationDraft!.color_term = 'g-r';
+    expect(
+      fixture.componentInstance.isPhotometricCalibrationLaunchDisabled(
+        summary.items[0],
+        completedRun,
+      ),
+    ).toBeTrue();
+
     const runningRun: IAstrometryRun = {
       ...summary.items[0].astrometryRuns[0],
       status: 'running',

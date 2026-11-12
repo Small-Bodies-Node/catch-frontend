@@ -4,6 +4,7 @@
   "scripts": {
     "___Local Development___": "",
     "dev": "concurrently -r -k -n NG,API -c cyan,magenta \"npm:local:ng\" \"npm:local:api\"",
+    "dev:images": "./_dev_images",
     "local:ng": "ng serve --port 4000 --configuration local",
     "local:api": "./_assert_port_free 3000 && tsx watch --clear-screen=false --inspect src/server/local.api.ts",
     "___Stage Builds___": "",

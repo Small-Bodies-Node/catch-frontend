@@ -1,5 +1,6 @@
 import {
   Component,
+  Input,
   ElementRef,
   OnInit,
   OnDestroy,
@@ -31,6 +32,10 @@ import { convertToDecimal } from '../../../../utils/convertToDecimal';
 import { distToPanstarrsCenter } from '../../../../utils/distToPanstarrsCenter';
 import { ImageWcsService } from '../../../core/services/image-wcs/image-wcs.service';
 import { ImageFetchService } from '../../../core/services/fetch-image/fetch-image.service';
+import { world_to_pixel } from '../../../../utils/avm';
+import { normalizeThumbnailUrl } from '../../../core/services/thumbnail-image-cache/thumbnail-url.utils';
+import { selectActiveImageView } from '../../../ngrx/selectors/active-image-view.selector';
+import { IWcs } from '../../../core/services/image-wcs/image-wcs.service';
 import { getOverlaySurveyScaleTransform } from '../../../../utils/image-orientation';
 import {
   FitsClickCoordinatesService,
@@ -50,10 +55,6 @@ import {
   calculateImageRenderState,
   createDefaultImageRenderState,
   getApertureDiameter,
-  getApertureOverlayCenter,
-  getCentroidAstrometryAnchorX,
-  getCentroidAstrometryAnchorY,
-  getCentroidOverlayDelta,
   getCrudeOverlayBaseAngularFovDeg,
   getCrudeOverlayHeight,
   getCrudeOverlayLeft,
@@ -70,7 +71,6 @@ import {
   IOverlayActiveContext,
   IOverlayPoint,
   IPanstarrsRaDec,
-  IWcsCentralizationShift,
   IWcsPixelCoordinate,
   TPanstarrsStatusVariant,
 } from './domain/panstarrs-overlay.types';
@@ -93,23 +93,26 @@ interface IJpegCentroidClick {
   standalone: true,
 })
 export class PanstarrsOverlayComponent implements OnInit, OnDestroy, AfterViewInit {
+  @Input() viewTransform = 'none';
   @ViewChild('myContainer') myDiv!: ElementRef;
   @ViewChild('overlayImage') overlayImageRef!: ElementRef<HTMLImageElement>;
 
   imageSrc?: string;
+  previewError = '';
+  private activeFitsFile = '';
+  private previewWcs?: IWcs;
   readonly placeholderImage: string = 'assets/images/placeholder.png';
 
   apiActiveDatum?: IApiMovum | IApiFixum;
   activeAstrometryCentralization?: IAstrometryCentralization;
   activeCentroidization?: ICentroidization;
   activeTargetPhotometryRun?: ITargetPhotometryRun;
-  wcsCentralizationShift?: IWcsCentralizationShift;
   ra: number | string = 0;
   dec: number | string = 0;
   subscriptions = new Subscription();
   raDecs: IPanstarrsRaDec[] = [];
   isPanstarrsDataFound = false;
-  isAtlasOrNeat = false;
+  hasPreviewWcs = false;
   panstarrsStatusMessage = '';
   panstarrsStatusVariant: TPanstarrsStatusVariant = null;
 
@@ -138,7 +141,7 @@ export class PanstarrsOverlayComponent implements OnInit, OnDestroy, AfterViewIn
 
   private panstarrsDataSubscription = new Subscription();
   private wcsPixelCoordSubscription = new Subscription();
-  private wcsCentralizationShiftSubscription = new Subscription();
+  private previewWcsSubscription = new Subscription();
   private jpegClickWcsSubscription = new Subscription();
   private resizeObserver!: ResizeObserver;
   private selectionVersion = 0;
@@ -151,6 +154,7 @@ export class PanstarrsOverlayComponent implements OnInit, OnDestroy, AfterViewIn
   private readonly postLoadIndicatorMs = 1000;
   private readonly isFiniteNumber = isFiniteNumber;
   private suppressInitialStatusChip = true;
+  private previewAbort?: AbortController;
   private jpegCentroidClick?: IJpegCentroidClick;
   private pendingJpegCentroidClick?: IJpegCentroidClick;
   isJpegCentroidClickPending = false;
@@ -165,19 +169,22 @@ export class PanstarrsOverlayComponent implements OnInit, OnDestroy, AfterViewIn
   ) {
     this.subscriptions.add(
       combineLatest([
-        this.store$.select(selectApiActiveDatum),
+        this.store$.select(selectActiveImageView),
         this.store$.select(selectApiDataStatus),
       ])
         .pipe(
-          map(([apiActiveDatum, apiDataStatus]) => {
+          map(([view, apiDataStatus]) => {
+            const apiActiveDatum = view?.datum;
             if (!apiActiveDatum || !apiDataStatus?.search) return null;
 
-            const imageUrl = apiActiveDatum.preview_url;
+            const imageUrl = view?.previewUrl;
+            const fitsFile = view?.fitsUrl ?? '';
             if (!imageUrl) return null;
 
             return {
               apiActiveDatum,
               imageUrl,
+              fitsFile,
               ra:
                 'ra' in apiActiveDatum
                   ? apiActiveDatum.ra
@@ -260,7 +267,7 @@ export class PanstarrsOverlayComponent implements OnInit, OnDestroy, AfterViewIn
           this.activeAstrometryCentralization = centralization;
           this.activeCentroidization = centroidization;
           this.activeTargetPhotometryRun = targetPhotometryRun;
-          this.updateWcsCentralizationShift();
+          this.loadPreviewWcs();
           this.changeDetector.markForCheck();
         }),
     );
@@ -301,10 +308,12 @@ export class PanstarrsOverlayComponent implements OnInit, OnDestroy, AfterViewIn
   }
 
   ngOnDestroy(): void {
+    this.selectionVersion++;
+    this.previewAbort?.abort();
     this.subscriptions.unsubscribe();
     this.panstarrsDataSubscription.unsubscribe();
     this.wcsPixelCoordSubscription.unsubscribe();
-    this.wcsCentralizationShiftSubscription.unsubscribe();
+    this.previewWcsSubscription.unsubscribe();
     this.jpegClickWcsSubscription.unsubscribe();
     this.clearLoadingIndicatorTimeout();
     if (this.resizeObserver) {
@@ -325,10 +334,12 @@ export class PanstarrsOverlayComponent implements OnInit, OnDestroy, AfterViewIn
     this.dec = activeContext.dec;
     this.activeImageUrl = activeContext.imageUrl;
     this.crudeOverlayBaseAngularFovDeg = getCrudeOverlayBaseAngularFovDeg(activeContext.imageUrl);
-    this.imageSrc = activeContext.imageUrl || this.placeholderImage;
+    this.imageSrc = this.placeholderImage;
+    this.previewError = '';
+    this.activeFitsFile = activeContext.fitsFile;
+    this.previewWcs = undefined;
     this.raDecs = [];
     this.pixelCoordinatesWCS = [];
-    this.wcsCentralizationShift = undefined;
     this.isPanstarrsDataFound = false;
     this.resetRenderedImageState();
     if (showStatusChip) {
@@ -336,20 +347,22 @@ export class PanstarrsOverlayComponent implements OnInit, OnDestroy, AfterViewIn
     } else {
       this.clearPanstarrsStatus();
     }
-    this.isAtlasOrNeat =
-      activeContext.imageUrl.toUpperCase().includes('NEAT') ||
-      activeContext.imageUrl.toUpperCase().includes('ATLAS');
-    this.updateWcsCentralizationShift(selectionVersion);
+    this.hasPreviewWcs = true; // Use precise preview WCS for every capable provider.
+    this.loadPreviewWcs(selectionVersion);
 
+    this.previewAbort = new AbortController();
     this.imageFetchService
       .fetchImage(activeContext.imageUrl, {
         isPriority: true,
         label: 'panstarrs-overlay-image',
+        signal: this.previewAbort.signal,
       })
       .then((objUrl) => {
         if (!this.isCurrentSelection(selectionVersion)) return;
 
         this.imageSrc = objUrl || this.placeholderImage;
+        if (!objUrl)
+          this.previewError = 'Preview unavailable. Try FITS or select this image again.';
         // onImageLoad will be called by the <img> tag, which then calls calculateImageRenderDimensions
         this.changeDetector.detectChanges(); // Ensure view updates with new imageSrc
       });
@@ -404,7 +417,7 @@ export class PanstarrsOverlayComponent implements OnInit, OnDestroy, AfterViewIn
     this.wcsPixelCoordSubscription.unsubscribe();
     this.wcsPixelCoordSubscription = new Subscription();
 
-    if (!this.isAtlasOrNeat || this.raDecs.length === 0) {
+    if (!this.hasPreviewWcs || this.raDecs.length === 0) {
       this.pixelCoordinatesWCS = [];
       return;
     }
@@ -451,81 +464,43 @@ export class PanstarrsOverlayComponent implements OnInit, OnDestroy, AfterViewIn
     });
   }
 
-  private updateWcsCentralizationShift(selectionVersion = this.selectionVersion): void {
-    this.wcsCentralizationShiftSubscription.unsubscribe();
-    this.wcsCentralizationShiftSubscription = new Subscription();
-    this.wcsCentralizationShift = undefined;
-
-    const centralization = this.activeAstrometryCentralization;
-    const originalRa = convertToDecimal(this.ra);
-    const originalDec = convertToDecimal(this.dec);
-
-    if (
-      !centralization ||
-      centralization.productId !== this.apiActiveDatum?.product_id ||
-      !this.isAtlasOrNeat ||
-      !this.activeImageUrl ||
-      !this.isFiniteNumber(originalRa) ||
-      !this.isFiniteNumber(originalDec) ||
-      !this.isFiniteNumber(centralization.centerRaDeg) ||
-      !this.isFiniteNumber(centralization.centerDecDeg)
-    ) {
-      return;
-    }
-
-    const imageUrl = this.getAlignedImageUrl(this.activeImageUrl);
-
-    this.wcsCentralizationShiftSubscription = forkJoin({
-      originalCenter: this.imageWcsService.getPixelCoordinatesFromUrl(
-        imageUrl,
-        originalRa,
-        originalDec,
-      ),
-      correctedCenter: this.imageWcsService.getPixelCoordinatesFromUrl(
-        imageUrl,
-        centralization.centerRaDeg,
-        centralization.centerDecDeg,
-      ),
-    })
-      .pipe(
-        catchError((error) => {
-          console.warn(
-            `WCS: Failed to derive centralization shift. Error: ${error.message || error}`,
-          );
-          return of(null);
-        }),
-      )
-      .subscribe((result) => {
-        if (
-          !result ||
-          !this.isCurrentSelection(selectionVersion) ||
-          !this.isSameAstrometryCentralization(centralization, this.activeAstrometryCentralization)
-        ) {
-          return;
-        }
-
-        const [originalCenterX, originalCenterY] = result.originalCenter;
-        const [correctedCenterX, correctedCenterY] = result.correctedCenter;
-
-        this.wcsCentralizationShift = {
-          dx: originalCenterX - correctedCenterX,
-          dy: originalCenterY - correctedCenterY,
-          productId: centralization.productId,
-          runId: centralization.runId,
-        };
-        this.changeDetector.detectChanges();
+  private loadPreviewWcs(selectionVersion = this.selectionVersion): void {
+    this.previewWcsSubscription.unsubscribe();
+    if (!this.activeImageUrl) return;
+    this.previewWcsSubscription = this.imageWcsService
+      .getWcsObservable(this.activeImageUrl)
+      .subscribe({
+        next: (wcs) => {
+          if (!this.isCurrentSelection(selectionVersion)) return;
+          this.previewWcs = wcs;
+          this.hasPreviewWcs = true;
+          this.updateWcsPixelCoordinates(this.activeImageUrl, selectionVersion);
+          if (this.activeCentroidization || this.activeTargetPhotometryRun)
+            this.fitsClickCoordinatesService.requestWorldToImageCoordinatesMapper(
+              this.activeFitsFile,
+            );
+          this.changeDetector.markForCheck();
+        },
+        error: () => {
+          if (!this.isCurrentSelection(selectionVersion)) return;
+          this.previewWcs = undefined;
+          this.hasPreviewWcs = false;
+          this.changeDetector.markForCheck();
+        },
       });
   }
 
   private cancelInFlightRequests(): void {
+    this.previewAbort?.abort();
+    this.previewAbort = undefined;
     this.panstarrsDataSubscription.unsubscribe();
     this.panstarrsDataSubscription = new Subscription();
 
     this.wcsPixelCoordSubscription.unsubscribe();
     this.wcsPixelCoordSubscription = new Subscription();
 
-    this.wcsCentralizationShiftSubscription.unsubscribe();
-    this.wcsCentralizationShiftSubscription = new Subscription();
+    this.previewWcsSubscription.unsubscribe();
+    this.previewWcsSubscription = new Subscription();
 
     this.jpegClickWcsSubscription.unsubscribe();
     this.jpegClickWcsSubscription = new Subscription();
@@ -538,7 +513,6 @@ export class PanstarrsOverlayComponent implements OnInit, OnDestroy, AfterViewIn
     this.activeAstrometryCentralization = undefined;
     this.activeCentroidization = undefined;
     this.activeTargetPhotometryRun = undefined;
-    this.wcsCentralizationShift = undefined;
     this.imageSrc = undefined;
     this.activeImageUrl = '';
     this.crudeOverlayBaseAngularFovDeg = DEFAULT_CRUDE_OVERLAY_ANGULAR_FOV_DEG;
@@ -547,7 +521,7 @@ export class PanstarrsOverlayComponent implements OnInit, OnDestroy, AfterViewIn
     this.raDecs = [];
     this.pixelCoordinatesWCS = [];
     this.isPanstarrsDataFound = false;
-    this.isAtlasOrNeat = false;
+    this.hasPreviewWcs = false;
     this.clearJpegCentroidClick();
     this.resetRenderedImageState();
     this.clearPanstarrsStatus();
@@ -627,6 +601,7 @@ export class PanstarrsOverlayComponent implements OnInit, OnDestroy, AfterViewIn
 
     return (
       previous.imageUrl === current.imageUrl &&
+      previous.fitsFile === current.fitsFile &&
       previous.ra === current.ra &&
       previous.dec === current.dec
     );
@@ -725,7 +700,7 @@ export class PanstarrsOverlayComponent implements OnInit, OnDestroy, AfterViewIn
       return;
     }
 
-    const file = this.apiActiveDatum.cutout_url;
+    const file = this.activeFitsFile;
     if (!file) {
       return;
     }
@@ -811,11 +786,14 @@ export class PanstarrsOverlayComponent implements OnInit, OnDestroy, AfterViewIn
       return null;
     }
 
-    const rect = container.getBoundingClientRect();
-    return {
-      x: event.clientX - rect.left,
-      y: event.clientY - rect.top,
-    };
+    const rect = container.parentElement!.getBoundingClientRect();
+    const inverse = (
+      this.viewTransform === 'none' ? new DOMMatrix() : new DOMMatrix(this.viewTransform)
+    ).inverse();
+    const point = new DOMPoint(event.clientX - rect.left, event.clientY - rect.top).matrixTransform(
+      inverse,
+    );
+    return { x: point.x, y: point.y };
   }
 
   private createJpegCentroidClick(input: {
@@ -899,7 +877,7 @@ export class PanstarrsOverlayComponent implements OnInit, OnDestroy, AfterViewIn
     return (
       !!this.apiActiveDatum &&
       click.productId === this.apiActiveDatum.product_id &&
-      click.file === this.apiActiveDatum.cutout_url
+      click.file === this.activeFitsFile
     );
   }
 
@@ -958,59 +936,59 @@ export class PanstarrsOverlayComponent implements OnInit, OnDestroy, AfterViewIn
   }
 
   getWcsDivLeft(coord: { x: number; ra: number }): number {
-    return getWcsOverlayLeft(
-      coord,
-      this.getImageRenderState(),
-      this.starDivDiameter,
-      this.wcsCentralizationShift,
-    );
+    return getWcsOverlayLeft(coord, this.getImageRenderState(), this.starDivDiameter);
   }
 
   getWcsDivTop(coord: { y: number; dec: number }): number {
-    return getWcsOverlayTop(
-      coord,
-      this.getImageRenderState(),
-      this.starDivDiameter,
-      this.wcsCentralizationShift,
-    );
+    return getWcsOverlayTop(coord, this.getImageRenderState(), this.starDivDiameter);
   }
 
   getCrosshairCenterX(): number {
-    const imageCenterX = this.imageOffsetX + this.renderedImageWidth / 2;
-
-    if (!this.activeAstrometryCentralization) {
-      return imageCenterX;
-    }
-
-    if (this.isAtlasOrNeat) {
-      return imageCenterX + (this.wcsCentralizationShift?.dx ?? 0) * this.imageScaleX;
-    }
-
-    const originalRa = convertToDecimal(this.ra);
-    if (!this.isFiniteNumber(originalRa)) {
-      return imageCenterX;
-    }
-
-    return this.getDivLeft(originalRa);
+    const point = this.getTargetDisplayPoint();
+    return point?.x ?? this.imageOffsetX + this.renderedImageWidth / 2;
   }
 
   getCrosshairCenterY(): number {
-    const imageCenterY = this.imageOffsetY + this.renderedImageHeight / 2;
+    const point = this.getTargetDisplayPoint();
+    return point?.y ?? this.imageOffsetY + this.renderedImageHeight / 2;
+  }
 
-    if (!this.activeAstrometryCentralization) {
-      return imageCenterY;
-    }
+  private getTargetDisplayPoint(): IOverlayPoint | null {
+    if (!this.previewWcs) return null;
+    const ra = convertToDecimal(this.ra),
+      dec = convertToDecimal(this.dec);
+    if (!isFiniteNumber(ra) || !isFiniteNumber(dec)) return null;
+    const [x, y] = world_to_pixel(this.previewWcs, ra, dec);
+    return getDisplayPointFromNativeImagePixel({
+      source: null,
+      renderState: this.getImageRenderState(),
+      nativeX: x,
+      nativeY: y,
+    });
+  }
 
-    if (this.isAtlasOrNeat) {
-      return imageCenterY + (this.wcsCentralizationShift?.dy ?? 0) * this.imageScaleY;
-    }
+  private projectScientificPixel(x: number, y: number): IOverlayPoint | null {
+    if (!this.previewWcs) return null;
+    const world = this.fitsClickCoordinatesService.getWorldCoordinatesFromImage(
+      this.activeFitsFile,
+      x,
+      y,
+    );
+    if (!world) return null;
+    const [previewX, previewY] = world_to_pixel(this.previewWcs, world.ra, world.dec);
+    return getDisplayPointFromNativeImagePixel({
+      source: null,
+      renderState: this.getImageRenderState(),
+      nativeX: previewX,
+      nativeY: previewY,
+    });
+  }
 
-    const originalDec = convertToDecimal(this.dec);
-    if (!this.isFiniteNumber(originalDec)) {
-      return imageCenterY;
-    }
-
-    return this.getDivTop(originalDec);
+  hasNativePixelProjection(): boolean {
+    return (
+      !!this.previewWcs &&
+      !!this.fitsClickCoordinatesService.getWorldCoordinatesFromImage(this.activeFitsFile, 0, 0)
+    );
   }
 
   getCrosshairTopSegmentHeight(): number {
@@ -1038,23 +1016,17 @@ export class PanstarrsOverlayComponent implements OnInit, OnDestroy, AfterViewIn
   }
 
   getCentroidCrosshairCenterX(): number {
-    const baseX = this.getCrosshairCenterX();
-    const centroidization = this.activeCentroidization;
-    if (!centroidization) {
-      return baseX;
-    }
-
-    return baseX + this.getCentroidOverlayDelta(centroidization).x * this.imageScaleX;
+    const centroid = this.activeCentroidization;
+    return centroid
+      ? (this.projectScientificPixel(centroid.centX, centroid.centY)?.x ?? -1000)
+      : this.getCrosshairCenterX();
   }
 
   getCentroidCrosshairCenterY(): number {
-    const baseY = this.getCrosshairCenterY();
-    const centroidization = this.activeCentroidization;
-    if (!centroidization) {
-      return baseY;
-    }
-
-    return baseY + this.getCentroidOverlayDelta(centroidization).y * this.imageScaleY;
+    const centroid = this.activeCentroidization;
+    return centroid
+      ? (this.projectScientificPixel(centroid.centX, centroid.centY)?.y ?? -1000)
+      : this.getCrosshairCenterY();
   }
 
   getCentroidCrosshairTopSegmentTop(): number {
@@ -1159,28 +1131,11 @@ export class PanstarrsOverlayComponent implements OnInit, OnDestroy, AfterViewIn
     return this.centroidCrosshairCenterGapPx / 2;
   }
 
-  private getCentroidAstrometryAnchorX(centroidization: ICentroidization): number {
-    return getCentroidAstrometryAnchorX(centroidization);
-  }
-
-  private getCentroidAstrometryAnchorY(centroidization: ICentroidization): number {
-    return getCentroidAstrometryAnchorY(centroidization);
-  }
-
-  private getCentroidOverlayDelta(centroidization: ICentroidization): { x: number; y: number } {
-    return getCentroidOverlayDelta(this.apiActiveDatum?.source, centroidization);
-  }
-
-  private getApertureOverlayCenter(): { x: number; y: number } {
-    return getApertureOverlayCenter({
-      source: this.apiActiveDatum?.source,
-      baseX: this.getCrosshairCenterX(),
-      baseY: this.getCrosshairCenterY(),
-      imageScaleX: this.imageScaleX,
-      imageScaleY: this.imageScaleY,
-      centroidization: this.activeCentroidization,
-      aperturePosition: this.activeTargetPhotometryRun?.inputs.target_aperture_params.position,
-    });
+  private getApertureOverlayCenter(): IOverlayPoint {
+    const position = this.activeTargetPhotometryRun?.inputs.target_aperture_params.position;
+    return position
+      ? (this.projectScientificPixel(position[0], position[1]) ?? { x: -1000, y: -1000 })
+      : { x: this.getCrosshairCenterX(), y: this.getCrosshairCenterY() };
   }
 
   private getApertureDiameter(
@@ -1244,15 +1199,6 @@ export class PanstarrsOverlayComponent implements OnInit, OnDestroy, AfterViewIn
   }
 
   private getAlignedImageUrl(imageUrl: string): string {
-    const hashIndex = imageUrl.indexOf('#');
-    const urlWithoutHash = hashIndex >= 0 ? imageUrl.slice(0, hashIndex) : imageUrl;
-    const hash = hashIndex >= 0 ? imageUrl.slice(hashIndex) : '';
-
-    if (/[?&]align=/.test(urlWithoutHash)) {
-      return imageUrl;
-    }
-
-    const separator = urlWithoutHash.includes('?') ? '&' : '?';
-    return `${urlWithoutHash}${separator}align=true${hash}`;
+    return normalizeThumbnailUrl(imageUrl);
   }
 }

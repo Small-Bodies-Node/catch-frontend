@@ -5,7 +5,7 @@ import { IDashboardQueue } from '../../../../models/IDashboardQueue';
 import { IDashboardSource } from '../../../../models/IDashboardObservations';
 import { IDashboardUpdate } from '../../../../models/IDashboardUpdates';
 
-interface IDashboardQuery {
+export interface IDashboardQuery {
   cached: number;
   days: number;
   errored: number;

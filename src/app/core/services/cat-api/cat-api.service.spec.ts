@@ -56,6 +56,21 @@ describe('CatApiService', () => {
     expect(wcsImageUrl).toBe('https://example.test/wcs.fits');
   });
 
+  it('serializes an explicitly absent color index as JSON null', () => {
+    service.fetchPhotometricCalibration({
+      wcs_image_url: 'https://example.test/wcs.fits',
+      snr_threshold: 3,
+      aperture_radius: 7,
+      catalog: 'PanSTARRS1',
+      cal_band: 'r',
+      color_term: null,
+    }).subscribe();
+
+    const request = httpTesting.expectOne('/api/cat/calibration/photometry');
+    expect(JSON.parse(request.request.serializeBody() as string).color_term).toBeNull();
+    request.flush({});
+  });
+
   it('posts SkyMapper with compatible fields and no obsolete fields', () => {
     const payload = {
       wcs_image_url: 'https://example.test/wcs.fits',

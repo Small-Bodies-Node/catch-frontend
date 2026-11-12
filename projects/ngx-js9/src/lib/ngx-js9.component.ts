@@ -13,6 +13,11 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { TMenuBarEntries } from './models/TMenuBarEntries';
 import { degToHms } from './utils/degToHms';
 import { menuBarEntries } from './utils/menuBarEntries';
+import { IPreviewWcs, previewFitsHeader } from './utils/previewFitsHeader';
+import { reprojectDisplay } from './utils/reprojectDisplay';
+import { previewPixelToWorld } from './utils/previewPixelToWorld';
+import { previewViewTransform } from './utils/previewViewTransform';
+import { observeJs9View } from './utils/observeJs9View';
 
 /**
  * JS9 scripts will sometimes launch async callbacks that trigger JS9.error
@@ -77,16 +82,16 @@ interface IGlobalOpts {
   alerts?: boolean;
   mouseActions?: string[];
   touchActions?: string[];
+  resizeHandle?: boolean;
 }
 
 const defaultMouseActions = ['display value/position', 'pan the image', 'change contrast/bias'];
 
 const defaultTouchActions = ['pan the image', 'display value/position', 'change contrast/bias'];
 
-const fallbackMenubarHeightPixels = 36;
-const minimumColorbarHeightPixels = 64;
-const viewerChromeGapPixels = 12;
-const minimumImageHeightPixels = 100;
+const fallbackMenubarHeightPixels = 32;
+const fallbackColorbarHeightPixels = 40;
+const minimumImageHeightPixels = 10;
 
 const clamp = (value: number, min: number, max: number): number =>
   Math.min(Math.max(value, min), max);
@@ -149,6 +154,17 @@ export interface IJs9WorldCoordinates {
   standalone: false,
 })
 export class NgxJs9Component implements AfterViewInit, OnDestroy, OnChanges {
+  @Output() viewChanged = new EventEmitter<void>();
+  @Output() imageViewport = new EventEmitter<{
+    top: number;
+    left: number;
+    width: number;
+    height: number;
+  }>();
+  private viewportSignature = '';
+  private stopObservingView?: () => void;
+  private chromeObserver?: ResizeObserver;
+  private viewChangeTimeout?: ReturnType<typeof setTimeout>;
   // --->>
 
   @Input()
@@ -162,6 +178,9 @@ export class NgxJs9Component implements AfterViewInit, OnDestroy, OnChanges {
 
   @Input()
   fitsUrl = '';
+
+  @Input() fitsBlob?: Blob;
+  @Input() previewWcs?: IPreviewWcs;
 
   @Input()
   siteTheme: 'DARK-THEME' | 'LIGHT-THEME' = 'DARK-THEME';
@@ -196,6 +215,7 @@ export class NgxJs9Component implements AfterViewInit, OnDestroy, OnChanges {
   private isColorbarDragListenerBound = false;
   private colorbarDragState?: IColorbarDragState;
   private latestRequestedFitsUrl = '';
+  private loadVersion = 0;
   private readonly onFitsErrorBound = this.onFitsError.bind(this);
   private readonly onDisplayMouseUpBound = this.onDisplayMouseUp.bind(this);
   private readonly onColorbarPointerDownBound = this.onColorbarPointerDown.bind(this);
@@ -228,8 +248,13 @@ export class NgxJs9Component implements AfterViewInit, OnDestroy, OnChanges {
   }
 
   ngOnDestroy(): void {
+    this.loadVersion++;
+    this.latestRequestedFitsUrl = '';
     this.removeDisplayClickListener();
     this.removeColorbarDragListener();
+    this.stopObservingView?.();
+    this.chromeObserver?.disconnect();
+    clearTimeout(this.viewChangeTimeout);
 
     const js9 = getJs9();
     if (!js9) {
@@ -263,20 +288,27 @@ export class NgxJs9Component implements AfterViewInit, OnDestroy, OnChanges {
     }
 
     ensureJs9ErrorPatched();
+    const globalOpts = this.getGlobalOpts();
+    js9.globalOpts = { ...js9.globalOpts, ...globalOpts };
     if (!isJs9Initialized) {
       js9.init();
       isJs9Initialized = true;
     }
     syncJs9FitsErrorHandler(js9);
 
-    const globalOpts = this.getGlobalOpts();
     js9.globalOpts = { ...js9.globalOpts, ...globalOpts };
     this.ensureDisplayReady(js9);
     this.applyDisplayMouseTouchActions(js9, globalOpts);
     this.resizeDisplay(js9);
     this.adjustColorbarColoring();
 
-    if (!this.fitsUrl || this.fitsUrl === this.latestRequestedFitsUrl) {
+    if (!this.fitsUrl) {
+      if (this.latestRequestedFitsUrl) this.loadVersion++;
+      if (this.latestRequestedFitsUrl) js9.CloseDisplay(this.uid);
+      this.latestRequestedFitsUrl = '';
+      return;
+    }
+    if (this.fitsUrl === this.latestRequestedFitsUrl) {
       return;
     }
 
@@ -286,6 +318,15 @@ export class NgxJs9Component implements AfterViewInit, OnDestroy, OnChanges {
   private ensureDisplayReady(js9: any): void {
     if (this.isDisplayReady) {
       return;
+    }
+
+    this.stopObservingView = observeJs9View(js9, this.uid, () => this.scheduleViewChange(js9));
+    if (typeof ResizeObserver !== 'undefined') {
+      this.chromeObserver = new ResizeObserver(() => this.resizeDisplay(js9));
+      for (const id of [this.menubarId, this.colorbarId]) {
+        const element = document.getElementById(id);
+        if (element) this.chromeObserver.observe(element);
+      }
     }
 
     const existingDisplay = js9.lookupDisplay?.(this.uid, false);
@@ -505,19 +546,35 @@ export class NgxJs9Component implements AfterViewInit, OnDestroy, OnChanges {
       return;
     }
 
-    const physicalPosition = image.imageToLogicalPos?.(imagePosition, 'physical');
+    const native = image.raws?.[0] ?? image.raw;
+    const physicalPosition =
+      image.raw === native ? image.imageToLogicalPos?.(imagePosition, 'physical') : undefined;
 
-    const wcsPosition = js9.PixToWCS?.(imagePosition.x, imagePosition.y, { display: image });
+    const wcsPosition =
+      this.previewWcs && image.raw?.id === 'catch-display'
+        ? (() => {
+            const [ra, dec] = previewPixelToWorld(
+              this.previewWcs!,
+              imagePosition.x - 1,
+              imagePosition.y - 1,
+            );
+            return { ra, dec, sys: 'ICRS', str: `${ra} ${dec}` };
+          })()
+        : js9.PixToWCS?.(imagePosition.x, imagePosition.y, { display: image });
     this.imageClickCoordinates.emit({
       displayX: displayPosition.x,
       displayY: displayPosition.y,
       // CAT centroid/photometry routes expect pixels in the loaded image array.
       // Keep detector-frame physical coordinates separate; SkyMapper physical Y
       // can be negative because of CCDSEC/LTV metadata.
-      imageX: imagePosition.x,
-      imageY: imagePosition.y,
-      imageFrameX: imagePosition.x,
-      imageFrameY: imagePosition.y,
+      imageX:
+        this.getImageCoordinatesFromWorld(wcsPosition?.ra, wcsPosition?.dec)?.imageX ??
+        imagePosition.x - 1,
+      imageY:
+        this.getImageCoordinatesFromWorld(wcsPosition?.ra, wcsPosition?.dec)?.imageY ??
+        imagePosition.y - 1,
+      imageFrameX: imagePosition.x - 1,
+      imageFrameY: imagePosition.y - 1,
       physicalX: physicalPosition?.x,
       physicalY: physicalPosition?.y,
       ra: wcsPosition?.ra,
@@ -530,30 +587,34 @@ export class NgxJs9Component implements AfterViewInit, OnDestroy, OnChanges {
   getImageCoordinatesFromWorld(ra: number, dec: number): IJs9ImageCoordinates | null {
     const js9 = getJs9();
     const image = js9?.GetImage?.({ display: this.uid });
-    if (!js9 || !image) {
+    if (!js9 || !image || !Number.isFinite(ra) || !Number.isFinite(dec)) {
       return null;
     }
 
-    const imagePosition = js9.WCSToPix?.(ra, dec, { display: image });
+    // The reprojected raw layer is only for display. CAT accepts zero-based
+    // pixels in the untouched scientific array, retained as raws[0].
+    const native = image.raws?.[0] ?? image.raw;
+    const values = native?.wcs
+      ? js9.wcs2pix(native.wcs, ra, dec).trim().split(/\s+/).map(Number)
+      : [];
+    const imagePosition = { x: values[0], y: values[1] };
     if (!imagePosition || !Number.isFinite(imagePosition.x) || !Number.isFinite(imagePosition.y)) {
       return null;
     }
 
-    const physicalPosition = image.imageToLogicalPos?.(imagePosition, 'physical');
-    const imageFramePosition = physicalPosition
-      ? image.logicalToImagePos?.(physicalPosition, 'physical')
-      : imagePosition;
+    const physicalPosition =
+      image.raw === native ? image.imageToLogicalPos?.(imagePosition, 'physical') : undefined;
 
     return {
-      imageX: imagePosition.x,
-      imageY: imagePosition.y,
+      imageX: imagePosition.x - 1,
+      imageY: imagePosition.y - 1,
       wcsPixelX: imagePosition.x,
       wcsPixelY: imagePosition.y,
       wcsPixelAsPhysicalX: physicalPosition?.x,
       wcsPixelAsPhysicalY: physicalPosition?.y,
-      wcsPixelAsImageX: imageFramePosition?.x,
-      wcsPixelAsImageY: imageFramePosition?.y,
-      wcsString: imagePosition.str,
+      wcsPixelAsImageX: imagePosition.x - 1,
+      wcsPixelAsImageY: imagePosition.y - 1,
+      wcsString: values.join(' '),
     };
   }
 
@@ -564,47 +625,84 @@ export class NgxJs9Component implements AfterViewInit, OnDestroy, OnChanges {
       return null;
     }
 
-    const imageFramePosition = { x: imageX, y: imageY };
+    const native = image.raws?.[0] ?? image.raw;
+    const values = native?.wcs
+      ? js9
+          .pix2wcs(native.wcs, imageX + 1, imageY + 1)
+          .trim()
+          .split(/\s+/)
+      : [];
+    const ra = Number(values[0]),
+      dec = Number(values[1]);
+    if (!Number.isFinite(ra) || !Number.isFinite(dec)) return null;
+    return { ra, dec, wcsSystem: values[2], wcsString: values.join(' ') };
+  }
 
-    if (!Number.isFinite(imageFramePosition.x) || !Number.isFinite(imageFramePosition.y)) {
-      return null;
-    }
+  /** Map the full-panel preview onto JS9's relative magnification, pan, rotation and flip. */
+  getPreviewTransform(previewSize?: { width: number; height: number }): string {
+    const js9 = getJs9();
+    const image = js9?.GetImage?.({ display: this.uid });
+    if (!image || !this.previewWcs || image.raw?.id !== 'catch-display') return 'none';
+    const [width, height] = this.previewWcs.size;
+    return previewViewTransform(
+      { width, height },
+      image.display,
+      previewSize ?? image.display,
+      (point) => image.imageToDisplayPos(point),
+    );
+  }
 
-    const wcsPosition = js9.PixToWCS?.(imageFramePosition.x, imageFramePosition.y, {
-      display: image,
+  /** Use the active raw WCS and actual display transform, including manual flips/rotation. */
+  getNorthAngle(): number | null {
+    const js9 = getJs9();
+    const image = js9?.GetImage?.({ display: this.uid });
+    if (!image?.raw?.wcs) return null;
+    const pixel = image.displayToImagePos({
+      x: image.display.width / 2,
+      y: image.display.height / 2,
     });
-    if (!wcsPosition || !Number.isFinite(wcsPosition.ra) || !Number.isFinite(wcsPosition.dec)) {
-      return null;
-    }
+    const world = js9.pix2wcs(image.raw.wcs, pixel.x, pixel.y).trim().split(/\s+/).map(Number);
+    const [ra, dec] = world;
+    if (!Number.isFinite(ra) || !Number.isFinite(dec) || Math.abs(dec) >= 89.999999) return null;
+    const north = js9
+      .wcs2pix(image.raw.wcs, ra, dec + Math.min(0.001, (90 - dec) / 2))
+      .trim()
+      .split(/\s+/)
+      .map(Number);
+    const centerDisplay = image.imageToDisplayPos(pixel);
+    const northDisplay = image.imageToDisplayPos({ x: north[0], y: north[1] });
+    const dx = northDisplay.x - centerDisplay.x,
+      dy = northDisplay.y - centerDisplay.y;
+    return Number.isFinite(dx) && Number.isFinite(dy) && Math.hypot(dx, dy) > 0
+      ? (Math.atan2(dx, -dy) * 180) / Math.PI
+      : null;
+  }
 
-    return {
-      ra: wcsPosition.ra,
-      dec: wcsPosition.dec,
-      wcsSystem: wcsPosition.sys,
-      wcsString: wcsPosition.str,
-    };
+  private normalizeOrientation(js9: any): void {
+    const display = { display: this.uid };
+    js9.SetRotate('reset', display);
+    js9.SetRot90('reset', display);
+    js9.SetFlip('reset', display);
+    js9.SetWCSSys('ICRS', display);
+    js9.SetWCSUnits('degrees', display);
+    const image = js9.GetImage(display);
+    if (image?.raw?.wcs > 0) js9.SetRotate('northisup', display);
   }
 
   adjustColorbarColoring() {
-    // Logic to invert the color-scale color (for sake of theme color)
-    if (this.siteTheme?.includes('DARK')) {
-      const colorbarElement = document.getElementById(this.colorbarId);
-      const canvas = colorbarElement?.querySelector(
-        '.JS9ColorbarTextCanvas',
-      ) as HTMLCanvasElement | null;
-      const ctx = canvas?.getContext('2d');
-
-      if (canvas && ctx) {
-        ctx.globalCompositeOperation = 'difference';
-        ctx.fillStyle = 'rgba(0,0,0,0)';
-        ctx.fillStyle = 'white';
-        ctx.fillRect(0, 0, canvas.offsetWidth, canvas.offsetHeight);
-        canvas.style.backgroundColor = 'rgba(0,0,0,0)';
-      }
-    }
+    const js9 = getJs9();
+    const image = js9?.GetImage?.({ display: this.uid });
+    const colorbar = image?.display?.pluginInstances?.JS9Colorbar;
+    if (!colorbar?.textctx) return;
+    // Set drawing colours rather than inverting pixels: JS9 redraws ticks on every view change.
+    colorbar.textctx.globalCompositeOperation = 'source-over';
+    colorbar.textctx.fillStyle = '#fff';
+    colorbar.textctx.strokeStyle = '#fff';
+    js9.Colorbar.display.call(colorbar, image);
   }
 
   private loadFitsUrl(js9: any, fitsUrl: string): void {
+    const version = ++this.loadVersion;
     this.latestRequestedFitsUrl = fitsUrl;
     activeFitsErrorHandler = this.onFitsErrorBound;
     syncJs9FitsErrorHandler(js9);
@@ -612,21 +710,89 @@ export class NgxJs9Component implements AfterViewInit, OnDestroy, OnChanges {
 
     js9.CloseDisplay(this.uid);
     js9.Load(
-      fitsUrl,
+      // A named File is essential: JS9/Montage adds .fits to unnamed Blob
+      // output paths, then attempts to open a different virtual filename.
+      this.fitsBlob
+        ? new File([this.fitsBlob], `catch-${this.uid}.fits`, { type: 'application/fits' })
+        : fitsUrl,
       {
+        filename: fitsUrl,
         scale: 'linear',
         colormap: 'cool',
-        onload: () => this.onLoadSuccess(js9, fitsUrl),
+        onload: (image: any) => {
+          // JS9 displays an image before invoking onload. Remove an obsolete
+          // completion so it cannot replace the newer selection or its WCS.
+          if (version !== this.loadVersion || fitsUrl !== this.latestRequestedFitsUrl) {
+            image.close?.();
+            return;
+          }
+          this.onLoadSuccess(js9, fitsUrl, version);
+        },
       },
       { display: this.uid },
     );
   }
 
-  private onLoadSuccess(js9: any, fitsUrl: string): void {
-    if (this.latestRequestedFitsUrl !== fitsUrl) {
+  private onLoadSuccess(js9: any, fitsUrl: string, version: number): void {
+    if (this.latestRequestedFitsUrl !== fitsUrl || this.loadVersion !== version) {
       return;
     }
 
+    this.normalizeOrientation(js9);
+    if (this.previewWcs) {
+      const image = js9.GetImage({ display: this.uid });
+      const native = image.raws[0];
+      const preview = this.previewWcs;
+      const isCurrent = () =>
+        this.loadVersion === version &&
+        this.latestRequestedFitsUrl === fitsUrl &&
+        js9.GetImage({ display: this.uid }) === image;
+      void reprojectDisplay(
+        native,
+        preview,
+        (ra, dec) => {
+          const values = js9.wcs2pix(native.wcs, ra, dec).trim().split(/\s+/).map(Number);
+          return [values[0] - 1, values[1] - 1];
+        },
+        isCurrent,
+      )
+        .then((data) => {
+          if (!isCurrent()) return;
+          js9.RefreshImage(
+            {
+              data,
+              naxis1: preview.size[0],
+              naxis2: preview.size[1],
+              bitpix: -32,
+              head: previewFitsHeader(preview),
+            },
+            { rawid: 'catch-display', resetSection: true },
+            { display: this.uid },
+          );
+          // JS9 frees the previous raw layer's WCS even when adding a new layer.
+          // Restore its owned WCS so native pixel mappings and layer switching
+          // stay valid; closeImage will free both layers normally.
+          const displayed = image.raw;
+          try {
+            image.raw = native;
+            image.initWCS(native.header);
+            js9.wcssys(native.wcs, 'ICRS');
+            js9.wcsunits(native.wcs, 'degrees');
+          } finally {
+            image.raw = displayed;
+          }
+          this.finishLoad(js9);
+        })
+        .catch((error) => {
+          if (isCurrent()) this.onFitsError(error.message ?? 'Could not align FITS display');
+        });
+      return;
+    }
+    this.finishLoad(js9);
+  }
+
+  private finishLoad(js9: any): void {
+    this.normalizeOrientation(js9);
     this.resizeDisplay(js9);
     js9.SetScale('zscale', { display: this.uid });
     js9.SetZoom('toFit', { display: this.uid });
@@ -662,7 +828,47 @@ export class NgxJs9Component implements AfterViewInit, OnDestroy, OnChanges {
       return;
     }
 
-    js9.ResizeDisplay(this.uid, this.widthPxls, this.getImageHeightPixels());
+    const image = js9.GetImage?.({ display: this.uid });
+    const width = this.widthPxls,
+      height = this.getImageHeightPixels();
+    const previousFit = image
+      ? Math.min(image.display.width / image.raw.width, image.display.height / image.raw.height)
+      : 0;
+    const nextFit = image ? Math.min(width / image.raw.width, height / image.raw.height) : 0;
+    const zoom = image ? Number(js9.GetZoom({ display: this.uid })) : 0;
+    js9.ResizeDisplay(this.uid, width, height);
+    if (previousFit > 0 && nextFit > 0 && previousFit !== nextFit && zoom > 0) {
+      // Keep a fitted image fitted, and retain a user's magnification relative to fit.
+      js9.SetZoom((zoom * nextFit) / previousFit, { display: this.uid });
+    }
+    this.scheduleViewChange(js9);
+  }
+
+  private scheduleViewChange(js9: any): void {
+    if (this.viewChangeTimeout !== undefined) return;
+    this.viewChangeTimeout = setTimeout(() => {
+      this.viewChangeTimeout = undefined;
+      const canvas: HTMLCanvasElement | undefined = js9.GetImage?.({ display: this.uid })?.display
+        ?.canvas;
+      const display = document.getElementById(this.uid),
+        host = display?.closest('.ngx-js9-host');
+      if (!display || !host) return;
+      const rect = (canvas ?? display).getBoundingClientRect(),
+        parent = host.getBoundingClientRect();
+      const viewport = {
+        top: rect.top - parent.top,
+        left: rect.left - parent.left,
+        width: rect.width,
+        height: rect.height,
+      };
+      const signature = JSON.stringify(viewport);
+      if (signature !== this.viewportSignature) {
+        this.viewportSignature = signature;
+        this.imageViewport.emit(viewport);
+      }
+      this.viewChanged.emit();
+      this.adjustColorbarColoring();
+    });
   }
 
   getHeight() {
@@ -680,12 +886,9 @@ export class NgxJs9Component implements AfterViewInit, OnDestroy, OnChanges {
   private getViewerChromeHeightPixels(): number {
     const menuBarHeight =
       this.getRenderedElementHeight(this.menubarId) ?? fallbackMenubarHeightPixels;
-    const colorbarHeight = Math.max(
-      this.getRenderedElementHeight(this.colorbarId) ?? 0,
-      minimumColorbarHeightPixels,
-    );
-
-    return menuBarHeight + colorbarHeight + viewerChromeGapPixels;
+    const colorbarHeight =
+      this.getRenderedElementHeight(this.colorbarId) ?? fallbackColorbarHeightPixels;
+    return menuBarHeight + colorbarHeight;
   }
 
   private getRenderedElementHeight(elementId: string): number | null {

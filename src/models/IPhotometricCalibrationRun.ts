@@ -12,10 +12,14 @@ export interface IPhotometricCalibrationInputs {
   aperture_radius: number;
   catalog: TPhotometricCalibrationCatalog;
   cal_band: TPhotometricCalibrationBand;
-  color_term: string;
+  color_term: string | null;
 }
 
 export interface IPhotometricCalibrationResult {
+  preview_url?: string;
+  preview_s3_key?: string;
+  preview_orientation?: 'north-up-east-left';
+  preview_renderer_version?: string;
   status: 'success';
   photometry: {
     zero_point: number;

@@ -126,7 +126,7 @@ export function getCrudeOverlayLeft(ra: number, input: ICrudeOverlayProjectionIn
 
   const cosDecCenter = Math.cos(deg2rad(decCenter));
   const normXOffset = ((ra - raCenter) * cosDecCenter) / input.angularFovWidthDeg;
-  const pixelXOnImage = (normXOffset + 0.5) * input.renderedImageWidth;
+  const pixelXOnImage = (0.5 - normXOffset) * input.renderedImageWidth;
 
   return input.imageOffsetX + pixelXOnImage;
 }

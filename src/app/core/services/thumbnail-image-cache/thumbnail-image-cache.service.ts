@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { concat, from, Observable, of } from 'rxjs';
+import { concat, defer, from, Observable, of } from 'rxjs';
 import { finalize, shareReplay } from 'rxjs/operators';
 
 import {
@@ -14,11 +14,15 @@ import { getThumbnailCacheKey, getThumbnailCandidateUrls } from './thumbnail-url
 
 interface MemoryCacheEntry {
   objectUrl: string;
+  blob: Blob;
+  kind?: 'preview' | 'fits';
   createdAtMs: number;
 }
 
 interface NetworkTask {
   url: string;
+  signal?: AbortSignal;
+  queuedAbort?: () => void;
   label: string;
   priority: 'high' | 'normal';
   policy: ThumbnailSourcePolicy;
@@ -38,14 +42,18 @@ interface QueueBucket {
   providedIn: 'root',
 })
 export class ThumbnailImageCacheService {
-  private readonly persistentCacheName = 'catch-thumbnail-image-v2';
+  private readonly persistentCacheName = 'catch-image-view-v3';
   private readonly maxMemoryEntries = 600;
   private readonly maxPersistentEntries = 1500;
 
   private readonly memoryCache = new Map<string, MemoryCacheEntry>();
-  private readonly inFlightLoads = new Map<string, Observable<ThumbnailLoadResult>>();
+  private readonly inFlightLoads = new Map<
+    string,
+    { load$: Observable<ThumbnailLoadResult>; controller: AbortController; promote: () => void }
+  >();
   private readonly queueBuckets = new Map<string, QueueBucket>();
   private queueGeneration = 0;
+  private refreshId = 0;
 
   loadImage$(request: ThumbnailImageRequest): Observable<ThumbnailImageState> {
     const normalizedRequest = {
@@ -64,11 +72,30 @@ export class ThumbnailImageCacheService {
       return of(this.createErrorState(normalizedRequest, policy, 'No thumbnail URL is available.'));
     }
 
-    return concat(of(loadingState), this.getLoadResult$(normalizedRequest, policy));
+    return new Observable((subscriber) => {
+      // A caller releases only its own subscription. The shared load owns the fetch signal.
+      const abort = () => {
+        subscriber.next(
+          this.createErrorState(normalizedRequest, policy, 'Image request canceled.'),
+        );
+        subscriber.complete();
+      };
+      normalizedRequest.signal?.addEventListener('abort', abort, { once: true });
+      if (normalizedRequest.signal?.aborted) {
+        abort();
+      } else {
+        concat(
+          of(loadingState),
+          defer(() => this.getLoadResult$(normalizedRequest, policy)),
+        ).subscribe(subscriber);
+      }
+      return () => normalizedRequest.signal?.removeEventListener('abort', abort);
+    });
   }
 
   resetQueues(): void {
     this.queueGeneration++;
+    this.inFlightLoads.forEach((load) => load.controller.abort());
     this.inFlightLoads.clear();
 
     for (const bucket of this.queueBuckets.values()) {
@@ -78,7 +105,10 @@ export class ThumbnailImageCacheService {
       }
 
       const canceledTasks = bucket.queue.splice(0);
-      canceledTasks.forEach((task) => task.reject(new Error('Thumbnail request canceled.')));
+      canceledTasks.forEach((task) => {
+        if (task.queuedAbort) task.signal?.removeEventListener('abort', task.queuedAbort);
+        task.reject(new Error('Thumbnail request canceled.'));
+      });
       bucket.activeControllers.forEach((controller) => controller.abort());
     }
   }
@@ -100,44 +130,87 @@ export class ThumbnailImageCacheService {
     request: ThumbnailImageRequest,
     policy: ThumbnailSourcePolicy,
   ): Observable<ThumbnailLoadResult> {
-    const cacheKey = getThumbnailCacheKey(request.url);
+    const resourceUrl = getThumbnailCacheKey(request.url);
+    const cacheKey = new URL(
+      resourceUrl,
+      typeof window === 'undefined' ? 'https://catch.local' : window.location.href,
+    ).href;
+    const generation = this.queueGeneration;
     const memoryHit = request.forceRefresh ? undefined : this.getMemoryCacheHit(cacheKey, policy);
     if (memoryHit) {
       return of(memoryHit);
     }
 
     const inFlightKey = request.forceRefresh
-      ? `${cacheKey}|generation:${this.queueGeneration}|force:${Date.now()}`
+      ? `${cacheKey}|generation:${this.queueGeneration}|force:${++this.refreshId}`
       : `${cacheKey}|generation:${this.queueGeneration}`;
     const existingLoad = this.inFlightLoads.get(inFlightKey);
-    if (existingLoad) {
-      return existingLoad;
+    if (existingLoad && !existingLoad.controller.signal.aborted) {
+      if (request.priority === 'high') existingLoad.promote();
+      return existingLoad.load$;
     }
 
-    const load$ = from(this.resolveImage(request, policy, cacheKey)).pipe(
-      finalize(() => this.inFlightLoads.delete(inFlightKey)),
-      shareReplay({ bufferSize: 1, refCount: false }),
+    const controller = new AbortController();
+    const sharedRequest = { ...request, signal: controller.signal };
+    const load$ = defer(() =>
+      from(this.resolveImage(sharedRequest, policy, cacheKey, generation)),
+    ).pipe(
+      finalize(() => {
+        // Unsubscribing the last consumer must also cancel queued work and native fetch().
+        controller.abort();
+        if (this.inFlightLoads.get(inFlightKey)?.load$ === load$)
+          this.inFlightLoads.delete(inFlightKey);
+      }),
+      shareReplay({ bufferSize: 1, refCount: true }),
     );
-    this.inFlightLoads.set(inFlightKey, load$);
+    this.inFlightLoads.set(inFlightKey, {
+      load$,
+      controller,
+      promote: () => {
+        // Selection may share a thumbnail queued before it became the active row.
+        // Preserve that one request while moving it ahead of background thumbnails.
+        sharedRequest.priority = 'high';
+        this.promoteQueuedRequest(resourceUrl, controller.signal);
+      },
+    });
     return load$;
+  }
+
+  private promoteQueuedRequest(url: string, signal?: AbortSignal): void {
+    for (const bucket of this.queueBuckets.values()) {
+      const index = bucket.queue.findIndex((task) => task.url === url && task.signal === signal);
+      if (index < 0) continue;
+      const [task] = bucket.queue.splice(index, 1);
+      task.priority = 'high';
+      bucket.queue.unshift(task);
+    }
   }
 
   private async resolveImage(
     request: ThumbnailImageRequest,
     policy: ThumbnailSourcePolicy,
     cacheKey: string,
+    generation: number,
   ): Promise<ThumbnailLoadResult> {
-    if (!request.forceRefresh) {
-      const persistentCacheHit = await this.getPersistentCacheHit(request, policy, cacheKey);
-      if (persistentCacheHit) {
-        return persistentCacheHit;
-      }
-    }
-
     try {
-      const blob = await this.fetchBlobFromNetwork(request, policy);
+      this.assertCurrentGeneration(generation);
+      if (request.signal?.aborted) throw new DOMException('Image request canceled.', 'AbortError');
+      if (!request.forceRefresh) {
+        const persistentCacheHit = await this.getPersistentCacheHit(
+          request,
+          policy,
+          cacheKey,
+          generation,
+        );
+        this.assertCurrentGeneration(generation);
+        request.signal?.throwIfAborted();
+        if (persistentCacheHit) return persistentCacheHit;
+      }
+      const blob = await this.fetchBlobFromNetwork(request, policy, generation);
+      this.assertCurrentGeneration(generation);
+      request.signal?.throwIfAborted();
       const successState = this.storeBlobInMemory(request, policy, cacheKey, blob, 'network');
-      void this.writePersistentCache(policy, cacheKey, blob);
+      void this.writePersistentCache(policy, cacheKey, blob, generation);
       return successState;
     } catch (error) {
       return this.createErrorState(request, policy, getErrorMessage(error));
@@ -167,6 +240,7 @@ export class ThumbnailImageCacheService {
       originalUrl: cacheKey,
       bucketId: policy.bucketId,
       objectUrl: entry.objectUrl,
+      blob: entry.blob,
       loadedFrom: 'memory',
     };
   }
@@ -175,6 +249,7 @@ export class ThumbnailImageCacheService {
     request: ThumbnailImageRequest,
     policy: ThumbnailSourcePolicy,
     cacheKey: string,
+    generation: number,
   ): Promise<ThumbnailSuccessState | undefined> {
     if (!policy.usePersistentCache || !this.isPersistentCacheAvailable()) {
       return undefined;
@@ -195,6 +270,8 @@ export class ThumbnailImageCacheService {
       }
 
       const blob = await cachedResponse.blob();
+      this.assertCurrentGeneration(generation);
+      request.signal?.throwIfAborted();
       return this.storeBlobInMemory(request, policy, cacheKey, blob, 'persistent-cache');
     } catch (_) {
       return undefined;
@@ -205,6 +282,7 @@ export class ThumbnailImageCacheService {
     policy: ThumbnailSourcePolicy,
     cacheKey: string,
     blob: Blob,
+    generation: number,
   ): Promise<void> {
     if (!policy.usePersistentCache || !this.isPersistentCacheAvailable()) {
       return;
@@ -219,6 +297,7 @@ export class ThumbnailImageCacheService {
       }
 
       const cache = await caches.open(this.persistentCacheName);
+      if (generation !== this.queueGeneration) return;
       await cache.put(new Request(cacheKey), new Response(blob, { headers }));
       await this.trimPersistentCache(cache);
     } catch (_) {
@@ -242,6 +321,8 @@ export class ThumbnailImageCacheService {
     const objectUrl = URL.createObjectURL(blob);
     this.memoryCache.set(cacheKey, {
       objectUrl,
+      blob,
+      kind: request.kind,
       createdAtMs: Date.now(),
     });
     this.trimMemoryCache();
@@ -251,6 +332,7 @@ export class ThumbnailImageCacheService {
       originalUrl: request.url,
       bucketId: policy.bucketId,
       objectUrl,
+      blob,
       loadedFrom,
     };
   }
@@ -258,20 +340,38 @@ export class ThumbnailImageCacheService {
   private async fetchBlobFromNetwork(
     request: ThumbnailImageRequest,
     policy: ThumbnailSourcePolicy,
+    generation: number,
   ): Promise<Blob> {
-    const candidateUrls = getThumbnailCandidateUrls(request.url);
+    const candidateUrls =
+      request.kind === 'fits'
+        ? [getThumbnailCacheKey(request.url)]
+        : getThumbnailCandidateUrls(request.url);
     let lastError: Error | undefined;
 
-    for (const url of candidateUrls) {
+    for (let attempt = 0; attempt < 3; attempt++) {
+      this.assertCurrentGeneration(generation);
+      const url = candidateUrls[0];
+      if (request.signal?.aborted) throw new DOMException('Image request canceled.', 'AbortError');
       try {
         return await this.enqueueNetworkFetch({
           url,
+          signal: request.signal,
           label: request.label ?? request.url,
           priority: request.priority ?? 'normal',
           policy,
         });
       } catch (error) {
+        this.assertCurrentGeneration(generation);
         lastError = asError(error);
+        // Abort, permanent HTTP errors and malformed content do not retry.
+        if (
+          lastError.name === 'AbortError' ||
+          lastError.message.startsWith('Empty ') ||
+          (lastError.message.startsWith('HTTP ') &&
+            !/^HTTP (429|502|503|504)$/.test(lastError.message))
+        )
+          break;
+        if (attempt < 2) await new Promise((resolve) => setTimeout(resolve, 300 * 2 ** attempt));
       }
     }
 
@@ -280,6 +380,7 @@ export class ThumbnailImageCacheService {
 
   private enqueueNetworkFetch(taskInput: {
     url: string;
+    signal?: AbortSignal;
     label: string;
     priority: 'high' | 'normal';
     policy: ThumbnailSourcePolicy;
@@ -291,6 +392,16 @@ export class ThumbnailImageCacheService {
         reject,
       };
       const bucket = this.getQueueBucket(task.policy.bucketId);
+      if (task.signal?.aborted) {
+        reject(new DOMException('Image request canceled.', 'AbortError'));
+        return;
+      }
+      task.queuedAbort = () => {
+        const index = bucket.queue.indexOf(task);
+        if (index >= 0) bucket.queue.splice(index, 1);
+        reject(new DOMException('Image request canceled.', 'AbortError'));
+      };
+      task.signal?.addEventListener('abort', task.queuedAbort, { once: true });
 
       if (task.priority === 'high') {
         bucket.queue.unshift(task);
@@ -333,6 +444,10 @@ export class ThumbnailImageCacheService {
 
   private startNetworkTask(bucket: QueueBucket, task: NetworkTask): void {
     const controller = new AbortController();
+    if (task.queuedAbort) task.signal?.removeEventListener('abort', task.queuedAbort);
+    const abort = () => controller.abort();
+    task.signal?.addEventListener('abort', abort, { once: true });
+    if (task.signal?.aborted) controller.abort();
     const timeoutId = setTimeout(() => controller.abort(), task.policy.requestTimeoutMs);
     bucket.activeCount++;
     bucket.activeControllers.add(controller);
@@ -353,6 +468,7 @@ export class ThumbnailImageCacheService {
       .catch((error) => task.reject(asError(error)))
       .finally(() => {
         clearTimeout(timeoutId);
+        task.signal?.removeEventListener('abort', abort);
         bucket.activeControllers.delete(controller);
         bucket.activeCount = Math.max(0, bucket.activeCount - 1);
         this.pumpQueue(task.policy);
@@ -376,6 +492,11 @@ export class ThumbnailImageCacheService {
   }
 
   private trimMemoryCache(): void {
+    const fitsEntries = Array.from(this.memoryCache).filter(([, entry]) => entry.kind === 'fits');
+    for (const [key, entry] of fitsEntries.slice(0, Math.max(0, fitsEntries.length - 3))) {
+      URL.revokeObjectURL(entry.objectUrl);
+      this.memoryCache.delete(key);
+    }
     while (this.memoryCache.size > this.maxMemoryEntries) {
       const oldestKey = this.memoryCache.keys().next().value;
       if (!oldestKey) {
@@ -415,6 +536,10 @@ export class ThumbnailImageCacheService {
 
   private isExpired(createdAtMs: number, ttlMs: number): boolean {
     return Date.now() - createdAtMs > ttlMs;
+  }
+
+  private assertCurrentGeneration(generation: number): void {
+    if (generation !== this.queueGeneration) throw new Error('Image request canceled.');
   }
 
   private isPersistentCacheAvailable(): boolean {

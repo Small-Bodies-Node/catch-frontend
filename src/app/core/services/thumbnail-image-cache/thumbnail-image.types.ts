@@ -4,6 +4,8 @@ export type ThumbnailLoadCacheSource = 'memory' | 'persistent-cache' | 'network'
 
 export interface ThumbnailImageRequest {
   url: string;
+  kind?: 'preview' | 'fits';
+  signal?: AbortSignal;
   source?: string | null;
   sourceName?: string | null;
   label?: string;
@@ -31,6 +33,7 @@ export interface ThumbnailSuccessState {
   originalUrl: string;
   bucketId: string;
   objectUrl: string;
+  blob: Blob;
   loadedFrom: ThumbnailLoadCacheSource;
 }
 
@@ -42,9 +45,6 @@ export interface ThumbnailErrorState {
 }
 
 export type ThumbnailImageState =
-  | { status: 'idle' }
-  | ThumbnailLoadingState
-  | ThumbnailSuccessState
-  | ThumbnailErrorState;
+  { status: 'idle' } | ThumbnailLoadingState | ThumbnailSuccessState | ThumbnailErrorState;
 
 export type ThumbnailLoadResult = ThumbnailSuccessState | ThumbnailErrorState;

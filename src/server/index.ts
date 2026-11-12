@@ -4,6 +4,7 @@ import { horizons } from './routes/horizons';
 import { panstarrs } from './routes/panstarrs';
 import { cat } from './routes/cat';
 import { siteBanner } from './routes/site-banner';
+import { imagePreview } from './routes/image-preview';
 
 export function configureAPI(router = Router()) {
   router.use((req, res, next) => {
@@ -25,6 +26,7 @@ export function configureAPI(router = Router()) {
 
   router.use('/hello', hello);
   router.use('/site-banner', siteBanner);
+  router.use('/image-preview', imagePreview);
   router.use('/cat', cat);
   router.use('/horizons', horizons);
   router.use('/panstarrs', panstarrs);

@@ -4,6 +4,7 @@ import { IApiMovum } from '../../../../../models/IApiMovum';
 export interface IOverlayActiveContext {
   apiActiveDatum: IApiMovum | IApiFixum;
   imageUrl: string;
+  fitsFile: string;
   ra: number | string;
   dec: number | string;
 }

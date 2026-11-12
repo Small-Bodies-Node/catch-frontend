@@ -15,6 +15,10 @@ export interface IAstrometryInputs {
 }
 
 export interface IAstrometryResult {
+  preview_url?: string;
+  preview_s3_key?: string;
+  preview_orientation?: 'north-up-east-left';
+  preview_renderer_version?: string;
   status: 'success';
   wcs_image_url: string;
   wcs_image_s3_key: string;

@@ -46,14 +46,14 @@ export class FitsClickCoordinatesService {
   private readonly coordinatesSubject = new BehaviorSubject<IFitsClickCoordinates | null>(null);
   private readonly mapperVersionSubject = new BehaviorSubject(0);
   private readonly worldToImageCoordinatesRequestSubject = new BehaviorSubject<string | null>(null);
-  private worldToImageCoordinatesMapperFile: string | null = null;
-  private worldToImageCoordinatesMapper:
-    | ((ra: number, dec: number) => IFitsImageCoordinates | null)
-    | null = null;
-  private imageToWorldCoordinatesMapperFile: string | null = null;
-  private imageToWorldCoordinatesMapper:
-    | ((imageX: number, imageY: number) => IFitsWorldCoordinates | null)
-    | null = null;
+  private readonly worldToImageMappers = new Map<
+    string,
+    (ra: number, dec: number) => IFitsImageCoordinates | null
+  >();
+  private readonly imageToWorldMappers = new Map<
+    string,
+    (x: number, y: number) => IFitsWorldCoordinates | null
+  >();
 
   readonly coordinates$ = this.coordinatesSubject.asObservable();
   readonly mapperVersion$ = this.mapperVersionSubject.asObservable();
@@ -80,16 +80,19 @@ export class FitsClickCoordinatesService {
     file: string,
     mapper: (ra: number, dec: number) => IFitsImageCoordinates | null,
   ): void {
-    this.worldToImageCoordinatesMapperFile = file;
-    this.worldToImageCoordinatesMapper = mapper;
+    this.worldToImageMappers.set(file, mapper);
     this.mapperVersionSubject.next(this.mapperVersionSubject.value + 1);
   }
 
-  clearWorldToImageCoordinatesMapper(): void {
-    this.worldToImageCoordinatesMapperFile = null;
-    this.worldToImageCoordinatesMapper = null;
-    this.imageToWorldCoordinatesMapperFile = null;
-    this.imageToWorldCoordinatesMapper = null;
+  clearWorldToImageCoordinatesMapper(file?: string): void {
+    if (file !== undefined) {
+      this.worldToImageMappers.delete(file);
+      this.imageToWorldMappers.delete(file);
+    } else {
+      this.worldToImageMappers.clear();
+      this.imageToWorldMappers.clear();
+    }
+    if (file === undefined) this.worldToImageCoordinatesRequestSubject.next(null);
     this.mapperVersionSubject.next(this.mapperVersionSubject.value + 1);
   }
 
@@ -97,8 +100,7 @@ export class FitsClickCoordinatesService {
     file: string,
     mapper: (imageX: number, imageY: number) => IFitsWorldCoordinates | null,
   ): void {
-    this.imageToWorldCoordinatesMapperFile = file;
-    this.imageToWorldCoordinatesMapper = mapper;
+    this.imageToWorldMappers.set(file, mapper);
     this.mapperVersionSubject.next(this.mapperVersionSubject.value + 1);
   }
 
@@ -107,11 +109,7 @@ export class FitsClickCoordinatesService {
     ra: number,
     dec: number,
   ): IFitsImageCoordinates | null {
-    if (this.worldToImageCoordinatesMapperFile !== file) {
-      return null;
-    }
-
-    return this.worldToImageCoordinatesMapper?.(ra, dec) ?? null;
+    return this.worldToImageMappers.get(file)?.(ra, dec) ?? null;
   }
 
   getWorldCoordinatesFromImage(
@@ -119,10 +117,6 @@ export class FitsClickCoordinatesService {
     imageX: number,
     imageY: number,
   ): IFitsWorldCoordinates | null {
-    if (this.imageToWorldCoordinatesMapperFile !== file) {
-      return null;
-    }
-
-    return this.imageToWorldCoordinatesMapper?.(imageX, imageY) ?? null;
+    return this.imageToWorldMappers.get(file)?.(imageX, imageY) ?? null;
   }
 }

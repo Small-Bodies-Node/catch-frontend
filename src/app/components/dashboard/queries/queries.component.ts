@@ -8,7 +8,10 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Subscription } from 'rxjs';
-import { CatchApiService } from '../../../core/services/dashboard-api/catch-api.service';
+import {
+  CatchApiService,
+  IDashboardQuery,
+} from '../../../core/services/dashboard-api/catch-api.service';
 
 @Component({
   selector: 'app-queries',
@@ -29,7 +32,7 @@ import { CatchApiService } from '../../../core/services/dashboard-api/catch-api.
 export class QueriesComponent implements OnInit, OnDestroy, OnChanges {
   @Input() apiUrl!: string;
 
-  queriesData: any = null;
+  queriesData: IDashboardQuery[] | null = null;
   isLoading = true;
   isError = false;
   errorMessage = '';
@@ -84,18 +87,8 @@ export class QueriesComponent implements OnInit, OnDestroy, OnChanges {
     this.loadQueriesData();
   }
 
-  getTotalJobs(): number {
-    if (!this.queriesData) return 0;
-    return this.queriesData.reduce((total: number, query: any) => total + query.jobs, 0);
-  }
-
-  getTotalCached(): number {
-    if (!this.queriesData) return 0;
-    return this.queriesData.reduce((total: number, query: any) => total + query.cached, 0);
-  }
-
-  getTotalErrored(): number {
-    if (!this.queriesData) return 0;
-    return this.queriesData.reduce((total: number, query: any) => total + query.errored, 0);
+  getThirtyDaySummary(): IDashboardQuery | null {
+    // History windows overlap; adding them would count recent activity more than once.
+    return this.queriesData?.find((query) => query.days === 30) ?? null;
   }
 }

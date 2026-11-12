@@ -17,6 +17,7 @@ import { Subscription } from 'rxjs';
 import { IApiFixum } from '../../../../models/IApiFixum';
 import { IApiMovum } from '../../../../models/IApiMovum';
 import { getTableThumbnailSurveyScaleTransform } from '../../../../utils/image-orientation';
+import { nativePreviewUrl } from '../../../../utils/nativePreviewUrl';
 import { ThumbnailImageCacheService } from '../../../core/services/thumbnail-image-cache/thumbnail-image-cache.service';
 import { ThumbnailImageState } from '../../../core/services/thumbnail-image-cache/thumbnail-image.types';
 
@@ -30,6 +31,7 @@ import { ThumbnailImageState } from '../../../core/services/thumbnail-image-cach
 })
 export class TableThumbnailV2Component implements OnChanges, OnDestroy {
   @Input() apiDatum!: IApiMovum | IApiFixum;
+  @Input() previewUrl?: string | null;
   @Input() label!: string;
   @Input() priority!: 'vip' | 'nip';
 
@@ -51,13 +53,14 @@ export class TableThumbnailV2Component implements OnChanges, OnDestroy {
   ) {}
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['priority'] || changes['label'] || changes['apiDatum']) {
+    if (changes['priority'] || changes['label'] || changes['apiDatum'] || changes['previewUrl']) {
       if (!this.priority || !this.label || !this.apiDatum) return;
       this.loadImage(false);
     }
   }
 
   ngOnDestroy(): void {
+    this.loadRequestId++;
     this.loadSubscription?.unsubscribe();
   }
 
@@ -82,8 +85,12 @@ export class TableThumbnailV2Component implements OnChanges, OnDestroy {
   }
 
   private loadImage(forceRefresh: boolean): void {
-    const previewUrl = this.apiDatum.preview_url?.trim();
+    const previewUrl = (
+      this.previewUrl ?? nativePreviewUrl(this.apiDatum.preview_url, this.apiDatum.cutout_url)
+    ).trim();
     if (!previewUrl) {
+      this.loadRequestId++;
+      this.loadSubscription?.unsubscribe();
       this.imageState = {
         status: 'error',
         originalUrl: '',
@@ -94,7 +101,7 @@ export class TableThumbnailV2Component implements OnChanges, OnDestroy {
       return;
     }
 
-    this.loadSubscription?.unsubscribe();
+    const previousSubscription = this.loadSubscription;
     const requestId = ++this.loadRequestId;
     this.imageState = {
       status: 'loading',
@@ -116,5 +123,8 @@ export class TableThumbnailV2Component implements OnChanges, OnDestroy {
         this.imageState = imageState;
         this.changeDetector.markForCheck();
       });
+    // A priority/label change may retain the same URL. Acquire it before releasing
+    // the old subscription so a shared fetch is promoted rather than restarted.
+    previousSubscription?.unsubscribe();
   }
 }

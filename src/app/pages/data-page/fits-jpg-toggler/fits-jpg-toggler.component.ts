@@ -1,17 +1,12 @@
 import { AfterViewInit, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { Subscription } from 'rxjs';
-
+import { Subscription, forkJoin, filter, take, catchError, of } from 'rxjs';
 import { IAppState } from '../../../ngrx/reducers';
 import { IApiMovum } from '../../../../models/IApiMovum';
-import {
-  selectApiData,
-  selectApiDataStatus,
-  selectApiActiveDatum,
-} from '../../../ngrx/selectors/api-data.selectors';
 import { IApiFixum } from '../../../../models/IApiFixum';
-import { TApiDataStatus } from '../../../../models/TApiDataStatus';
-import { MatIcon } from '@angular/material/icon';
+import { selectApiData } from '../../../ngrx/selectors/api-data.selectors';
+import { FitsCoordinateLoaderComponent } from '../fits-coordinate-loader.component';
+import { selectActiveImageView } from '../../../ngrx/selectors/active-image-view.selector';
 import {
   IJs9ImageClickCoordinates,
   NgxJs9Component,
@@ -19,268 +14,232 @@ import {
 } from '../../../../../projects/ngx-js9/src/public-api';
 import { PanstarrsOverlayComponent } from '../panstarrs-overlay/panstarrs-overlay.component';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
-import { NgClass } from '@angular/common';
 import { MatFabButton } from '@angular/material/button';
+import { MatIcon } from '@angular/material/icon';
+import { northArrowAngle } from '../../../../utils/northArrowAngle';
 import { FitsClickCoordinatesService } from '../fits-click-coordinates.service';
+import { ImageWcsService, IWcs } from '../../../core/services/image-wcs/image-wcs.service';
+import { ThumbnailImageCacheService } from '../../../core/services/thumbnail-image-cache/thumbnail-image-cache.service';
 
 @Component({
   selector: 'app-fits-jpg-toggler',
   templateUrl: './fits-jpg-toggler.component.html',
   styleUrls: ['./fits-jpg-toggler.component.scss'],
   imports: [
-    //
-    MatIcon,
     NgxJs9Module,
     MatProgressSpinner,
     PanstarrsOverlayComponent,
-    NgClass,
+    FitsCoordinateLoaderComponent,
     MatFabButton,
+    MatIcon,
   ],
   standalone: true,
 })
 export class FitsJpgTogglerComponent implements AfterViewInit, OnDestroy {
-  // --->>>
-
   subscriptions = new Subscription();
   apiData?: IApiMovum[] | IApiFixum[];
-  apiDataStatus?: TApiDataStatus;
   apiActiveDatum?: IApiMovum | IApiFixum;
-  isButtonRaised = false;
   isFits = false;
   desiredFitsUrl = '';
   viewerFitsUrl = '';
+  fitsBlob?: Blob;
+  previewWcs?: IWcs;
+  previewUrl = '';
   widthPxls = 0;
   heightPxls = 0;
   isFitsLoaded = false;
-  apiDataWithProblematicFitsUrls: string[] = [];
-  isThumbnailReorientated = true;
-  private loadingProductId = '';
-  private requestedWorldToImageCoordinatesFile: string | null = null;
+  fitsError = '';
+  viewTransform = 'none';
+  northAngle: number | null = null;
+  viewport?: { top: number; left: number; width: number; height: number };
+  private loadSubscription = new Subscription();
+  private loadVersion = 0;
+  private loadAbort?: AbortController;
+  private loadingUrl = '';
   private resizeObserver?: ResizeObserver;
-  private initialViewerSizeTimeout?: ReturnType<typeof setTimeout>;
+  private previewWcsSubscription = new Subscription();
+  private indicatorWcs?: IWcs;
 
-  @ViewChild('FitsJpgTogglerContainer')
-  fitsJpgTogglerContainer?: ElementRef<HTMLDivElement>;
-
-  @ViewChild(NgxJs9Component)
-  js9Component?: NgxJs9Component;
+  @ViewChild('FitsJpgTogglerContainer') fitsJpgTogglerContainer?: ElementRef<HTMLDivElement>;
+  @ViewChild(NgxJs9Component) js9Component?: NgxJs9Component;
 
   constructor(
     private store$: Store<IAppState>,
-    private fitsClickCoordinatesService: FitsClickCoordinatesService,
+    private coordinates: FitsClickCoordinatesService,
+    private images: ThumbnailImageCacheService,
+    private wcs: ImageWcsService,
   ) {
-    // --->>
-
+    this.subscriptions.add(store$.select(selectApiData).subscribe((data) => (this.apiData = data)));
     this.subscriptions.add(
-      this.store$.select(selectApiData).subscribe((apiData) => {
-        this.apiData = apiData;
+      store$.select(selectActiveImageView).subscribe((view) => {
+        if (
+          this.desiredFitsUrl === (view?.fitsUrl ?? '') &&
+          this.previewUrl === (view?.previewUrl ?? '') &&
+          this.apiActiveDatum?.product_id === view?.datum.product_id
+        )
+          return;
+        this.loadVersion++;
+        this.loadAbort?.abort();
+        this.loadSubscription.unsubscribe();
+        this.loadingUrl = '';
+        this.apiActiveDatum = view?.datum;
+        this.desiredFitsUrl = view?.fitsUrl ?? '';
+        this.previewUrl = view?.previewUrl ?? '';
+        this.fitsError = '';
+        this.viewTransform = 'none';
+        this.isFitsLoaded = false;
+        this.viewerFitsUrl = '';
+        this.fitsBlob = undefined;
+        this.previewWcs = undefined;
+        this.indicatorWcs = undefined;
+        this.northAngle = null;
+        this.previewWcsSubscription.unsubscribe();
+        if (this.previewUrl) {
+          this.previewWcsSubscription = this.wcs
+            .getWcsObservable(this.previewUrl)
+            .pipe(
+              take(1),
+              catchError(() => of(undefined)),
+            )
+            .subscribe((wcs) => {
+              this.indicatorWcs = wcs;
+              this.onViewChanged();
+            });
+        }
+        this.coordinates.clearCoordinates();
+        this.coordinates.clearWorldToImageCoordinatesMapper();
+        if (this.isFits) this.requestFitsLoad(this.desiredFitsUrl, this.previewUrl);
       }),
     );
-
     this.subscriptions.add(
-      this.store$.select(selectApiDataStatus).subscribe((apiDataStatus) => {
-        this.apiDataStatus = apiDataStatus;
-        const { search } = apiDataStatus;
-        if (!search) return;
-        const { searchType } = search;
-        this.isThumbnailReorientated = searchType === 'moving';
-      }),
-    );
-
-    this.subscriptions.add(
-      this.store$.select(selectApiActiveDatum).subscribe((apiActiveDatum) => {
-        this.apiActiveDatum = apiActiveDatum;
-        this.desiredFitsUrl = this.apiActiveDatum?.cutout_url || '';
-        this.isFitsLoaded = this.viewerFitsUrl === this.desiredFitsUrl && !!this.viewerFitsUrl;
-        if (!this.isFitsLoaded) {
-          this.fitsClickCoordinatesService.clearCoordinates();
-          this.fitsClickCoordinatesService.clearWorldToImageCoordinatesMapper();
-        }
-
-        if (this.isFitsButtonDisabled()) {
-          if (this.isFits) {
-            this.hideFitsViewer();
-          }
-          this.isButtonRaised = false;
-          return;
-        }
-
-        if (!this.isFits && this.requestedWorldToImageCoordinatesFile !== this.desiredFitsUrl) {
-          this.isButtonRaised = false;
-          return;
-        }
-
-        this.requestFitsLoadForCurrentSelection();
-      }),
-    );
-
-    this.subscriptions.add(
-      this.fitsClickCoordinatesService.worldToImageCoordinatesRequest$.subscribe((file) => {
-        this.requestedWorldToImageCoordinatesFile = file;
-        if (!file || file !== this.desiredFitsUrl || this.isFitsButtonDisabled()) {
-          return;
-        }
-
-        this.requestFitsLoadForCurrentSelection();
+      coordinates.worldToImageCoordinatesRequest$.subscribe((file) => {
+        if (!file) return;
+        if (file === this.desiredFitsUrl) this.requestFitsLoad(file, this.previewUrl);
       }),
     );
   }
 
   ngAfterViewInit(): void {
-    if (!this.fitsJpgTogglerContainer?.nativeElement) {
-      return;
-    }
-
-    const container = this.fitsJpgTogglerContainer.nativeElement;
-    this.initialViewerSizeTimeout = setTimeout(() => {
-      this.updateViewerSize(container.clientWidth, container.clientHeight);
-      this.initialViewerSizeTimeout = undefined;
-    });
-
-    if (typeof ResizeObserver === 'undefined') {
-      return;
-    }
-
-    this.resizeObserver = new ResizeObserver(([entry]) => {
-      this.updateViewerSize(entry.contentRect.width, entry.contentRect.height);
-    });
+    const container = this.fitsJpgTogglerContainer?.nativeElement;
+    if (!container) return;
+    this.updateViewerSize(container.clientWidth, container.clientHeight);
+    if (typeof ResizeObserver === 'undefined') return;
+    this.resizeObserver = new ResizeObserver(([entry]) =>
+      this.updateViewerSize(entry.contentRect.width, entry.contentRect.height),
+    );
     this.resizeObserver.observe(container);
   }
-
   ngOnDestroy(): void {
+    this.loadVersion++;
+    this.loadAbort?.abort();
+    this.loadSubscription.unsubscribe();
     this.subscriptions.unsubscribe();
-    if (this.initialViewerSizeTimeout) {
-      clearTimeout(this.initialViewerSizeTimeout);
-    }
     this.resizeObserver?.disconnect();
+    this.previewWcsSubscription.unsubscribe();
+    this.coordinates.clearWorldToImageCoordinatesMapper(this.viewerFitsUrl);
   }
-
-  toggleFits(): void {
-    if (this.isFits) {
-      this.hideFitsViewer();
-      return;
-    }
-
-    if (this.isFitsButtonDisabled()) {
-      return;
-    }
-
+  showPreview(): void {
+    this.isFits = false;
+    this.onViewChanged();
+  }
+  showFits(): void {
+    if (!this.desiredFitsUrl) return;
     this.isFits = true;
-    this.requestFitsLoadForCurrentSelection();
+    this.requestFitsLoad(this.desiredFitsUrl, this.previewUrl);
+  }
+  toggleFits(): void {
+    if (this.isFits) this.showPreview();
+    else this.showFits();
+  }
+  onImageViewport(viewport: { top: number; left: number; width: number; height: number }): void {
+    this.viewport = viewport;
+    this.onViewChanged();
   }
 
-  onFitsLoadStatusUpdate(event: 'pending' | 'success' | 'error'): void {
-    if (event === 'error') {
-      this.fitsClickCoordinatesService.clearWorldToImageCoordinatesMapper();
-      if (
-        this.loadingProductId &&
-        !this.apiDataWithProblematicFitsUrls.includes(this.loadingProductId)
-      ) {
-        this.apiDataWithProblematicFitsUrls.push(this.loadingProductId);
-      }
-      this.isFitsLoaded = false;
-      this.hideFitsViewer();
-    } else if (event === 'success') {
-      this.isFitsLoaded = this.viewerFitsUrl === this.desiredFitsUrl && !!this.viewerFitsUrl;
-      this.isButtonRaised = this.isFits && this.isFitsLoaded;
-      if (this.viewerFitsUrl) {
-        this.fitsClickCoordinatesService.setWorldToImageCoordinatesMapper(
-          this.viewerFitsUrl,
-          (ra, dec) => {
-            const coords = this.js9Component?.getImageCoordinatesFromWorld(ra, dec);
-            return coords
-              ? {
-                  imageX: coords.imageX,
-                  imageY: coords.imageY,
-                  wcsPixelX: coords.wcsPixelX,
-                  wcsPixelY: coords.wcsPixelY,
-                  wcsPixelAsPhysicalX: coords.wcsPixelAsPhysicalX,
-                  wcsPixelAsPhysicalY: coords.wcsPixelAsPhysicalY,
-                  wcsPixelAsImageX: coords.wcsPixelAsImageX,
-                  wcsPixelAsImageY: coords.wcsPixelAsImageY,
-                  wcsString: coords.wcsString,
-                }
-              : null;
-          },
-        );
-        this.fitsClickCoordinatesService.setImageToWorldCoordinatesMapper(
-          this.viewerFitsUrl,
-          (imageX, imageY) =>
-            this.js9Component?.getWorldCoordinatesFromImage(imageX, imageY) ?? null,
-        );
-      }
-    } else {
-      this.fitsClickCoordinatesService.clearCoordinates();
-      this.fitsClickCoordinatesService.clearWorldToImageCoordinatesMapper();
-      this.isFitsLoaded = false;
-      this.isButtonRaised = false;
+  onViewChanged(): void {
+    if (!this.isFits) {
+      this.viewTransform = this.isFitsLoaded
+        ? (this.js9Component?.getPreviewTransform({
+            width: this.widthPxls,
+            height: this.heightPxls,
+          }) ?? 'none')
+        : 'none';
     }
+    this.northAngle = this.isFitsLoaded
+      ? (this.js9Component?.getNorthAngle() ?? null)
+      : this.indicatorWcs
+        ? northArrowAngle(this.indicatorWcs)
+        : null;
   }
 
+  onFitsLoadStatusUpdate(status: 'pending' | 'success' | 'error'): void {
+    this.isFitsLoaded = status === 'success';
+    this.onViewChanged();
+    if (status === 'error') {
+      this.fitsError = 'FITS could not be loaded. Select FITS to retry.';
+      this.coordinates.clearWorldToImageCoordinatesMapper(this.viewerFitsUrl);
+      return;
+    }
+    if (status !== 'success' || !this.viewerFitsUrl) return;
+    this.coordinates.setWorldToImageCoordinatesMapper(
+      this.viewerFitsUrl,
+      (ra, dec) => this.js9Component?.getImageCoordinatesFromWorld(ra, dec) ?? null,
+    );
+    this.coordinates.setImageToWorldCoordinatesMapper(
+      this.viewerFitsUrl,
+      (x, y) => this.js9Component?.getWorldCoordinatesFromImage(x, y) ?? null,
+    );
+  }
   onFitsImageClick(coordinates: IJs9ImageClickCoordinates): void {
-    this.fitsClickCoordinatesService.setCoordinates({
+    this.coordinates.setCoordinates({
       ...coordinates,
-      file: this.viewerFitsUrl || this.desiredFitsUrl,
+      file: this.viewerFitsUrl,
       productId: this.apiActiveDatum?.product_id,
       coordinateSource: 'fits-viewer',
     });
   }
 
-  isFitsButtonDisabled(): boolean {
-    if (!this.desiredFitsUrl) return true;
-    return this.apiDataWithProblematicFitsUrls.includes(this.apiActiveDatum?.product_id || '');
-  }
-
-  getLabel() {
-    // Create a label for this image from the carousel
-    this.apiActiveDatum;
-    const i = this.apiData
-      ?.map((apiDatum) => apiDatum.product_id)
-      .indexOf(this.apiActiveDatum?.product_id || '');
-    return '*C' + i;
-  }
-
-  /**
-   * Switching off pansstarrs for fixed for now because too confusing with orientations of images being all over the place
-   */
-  isPanstarrsOverlay() {
-    if (!this.apiDataStatus) return false;
-    const { search } = this.apiDataStatus;
-    if (!search) return false;
-    const { searchType } = search;
-    return searchType === 'moving';
-  }
-
-  private hideFitsViewer(): void {
-    this.isFits = false;
-    this.isButtonRaised = false;
-  }
-
-  private requestFitsLoadForCurrentSelection(): void {
-    if (!this.desiredFitsUrl) {
-      this.isFitsLoaded = false;
-      this.isButtonRaised = false;
+  private requestFitsLoad(file: string, preview: string): void {
+    if (!file || (file === this.viewerFitsUrl && this.isFitsLoaded) || file === this.loadingUrl)
       return;
-    }
-
-    if (this.viewerFitsUrl === this.desiredFitsUrl && this.isFitsLoaded) {
-      this.isButtonRaised = this.isFits;
-      return;
-    }
-
-    this.loadingProductId = this.apiActiveDatum?.product_id || '';
-    this.viewerFitsUrl = this.desiredFitsUrl;
+    this.loadSubscription.unsubscribe();
+    const version = ++this.loadVersion;
+    this.loadAbort?.abort();
+    this.loadAbort = new AbortController();
+    this.loadingUrl = file;
+    this.coordinates.clearWorldToImageCoordinatesMapper(this.viewerFitsUrl);
     this.isFitsLoaded = false;
-    this.isButtonRaised = false;
+    this.fitsError = '';
+    this.viewerFitsUrl = '';
+    this.loadSubscription = forkJoin({
+      image: this.images
+        .loadImage$({ url: file, kind: 'fits', priority: 'high', signal: this.loadAbort.signal })
+        .pipe(
+          filter((state) => state.status === 'success' || state.status === 'error'),
+          take(1),
+        ),
+      wcs: preview
+        ? this.wcs.getWcsObservable(preview).pipe(
+            take(1),
+            catchError(() => of(undefined)),
+          )
+        : of(undefined),
+    }).subscribe(({ image, wcs }) => {
+      if (version !== this.loadVersion) return;
+      this.loadingUrl = '';
+      if (image.status !== 'success') {
+        this.fitsError = 'FITS could not be loaded. Select FITS to retry.';
+        return;
+      }
+      this.fitsBlob = image.blob;
+      this.previewWcs = wcs;
+      // Recreate the JS9 component on retry and selection, including same-URL retry.
+      this.viewerFitsUrl = file;
+    });
   }
-
   private updateViewerSize(width: number, height: number): void {
-    const squareSize = Math.floor(Math.min(width, height));
-    if (this.widthPxls === squareSize && this.heightPxls === squareSize) {
-      return;
-    }
-
-    this.widthPxls = squareSize;
-    this.heightPxls = squareSize;
+    this.widthPxls = Math.floor(width);
+    this.heightPxls = Math.floor(height);
+    this.onViewChanged();
   }
 }

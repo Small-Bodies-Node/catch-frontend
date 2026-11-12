@@ -417,20 +417,34 @@
                         <option [ngValue]="band">{{ band }}</option>
                       }
                     </select>
+                    <small class="cat-tools-field-hint">
+                      Available bands:
+                      {{
+                        getPhotometricCalibrationCatalogConfiguration(
+                          calibrationDraft.catalog
+                        ).bands.join(', ')
+                      }}
+                    </small>
                   </label>
 
                   <label>
                     <span class="cat-tools-field-label">
-                      <span>Color index</span>
+                      <span>Color index (optional)</span>
                       <app-cat-field-info
                         label="Color index"
-                        [text]="catInputHelp.photometryColorIndex"
+                        [text]="
+                          'Example: ' +
+                          getPhotometricCalibrationCatalogConfiguration(calibrationDraft.catalog)
+                            .defaultColorTerm +
+                          '. ' +
+                          catInputHelp.photometryColorIndex
+                        "
                       />
                     </span>
                     <input
                       type="text"
                       name="photometry_color_term"
-                      required
+                      placeholder="None"
                       [(ngModel)]="calibrationDraft.color_term"
                     />
                   </label>

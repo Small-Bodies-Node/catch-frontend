@@ -1,15 +1,10 @@
-.dark-theme {
-  .JS9Menubar,
-  .JS9MenubarContainer-flat,
-  .js9-my-menu-button-class {
-    white-space: nowrap;
-    background-color: transparent;
-    color: white;
-  }
-
-  .JS9Menubar {
-    overflow-x: auto;
-  }
+// JS9 inserts plugin DOM itself; these rules are scoped to this wrapper.
+lib-ngx-js9 {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
 }
 
 .ngx-js9-host {
@@ -17,22 +12,67 @@
   height: 100%;
   box-sizing: border-box;
   overflow: hidden;
+  background: #000;
+  color: #fff;
+
+  > .JS9PluginContainer {
+    width: 100%;
+    min-width: 0;
+  }
 
   .JS9Menubar,
   .JS9,
   .JS9Colorbar {
     box-sizing: border-box;
+    max-width: 100%;
+  }
+
+  .JS9Menubar {
+    width: 100% !important;
+    height: 32px !important;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: thin;
+    background: #102424;
+  }
+
+  .JS9MenubarContainer-flat {
+    height: 32px;
+    box-sizing: border-box;
+    padding: 2px 4px;
+    white-space: nowrap;
+    background: transparent;
+  }
+
+  .js9-my-menu-button-class {
+    margin: 0;
+    padding: 4px 6px;
+    border: 0;
+    font: 12px/20px sans-serif;
+    color: #fff;
+    background: transparent;
+    text-shadow: none;
+    cursor: pointer;
+
+    &:hover,
+    &:focus-visible {
+      background: #004f4f;
+    }
   }
 
   .JS9Colorbar {
-    min-height: 64px;
-    overflow: visible;
-    padding-bottom: 8px;
+    height: 40px;
+    overflow: hidden;
   }
 
   .JS9ColorbarCanvas,
   .JS9ColorbarTextCanvas {
     display: block;
+    background: #000;
+  }
+
+  canvas.JS9Image {
+    background: #000;
   }
 
   .JS9Colorbar,
@@ -41,19 +81,5 @@
     cursor: crosshair;
     touch-action: none;
     user-select: none;
-  }
-}
-
-.light-theme {
-  .JS9Menubar,
-  .JS9MenubarContainer-flat,
-  .js9-my-menu-button-class {
-    white-space: nowrap;
-    background-color: transparent;
-    color: white;
-  }
-
-  .JS9Menubar {
-    overflow-x: scroll;
   }
 }

@@ -1,4 +1,13 @@
-<div #myContainer class="panstarrs-overlay-container" (click)="onJpegOverlayClick($event)">
+<div
+  #myContainer
+  class="panstarrs-overlay-container"
+  (click)="onJpegOverlayClick($event)"
+  [style.transform]="viewTransform"
+  [style.transform-origin]="'0 0'"
+>
+  @if (previewError) {
+    <div class="panstarrs-status-chip is-error" role="status">{{ previewError }}</div>
+  }
   @if (panstarrsStatusVariant) {
     <div
       class="panstarrs-status-chip"
@@ -54,7 +63,7 @@
     <!-- Centroidized Crosshair: Top Vertical Segment -->
     <div
       class="crosshair-segment centroid-crosshair-segment crosshair-segment-vertical"
-      [class.is-active]="!!activeCentroidization"
+      [class.is-active]="!!activeCentroidization && hasNativePixelProjection()"
       [style.left.px]="getCentroidCrosshairCenterX()"
       [style.top.px]="getCentroidCrosshairTopSegmentTop()"
       [style.height.px]="getCentroidCrosshairTopSegmentHeight()"
@@ -63,7 +72,7 @@
     <!-- Centroidized Crosshair: Bottom Vertical Segment -->
     <div
       class="crosshair-segment centroid-crosshair-segment crosshair-segment-vertical"
-      [class.is-active]="!!activeCentroidization"
+      [class.is-active]="!!activeCentroidization && hasNativePixelProjection()"
       [style.left.px]="getCentroidCrosshairCenterX()"
       [style.top.px]="getCentroidCrosshairBottomSegmentTop()"
       [style.height.px]="getCentroidCrosshairBottomSegmentHeight()"
@@ -72,7 +81,7 @@
     <!-- Centroidized Crosshair: Left Horizontal Segment -->
     <div
       class="crosshair-segment centroid-crosshair-segment crosshair-segment-horizontal"
-      [class.is-active]="!!activeCentroidization"
+      [class.is-active]="!!activeCentroidization && hasNativePixelProjection()"
       [style.top.px]="getCentroidCrosshairCenterY()"
       [style.left.px]="getCentroidCrosshairLeftSegmentLeft()"
       [style.width.px]="getCentroidCrosshairLeftSegmentWidth()"
@@ -81,13 +90,13 @@
     <!-- Centroidized Crosshair: Right Horizontal Segment -->
     <div
       class="crosshair-segment centroid-crosshair-segment crosshair-segment-horizontal"
-      [class.is-active]="!!activeCentroidization"
+      [class.is-active]="!!activeCentroidization && hasNativePixelProjection()"
       [style.top.px]="getCentroidCrosshairCenterY()"
       [style.left.px]="getCentroidCrosshairRightSegmentLeft()"
       [style.width.px]="getCentroidCrosshairRightSegmentWidth()"
     ></div>
 
-    @if (activeTargetPhotometryRun) {
+    @if (activeTargetPhotometryRun && hasNativePixelProjection()) {
       <div
         class="target-photometry-aperture target-aperture"
         [style.left.px]="getTargetPhotometryApertureCenterX()"
@@ -141,7 +150,7 @@
   </div>
 
   <!--  -->
-  @if (isAtlasOrNeat) {
+  @if (hasPreviewWcs) {
     <!-- WCS Derived Star Positions -->
     @for (coord of pixelCoordinatesWCS; track coord.id) {
       <div
